@@ -44,9 +44,18 @@ double_ml_time_series/
 
 ### Prerequisites
 - Python 3.11+
+- Ruby gems: `asciidoctor-pdf`, `asciidoctor-mathematical`, `asciidoctor-bibtex`
 - 64-core system recommended (parallelization optimized for Threadripper)
 
 ### Installation
+
+**Step 1: Install Ruby gems for PDF generation**
+
+```bash
+gem install asciidoctor-pdf asciidoctor-mathematical asciidoctor-bibtex
+```
+
+**Step 2: Install Python environment**
 
 ```bash
 # Create virtual environment
@@ -79,15 +88,33 @@ If any packages fail to import, ensure venv is activated and run `pip install -r
 
 ### Document Compilation
 
-Test the AsciiDoc → PDF pipeline:
+The book uses AsciiDoc with professional LaTeX equation rendering via `asciidoctor-mathematical`:
 
 ```bash
-# Compile test chapter with BibTeX citations
-asciidoctor-pdf -r asciidoctor-bibtex -o output/test.pdf chapters/test_chapter.adoc
+# Build all chapters with perfect equation rendering
+make all
 
-# View output
-xdg-open output/test.pdf  # Linux
-open output/test.pdf       # macOS
+# Build individual chapters
+make chapter_01
+make chapter_02
+
+# Clean generated files
+make clean
+```
+
+**How it works:**
+- `asciidoctor-mathematical` converts LaTeX equations to high-quality SVG images
+- Images are embedded in PDF for perfect rendering (no font issues, no Unicode problems)
+- Larger PDFs (~4MB per chapter) but equations look professional
+
+**Manual compilation** (if not using Make):
+```bash
+asciidoctor-pdf \
+  -r asciidoctor-mathematical \
+  -r asciidoctor-bibtex \
+  -a mathematical-format=svg \
+  -o output/chapter_01.pdf \
+  chapters/chapter_01.adoc
 ```
 
 ### Configuration
