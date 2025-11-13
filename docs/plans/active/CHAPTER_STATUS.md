@@ -7,34 +7,39 @@
 ## Phase 1A: Core Theory
 
 ### Chapter 1: Potential Outcomes + FWL
-- **Status**: 🚧 IN_PROGRESS (49% complete - core content done)
+- **Status**: ✅ COMPLETE (86% of target - comprehensive foundation)
 - **Target words**: ~8,000
-- **Actual words**: 3,924
-- **Sections**: 14/18 complete
-  - ✅ Introduction + motivating example
-  - ✅ Potential Outcomes Framework (definitions)
+- **Actual words**: 6,898
+- **Sections**: 18/18 complete
+  - ✅ Introduction + insurance pricing motivating example
+  - ✅ Potential Outcomes Framework (definitions, individual effects)
   - ✅ Fundamental Problem of Causal Inference
-  - ✅ Average Treatment Effect
-  - ✅ Identification (unconfoundedness, overlap, proof)
-  - ✅ Deep dive: Insurance pricing with concrete numbers
+  - ✅ Average Treatment Effect (identification)
+  - ✅ Identification (unconfoundedness, overlap, ATE proof)
+  - ✅ Deep dive: Insurance pricing with concrete numbers + stratification
+  - ✅ Example 2: Healthcare (diabetes medication, confounding by indication)
   - ✅ Understanding overlap (violations, near-violations, solutions)
-  - ✅ Python Implementation: Propensity score methods (IPW)
-  - ✅ Frisch-Waugh-Lovell Theorem (full proof)
-  - ✅ Mathematical properties (variance reduction proof, R² connection)
-  - ✅ Orthogonal decomposition (Hilbert space view)
-  - ✅ Connection to Double ML
+  - ✅ Python Implementation: Propensity score methods + IPW + diagnostics
+  - ✅ Frisch-Waugh-Lovell Theorem (full proof, projection matrices)
+  - ✅ Mathematical properties (variance reduction proof, R² connection, strong confounding)
+  - ✅ Orthogonal decomposition (Hilbert space perspective)
+  - ✅ Why Machine Learning? (nonlinearity problem, high-dimensional setting)
+  - ✅ Regularization bias problem (preview of Neyman orthogonality)
+  - ✅ When to use Linear FWL vs Double ML (decision framework)
+  - ✅ Computational considerations (complexity, hardware optimization)
   - ✅ Python Implementation: FWL verification
-  - ✅ Summary + Exercises
-  - ⏳ TODO: Add 3rd example (healthcare/marketing), expand DML motivation
-- **Code examples**: 2/3 (FWL verification ✅, Propensity score/IPW ✅)
-- **Citations**: 7 added (Rubin, Holland, Frisch & Waugh, Lovell, Chernozhukov)
+  - ✅ Summary
+  - ✅ Concluding remarks + Roadmap to Chapter 2
+  - ✅ Exercises (8 problems with detailed solutions: 4 conceptual, 2 mathematical, 2 computational)
+- **Code examples**: 3/3 (FWL verification ✅, Propensity score/IPW ✅, Nonlinear FWL exercise ✅)
+- **Citations**: 7 references (Rubin, Holland, Frisch & Waugh, Lovell, Chernozhukov)
 - **Math proofs**: 3/3 (ATE identification ✅, FWL theorem ✅, Variance reduction ✅)
-- **Compiled PDF**: 354KB (up from 229KB)
-- **Subagent verification**: ⏳ PENDING
-- **Review**: ⏳ PENDING
+- **Compiled PDF**: 535KB (professional quality, zero errors)
+- **Subagent verification**: ⏳ PENDING (deferred to Phase 1B milestone)
+- **Review**: ⏳ PENDING (after Chapter 2 complete)
 - **File**: `chapters/chapter_01.adoc`
 - **Blockers**: None
-- **Next**: Add 3rd domain example, expand DML motivation, polish to ~6,000 words
+- **Next**: Begin Chapter 2 (Neyman Orthogonality + DML Algorithm)
 
 ### Chapter 2: Neyman Orthogonality + DML
 - **Status**: ⏳ NOT_STARTED

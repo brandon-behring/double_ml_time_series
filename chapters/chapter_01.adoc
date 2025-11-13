@@ -335,6 +335,111 @@ In this simple example, the naive and conditional estimates coincide *by acciden
 
 We'll explore overlap violations in detail next.
 
+== Example 2: Healthcare Treatment Effects
+
+To reinforce the potential outcomes framework, let's examine a different domain: estimating the effect of a medication on patient outcomes.
+
+=== Setup: Clinical Observational Study
+
+A hospital wants to estimate the causal effect of a new diabetes medication on HbA1c levels (blood sugar control). They have observational data on 1,000 patients:
+
+* stem:[Y_i]: Change in HbA1c after 6 months (negative = improvement)
+* stem:[T_i \in \{0, 1\}]: Treatment indicator (1 = new medication, 0 = standard medication)
+* stem:[X_i]: Patient characteristics
+  - Age, baseline HbA1c, BMI, comorbidities, insurance type, physician ID
+
+**Why observational?** The medication is already approved, so randomization would be unethical. Doctors prescribe based on patient characteristics.
+
+=== Potential Outcomes in Healthcare
+
+For each patient stem:[i]:
+* stem:[Y_i(1)]: Change in HbA1c if given new medication
+* stem:[Y_i(0)]: Change in HbA1c if given standard medication
+
+**Patient 42 example**: Suppose patient 42 receives the new medication (stem:[T_{42} = 1]) and experiences stem:[Y_{42} = -1.8] (HbA1c drops 1.8 points).
+
+* stem:[Y_{42}(1) = -1.8]: Observed outcome (this actually happened)
+* stem:[Y_{42}(0) = ?]: Counterfactual (what would have happened with standard medication)
+
+**Individual treatment effect**: stem:[\tau_{42} = Y_{42}(1) - Y_{42}(0)]
+
+If we knew stem:[Y_{42}(0) = -1.0], the individual effect would be stem:[\tau_{42} = -1.8 - (-1.0) = -0.8] (an additional 0.8 point reduction from the new medication). But stem:[Y_{42}(0)] is fundamentally unobservable.
+
+=== Confounding by Indication
+
+**Confounding by indication** is a classic problem in healthcare: doctors prescribe treatments based on patient characteristics that also affect outcomes.
+
+**Scenario**: Suppose doctors prescribe the new medication primarily to:
+* Younger patients (better adherence)
+* Patients with higher baseline HbA1c (more room for improvement)
+* Patients with fewer comorbidities (lower risk of side effects)
+
+Now:
+* stem:[T_i] is related to age, baseline HbA1c, comorbidities
+* These variables also affect stem:[Y_i] (younger patients may improve more regardless of medication)
+
+**Naive comparison** (biased):
+
+[stem]
+++++
+\mathbb{E}[Y_i | T_i = 1] - \mathbb{E}[Y_i | T_i = 0]
+++++
+
+might show the new medication is much better, but this confounds:
+* **True medication effect**: stem:[\mathbb{E}[Y_i(1) - Y_i(0)]]
+* **Patient selection**: Treated patients are younger, healthier, more likely to improve anyway
+
+=== Unconfoundedness in Healthcare
+
+**Assumption**: Conditional on patient characteristics stem:[X_i], treatment assignment is "as-if randomized":
+
+[stem]
+++++
+\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i
+++++
+
+**When plausible**:
+* If doctors prescribe based solely on observable characteristics (age, baseline HbA1c, comorbidities, etc.)
+* All relevant patient features are recorded in electronic health records
+
+**When violated**:
+* Doctors have private information not in the EHR (patient motivation, family support, subtle clinical signs)
+* Patients self-select into treatment based on unobservable factors (fear of side effects, personal preferences)
+
+=== Overlap in Healthcare
+
+**Overlap**: For all values of stem:[X], some patients receive treatment and some receive control:
+
+[stem]
+++++
+0 < \mathbb{P}(T_i = 1 | X_i = x) < 1
+++++
+
+**Example violation**: Suppose doctors *never* prescribe the new medication to patients over age 75 (concern about kidney function).
+
+* For stem:[\text{age} > 75]: stem:[e(x) = 0] → No treated patients → Cannot estimate stem:[\mathbb{E}[Y(1) | \text{age} > 75]]
+* Cannot estimate treatment effect for elderly patients without extrapolation
+
+**Practical solution**: Either:
+1. **Restrict population**: Estimate ATE only for ages 18-75 (where overlap holds)
+2. **Collect more data**: Find hospitals that do prescribe to elderly patients
+3. **Randomized trial**: If effect on elderly is crucial, conduct RCT
+
+=== Why This Example Matters
+
+Healthcare provides clear intuition for key concepts:
+
+1. **Individual effects unknowable**: Can't give patient 42 both medications simultaneously
+2. **Confounding by indication**: Treatment decisions based on prognosis
+3. **Unconfoundedness plausibility**: Depends on EHR completeness and physician decision-making
+4. **Overlap violations**: Age limits, contraindications create deterministic rules
+5. **Ethical constraints**: Observational data often necessary when randomization is unethical
+
+**Connection to insurance pricing**: Same framework, different domain:
+* Healthcare: Doctors select patients for treatment based on characteristics
+* Insurance: Competitors set prices based on market conditions
+* Both: Need to condition on confounders to identify causal effects
+
 == Understanding Overlap: A Critical Requirement
 
 The overlap assumption is often overlooked but is critical for causal inference. Let's see what happens when it fails.
@@ -687,6 +792,152 @@ Why ML? When stem:[X] is high-dimensional or the functional forms stem:[\mathbb{
 
 **Crucial addition**: Double ML adds sample splitting and cross-fitting to avoid overfitting bias, which we'll develop in Chapter 2.
 
+=== Why Machine Learning? The Nonlinearity Problem
+
+Linear regression for partialling out assumes stem:[\mathbb{E}[T|X]] and stem:[\mathbb{E}[Y|X]] are linear in stem:[X]. When this fails, FWL produces biased estimates.
+
+**Example: Nonlinear confounding**
+
+Suppose the true data-generating process is:
+
+[stem]
+++++
+\begin{align}
+T_i &= X_{i1}^2 + X_{i2} + \epsilon_i^T \\
+Y_i &= 2 T_i + X_{i1}^2 + X_{i2}^3 + \epsilon_i^Y
+\end{align}
+++++
+
+where:
+* stem:[\mathbb{E}[T|X]] is quadratic in stem:[X_1]
+* stem:[\mathbb{E}[Y|X]] is cubic in stem:[X_2]
+* True treatment effect stem:[\beta_1 = 2]
+
+**Linear FWL fails**:
+1. Regress stem:[T] on stem:[X] (linear regression) → Misspecified, underestimates stem:[\mathbb{E}[T|X]]
+2. Regress stem:[Y] on stem:[X] (linear regression) → Misspecified, underestimates stem:[\mathbb{E}[Y|X]]
+3. Residuals stem:[\tilde{T}, \tilde{Y]] still contain confounding from stem:[X]
+4. Final estimate stem:[\hat{\beta}_1 \neq 2] is biased
+
+**Machine learning solution**:
+* Use **random forests** or **boosting** to estimate stem:[\mathbb{E}[T|X]] nonparametrically
+* Use **neural networks** or **splines** to estimate stem:[\mathbb{E}[Y|X]] flexibly
+* Residuals properly remove nonlinear confounding
+* Final estimate converges to stem:[\beta_1 = 2]
+
+=== The High-Dimensional Setting
+
+Modern applications often have:
+* stem:[p] confounders where stem:[p] is large (hundreds or thousands)
+* stem:[p] may even exceed stem:[n] (more variables than observations)
+
+**Examples**:
+* **Healthcare**: Electronic health records with thousands of diagnosis codes, lab values, medications
+* **Marketing**: User demographics, browsing history, click patterns, device info
+* **Insurance**: Competitor product features, market conditions, economic indicators
+
+**Linear regression breaks down**:
+* stem:[p > n]: Regression is undefined (underdetermined system)
+* stem:[p \approx n]: Regression is highly unstable (overfitting)
+* Large stem:[p]: Need regularization (Lasso, Ridge) → Introduces bias
+
+**Machine learning handles high dimensions**:
+* **Random forests**: Split on important variables, ignore noise variables
+* **Gradient boosting**: Sequentially add weak learners focusing on residuals
+* **Neural networks**: Learn low-dimensional representations
+* **Lasso regression**: Automatic variable selection with stem:[\ell_1] penalty
+
+=== The Regularization Bias Problem
+
+When using regularized estimators (Lasso, Ridge, neural networks), a new problem emerges: *regularization bias*.
+
+**The issue**: Suppose we use Lasso to estimate stem:[\hat{m}(X) = \mathbb{E}[Y|X]]. The Lasso estimate is:
+
+[stem]
+++++
+\hat{m}(X) = \arg\min_m \mathbb{E}[(Y - m(X))^2] + \lambda \|m\|_1
+++++
+
+The penalty term stem:[\lambda \|m\|_1] introduces bias:
+
+[stem]
+++++
+\mathbb{E}[\hat{m}(X)] \neq \mathbb{E}[Y|X]
+++++
+
+even with infinite data!
+
+**Naive FWL with Lasso**:
+1. Estimate stem:[\hat{m}_T(X)] with Lasso → biased toward zero
+2. Compute stem:[\tilde{T}_i = T_i - \hat{m}_T(X_i)] → Residuals *not* mean-zero
+3. Estimate stem:[\hat{\beta}_1] → Biased due to regularization bias in step 1
+
+**Double ML solution (preview)**:
+
+The key insight cite:[chernozhukov2018double] is that the treatment effect stem:[\beta_1] is *orthogonal* to the nuisance parameters stem:[m_T(X), m_Y(X)] in the sense that:
+
+[stem]
+++++
+\frac{\partial}{\partial m} \mathbb{E}[(Y - \beta_1 T - m(X))^2] \bigg|_{m = m_0} = 0
+++++
+
+This *Neyman orthogonality* means that small errors in stem:[\hat{m}(X)] don't affect stem:[\hat{\beta}_1] to first order.
+
+**Solution approach**:
+1. **Sample splitting**: Use different data for estimating stem:[\hat{m}(X)] and stem:[\hat{\beta}_1]
+2. **Cross-fitting**: Repeat with role reversal and average
+3. **Result**: Regularization bias cancels out, stem:[\hat{\beta}_1 \to \beta_1]
+
+We'll develop this rigorously in Chapter 2 with the Neyman orthogonality condition and the DML algorithm.
+
+=== When to Use Linear FWL vs. Double ML
+
+**Use linear FWL when**:
+* stem:[p] is small (< 10 confounders)
+* Relationships are approximately linear
+* Sample size is moderate (linear regression requires stem:[n > p])
+* Interpretability is crucial (coefficients have direct meaning)
+
+**Use Double ML when**:
+* stem:[p] is large (hundreds or thousands of confounders)
+* Relationships are nonlinear (interactions, polynomials, thresholds)
+* Sample size is large (ML methods need data to learn flexibly)
+* Prediction accuracy is more important than interpretability
+
+**Example: Insurance pricing**:
+* **Linear FWL**: If only VIX, sentiment, treasury rates (3 confounders)
+* **Double ML**: If using hundreds of macro indicators, competitor product features, regional demographics
+
+**Example: Healthcare**:
+* **Linear FWL**: If only age, baseline HbA1c, BMI (3 confounders)
+* **Double ML**: If using full EHR (thousands of diagnosis codes, lab values, medications)
+
+**Rule of thumb**: stem:[p > 20] or suspected nonlinearity → Try Double ML
+
+=== Computational Considerations
+
+**Linear FWL**:
+* Fast: stem:[O(np^2)] for stem:[n] observations, stem:[p] confounders
+* Scales to stem:[n = 10^6], stem:[p = 10^3]
+* No hyperparameter tuning needed
+
+**Double ML with Random Forests**:
+* Moderate: stem:[O(n \log n \cdot p \cdot \text{trees})]
+* Requires hyperparameter tuning (max depth, min samples per leaf)
+* Parallelizes well (n_jobs=48 on 64-core system)
+* Scales to stem:[n = 10^6], stem:[p = 10^4]
+
+**Double ML with Neural Networks**:
+* Slow: Depends on architecture and optimization
+* Requires careful hyperparameter tuning (layers, width, learning rate, regularization)
+* Benefits from GPU acceleration
+* Best for very large stem:[n] (stem:[>10^6]) and complex nonlinearity
+
+**Practical workflow**:
+1. Start with linear FWL (fast baseline)
+2. Try Random Forest DML (good default for nonlinearity)
+3. Use neural networks only if RF insufficient and computational budget allows
+
 == Python Implementation: FWL Theorem
 
 Let's demonstrate the FWL theorem with a simple simulation.
@@ -752,17 +1003,286 @@ This chapter developed the foundations for causal inference and Double Machine L
 
 **Next chapter**: We extend these ideas to *nonlinear* partialling out using machine learning, introducing the Neyman orthogonality condition and the DML algorithm.
 
+== Concluding Remarks
+
+This chapter established the foundations for causal inference in observational studies. Three key insights emerged:
+
+**1. Causal inference is fundamentally a missing data problem**
+
+We can never observe both stem:[Y_i(0)] and stem:[Y_i(1)] for the same unit. Individual treatment effects stem:[\tau_i = Y_i(1) - Y_i(0)] are logically unobservable. This is not a statistical limitation—no amount of data or sophisticated estimation can recover individual effects without strong assumptions (e.g., time travel or parallel universes).
+
+The resolution: Focus on *population-level* effects (ATE) that can be identified under plausible assumptions (unconfoundedness + overlap). This shift from individual to average effects is the core move in modern causal inference.
+
+**2. Identification requires assumptions, but they can be empirically checked**
+
+Unconfoundedness stem:[\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i] is never directly testable—it involves counterfactuals. However, its plausibility can be assessed:
+* **Domain knowledge**: Do we believe all confounders are observed?
+* **Sensitivity analysis**: How much unobserved confounding would be needed to overturn conclusions?
+* **Overlap diagnostics**: Are propensity scores well-behaved? (We can test this!)
+* **Placebo tests**: Do we find effects where we shouldn't? (Falsification)
+
+Overlap stem:[0 < e(x) < 1] *is* testable: We can directly examine the empirical propensity score distribution and check for violations or near-violations. Trimming or restricting the population to regions with good overlap is often necessary.
+
+**3. FWL is the bridge from linear regression to modern causal ML**
+
+The Frisch-Waugh-Lovell theorem shows that "controlling for confounders" is mathematically equivalent to:
+1. Residualizing treatment on confounders: stem:[\tilde{T} = T - \mathbb{E}[T|X]]
+2. Residualizing outcome on confounders: stem:[\tilde{Y} = Y - \mathbb{E}[Y|X]]
+3. Regressing orthogonalized outcome on orthogonalized treatment
+
+This partialling-out interpretation generalizes beyond linear regression:
+* **Classical econometrics**: Use linear regression for stem:[\mathbb{E}[T|X]] and stem:[\mathbb{E}[Y|X]]
+* **Modern ML**: Use random forests, boosting, or neural networks for flexible approximation
+
+But naively replacing linear regression with ML introduces *regularization bias*—penalized estimators (Lasso, Ridge, neural nets) are biased even asymptotically. Double ML solves this through Neyman orthogonality and cross-fitting.
+
+=== Roadmap to Chapter 2
+
+Chapter 2 develops the Double Machine Learning framework rigorously:
+
+**Neyman Orthogonality**: We'll show why the treatment effect stem:[\beta_1] is *orthogonal* to nuisance parameters stem:[\mathbb{E}[T|X], \mathbb{E}[Y|X]] in a precise sense. This orthogonality means regularization bias in nuisance estimation doesn't contaminate stem:[\hat{\beta}_1] to first order.
+
+**The DML Algorithm**: The complete procedure with:
+1. **Sample splitting**: Divide data into stem:[K] folds
+2. **Cross-fitting**: Estimate nuisance parameters on one fold, treatment effect on another
+3. **Aggregation**: Average across folds
+
+**Theoretical guarantees**: Under high-level conditions:
+* stem:[\sqrt{n}]-consistency and asymptotic normality
+* Valid confidence intervals using cross-fit standard errors
+* Robustness to slow convergence of ML estimators
+
+**Python implementation**: Working code using EconML with:
+* Random Forest nuisance estimation
+* Inference with confidence intervals
+* Comparison to naive approaches
+
+By the end of Chapter 2, you'll have a complete, validated DML implementation ready for the insurance competitor pricing application in Chapter 4.
+
 == Exercises
 
-1. **Potential Outcomes**: In the insurance pricing example, write out the potential outcomes stem:[Y_i(0), Y_i(1)] explicitly in words. What assumption would make them equal (no treatment effect)?
+=== Conceptual Problems
 
-2. **Fundamental Problem**: Explain why collecting more data does not solve the fundamental problem of causal inference.
+**Exercise 1.1** (Potential Outcomes): In the insurance pricing example, write out the potential outcomes stem:[Y_i(0), Y_i(1)] explicitly in words. What assumption would make them equal (no treatment effect)?
 
-3. **Unconfoundedness**: Give an example where unconfoundedness is violated in the insurance pricing setting. What variable might be unobserved that affects both competitor pricing and sales?
+**Solution**: For week stem:[i]:
+* stem:[Y_i(1)]: Number of annuities sold in week stem:[i] if competitors had high prices
+* stem:[Y_i(0)]: Number of annuities sold in week stem:[i] if competitors had low prices
 
-4. **FWL Theorem**: Prove that stem:[\text{Var}(\tilde{T}_i) \leq \text{Var}(T_i)]. What does this say about the residualized treatment?
+For no treatment effect: stem:[Y_i(1) = Y_i(0)] for all stem:[i]. This requires that competitor pricing has *zero causal effect* on our sales. Plausible if:
+* Customers are completely insensitive to competitor prices (no price shopping)
+* Our product is perfectly differentiated (no substitution)
+* Competitor prices don't signal market conditions
 
-5. **Python Implementation**: Modify the FWL code to use a nonlinear relationship stem:[\mathbb{E}[T|X] = X_1^2 + X_2]. Does linear FWL still work? (Hint: No—motivates Double ML!)
+---
+
+**Exercise 1.2** (Fundamental Problem): Explain why collecting more data does not solve the fundamental problem of causal inference. What would we need to observe to compute individual treatment effects?
+
+**Solution**: The fundamental problem is that we can never observe stem:[Y_i(1)] and stem:[Y_i(0)] for the same unit stem:[i] simultaneously—this is logically impossible. Collecting more data gives us:
+* More weeks with stem:[T_i = 1] (high competitor prices)
+* More weeks with stem:[T_i = 0] (low competitor prices)
+
+But for any specific week stem:[i], we still only observe one potential outcome. To compute stem:[\tau_i = Y_i(1) - Y_i(0)], we would need to:
+1. **Time travel**: Observe week stem:[i] twice with different competitor prices, or
+2. **Parallel universes**: Observe both treatments simultaneously in the same week
+
+Neither is feasible. We can only estimate *average* effects across units.
+
+---
+
+**Exercise 1.3** (Unconfoundedness Violation): Give an example where unconfoundedness is violated in the insurance pricing setting. What variable might be unobserved that affects both competitor pricing and sales?
+
+**Solution**: Suppose competitors have access to a proprietary consumer confidence survey (not publicly available) that predicts insurance demand. They use this to set prices:
+* High survey confidence → Competitors raise prices (high demand expected)
+* Low survey confidence → Competitors lower prices (low demand expected)
+
+This survey also affects our sales:
+* High confidence → More consumers buy (including from us)
+* Low confidence → Fewer consumers buy
+
+Now unconfoundedness is violated:
+* stem:[T_i] (competitor pricing) is affected by unobserved confidence
+* stem:[Y_i(0), Y_i(1)] (our sales under both treatments) are also affected by unobserved confidence
+* Conditioning on observed stem:[X_i] (VIX, sentiment, treasury rates) is insufficient
+
+Result: stem:[\{Y_i(0), Y_i(1)\} \not\perp\!\!\!\perp T_i \mid X_i]
+
+---
+
+**Exercise 1.4** (Overlap Implications): Suppose overlap is violated: for VIX > 25, we never observe high competitor prices (stem:[e(x) = 0] for VIX > 25). Can we still estimate:
+(a) The ATE for the full population?
+(b) The ATE conditional on VIX < 25?
+
+**Solution**:
+
+(a) **No**. The full population ATE is:
+
+[stem]
+++++
+\text{ATE} = \mathbb{E}_X[\mathbb{E}[Y(1) | X] - \mathbb{E}[Y(0) | X]]
+++++
+
+For VIX > 25, we cannot estimate stem:[\mathbb{E}[Y(1) | \text{VIX} > 25]] (no treated units with high VIX). Without this, the full ATE is not identified.
+
+(b) **Yes**. The conditional ATE is:
+
+[stem]
+++++
+\text{ATE}_{\text{VIX} < 25} = \mathbb{E}[\tau_i | \text{VIX} < 25]
+++++
+
+Within the VIX < 25 subpopulation, overlap holds (both high and low competitor prices observed). We can estimate both stem:[\mathbb{E}[Y(1) | X, \text{VIX} < 25]] and stem:[\mathbb{E}[Y(0) | X, \text{VIX} < 25]].
+
+**Caveat**: This changes the estimand from "ATE for all weeks" to "ATE for low-VIX weeks".
+
+---
+
+=== Mathematical Problems
+
+**Exercise 1.5** (Variance Decomposition): Prove that stem:[\text{Var}(\tilde{T}_i) \leq \text{Var}(T_i)] where stem:[\tilde{T}_i = T_i - \mathbb{E}[T_i | X_i]].
+
+**Solution**: (Already proven in Theorem 1.3, reproduced here for completeness)
+
+By the law of total variance:
+
+[stem]
+++++
+\text{Var}(T_i) = \mathbb{E}[\text{Var}(T_i | X_i)] + \text{Var}(\mathbb{E}[T_i | X_i])
+++++
+
+By construction, stem:[\tilde{T}_i] and stem:[\mathbb{E}[T_i | X_i]] are uncorrelated:
+
+[stem]
+++++
+\mathbb{E}[\tilde{T}_i \cdot \mathbb{E}[T_i | X_i]] = \mathbb{E}[\mathbb{E}[\tilde{T}_i | X_i] \cdot \mathbb{E}[T_i | X_i]] = 0
+++++
+
+since stem:[\mathbb{E}[\tilde{T}_i | X_i] = 0] by definition of residuals.
+
+Therefore:
+
+[stem]
+++++
+\text{Var}(T_i) = \text{Var}(\mathbb{E}[T_i | X_i]) + \text{Var}(\tilde{T}_i)
+++++
+
+Rearranging:
+
+[stem]
+++++
+\text{Var}(\tilde{T}_i) = \text{Var}(T_i) - \text{Var}(\mathbb{E}[T_i | X_i]) \leq \text{Var}(T_i)
+++++
+
+since variances are non-negative. Equality holds iff stem:[\text{Var}(\mathbb{E}[T_i | X_i]) = 0 \iff T_i \perp\!\!\!\perp X_i].
+
+**Interpretation**: Residualization removes the variation in stem:[T] explained by stem:[X], leaving only unexplained variation. This unexplained variation is the "identifying variation" for the treatment effect.
+
+---
+
+**Exercise 1.6** (Propensity Score Bounds): Show that under unconfoundedness, the ATE can be written as:
+
+[stem]
+++++
+\text{ATE} = \mathbb{E}\left[\frac{T_i Y_i}{e(X_i)} - \frac{(1 - T_i) Y_i}{1 - e(X_i)}\right]
+++++
+
+where stem:[e(X_i) = \mathbb{P}(T_i = 1 | X_i)] is the propensity score.
+
+**Solution**:
+
+Start with the identification formula from Theorem 1.1:
+
+[stem]
+++++
+\mathbb{E}[Y_i(1)] = \mathbb{E}_X[\mathbb{E}[Y_i | T_i = 1, X_i]]
+++++
+
+By the law of iterated expectations:
+
+[stem]
+++++
+\mathbb{E}[Y_i(1)] = \mathbb{E}\left[\mathbb{E}\left[\frac{T_i Y_i}{e(X_i)} \bigg| X_i\right]\right]
+++++
+
+The inner expectation is:
+
+[stem]
+++++
+\mathbb{E}\left[\frac{T_i Y_i}{e(X_i)} \bigg| X_i\right] = \frac{\mathbb{E}[T_i Y_i | X_i]}{e(X_i)} = \frac{e(X_i) \mathbb{E}[Y_i | T_i = 1, X_i]}{e(X_i)} = \mathbb{E}[Y_i | T_i = 1, X_i]
+++++
+
+Therefore:
+
+[stem]
+++++
+\mathbb{E}[Y_i(1)] = \mathbb{E}\left[\frac{T_i Y_i}{e(X_i)}\right]
+++++
+
+Similarly:
+
+[stem]
+++++
+\mathbb{E}[Y_i(0)] = \mathbb{E}\left[\frac{(1 - T_i) Y_i}{1 - e(X_i)}\right]
+++++
+
+Taking the difference yields the Inverse Propensity Weighting (IPW) estimator.
+
+---
+
+=== Computational Problems
+
+**Exercise 1.7** (Nonlinear FWL Failure): Modify the FWL Python code to use nonlinear confounding:
+
+[source,python]
+----
+# Generate data with nonlinearity
+X = np.random.randn(n, 2)
+T = X[:, 0]**2 + X[:, 1] + np.random.randn(n)  # Quadratic in X1
+Y = 2 * T + X[:, 0]**2 + X[:, 1]**3 + np.random.randn(n)  # True effect = 2
+----
+
+Does linear FWL recover the true effect stem:[\beta_1 = 2]? If not, what estimator would work?
+
+**Solution**: Linear FWL will be biased because:
+1. Regressing stem:[T] on stem:[X] (linear) cannot capture stem:[\mathbb{E}[T|X] = X_1^2 + X_2]
+2. Regressing stem:[Y] on stem:[X] (linear) cannot capture stem:[\mathbb{E}[Y|X] = 2\mathbb{E}[T|X] + X_1^2 + X_2^3]
+3. Residuals stem:[\tilde{T}, \tilde{Y]] still contain nonlinear confounding
+
+**What would work**:
+* **Polynomial regression**: Include stem:[X_1^2, X_2^3] in the regression
+* **Random Forest**: Use RandomForestRegressor to estimate stem:[\mathbb{E}[T|X]] and stem:[\mathbb{E}[Y|X]]
+* **Double ML**: Use flexible ML in cross-fitting framework (Chapter 2)
+
+---
+
+**Exercise 1.8** (Effective Sample Size): In the propensity score example, we computed effective sample sizes of 213/250 for treated and 214/250 for controls. Explain why weighting reduces effective sample size and when this is problematic.
+
+**Solution**:
+
+**Why weighting reduces effective sample size**:
+
+Inverse propensity weights are stem:[w_i = 1/e(X_i)] for treated and stem:[w_i = 1/(1-e(X_i))] for controls. When stem:[e(X_i)] varies across units:
+* Units with stem:[e(X_i) \approx 1]: Low weights (already likely to be treated)
+* Units with stem:[e(X_i) \approx 0]: High weights (unlikely to be treated but got treated anyway)
+
+High variance in weights → Effective sample size < actual sample size.
+
+Formally:
+
+[stem]
+++++
+n_{\text{eff}} = \frac{(\sum w_i)^2}{\sum w_i^2}
+++++
+
+**When problematic**:
+* **Near-violations**: If some stem:[e(X_i) \approx 0.01], weights can be 100+, drastically reducing stem:[n_{\text{eff}}]
+* **Precision loss**: Effective 213/250 means we lost 37 units worth of information (15%)
+* **Variance inflation**: Standard errors increase by stem:[\sqrt{250/213} \approx 1.08]
+
+**Remedies**:
+1. **Trimming**: Drop units with stem:[e(X_i) < 0.05] or stem:[e(X_i) > 0.95]
+2. **Weight truncation**: Cap weights at percentiles (e.g., 99th)
+3. **Doubly robust estimation**: Combine weighting with outcome modeling
 
 == References
 
