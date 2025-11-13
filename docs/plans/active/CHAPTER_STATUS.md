@@ -7,28 +7,34 @@
 ## Phase 1A: Core Theory
 
 ### Chapter 1: Potential Outcomes + FWL
-- **Status**: 🚧 IN_PROGRESS (25% complete - foundation sections done)
+- **Status**: 🚧 IN_PROGRESS (49% complete - core content done)
 - **Target words**: ~8,000
-- **Actual words**: 2,048
-- **Sections**: 9/16 complete
+- **Actual words**: 3,924
+- **Sections**: 14/18 complete
   - ✅ Introduction + motivating example
   - ✅ Potential Outcomes Framework (definitions)
   - ✅ Fundamental Problem of Causal Inference
   - ✅ Average Treatment Effect
   - ✅ Identification (unconfoundedness, overlap, proof)
-  - ✅ Frisch-Waugh-Lovell Theorem (proof + geometric interpretation)
-  - ✅ Python Implementation (FWL demo)
-  - ✅ Summary
-  - ✅ Exercises
-  - ⏳ TODO: Expand examples, add 2nd Python example, deepen intuition
-- **Code examples**: 1/3 (FWL verification)
+  - ✅ Deep dive: Insurance pricing with concrete numbers
+  - ✅ Understanding overlap (violations, near-violations, solutions)
+  - ✅ Python Implementation: Propensity score methods (IPW)
+  - ✅ Frisch-Waugh-Lovell Theorem (full proof)
+  - ✅ Mathematical properties (variance reduction proof, R² connection)
+  - ✅ Orthogonal decomposition (Hilbert space view)
+  - ✅ Connection to Double ML
+  - ✅ Python Implementation: FWL verification
+  - ✅ Summary + Exercises
+  - ⏳ TODO: Add 3rd example (healthcare/marketing), expand DML motivation
+- **Code examples**: 2/3 (FWL verification ✅, Propensity score/IPW ✅)
 - **Citations**: 7 added (Rubin, Holland, Frisch & Waugh, Lovell, Chernozhukov)
-- **Math proofs**: 2/2 (ATE identification ✅, FWL theorem ✅)
+- **Math proofs**: 3/3 (ATE identification ✅, FWL theorem ✅, Variance reduction ✅)
+- **Compiled PDF**: 354KB (up from 229KB)
 - **Subagent verification**: ⏳ PENDING
 - **Review**: ⏳ PENDING
 - **File**: `chapters/chapter_01.adoc`
 - **Blockers**: None
-- **Next**: Expand with more examples, compile to PDF for verification
+- **Next**: Add 3rd domain example, expand DML motivation, polish to ~6,000 words
 
 ### Chapter 2: Neyman Orthogonality + DML
 - **Status**: ⏳ NOT_STARTED
