@@ -10,8 +10,8 @@ repos:
     rev: v1.7.0
     hooks:
       - id: mypy
-        args: [--ignore-missing-imports, --no-strict-optional]
-        exclude: ^test/
+        args: [--ignore-missing-imports, --no-strict-optional, --explicit-package-bases]
+        exclude: ^(test/|templates/)
 
   - repo: local
     hooks:
