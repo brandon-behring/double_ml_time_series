@@ -15,6 +15,31 @@ repos:
 
   - repo: local
     hooks:
+      # Run validation tests before commit
+      - id: validation-tests
+        name: Run validation tests
+        entry: bash -c 'source venv/bin/activate && python -m pytest test/validation/ -v --tb=short || (echo "❌ Tests failed. Fix errors before committing."; exit 1)'
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+      # Check test coverage
+      - id: test-coverage-check
+        name: Check test coverage
+        entry: bash -c 'source venv/bin/activate && python -m pytest test/validation/ --cov=src/validation --cov-report=term-missing --cov-fail-under=80 || (echo "⚠️  Coverage below 80%. Add more tests."; exit 1)'
+        language: system
+        pass_filenames: false
+        stages: [push]
+
+      # Validate template syntax
+      - id: template-validation
+        name: Validate Python templates
+        entry: bash -c 'for f in templates/*.py; do python -m py_compile "$f" || exit 1; done; echo "✅ All templates valid"'
+        language: system
+        pass_filenames: false
+        files: ^templates/.*\.py$
+
+      # Large commit warning
       - id: large-commit-warning
         name: Large commit plan document check
         entry: bash -c 'LINES=$(git diff --cached --numstat | awk "{sum+=\$1} END {print sum}"); if [ "$LINES" -gt 500 ]; then echo "⚠️  Large commit detected ($LINES lines added). Plan document updated in docs/plans/active/?"; fi; exit 0'
