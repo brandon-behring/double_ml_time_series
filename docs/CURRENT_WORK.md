@@ -1,16 +1,17 @@
 # Current Work
 
-**Last Updated**: 2025-11-13 16:40
+**Last Updated**: 2025-11-13 16:50
 
 ---
 
 ## Right Now
-Phase 1A COMPLETE ✅✅ - Both Chapters 1-2 finished
+Phase 1A COMPLETE ✅✅ - Both Chapters 1-2 finished + PDF rendering fixed
 - Chapter 1: 6,898 words (Potential Outcomes + FWL)
 - Chapter 2: 6,315 words (Neyman Orthogonality + DML)
 - Total: 13,213 words (16% of book target)
 - All proofs, examples, exercises complete
-- PDFs compiled: Ch1 (535KB), Ch2 (494KB), zero errors
+- PDFs compiled with perfect equation rendering: Ch1 (4.4MB), Ch2 (4.2MB)
+- LaTeX equations now render as high-quality SVG images (asciidoctor-mathematical)
 
 ## Why
 Phase 1A established the theoretical foundation for Double ML:
