@@ -1,31 +1,31 @@
 # Current Work
 
-**Last Updated**: 2025-11-13 14:41
+**Last Updated**: 2025-11-13 15:12
 
 ---
 
 ## Right Now
-Creating infrastructure for Double ML Volume 2 project
+Infrastructure complete ✅ - Ready to begin Phase 1A: Chapter 1
 
 ## Why
-Need proper state tracking, git workflow, and Python environment before starting Chapter 1 to ensure we never lose progress and maintain quality throughout the 110-140 hour project
+All state tracking, Python environment, and automation in place for 110-140 hour book project. Foundation established to ensure we never lose progress throughout all 3 phases.
 
 ## Next Step
-1. Finish creating state files (deferred ideas, subagent log) - 5 min
-2. Set up Python environment (venv, requirements.txt, pyproject.toml) - 10 min
-3. Configure pre-commit hooks (Black, mypy, large commit) - 10 min
-4. Register in ProjectRegistry - 5 min
-5. Create milestone-checkpoint skill - 10 min
-6. Create README and .gitignore - 5 min
-7. Initial commit on dev branch - 2 min
-
-Total remaining: ~47 minutes
-
-Then ready to begin Chapter 1: Potential Outcomes + FWL
+Begin Chapter 1: Potential Outcomes Framework + Frisch-Waugh-Lovell Theorem
+- Target: ~7000 words (14-16 sections)
+- Duration: ~14-17 hours (spread across multiple sessions)
+- Proofs, intuition, embedded Python examples
+- Update chapter status after each subsection
 
 ## Context When I Return
-- Master plan document created with ultimate goal, roadmap, decision log
-- Chapter status tracker shows all 11 chapters (0% complete)
-- Working on dev branch (will merge to main after milestone reviews)
-- Infrastructure must be complete before any chapter work
-- Context monitoring: Will stop cleanly at 70% usage during chapter writing
+- **Phase 1A Started**: 2025-11-13
+- **Infrastructure Commit**: 3e86557 (10 files, 836 insertions, dev branch)
+- **Master plan**: `docs/plans/active/DOUBLE_ML_VOL2_2025-11-13.md`
+- **Chapter progress**: `docs/plans/active/CHAPTER_STATUS.md` (all at NOT_STARTED)
+- **Python**: 3.13 venv active at `venv/`, all dependencies installed
+- **Hardware**: 64-core Threadripper, n_jobs=48 for parallelization
+- **Integration**: Registered in archimedes_lever ProjectRegistry (auto S3 backups)
+- **Pre-commit**: Black (100-char), mypy, large commit warning - all passing ✅
+- **Next milestone review**: After Chapters 1-2 complete (Phase 1A)
+- **Git workflow**: dev branch (WIP) → main (reviewed, stable) after milestones
+- **Context monitoring**: Will stop cleanly at 70% token usage during chapter writing
