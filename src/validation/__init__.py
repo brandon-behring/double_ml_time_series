@@ -12,6 +12,7 @@ from .parallel import (
     chunk_workload,
     get_optimal_n_jobs,
 )
+from .bias_validation import BiasValidation
 
 __all__ = [
     "DGPGenerator",
@@ -25,4 +26,5 @@ __all__ = [
     "ParallelExecutor",
     "chunk_workload",
     "get_optimal_n_jobs",
+    "BiasValidation",
 ]
