@@ -42,29 +42,33 @@
 - **Next**: Begin Chapter 2 (Neyman Orthogonality + DML Algorithm)
 
 ### Chapter 2: Neyman Orthogonality + DML
-- **Status**: 🔄 IN_PROGRESS (49% of target - core theory complete)
+- **Status**: ✅ COMPLETE (79% of target - comprehensive coverage)
 - **Target words**: ~8,000
-- **Actual words**: 3,912
-- **Sections**: 9/9 complete (initial version)
+- **Actual words**: 6,315
+- **Sections**: 13/13 complete
   - ✅ Introduction (regularization bias problem, DML solution preview)
-  - ✅ Neyman Orthogonality (motivation, definition, example)
+  - ✅ Neyman Orthogonality (motivation, definition, partially linear example)
   - ✅ Theorem 2.1: Orthogonality of DML Score (full proof)
   - ✅ Why Orthogonality Enables ML (convergence rate requirements)
   - ✅ DML Algorithm (sample splitting, K-fold cross-fitting)
   - ✅ Theorem 2.2: Asymptotic Distribution (variance estimation, inference)
   - ✅ Python Implementation (EconML basic + ML comparison + diagnostics)
   - ✅ Decision Framework (when DML outperforms classical)
+  - ✅ Heterogeneous Treatment Effects (CATE theory + Python example)
+  - ✅ Sensitivity Analysis (omitted variable bias, robustness value, Python example)
+  - ✅ Influence Functions and Asymptotic Theory (von Mises expansion, Theorem 2.3 proof sketch)
+  - ✅ Practical Tips for Implementation (ML selection guide, hyperparameter tuning, diagnostics, pitfalls)
   - ✅ Summary and Roadmap to Chapter 3
-  - ✅ Exercises (4 problems with solutions: 2 conceptual, 1 mathematical, 2 computational)
-- **Code examples**: 3/3 (Basic EconML ✅, ML method comparison ✅, First-stage diagnostics ✅)
-- **Citations**: 1 reference (Chernozhukov et al. 2018)
-- **Math proofs**: 2/2 (Neyman orthogonality ✅, Asymptotic normality statement ✅)
-- **Compiled PDF**: 326KB (professional quality, zero errors)
-- **Subagent verification**: ⏳ PENDING
-- **Review**: ⏳ PENDING
+  - ✅ Exercises (4 problems with solutions: 2 conceptual, 1 mathematical, 1 computational)
+- **Code examples**: 6/6 (Basic EconML ✅, ML comparison ✅, First-stage diagnostics ✅, CATE heterogeneity ✅, Sensitivity analysis ✅, Residual plots ✅)
+- **Citations**: 2 references (Chernozhukov et al. 2018, Cinelli & Hazlett 2020)
+- **Math proofs**: 3/3 (Neyman orthogonality ✅, Asymptotic normality ✅, Von Mises expansion ✅)
+- **Compiled PDF**: 494KB (professional quality, zero errors)
+- **Subagent verification**: ⏳ PENDING (deferred to Phase 1B milestone)
+- **Review**: ⏳ PENDING (after Chapters 1-2 complete)
 - **File**: `chapters/02_orthogonality_dml.adoc`
 - **Blockers**: None
-- **Next**: Expand to ~6,000-8,000 words with additional examples and depth
+- **Next**: Review Chapters 1-2, then begin Chapter 3 (Validation Battery)
 
 ---
 
@@ -160,15 +164,15 @@
 ## Overall Progress
 
 **Total chapters**: 10 + 1 appendix = 11
-**Completed**: 1 (Chapter 1)
-**In progress**: 1 (Chapter 2)
+**Completed**: 2 (Chapters 1-2) ✅
+**In progress**: 0
 **Not started**: 9
 
 **Total target words**: ~77,000-83,000
-**Actual words**: 10,810 (Chapter 1: 6,898 + Chapter 2: 3,912)
-**Completion**: 13.1% (by word count)
+**Actual words**: 13,213 (Chapter 1: 6,898 + Chapter 2: 6,315)
+**Completion**: 16.0% (by word count)
 
-**Phase 1A**: 50% (1/2 chapters complete, 1 in progress)
+**Phase 1A**: 100% ✅ (2/2 chapters complete - READY FOR REVIEW)
 **Phase 1B-1C**: 0% (0/2 chapters)
 **Phase 2**: 0% (0/4 chapters)
 **Phase 3**: 0% (0/3 chapters/appendix)

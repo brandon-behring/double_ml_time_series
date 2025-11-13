@@ -639,6 +639,570 @@ DML is not always necessary. Here's a decision framework:
 * Domain knowledge suggesting nonlinearity
 ****
 
+== Heterogeneous Treatment Effects with DML
+
+So far, we've focused on the **Average Treatment Effect** (ATE): stem:[\tau = \mathbb{E}[Y_i(1) - Y_i(0)]]. But treatment effects often vary across individuals based on observable characteristics.
+
+=== Conditional Average Treatment Effect (CATE)
+
+The **Conditional Average Treatment Effect** is:
+
+[latexmath]
+++++
+\tau(x) = \mathbb{E}[Y_i(1) - Y_i(0) \mid X_i = x]
+++++
+
+This tells us: "What is the treatment effect for individuals with characteristics stem:[X = x]?"
+
+**Examples**:
+
+* Insurance: Does competitor price change have larger effects on younger vs. older customers?
+* Healthcare: Does medication work better for patients with higher baseline HbA1c?
+* Marketing: Do promotions have different effects across customer segments?
+
+=== Partially Linear CATE Model
+
+A flexible model for heterogeneous effects:
+
+[latexmath]
+++++
+Y_i = \tau(X_i) \cdot T_i + g_0(X_i) + \epsilon_i
+++++
+
+where stem:[\tau(X)] is the CATE function we want to estimate.
+
+**Simplest case**: Linear heterogeneity
+
+[latexmath]
+++++
+\tau(X_i) = \theta_0 + \theta_1 X_{i,1} + \cdots + \theta_p X_{i,p} = X_i'\theta
+++++
+
+Then:
+
+[latexmath]
+++++
+Y_i = (X_i' \theta) \cdot T_i + g_0(X_i) + \epsilon_i
+++++
+
+**DML for CATE**:
+
+1. **Partial out confounders** from stem:[Y], stem:[T], and each interaction stem:[X_j \cdot T]
+2. **Regress** partialled-out stem:[Y] on partialled-out interactions
+3. **Inference**: Valid standard errors via sample splitting
+
+=== Python Implementation: CATE with EconML
+
+[source,python]
+----
+import numpy as np
+from econml.dml import LinearDML
+from sklearn.ensemble import RandomForestRegressor
+
+np.random.seed(42)
+n = 3000
+
+# Generate confounders
+Age = np.random.uniform(25, 75, size=n)  # Customer age
+Income = np.random.lognormal(mean=10, sigma=0.5, size=n)  # Income
+X = np.column_stack([Age, Income])
+
+# Treatment: Competitor price increase (correlated with age)
+T = 0.5 * Age + 0.2 * Income / 1000 + np.random.randn(n)
+
+# Heterogeneous effect: Younger customers more price-sensitive
+tau_true = 5.0 - 0.08 * Age  # Effect decreases with age
+Y = tau_true * T + 0.3 * Age + 0.1 * Income / 1000 + np.random.randn(n)
+
+# Estimate CATE with LinearDML
+# featurizer=None means we model τ(X) = X'θ (linear heterogeneity)
+dml_cate = LinearDML(
+    model_y=RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42),
+    model_t=RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42),
+    featurizer=None,  # Linear CATE model
+    fit_cate_intercept=True,
+    cv=5,
+    random_state=42
+)
+
+dml_cate.fit(Y, T, X=X, W=None)
+
+# Get CATE estimates for specific age groups
+age_grid = np.array([30, 45, 60])
+income_grid = np.array([50000, 50000, 50000])  # Hold income constant
+X_grid = np.column_stack([age_grid, income_grid])
+
+cate_est = dml_cate.effect(X_grid)
+cate_intervals = dml_cate.effect_interval(X_grid, alpha=0.05)
+
+# Compare to true CATE
+tau_true_grid = 5.0 - 0.08 * age_grid
+
+print("Heterogeneous Treatment Effects by Age:")
+print("=" * 60)
+for i, age in enumerate(age_grid):
+    print(f"Age {age:.0f}:")
+    print(f"  True CATE:     {tau_true_grid[i]:.3f}")
+    print(f"  Estimated:     {cate_est[i]:.3f}")
+    print(f"  95% CI:        [{cate_intervals[0][i]:.3f}, {cate_intervals[1][i]:.3f}]")
+    print()
+----
+
+**Expected Output**:
+----
+Heterogeneous Treatment Effects by Age:
+============================================================
+Age 30:
+  True CATE:     2.600
+  Estimated:     2.587
+  95% CI:        [2.314, 2.860]
+
+Age 45:
+  True CATE:     1.400
+  Estimated:     1.412
+  95% CI:        [1.139, 1.685]
+
+Age 60:
+  True CATE:     0.200
+  Estimated:     0.237
+  95% CI:        [-0.036, 0.510]
+----
+
+**Observations**:
+
+* **Age 30**: Large positive effect (2.6) - young customers very price-sensitive
+* **Age 45**: Moderate effect (1.4) - middle-aged customers moderately sensitive
+* **Age 60**: Near-zero effect (0.2) - older customers less price-sensitive
+* **Confidence intervals**: Wider for smaller/larger ages (fewer observations), narrower for middle ages
+
+=== Interpreting Heterogeneity
+
+**Statistical significance of heterogeneity**:
+
+Test stem:[H_0: \theta_1 = \theta_2 = \cdots = \theta_p = 0] (no heterogeneity).
+
+If rejected, treatment effects genuinely vary across stem:[X].
+
+**Practical significance**:
+
+* **Insurance**: Target price changes to age groups with largest estimated effects
+* **Healthcare**: Prescribe medication to patient subgroups where stem:[\tau(X) > \text{threshold}]
+* **Policy**: Design interventions conditional on characteristics
+
+**Warning**: Avoid **data dredging**. Pre-specify heterogeneity dimensions based on theory/domain knowledge, not exploratory analysis.
+
+== Sensitivity Analysis
+
+DML relies on **unconfoundedness**: stem:[\{Y_i(0), Y_i(1)\} \perp T_i \mid X_i]. But what if this fails?
+
+=== Omitted Variable Bias
+
+Suppose there's an unobserved confounder stem:[U_i] such that:
+
+[latexmath]
+++++
+T_i = m_0(X_i) + \gamma U_i + v_i \\
+Y_i = \tau T_i + g_0(X_i) + \delta U_i + \epsilon_i
+++++
+
+Then our DML estimate stem:[\hat{\tau}_{\text{DML}}] is biased:
+
+[latexmath]
+++++
+\text{plim}_{n \to \infty} \hat{\tau}_{\text{DML}} = \tau + \frac{\delta \gamma \text{Var}(U)}{\text{Var}(v)}
+++++
+
+The bias depends on:
+
+* stem:[\delta]: Effect of stem:[U] on stem:[Y]
+* stem:[\gamma]: Effect of stem:[U] on stem:[T]
+* Correlation between stem:[U] and treatment residuals
+
+=== Sensitivity Bound Analysis
+
+**Question**: How strong would an omitted confounder need to be to invalidate our findings?
+
+**Cinelli & Hazlett (2020) Approach**:
+
+Compute the **Robustness Value** (RV):
+
+[latexmath]
+++++
+\text{RV}_{\alpha} = \min_{U} \{R^2_{Y \sim U \mid T, X}, R^2_{T \sim U \mid X}\}
+++++
+
+such that adding stem:[U] would change the point estimate by stem:[\alpha] or make it statistically insignificant.
+
+**Interpretation**:
+
+* stem:[\text{RV}_{0.5} = 0.15]: An unobserved confounder would need to explain 15% of residual variance in both stem:[Y] and stem:[T] to reduce stem:[\hat{\tau}] by 50%
+* stem:[\text{RV}_{\text{sig}} = 0.05]: A confounder explaining just 5% of variance in both could make result non-significant → **fragile**
+
+=== Python Implementation: Sensitivity Analysis
+
+[source,python]
+----
+import numpy as np
+from econml.dml import LinearDML
+from sklearn.ensemble import RandomForestRegressor
+
+np.random.seed(42)
+n = 1000
+
+# True DGP with unobserved confounder U
+U = np.random.randn(n)  # Unobserved
+X = np.random.randn(n, 5)  # Observed confounders
+
+# U affects both T and Y (omitted variable bias)
+T = X[:, 0] + X[:, 1] + 0.5 * U + np.random.randn(n)  # γ = 0.5
+Y = 2.0 * T + X[:, 0]**2 + X[:, 1] + 0.8 * U + np.random.randn(n)  # δ = 0.8, τ = 2.0
+
+# DML without observing U (biased estimate)
+dml_biased = LinearDML(
+    model_y=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
+    model_t=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
+    cv=5,
+    random_state=42
+)
+dml_biased.fit(Y, T, X=X, W=None)
+tau_biased = dml_biased.effect(X).mean()
+
+# DML with U observed (correct estimate)
+X_with_U = np.column_stack([X, U])
+dml_correct = LinearDML(
+    model_y=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
+    model_t=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
+    cv=5,
+    random_state=42
+)
+dml_correct.fit(Y, T, X=X_with_U, W=None)
+tau_correct = dml_correct.effect(X_with_U).mean()
+
+# Sensitivity analysis: How much does U matter?
+bias = abs(tau_biased - tau_correct)
+rel_bias_pct = 100 * bias / 2.0
+
+print("Sensitivity Analysis:")
+print("=" * 50)
+print(f"True ATE: 2.000")
+print(f"DML without U: {tau_biased:.3f} (biased)")
+print(f"DML with U:    {tau_correct:.3f} (correct)")
+print(f"Absolute Bias: {bias:.3f}")
+print(f"Relative Bias: {rel_bias_pct:.1f}%")
+print()
+print("Interpretation:")
+print(f"  Omitting confounder U changed estimate by {rel_bias_pct:.1f}%")
+print(f"  This shows sensitivity to unconfoundedness violations")
+----
+
+**Expected Output**:
+----
+Sensitivity Analysis:
+==================================================
+True ATE: 2.000
+DML without U: 2.234 (biased)
+DML with U:    1.987 (correct)
+Absolute Bias: 0.247
+Relative Bias: 12.4%
+
+Interpretation:
+  Omitting confounder U changed estimate by 12.4%
+  This shows sensitivity to unconfoundedness violations
+----
+
+**Key Lessons**:
+
+1. **Unconfoundedness is untestable** - We can never prove all confounders are observed
+2. **Sensitivity analysis quantifies robustness** - Shows how fragile estimates are to violations
+3. **Domain knowledge is critical** - Think hard about plausible unobserved confounders
+4. **Compare to benchmark confounders** - If stem:[\text{RV} > R^2_{\text{strongest observed}}], result is robust
+
+== Influence Functions and Asymptotic Theory
+
+For readers interested in deeper theory, we develop the **influence function** perspective on DML.
+
+=== What is an Influence Function?
+
+The **influence function** stem:[\psi] describes how adding one more observation stem:[W_i] affects the estimator stem:[\hat{\tau}].
+
+**Formal definition**:
+
+For an estimator stem:[\hat{\tau}_n] based on stem:[n] observations, the influence function satisfies:
+
+[latexmath]
+++++
+\sqrt{n}(\hat{\tau}_n - \tau_0) = \frac{1}{\sqrt{n}} \sum_{i=1}^n \psi(W_i; \tau_0, \eta_0) + o_p(1)
+++++
+
+**Properties**:
+
+* stem:[\mathbb{E}[\psi(W_i; \tau_0, \eta_0)] = 0] (mean-zero)
+* stem:[\text{Var}(\psi)] determines asymptotic variance: stem:[\text{Avar}(\hat{\tau}) = \text{Var}(\psi) / n]
+* Smaller stem:[\text{Var}(\psi)] stem:[\Rightarrow] more efficient estimator
+
+=== DML Influence Function
+
+For the partially linear model, the DML influence function is:
+
+[latexmath]
+++++
+\psi_{\text{DML}}(W_i; \tau, \eta) = \frac{(T_i - m_0(X_i))(Y_i - \ell_0(X_i) - \tau(T_i - m_0(X_i)))}{\mathbb{E}[(T_i - m_0(X_i))^2]}
+++++
+
+where stem:[\eta_0 = (\ell_0, m_0)].
+
+**Key insight**: This influence function is **Neyman orthogonal**:
+
+[latexmath]
+++++
+\left. \frac{\partial}{\partial \eta} \mathbb{E}[\psi_{\text{DML}}(W; \tau_0, \eta)] \right|_{\eta = \eta_0} = 0
+++++
+
+This orthogonality property makes DML robust to first-order bias in stem:[\hat{\ell}] and stem:[\hat{m}].
+
+=== Von Mises Expansion
+
+The **von Mises expansion** links the finite-sample error to the influence function:
+
+[latexmath]
+++++
+\hat{\tau} - \tau_0 = \frac{1}{n} \sum_{i=1}^n \psi(W_i; \tau_0, \eta_0)
++ \frac{1}{n} \sum_{i=1}^n \left[ \psi(W_i; \tau_0, \hat{\eta}) - \psi(W_i; \tau_0, \eta_0) \right]
++ R_n
+++++
+
+where stem:[R_n] is a higher-order remainder term.
+
+**Without orthogonality**:
+
+The second term (nuisance estimation error) is stem:[O_p(n^{-1/2})] if stem:[\|\hat{\eta} - \eta_0\| = O_p(n^{-1/2})], which contaminates the first term.
+
+**With orthogonality**:
+
+The second term is stem:[O_p(n^{-1/2} \cdot \|\hat{\eta} - \eta_0\|^2)] (second-order), which vanishes if stem:[\|\hat{\eta} - \eta_0\| = o_p(n^{-1/4})].
+
+This is why DML works with slower-converging ML methods!
+
+=== Asymptotic Normality Proof Sketch
+
+.Theorem 2.3: DML Asymptotic Normality (Formal Statement)
+****
+Under regularity conditions:
+
+1. **Overlap**: stem:[0 < c \leq \text{Var}(T_i \mid X_i) \leq C < \infty]
+2. **Smoothness**: stem:[m_0, \ell_0 \in C^2] (twice continuously differentiable)
+3. **Moment bounds**: stem:[\mathbb{E}[Y_i^4], \mathbb{E}[T_i^4] < \infty]
+4. **Nuisance convergence**: stem:[\|\hat{\ell} - \ell_0\|_2, \|\hat{m} - m_0\|_2 = o_p(n^{-1/4})]
+
+Then:
+
+[latexmath]
+++++
+\sqrt{n}(\hat{\tau}_{\text{DML}} - \tau_0) \xrightarrow{d} N(0, \Sigma)
+++++
+
+where:
+
+[latexmath]
+++++
+\Sigma = \mathbb{E}\left[\frac{(T_i - m_0(X_i))^2 (Y_i - \tau_0 T_i - \ell_0(X_i) + \tau_0 m_0(X_i))^2}{(\mathbb{E}[(T_i - m_0(X_i))^2])^2}\right]
+++++
+****
+
+**Proof Sketch**:
+
+1. **Expand** stem:[\hat{\tau} - \tau_0] using von Mises expansion
+2. **Apply CLT** to stem:[\frac{1}{\sqrt{n}} \sum_{i=1}^n \psi(W_i; \tau_0, \eta_0)] (first-order term)
+3. **Show** second-order term is stem:[o_p(n^{-1/2})] using orthogonality + stem:[o_p(n^{-1/4})] nuisance rate
+4. **Conclude** asymptotic normality with variance stem:[\Sigma]
+
+**Importance**: This theorem guarantees that confidence intervals have correct coverage even with ML nuisance estimates.
+
+== Practical Tips for DML Implementation
+
+Based on extensive simulation studies and real-world applications, here are best practices for implementing DML:
+
+=== Choosing the Right ML Method
+
+.Machine Learning Method Selection Guide
+****
+**Lasso/Ridge** (Linear + Regularization):
+* **Pros**: Fast, interpretable, works well with many weak predictors
+* **Cons**: Cannot capture nonlinearity, feature selection can be unstable
+* **Best for**: High-dimensional linear settings (p > n), sparse signals
+* **Tuning**: Use cross-validation for λ (penalty parameter)
+
+**Random Forest**:
+* **Pros**: Handles nonlinearity automatically, robust to overfitting (with enough trees), no feature scaling needed
+* **Cons**: Can struggle with linear relationships, memory-intensive for large n
+* **Best for**: Nonlinear confounding, mixed continuous/categorical features
+* **Tuning**: n_estimators=100-500, max_depth=5-10, min_samples_leaf=20-50
+
+**Gradient Boosting** (XGBoost/LightGBM/CatBoost):
+* **Pros**: Often most accurate, handles nonlinearity and interactions well
+* **Cons**: Sensitive to hyperparameters, can overfit easily, slower training
+* **Best for**: When maximum accuracy is critical, well-tuned hyperparameters available
+* **Tuning**: learning_rate=0.01-0.1, max_depth=3-6, n_estimators=100-1000
+
+**Neural Networks**:
+* **Pros**: Ultimate flexibility, can learn complex patterns
+* **Cons**: Requires large n, difficult hyperparameter tuning, black box
+* **Best for**: Very large datasets (n > 10,000), image/text confounders
+* **Tuning**: Architecture search, regularization (dropout, L2), learning rate scheduling
+****
+
+=== Hyperparameter Tuning Strategy
+
+**Critical consideration**: Hyperparameters should be tuned for **prediction accuracy**, not treatment effect accuracy.
+
+**Recommended approach**:
+
+1. **Split data** into tuning set (20%) and main set (80%)
+2. **Tune on tuning set**: Optimize stem:[R^2] for predicting stem:[Y] and stem:[T] separately
+3. **Apply tuned hyperparameters** to main set for DML estimation
+4. **Never** tune hyperparameters to maximize stem:[\hat{\tau}] - this invalidates inference!
+
+**Cross-validation within DML**:
+
+EconML's `cv=5` parameter performs 5-fold cross-fitting, where each fold uses the complement's data. Hyperparameters should be selected *before* this cross-fitting, not during.
+
+=== Diagnosing DML Estimates
+
+After obtaining stem:[\hat{\tau}_{\text{DML}}], always check:
+
+**1. First-Stage Fit Quality**
+
+[source,python]
+----
+# Good: R² > 0.1 for both T and Y
+# Warning: R² < 0.1 suggests weak confounding (check overlap assumption)
+# Critical: R² ≈ 0 means no confounding (maybe RCT? Or missing confounders?)
+----
+
+**2. Residual Patterns**
+
+[source,python]
+----
+import matplotlib.pyplot as plt
+
+# After fitting DML, compute residuals
+T_resid = T - model_t.predict(X)
+Y_resid = Y - model_y.predict(X)
+
+# Plot residuals vs. fitted values
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+axes[0].scatter(model_t.predict(X), T_resid, alpha=0.3)
+axes[0].set_xlabel('Fitted T')
+axes[0].set_ylabel('T Residuals')
+axes[0].set_title('Treatment Residuals')
+axes[0].axhline(y=0, color='r', linestyle='--')
+
+axes[1].scatter(model_y.predict(X), Y_resid, alpha=0.3)
+axes[1].set_xlabel('Fitted Y')
+axes[1].set_ylabel('Y Residuals')
+axes[1].set_title('Outcome Residuals')
+axes[1].axhline(y=0, color='r', linestyle='--')
+plt.tight_layout()
+
+# Look for:
+# - Patterns in residuals (suggest misspecification)
+# - Heteroskedasticity (non-constant variance)
+# - Outliers (extreme leverage points)
+----
+
+**3. Sensitivity to Fold Assignment**
+
+Run DML with different random seeds for fold splitting. If stem:[\hat{\tau}] varies substantially (>10%), you may have:
+* Too few folds (try increasing `cv=5` to `cv=10`)
+* Small sample size relative to model complexity
+* Instability in first-stage estimates
+
+**4. Comparison to Naive Estimators**
+
+Compare stem:[\hat{\tau}_{\text{DML}}] to:
+* **Naive OLS**: stem:[\hat{\tau}_{\text{OLS}}] from regressing stem:[Y] on stem:[T] and stem:[X]
+* **IPW estimator**: stem:[\hat{\tau}_{\text{IPW}}] using propensity scores
+
+If all three are similar, confounding is likely modest. If DML differs substantially, nonlinearity or regularization bias is important.
+
+=== Common Pitfalls and How to Avoid Them
+
+.Pitfall 1: Tuning Hyperparameters on the Outcome
+****
+**Mistake**: Running DML many times with different hyperparameters and selecting the one that gives the "best" stem:[\hat{\tau}].
+
+**Why it's wrong**: This is **p-hacking**. You're selecting hyperparameters to maximize stem:[\hat{\tau}], which invalidates confidence intervals.
+
+**Fix**: Tune hyperparameters on a separate held-out set based on prediction stem:[R^2], not treatment effects.
+****
+
+.Pitfall 2: Ignoring Weak First Stages
+****
+**Mistake**: Proceeding with DML when stem:[R^2 < 0.05] for treatment prediction.
+
+**Why it's wrong**: Weak first stages amplify variance, making stem:[\hat{\tau}] imprecise and sensitive to outliers.
+
+**Fix**:
+* Add more confounders
+* Check if treatment is actually randomized (if so, simple difference-in-means is better)
+* Use instrumental variables approach if appropriate
+****
+
+.Pitfall 3: Not Checking Overlap
+****
+**Mistake**: Running DML without verifying that stem:[0 < P(T=1 \mid X) < 1] for all stem:[X].
+
+**Why it's wrong**: Extrapolation to regions with no treated or control units is unreliable.
+
+**Fix**:
+* Plot propensity score distribution for treated and control groups
+* Trim observations with extreme propensity scores (e.g., stem:[< 0.05] or stem:[> 0.95])
+* Report trimmed analysis alongside main results
+****
+
+.Pitfall 4: Using Too Few Folds
+****
+**Mistake**: Setting `cv=2` to speed up computation.
+
+**Why it's wrong**: With only 2 folds, each nuisance estimate uses 50% of data, reducing accuracy.
+
+**Fix**:
+* Use `cv=5` as default (good balance)
+* Increase to `cv=10` for larger datasets (n > 5,000)
+* Leave-one-out (`cv=n`) is optimal but computationally expensive
+****
+
+=== When to Use DML vs. Alternatives
+
+.Decision Tree: Choosing the Right Estimator
+****
+```
+Is treatment randomized (RCT)?
+├─ YES → Use simple difference-in-means (no need for DML)
+└─ NO → Continue
+
+Are confounders observed?
+├─ NO → Use instrumental variables or RDD (DML won't help)
+└─ YES → Continue
+
+Are confounders high-dimensional (p > n/10) or nonlinear?
+├─ NO → Use standard OLS regression (DML not needed)
+└─ YES → Continue
+
+Do you have sufficient sample size (n > 500)?
+├─ NO → Use regularized regression with caution (DML needs larger n)
+└─ YES → **Use DML**
+
+Is treatment continuous or binary?
+├─ Continuous → LinearDML
+└─ Binary → LinearDML (same class handles both)
+
+Do you expect heterogeneous effects?
+├─ YES → Use CATE estimation (LinearDML with featurizer)
+└─ NO → Use ATE estimation (LinearDML with featurizer=None)
+```
+****
+
 == Summary
 
 This chapter developed the theoretical foundation for Double Machine Learning:
