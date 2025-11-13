@@ -56,8 +56,38 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Verify installation
+python scripts/verify_environment.py
+
 # Install pre-commit hooks
 pre-commit install
+```
+
+**Note**: Works with Python 3.11+ (tested on 3.13.7). R integration (rpy2) commented out by default - requires R installation for cross-implementation validation.
+
+### Verify Installation
+
+After installation, verify all dependencies are working:
+
+```bash
+python scripts/verify_environment.py
+```
+
+Expected output: ✅ All 21 packages verified successfully
+
+If any packages fail to import, ensure venv is activated and run `pip install -r requirements.txt` again.
+
+### Document Compilation
+
+Test the AsciiDoc → PDF pipeline:
+
+```bash
+# Compile test chapter with BibTeX citations
+asciidoctor-pdf -r asciidoctor-bibtex -o output/test.pdf chapters/test_chapter.adoc
+
+# View output
+xdg-open output/test.pdf  # Linux
+open output/test.pdf       # macOS
 ```
 
 ### Configuration

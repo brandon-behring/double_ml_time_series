@@ -1,0 +1,110 @@
+= Test Chapter: Document Pipeline Verification
+:doctype: book
+:toc: left
+:toclevels: 2
+:sectnums:
+:stem: latexmath
+:bibtex-file: chapters/bibliography.bib
+:bibtex-style: apa
+
+== Introduction
+
+This is a test chapter to verify the AsciiDoc → PDF compilation pipeline works correctly before beginning Chapter 1.
+
+=== Test Components
+
+This chapter tests the following elements:
+
+1. Basic text formatting
+2. Code blocks with syntax highlighting
+3. Mathematical equations
+4. Cross-references
+5. Bibliography citations
+
+== Code Block Test
+
+Here's a simple Python example demonstrating a Double ML estimation:
+
+[source,python]
+----
+import numpy as np
+from econml.dml import LinearDML
+from sklearn.linear_model import LassoCV
+from sklearn.ensemble import RandomForestRegressor
+
+# Generate synthetic data
+np.random.seed(42)
+n = 1000
+X = np.random.randn(n, 5)  # Confounders
+T = X[:, 0] + np.random.randn(n)  # Treatment
+Y = 2 * T + X[:, 1] + np.random.randn(n)  # Outcome with true effect = 2
+
+# Fit DML model
+dml = LinearDML(
+    model_y=RandomForestRegressor(n_estimators=100, n_jobs=48),
+    model_t=LassoCV(cv=5),
+    random_state=42
+)
+dml.fit(Y, T, X=X)
+
+# Estimated treatment effect
+effect = dml.effect(X)
+print(f"Average Treatment Effect: {effect.mean():.3f}")
+----
+
+The code above demonstrates the basic DML workflow with hardware optimization (`n_jobs=48` for our 64-core Threadripper).
+
+== Mathematical Equations Test
+
+The Frisch-Waugh-Lovell (FWL) theorem states that for the regression:
+
+[stem]
+++++
+Y = \beta_0 + \beta_1 T + \beta_2 X + \epsilon
+++++
+
+The coefficient stem:[\beta_1] can be obtained by:
+
+1. Regress stem:[Y] on stem:[X] to get residuals stem:[\tilde{Y}]
+2. Regress stem:[T] on stem:[X] to get residuals stem:[\tilde{T}]
+3. Regress stem:[\tilde{Y}] on stem:[\tilde{T}]
+
+Formally:
+
+[stem]
+++++
+\hat{\beta}_1 = \frac{\text{Cov}(\tilde{Y}, \tilde{T})}{\text{Var}(\tilde{T})}
+++++
+
+This is the foundation of Double Machine Learning, as discussed in <<neyman-orthogonality>>.
+
+[[neyman-orthogonality]]
+== Neyman Orthogonality Test
+
+This section tests cross-referencing. We can refer back to the <<Code Block Test>> section or forward to the <<Validation Methods>> section.
+
+The Neyman orthogonality condition ensures that small errors in nuisance parameter estimation don't affect the treatment effect estimate cite:[chernozhukov2018double].
+
+== Validation Methods
+
+For each DML implementation, we will validate using:
+
+* Published results replication cite:[facure2022causal]
+* Synthetic Monte Carlo simulations
+* Cross-implementation comparison (EconML vs R DoubleML)
+* Diagnostic checks (first-stage R², residual analysis)
+
+== Summary
+
+If you can see this PDF with:
+
+- [x] Properly formatted code blocks
+- [x] Rendered mathematical equations
+- [x] Working cross-references
+- [x] Bibliography citations
+
+Then the document pipeline is ready for Chapter 1!
+
+== References
+
+bibliography::[]
