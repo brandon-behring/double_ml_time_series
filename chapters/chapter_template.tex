@@ -1,0 +1,262 @@
+% LaTeX Chapter Template for Double ML Book
+%
+% Quick reference guide for writing chapters
+%
+% USAGE:
+%   1. Copy this file: cp chapter_template.tex chapter_NN.tex
+%   2. Replace NN with chapter number
+%   3. Fill in content following examples below
+%   4. Add to main.tex: \include{chapters/chapter_NN}
+%   5. Compile: make
+
+\chapter{Chapter Title Here}
+
+% ============================================================================
+% INTRODUCTION
+% ============================================================================
+
+\section{Introduction}
+
+Start with motivation and overview of the chapter. Explain:
+\begin{itemize}
+    \item Why this topic matters
+    \item What you'll learn
+    \item How it connects to previous/future chapters
+\end{itemize}
+
+% ============================================================================
+% MAIN CONTENT SECTIONS
+% ============================================================================
+
+\section{Main Section Title}
+
+Your prose content here with inline math like $\tau = \E[Y_i(1) - Y_i(0)]$.
+
+\subsection{Subsection Title}
+
+More detailed content.
+
+% ----------------------------------------------------------------------------
+% DEFINITIONS
+% ----------------------------------------------------------------------------
+
+\begin{definition}[Name of Definition]
+\label{def:short_name}
+A \textbf{definition} provides precise terminology.
+
+For example, the Average Treatment Effect (ATE) is:
+\[
+\tau = \E[Y_i(1) - Y_i(0)]
+\]
+where $Y_i(1)$ is the potential outcome under treatment and $Y_i(0)$ under control.
+\end{definition}
+
+% Reference the definition with: see Definition~\ref{def:short_name}
+
+% ----------------------------------------------------------------------------
+% THEOREMS
+% ----------------------------------------------------------------------------
+
+\begin{theorem}[Main Result]
+\label{thm:main_result}
+If assumptions A1-A3 hold, then:
+\[
+\sqrt{n}(\hat{\tau} - \tau_0) \convd N(0, \Sigma)
+\]
+\end{theorem}
+
+\begin{proof}
+Proof structure:
+\begin{enumerate}
+    \item \textbf{Step 1}: Establish preliminary result
+    \[
+    \text{Some equation}
+    \]
+
+    \item \textbf{Step 2}: Main argument
+
+    Using the law of iterated expectations:
+    \begin{align}
+        \E[\psi(W_i; \tau_0, \eta_0)]
+        &= \E\left[\E[\psi(W_i; \tau_0, \eta_0) \mid X_i]\right] \\
+        &= 0
+    \end{align}
+
+    \item \textbf{Step 3}: Conclusion
+
+    Therefore, the result holds.
+\end{enumerate}
+\end{proof}
+
+% ----------------------------------------------------------------------------
+% EXAMPLES
+% ----------------------------------------------------------------------------
+
+\begin{example}[Motivating Example]
+\label{ex:motivation}
+Consider an insurance pricing scenario where:
+\begin{itemize}
+    \item $Y_i$: customer churn (0/1)
+    \item $T_i$: competitor price increase (\$)
+    \item $X_i$: customer age, income, coverage
+\end{itemize}
+
+We want to estimate the causal effect of $T_i$ on $Y_i$.
+\end{example}
+
+% ----------------------------------------------------------------------------
+% PYTHON CODE
+% ----------------------------------------------------------------------------
+
+\subsection{Python Implementation}
+
+Here's how to implement this in Python with EconML:
+
+\begin{minted}{python}
+import numpy as np
+from econml.dml import LinearDML
+from sklearn.ensemble import RandomForestRegressor
+
+# Set seed for reproducibility
+np.random.seed(42)
+n = 1000
+
+# Generate data
+X = np.random.randn(n, 5)
+T = X[:, 0] + X[:, 1] + np.random.randn(n)
+Y = 2.5 * T + X[:, 0]**2 + np.random.randn(n)
+
+# Estimate DML
+dml = LinearDML(
+    model_y=RandomForestRegressor(n_estimators=100, random_state=42),
+    model_t=RandomForestRegressor(n_estimators=100, random_state=42),
+    cv=5,
+    random_state=42
+)
+
+dml.fit(Y, T, X=X, W=None)
+
+# Get treatment effect
+tau_hat = dml.effect(X).mean()
+print(f"Estimated ATE: {tau_hat:.3f}")
+\end{minted}
+
+% ----------------------------------------------------------------------------
+% REMARKS AND NOTES
+% ----------------------------------------------------------------------------
+
+\begin{remark}
+Important insights or caveats can go in remark blocks.
+
+For example: The assumption of unconfoundedness cannot be tested with data alone.
+\end{remark}
+
+% ============================================================================
+% EXERCISES
+% ============================================================================
+
+\section{Exercises}
+
+\begin{exercise}[Conceptual Understanding]
+\label{ex:conceptual}
+Explain why we need both unconfoundedness and overlap for ATE identification.
+\end{exercise}
+
+\textbf{Solution to Exercise~\ref{ex:conceptual}:}
+
+\begin{enumerate}
+    \item \textbf{Unconfoundedness}: Ensures no omitted confounders
+
+    Without this, we cannot identify the causal effect.
+
+    \item \textbf{Overlap}: Ensures we have data for both treated and control groups across all covariate values
+
+    Without this, we'd be extrapolating.
+\end{enumerate}
+
+\begin{exercise}[Mathematical Derivation]
+\label{ex:derivation}
+Prove that under unconfoundedness and overlap:
+\[
+\tau = \E\left[\frac{T_i Y_i}{e(X_i)} - \frac{(1-T_i)Y_i}{1-e(X_i)}\right]
+\]
+where $e(x) = \Prob(T_i=1 \mid X_i=x)$.
+\end{exercise}
+
+\textbf{Solution to Exercise~\ref{ex:derivation}:}
+
+[Detailed mathematical proof here]
+
+% ============================================================================
+% SUMMARY
+% ============================================================================
+
+\section{Summary}
+
+Recap the key points:
+\begin{enumerate}
+    \item First main insight
+    \item Second main insight
+    \item Third main insight
+\end{enumerate}
+
+\textbf{Key takeaways:}
+\begin{itemize}
+    \item Practical point 1
+    \item Practical point 2
+    \item Practical point 3
+\end{itemize}
+
+% ============================================================================
+% ROADMAP TO NEXT CHAPTER
+% ============================================================================
+
+\section{Roadmap to Chapter [N+1]}
+
+Preview the next chapter:
+
+Chapter [N+1] extends these ideas to [next topic]. We will develop:
+\begin{itemize}
+    \item New concept 1
+    \item New concept 2
+    \item Application to [domain]
+\end{itemize}
+
+% ============================================================================
+% QUICK REFERENCE GUIDE
+% ============================================================================
+
+% COMMON MATH COMMANDS:
+%   \E[X]           Expectation
+%   \Var(X)         Variance
+%   \Cov(X,Y)       Covariance
+%   \Prob(A)        Probability
+%   \R              Real numbers
+%   \convd          Convergence in distribution
+%   \convp          Convergence in probability
+%   \indicator{A}   Indicator function
+%   \norm{x}        Norm
+%
+% EQUATION ENVIRONMENTS:
+%   \[ ... \]                 Unnumbered equation
+%   \begin{equation} ... \end{equation}        Numbered equation
+%   \begin{align} ... \end{align}              Numbered multi-line
+%   \begin{align*} ... \end{align*}            Unnumbered multi-line
+%
+% CROSS-REFERENCES:
+%   \label{eq:name}          Label an equation
+%   \ref{eq:name}            Reference equation number
+%   \eqref{eq:name}          Reference with parentheses: (1.2)
+%
+% CITATIONS:
+%   \cite{author2024}        Basic citation
+%   \cite[Theorem 1]{author2024}   Citation with note
+%
+% THEOREM ENVIRONMENTS:
+%   definition, theorem, lemma, proposition, corollary
+%   example, exercise, remark, note
+%
+% CODE BLOCKS:
+%   \begin{minted}{python} ... \end{minted}
+%   \begin{minted}{r} ... \end{minted}
+%   \begin{minted}{julia} ... \end{minted}

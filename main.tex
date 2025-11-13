@@ -1,0 +1,181 @@
+\documentclass[11pt,oneside]{amsbook}
+
+% ============================================================================
+% PACKAGE IMPORTS
+% ============================================================================
+
+% Mathematics packages
+\usepackage{mathtools}  % Enhanced version of amsmath (already loaded by amsbook)
+\usepackage{amssymb}    % Math symbols (blackboard bold, etc.)
+\usepackage{amsthm}     % Theorem environments (already loaded by amsbook)
+
+% Code listings with syntax highlighting
+\usepackage{minted}     % Requires: pip install Pygments
+\setminted{
+    breaklines=true,
+    fontsize=\small,
+    linenos=true,
+    frame=lines,
+    framesep=2mm,
+    baselinestretch=1.2,
+    bgcolor=gray!5
+}
+
+% Graphics and figures
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Tables
+\usepackage{booktabs}   % Professional tables
+\usepackage{array}      % Extended column formatting
+
+% Bibliography
+\usepackage{cite}       % Better citation formatting
+
+% Hyperlinks (LOAD LAST)
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={Double Machine Learning for Time Series},
+    pdfauthor={Brandon Behring},
+    bookmarks=true,
+    bookmarksnumbered=true
+}
+
+% ============================================================================
+% THEOREM ENVIRONMENTS
+% ============================================================================
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{example}{Example}[chapter]
+\newtheorem{exercise}{Exercise}[chapter]
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[chapter]
+\newtheorem{note}{Note}[chapter]
+
+% ============================================================================
+% CUSTOM COMMANDS
+% ============================================================================
+
+% Probability and statistics
+\newcommand{\E}{\mathbb{E}}         % Expectation
+\newcommand{\Var}{\mathrm{Var}}     % Variance
+\newcommand{\Cov}{\mathrm{Cov}}     % Covariance
+\newcommand{\Prob}{\mathbb{P}}      % Probability
+
+% Common sets
+\newcommand{\R}{\mathbb{R}}         % Real numbers
+\newcommand{\N}{\mathbb{N}}         % Natural numbers
+\newcommand{\Z}{\mathbb{Z}}         % Integers
+
+% Indicators and norms
+\newcommand{\indicator}[1]{\mathbb{1}\{#1\}}
+\newcommand{\norm}[1]{\|#1\|}
+
+% Convergence
+\newcommand{\convd}{\xrightarrow{d}}   % Convergence in distribution
+\newcommand{\convp}{\xrightarrow{p}}   % Convergence in probability
+\newcommand{\convas}{\xrightarrow{a.s.}}  % Almost sure convergence
+
+% Operators
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\plim}{plim}
+
+% ============================================================================
+% DOCUMENT METADATA
+% ============================================================================
+
+\title{Double Machine Learning for Time Series:\\
+A Production Guide to Causal Inference}
+
+\author{Brandon Behring}
+
+\date{\today}
+
+% ============================================================================
+% DOCUMENT BODY
+% ============================================================================
+
+\begin{document}
+
+% ----------------------------------------------------------------------------
+% FRONT MATTER
+% ----------------------------------------------------------------------------
+
+\frontmatter
+
+\maketitle
+
+\tableofcontents
+
+\chapter{Preface}
+
+This book develops the theory and practice of Double Machine Learning (DML) for time series causal inference, with particular focus on insurance and annuity pricing applications.
+
+\textbf{Key Features:}
+\begin{itemize}
+    \item Rigorous mathematical foundations with complete proofs
+    \item Production-ready Python implementations using EconML
+    \item Comprehensive 7-method validation battery
+    \item Real-world applications to competitor pricing with macroeconomic controls
+    \item Hardware optimization for 64-core systems (parallelization)
+\end{itemize}
+
+\textbf{Prerequisites:}
+\begin{itemize}
+    \item Linear regression, probability theory, statistical inference
+    \item Python programming (NumPy, pandas, scikit-learn)
+    \item Familiarity with machine learning basics
+\end{itemize}
+
+% ----------------------------------------------------------------------------
+% MAIN MATTER
+% ----------------------------------------------------------------------------
+
+\mainmatter
+
+% Phase 1A: Core Theory
+\include{chapters/chapter_01}           % Potential Outcomes + FWL
+\include{chapters/chapter_02}           % Neyman Orthogonality + DML
+
+% Phase 1B: Validation Battery
+% \include{chapters/chapter_03}         % Comprehensive Validation
+
+% Phase 1C: First Application
+% \include{chapters/chapter_04}         % Cross-Sectional Application
+
+% Phase 2A: Temporal Methods
+% \include{chapters/chapter_05}         % Dynamic Treatment Effects
+% \include{chapters/chapter_06}         % DynamicDML + Panel
+% \include{chapters/chapter_07}         % FRED Integration
+
+% Phase 2B: Work Application
+% \include{chapters/chapter_08}         % Competitor Pricing (Insurance)
+
+% Phase 3A: Extensions
+% \include{chapters/chapter_09}         % Heterogeneity Analysis
+% \include{chapters/chapter_10}         % Production Pipeline
+
+% ----------------------------------------------------------------------------
+% BACK MATTER
+% ----------------------------------------------------------------------------
+
+\backmatter
+
+\bibliographystyle{amsplain}
+\bibliography{chapters/bibliography}
+
+\end{document}

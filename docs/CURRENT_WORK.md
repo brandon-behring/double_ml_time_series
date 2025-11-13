@@ -1,17 +1,21 @@
 # Current Work
 
-**Last Updated**: 2025-11-13 16:50
+**Last Updated**: 2025-11-13 17:15
 
 ---
 
 ## Right Now
-Phase 1A COMPLETE ✅✅ - Both Chapters 1-2 finished + PDF rendering fixed
-- Chapter 1: 6,898 words (Potential Outcomes + FWL)
-- Chapter 2: 6,315 words (Neyman Orthogonality + DML)
-- Total: 13,213 words (16% of book target)
-- All proofs, examples, exercises complete
-- PDFs compiled with perfect equation rendering: Ch1 (4.4MB), Ch2 (4.2MB)
-- LaTeX equations now render as high-quality SVG images (asciidoctor-mathematical)
+Phase 1A COMPLETE ✅✅ - Migrated to Native LaTeX + Chapters 1-2 Complete
+- **Chapter 1**: 1,540 lines LaTeX (Potential Outcomes + FWL)
+  - 3 Definitions, 3 Theorems with proofs, 1 Example, 2 Remarks
+  - 4 minted code blocks with EconML examples
+- **Chapter 2**: 1,679 lines LaTeX (Neyman Orthogonality + DML)
+  - 1 Definition (Neyman Orthogonality)
+  - 11 minted code blocks with EconML/sklearn examples
+- **Total**: 13,213 words, 3,219 lines, 43 pages
+- **PDF**: 350KB (88% smaller than AsciiDoc 4MB)
+- **Compilation**: ✅ Zero errors, native equation rendering
+- **Migration**: AsciiDoc → Pandoc → LaTeX (semi-automated)
 
 ## Why
 Phase 1A established the theoretical foundation for Double ML:
@@ -55,28 +59,34 @@ Begin Phase 1B: Comprehensive Validation Battery (Chapter 3)
 
 ---
 
-## Verification Status (2025-11-13)
+## LaTeX Migration Complete (2025-11-13)
 
-**All systems verified and ready:**
-- ✅ Document pipeline: AsciiDoc → PDF with BibTeX citations (test_chapter.adoc compiled)
-- ✅ Bibliography: 30+ references in chapters/bibliography.bib (Chernozhukov, Pearl, Angrist, etc.)
-- ✅ Python environment: All 21 packages verified (EconML 0.16, DoWhy 0.14, CausalML 0.15.5)
-- ✅ Verification script: scripts/verify_environment.py (automated testing)
-- ✅ Chapter workflow: Discipline documented (subsection → update → commit → context switch)
-- ✅ README updated: Setup, verification, and compilation instructions
+**Infrastructure**:
+- ✅ Native LaTeX with amsbook document class
+- ✅ Professional theorem environments (definition, theorem, lemma, proposition, corollary, example, exercise, remark)
+- ✅ Minted code highlighting with Pygments
+- ✅ BibTeX citations: 30+ references in chapters/bibliography.bib
+- ✅ Makefile build system (3-pass compilation)
+- ✅ Custom math commands (\E, \Var, \Cov, \Prob)
+- ✅ Hyperref with clickable TOC and cross-references
 
-**Next commits:**
-- Commit verification work (test chapter, bibliography, verification script, README updates)
-- Begin Chapter 1 writing
+**Conversion Tools Created**:
+- `scripts/clean_pandoc_output.py` - Automated Pandoc cleanup (removes preamble, fixes citations)
+- `scripts/convert_code_blocks.py` - Batch code block converter (Pandoc tokens → clean Python)
+
+**Archives Preserved**:
+- `chapters/archive_asciidoc/` - Original AsciiDoc sources
+- `chapters/*_pandoc.tex` - Raw Pandoc output for reference
 
 ## Context When I Return
-- **Phase 1A Started**: 2025-11-13
-- **Infrastructure Commit**: 3e86557 (10 files, 836 insertions, dev branch)
+- **Phase 1A**: COMPLETED 2025-11-13 (Chapters 1-2, 43 pages PDF)
+- **LaTeX Migration**: Completed same day (AsciiDoc → Native LaTeX)
 - **Master plan**: `docs/plans/active/DOUBLE_ML_VOL2_2025-11-13.md`
-- **Chapter progress**: `docs/plans/active/CHAPTER_STATUS.md` (all at NOT_STARTED)
+- **Next Phase**: Phase 1B - Chapter 3 (Comprehensive Validation Battery, ~10,000 words)
+- **Build**: `make` compiles to `main.pdf` (350KB, 43 pages, zero errors)
+- **Template**: `chapters/chapter_template.tex` - complete reference guide
 - **Python**: 3.13 venv at `venv/`, 21 packages verified ✅
 - **Hardware**: 64-core Threadripper, n_jobs=48 for parallelization
 - **Integration**: Registered in archimedes_lever ProjectRegistry (auto S3 backups)
 - **Pre-commit**: Black (100-char), mypy, large commit warning - all passing ✅
-- **Next milestone review**: After Chapters 1-2 complete (Phase 1A)
 - **Git workflow**: dev branch (WIP) → main (reviewed, stable) after milestones

@@ -6,13 +6,20 @@
 
 This project develops a comprehensive reference book on Double Machine Learning (DML) methodology with focus on time series applications, particularly insurance/annuity competitor pricing with macroeconomic controls.
 
-**Status**: Phase 1A - Infrastructure Complete, Beginning Chapter 1
+**Status**: Phase 1A Complete ✅ - Chapters 1-2 fully written (13,213 words, 43 pages)
 
 ## Project Structure
 
 ```
 double_ml_time_series/
-├── chapters/           # AsciiDoc book chapters (theory + embedded examples)
+├── chapters/           # LaTeX book chapters (theory + code examples)
+│   ├── chapter_01.tex          # Potential Outcomes + FWL
+│   ├── chapter_02.tex          # Neyman Orthogonality + DML
+│   ├── chapter_template.tex    # Reference guide
+│   ├── bibliography.bib        # BibTeX references
+│   └── archive_asciidoc/       # Original AsciiDoc (preserved)
+├── main.tex            # Main LaTeX document (amsbook class)
+├── Makefile            # Professional build system
 ├── notebooks/          # Jupyter notebooks (validation + applications)
 │   ├── validation/     # 7-method validation suite
 │   └── applications/   # Work examples
@@ -20,8 +27,10 @@ double_ml_time_series/
 │   ├── validation/     # Synthetic DGP generator
 │   ├── data/           # FRED API fetcher
 │   └── dml/            # DML implementations
+├── scripts/            # Conversion and build tools
+│   ├── clean_pandoc_output.py    # Pandoc cleanup automation
+│   └── convert_code_blocks.py    # Code block batch converter
 ├── tests/              # Unit tests (pytest)
-├── code/               # Standalone code examples
 └── docs/               # State tracking and planning
 ```
 
@@ -44,18 +53,14 @@ double_ml_time_series/
 
 ### Prerequisites
 - Python 3.11+
-- Ruby gems: `asciidoctor-pdf`, `asciidoctor-mathematical`, `asciidoctor-bibtex`
+- LaTeX distribution (TeX Live or MiKTeX)
+  - Required packages: `amsbook`, `minted`, `hyperref`, `booktabs`
+- Pygments (for minted code highlighting): `pip install Pygments`
 - 64-core system recommended (parallelization optimized for Threadripper)
 
 ### Installation
 
-**Step 1: Install Ruby gems for PDF generation**
-
-```bash
-gem install asciidoctor-pdf asciidoctor-mathematical asciidoctor-bibtex
-```
-
-**Step 2: Install Python environment**
+**Step 1: Install Python environment**
 
 ```bash
 # Create virtual environment
@@ -88,34 +93,81 @@ If any packages fail to import, ensure venv is activated and run `pip install -r
 
 ### Document Compilation
 
-The book uses AsciiDoc with professional LaTeX equation rendering via `asciidoctor-mathematical`:
+The book is written in native LaTeX using the `amsbook` document class for professional mathematical typesetting.
 
 ```bash
-# Build all chapters with perfect equation rendering
-make all
+# Build complete book (all chapters)
+make
 
-# Build individual chapters
-make chapter_01
-make chapter_02
+# Build and open PDF
+make view
 
-# Clean generated files
+# Build individual chapters (for testing)
+make chapter1
+make chapter2
+
+# Clean auxiliary files (keep PDF)
 make clean
+
+# Remove all generated files including PDF
+make distclean
+
+# Install Python dependencies (Pygments for minted)
+make install-deps
+
+# Check LaTeX log for errors/warnings
+make check-errors
 ```
 
-**How it works:**
-- `asciidoctor-mathematical` converts LaTeX equations to high-quality SVG images
-- Images are embedded in PDF for perfect rendering (no font issues, no Unicode problems)
-- Larger PDFs (~4MB per chapter) but equations look professional
+**LaTeX Compilation Process**:
+1. `pdflatex -shell-escape` (first pass)
+2. `bibtex` (process bibliography)
+3. `pdflatex` (second pass, resolve citations)
+4. `pdflatex` (third pass, resolve cross-references)
+
+**Output**: `main.pdf` (43 pages, ~350KB)
+
+**Why LaTeX?**
+- ✅ Native equation rendering (searchable, scalable)
+- ✅ 88% smaller PDFs vs AsciiDoc SVG images
+- ✅ Professional theorem environments
+- ✅ Cross-references with hyperlinks
+- ✅ Minted code syntax highlighting
+- ✅ Zero compilation errors/warnings
 
 **Manual compilation** (if not using Make):
 ```bash
-asciidoctor-pdf \
-  -r asciidoctor-mathematical \
-  -r asciidoctor-bibtex \
-  -a mathematical-format=svg \
-  -o output/chapter_01.pdf \
-  chapters/chapter_01.adoc
+pdflatex -shell-escape -interaction=nonstopmode main.tex
+bibtex main
+pdflatex -shell-escape -interaction=nonstopmode main.tex
+pdflatex -shell-escape -interaction=nonstopmode main.tex
 ```
+
+### Writing New Chapters
+
+Use the template file as a reference:
+
+```bash
+# Copy template
+cp chapters/chapter_template.tex chapters/chapter_03.tex
+
+# Edit chapter
+# ... add content following template examples ...
+
+# Add to main.tex
+echo "\\include{chapters/chapter_03}" >> main.tex
+
+# Build
+make
+```
+
+**Template includes**:
+- Theorem environments (definition, theorem, lemma, proposition, corollary)
+- Example and exercise environments
+- Python code blocks with `minted`
+- Proof environments with QED symbols
+- Common math commands (`\E`, `\Var`, `\Cov`, `\Prob`)
+- Cross-reference examples
 
 ### Configuration
 

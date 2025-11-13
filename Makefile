@@ -1,59 +1,138 @@
-# Makefile for Double ML Volume 2
+# Makefile for Double ML Volume 2 (Native LaTeX)
 #
-# Builds professional PDFs with perfect equation rendering using asciidoctor-mathematical
+# Build professional PDFs with native LaTeX equation rendering
 
-.PHONY: all clean chapter1 chapter2 help
+.PHONY: all clean chapter1 chapter2 help view install-deps
 
-# Output directory
-OUTPUT_DIR = output
+# Main targets
+MAIN = main
+PDF = $(MAIN).pdf
 
-# asciidoctor-pdf with mathematical rendering (SVG equations)
-ASCIIDOCTOR_PDF = asciidoctor-pdf -r asciidoctor-mathematical -r asciidoctor-bibtex -a mathematical-format=svg
+# LaTeX compilation commands
+LATEX = pdflatex -shell-escape -interaction=nonstopmode -file-line-error
+BIBTEX = bibtex
 
-# All chapters
-CHAPTERS = chapter_01 chapter_02
+# Default target: build complete book
+all: $(PDF)
 
-all: $(CHAPTERS)
+# Build complete book (all chapters)
+$(PDF): $(MAIN).tex chapters/chapter_01.tex chapters/chapter_02.tex chapters/bibliography.bib
+	@echo "=========================================="
+	@echo "Building complete book..."
+	@echo "=========================================="
+	$(LATEX) $(MAIN)
+	$(BIBTEX) $(MAIN)
+	$(LATEX) $(MAIN)
+	$(LATEX) $(MAIN)
+	@echo ""
+	@echo "✓ Build complete: $(PDF)"
+	@ls -lh $(PDF)
+	@echo ""
 
-chapter_01: $(OUTPUT_DIR)/chapter_01.pdf
+# Build individual chapter (for testing)
+chapter1: chapters/chapter_01.tex
+	@echo "Building Chapter 1 (standalone)..."
+	@mkdir -p output
+	$(LATEX) -output-directory=output chapters/chapter_01.tex
+	@echo "✓ Chapter 1 built: output/chapter_01.pdf"
 
-chapter_02: $(OUTPUT_DIR)/chapter_02.pdf
+chapter2: chapters/chapter_02.tex
+	@echo "Building Chapter 2 (standalone)..."
+	@mkdir -p output
+	$(LATEX) -output-directory=output chapters/chapter_02.tex
+	@echo "✓ Chapter 2 built: output/chapter_02.pdf"
 
-$(OUTPUT_DIR)/chapter_01.pdf: chapters/chapter_01.adoc chapters/bibliography.bib
-	@echo "Building Chapter 1 with perfect equation rendering..."
-	@mkdir -p $(OUTPUT_DIR)
-	$(ASCIIDOCTOR_PDF) -o $@ $<
-	@ls -lh $@
-	@echo "✓ Chapter 1 PDF created: $@"
+# View PDF in default viewer
+view: $(PDF)
+	@if command -v xdg-open > /dev/null; then \
+		xdg-open $(PDF); \
+	elif command -v open > /dev/null; then \
+		open $(PDF); \
+	else \
+		echo "No PDF viewer found. Please open $(PDF) manually."; \
+	fi
 
-$(OUTPUT_DIR)/chapter_02.pdf: chapters/02_orthogonality_dml.adoc chapters/bibliography.bib
-	@echo "Building Chapter 2 with perfect equation rendering..."
-	@mkdir -p $(OUTPUT_DIR)
-	$(ASCIIDOCTOR_PDF) -o $@ $<
-	@ls -lh $@
-	@echo "✓ Chapter 2 PDF created: $@"
+# Install required dependencies
+install-deps:
+	@echo "Installing Python dependencies for minted..."
+	pip install Pygments
+	@echo ""
+	@echo "✓ Dependencies installed"
+	@echo ""
+	@echo "LaTeX packages required (install via TeX distribution):"
+	@echo "  - amsbook (usually included)"
+	@echo "  - minted"
+	@echo "  - hyperref"
+	@echo "  - booktabs"
+	@echo ""
 
+# Clean auxiliary files
 clean:
-	@echo "Cleaning output directory..."
-	rm -f $(OUTPUT_DIR)/*.pdf $(OUTPUT_DIR)/*.xml $(OUTPUT_DIR)/*.tex $(OUTPUT_DIR)/*.log $(OUTPUT_DIR)/*.aux
+	@echo "Cleaning auxiliary files..."
+	rm -f $(MAIN).aux $(MAIN).log $(MAIN).out $(MAIN).toc $(MAIN).bbl $(MAIN).blg
+	rm -f $(MAIN).synctex.gz $(MAIN).fdb_latexmk $(MAIN).fls
+	rm -f chapters/*.aux
+	rm -rf _minted-$(MAIN)/
 	@echo "✓ Cleaned"
 
+# Clean everything including PDF
+distclean: clean
+	@echo "Removing PDF..."
+	rm -f $(PDF)
+	@echo "✓ All generated files removed"
+
+# Check for LaTeX errors in log
+check-errors:
+	@if [ -f $(MAIN).log ]; then \
+		echo "Checking for errors in $(MAIN).log..."; \
+		if grep -E "^!" $(MAIN).log; then \
+			echo ""; \
+			echo "❌ Errors found in LaTeX compilation"; \
+			exit 1; \
+		else \
+			echo "✓ No errors found"; \
+		fi; \
+		echo ""; \
+		echo "Checking for warnings..."; \
+		if grep -i "warning" $(MAIN).log; then \
+			echo ""; \
+			echo "⚠️  Warnings found (review log)"; \
+		else \
+			echo "✓ No warnings found"; \
+		fi; \
+	else \
+		echo "No log file found. Run 'make' first."; \
+	fi
+
+# Help message
 help:
-	@echo "Double ML Volume 2 - Build System"
+	@echo "Double ML Volume 2 - LaTeX Build System"
 	@echo ""
 	@echo "Targets:"
-	@echo "  all         Build all chapters (default)"
-	@echo "  chapter_01  Build Chapter 1 only"
-	@echo "  chapter_02  Build Chapter 2 only"
-	@echo "  clean       Remove all generated files"
-	@echo "  help        Show this help message"
+	@echo "  all            Build complete book (default)"
+	@echo "  chapter1       Build Chapter 1 only (for testing)"
+	@echo "  chapter2       Build Chapter 2 only (for testing)"
+	@echo "  view           Build and open PDF in viewer"
+	@echo "  install-deps   Install Python dependencies (Pygments)"
+	@echo "  clean          Remove auxiliary files (keep PDF)"
+	@echo "  distclean      Remove all generated files including PDF"
+	@echo "  check-errors   Check LaTeX log for errors/warnings"
+	@echo "  help           Show this help message"
 	@echo ""
 	@echo "Requirements:"
-	@echo "  - asciidoctor-pdf gem"
-	@echo "  - asciidoctor-mathematical gem (for perfect equation rendering)"
-	@echo "  - asciidoctor-bibtex gem (for citations)"
+	@echo "  - pdflatex (TeX Live or MiKTeX)"
+	@echo "  - bibtex"
+	@echo "  - Python + Pygments (for minted code highlighting)"
 	@echo ""
 	@echo "Example usage:"
-	@echo "  make              # Build all chapters"
-	@echo "  make chapter_01   # Build Chapter 1 only"
-	@echo "  make clean        # Clean generated files"
+	@echo "  make               # Build complete book"
+	@echo "  make chapter1      # Test Chapter 1 compilation"
+	@echo "  make view          # Build and open PDF"
+	@echo "  make clean         # Clean auxiliary files"
+	@echo ""
+	@echo "Compilation process:"
+	@echo "  1. pdflatex (first pass)"
+	@echo "  2. bibtex (process bibliography)"
+	@echo "  3. pdflatex (second pass, resolve citations)"
+	@echo "  4. pdflatex (third pass, resolve cross-references)"
+	@echo ""
