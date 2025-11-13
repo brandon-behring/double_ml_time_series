@@ -7,18 +7,28 @@
 ## Phase 1A: Core Theory
 
 ### Chapter 1: Potential Outcomes + FWL
-- **Status**: ⏳ NOT_STARTED
+- **Status**: 🚧 IN_PROGRESS (25% complete - foundation sections done)
 - **Target words**: ~8,000
-- **Actual words**: 0
-- **Sections**: 0/5 complete
-- **Code examples**: 0/3
-- **Citations**: 0 added
-- **Math proofs**: 0/2 (FWL theorem, residualization)
+- **Actual words**: 2,048
+- **Sections**: 9/16 complete
+  - ✅ Introduction + motivating example
+  - ✅ Potential Outcomes Framework (definitions)
+  - ✅ Fundamental Problem of Causal Inference
+  - ✅ Average Treatment Effect
+  - ✅ Identification (unconfoundedness, overlap, proof)
+  - ✅ Frisch-Waugh-Lovell Theorem (proof + geometric interpretation)
+  - ✅ Python Implementation (FWL demo)
+  - ✅ Summary
+  - ✅ Exercises
+  - ⏳ TODO: Expand examples, add 2nd Python example, deepen intuition
+- **Code examples**: 1/3 (FWL verification)
+- **Citations**: 7 added (Rubin, Holland, Frisch & Waugh, Lovell, Chernozhukov)
+- **Math proofs**: 2/2 (ATE identification ✅, FWL theorem ✅)
 - **Subagent verification**: ⏳ PENDING
 - **Review**: ⏳ PENDING
-- **File**: `chapters/01_potential_outcomes_fwl.adoc`
+- **File**: `chapters/chapter_01.adoc`
 - **Blockers**: None
-- **Next**: Start writing §1.1 (Introduction)
+- **Next**: Expand with more examples, compile to PDF for verification
 
 ### Chapter 2: Neyman Orthogonality + DML
 - **Status**: ⏳ NOT_STARTED

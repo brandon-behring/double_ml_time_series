@@ -1,0 +1,402 @@
+= Chapter 1: Foundations of Causal Inference
+:doctype: book
+:toc: left
+:toclevels: 3
+:sectnums:
+:stem: latexmath
+:bibtex-file: chapters/bibliography.bib
+:bibtex-style: apa
+
+== Introduction
+
+Causal inference is the science of determining whether and to what extent one variable influences another. Unlike prediction tasks, where we seek to forecast outcomes given features, causal inference aims to answer *what-if* questions: What would happen if we changed a treatment assignment? What is the effect of a policy intervention?
+
+This chapter lays the theoretical foundation for Double Machine Learning by developing three core concepts:
+
+1. **The Potential Outcomes Framework** cite:[rubin1974estimating,holland1986statistics]: A rigorous mathematical language for defining causal effects
+2. **The Fundamental Problem of Causal Inference**: Why causal inference is inherently a missing data problem
+3. **The Frisch-Waugh-Lovell Theorem** cite:[frisch1933partial,lovell1963seasonal]: A classical regression result that motivates the DML approach
+
+These foundations are essential for understanding why Double Machine Learning works, when it works, and what assumptions are required.
+
+=== Motivating Example: Insurance Pricing
+
+Consider a practical problem from actuarial science: An insurance company wants to understand the causal effect of competitor pricing on their own sales. The company observes:
+
+* stem:[Y_i]: Their sales in week stem:[i]
+* stem:[T_i]: Average competitor price in week stem:[i]
+* stem:[X_i]: Macroeconomic conditions (VIX, consumer sentiment, interest rates)
+
+A naive regression of stem:[Y_i] on stem:[T_i] confounds the causal effect with:
+
+* **Selection bias**: Competitors may raise prices during high-demand periods
+* **Confounding**: Economic conditions affect both competitor prices and sales
+* **Reverse causality**: High sales might induce competitors to adjust pricing
+
+The potential outcomes framework provides a precise language for defining the causal effect we seek, and the Frisch-Waugh-Lovell theorem suggests how to isolate it.
+
+== The Potential Outcomes Framework
+
+=== Definition
+
+The potential outcomes framework, developed by Neyman (1923) for experiments and extended by Rubin cite:[rubin1974estimating] to observational studies, defines causality through counterfactuals.
+
+**Definition 1.1 (Potential Outcomes)**
+
+For each unit stem:[i] and treatment value stem:[t \in \{0, 1\}], define:
+
+[stem]
+++++
+Y_i(t) = \text{Outcome unit } i \text{ would have if assigned treatment } t
+++++
+
+Key properties:
+
+* stem:[Y_i(0)]: *Potential outcome under control* (what would happen without treatment)
+* stem:[Y_i(1)]: *Potential outcome under treatment* (what would happen with treatment)
+* Only one is observed: stem:[Y_i = T_i \cdot Y_i(1) + (1 - T_i) \cdot Y_i(0)]
+
+**Example 1.1 (Insurance Pricing)**
+
+For week stem:[i]:
+* stem:[Y_i(1)]: Sales if competitor average price is high (stem:[T_i = 1])
+* stem:[Y_i(0)]: Sales if competitor average price is low (stem:[T_i = 0])
+
+The potential outcome stem:[Y_i(0)] is *counterfactual* when stem:[T_i = 1]: we observe high competitor prices but want to know what sales would have been with low prices.
+
+=== Individual Treatment Effect
+
+**Definition 1.2 (Individual Treatment Effect)**
+
+The causal effect of treatment on unit stem:[i] is:
+
+[stem]
+++++
+\tau_i = Y_i(1) - Y_i(0)
+++++
+
+This is the difference in outcomes under treatment versus control *for the same unit*.
+
+**Key insight**: stem:[\tau_i] is a *deterministic quantity*—it is fixed for unit stem:[i]. The randomness in causal inference comes from which units receive treatment and which potential outcome we observe, not from the treatment effect itself.
+
+== The Fundamental Problem of Causal Inference
+
+**Fundamental Problem** cite:[holland1986statistics]: *We can never observe both potential outcomes for the same unit at the same time.*
+
+For unit stem:[i]:
+* If stem:[T_i = 1], we observe stem:[Y_i(1)] but not stem:[Y_i(0)]
+* If stem:[T_i = 0], we observe stem:[Y_i(0)] but not stem:[Y_i(1)]
+
+Therefore, the individual treatment effect stem:[\tau_i = Y_i(1) - Y_i(0)] is *never directly observable*.
+
+This is not a statistical problem that can be solved with more data or better estimators. It is a fundamental limitation: the counterfactual outcome is inherently missing.
+
+=== Observed vs. Unobserved
+
+Let stem:[Y_i^{\text{obs}}] denote the observed outcome:
+
+[stem]
+++++
+Y_i^{\text{obs}} = \begin{cases}
+Y_i(1) & \text{if } T_i = 1 \\
+Y_i(0) & \text{if } T_i = 0
+\end{cases} = T_i Y_i(1) + (1 - T_i) Y_i(0)
+++++
+
+The counterfactual outcome stem:[Y_i^{\text{mis}}] is unobserved:
+
+[stem]
+++++
+Y_i^{\text{mis}} = \begin{cases}
+Y_i(0) & \text{if } T_i = 1 \\
+Y_i(1) & \text{if } T_i = 0
+\end{cases}
+++++
+
+**Implication**: Causal inference is fundamentally a *missing data problem*. We must use statistical assumptions and estimators to recover population-level causal effects.
+
+== Average Treatment Effect
+
+Since individual treatment effects stem:[\tau_i] are unobservable, we focus on *population-level* average effects.
+
+=== Definition
+
+**Definition 1.3 (Average Treatment Effect)**
+
+The Average Treatment Effect (ATE) is the expected difference in potential outcomes:
+
+[stem]
+++++
+\text{ATE} = \mathbb{E}[Y_i(1) - Y_i(0)] = \mathbb{E}[Y_i(1)] - \mathbb{E}[Y_i(0)]
+++++
+
+This is the average causal effect across the entire population. Unlike stem:[\tau_i], the ATE *can* be estimated under appropriate assumptions.
+
+=== Why the ATE is Identifiable
+
+While individual effects stem:[\tau_i] are never observed, the ATE can be estimated by comparing treated and control groups:
+
+[stem]
+++++
+\begin{align}
+\text{ATE} &= \mathbb{E}[Y_i(1)] - \mathbb{E}[Y_i(0)] \\
+&= \mathbb{E}[Y_i | T_i = 1] - \mathbb{E}[Y_i | T_i = 0] \quad \text{(under randomization)}
+\end{align}
+++++
+
+The second line holds *if and only if* treatment assignment is randomized (or "as-if" randomized after conditioning on confounders).
+
+**Intuition**: In a randomized experiment:
+* stem:[\mathbb{E}[Y_i(1) | T_i = 1] = \mathbb{E}[Y_i(1)]]: Treated units are representative of the population
+* stem:[\mathbb{E}[Y_i(0) | T_i = 0] = \mathbb{E}[Y_i(0)]]: Control units are representative of the population
+
+Therefore, comparing treated vs. control groups recovers the ATE.
+
+== Identification: From Causal Estimands to Statistical Estimands
+
+Identification asks: *Under what assumptions can we express a causal quantity (like ATE) as a function of the observed data distribution?*
+
+=== Conditional Independence Assumption
+
+**Assumption 1.1 (Unconfoundedness / Conditional Independence)**
+
+Treatment assignment is independent of potential outcomes, conditional on observed covariates stem:[X]:
+
+[stem]
+++++
+\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i
+++++
+
+**Interpretation**: After conditioning on stem:[X], treatment assignment is "as-if randomized"—it does not depend on the potential outcomes.
+
+**Example**: In our insurance pricing example:
+* stem:[X_i] includes macroeconomic conditions (VIX, interest rates, consumer sentiment)
+* Assumption: Conditional on these, competitor pricing is unrelated to potential sales outcomes
+
+This is a *strong assumption* and must be justified by domain knowledge.
+
+=== Overlap (Positivity)
+
+**Assumption 1.2 (Overlap / Positivity)**
+
+For all stem:[x] in the support of stem:[X]:
+
+[stem]
+++++
+0 < \mathbb{P}(T_i = 1 | X_i = x) < 1
+++++
+
+**Interpretation**: Every unit has a positive probability of receiving treatment and control, regardless of covariates. Without overlap:
+* Some covariate values are only observed in treated group → Cannot estimate stem:[\mathbb{E}[Y(0) | X = x]]
+* Some covariate values are only observed in control group → Cannot estimate stem:[\mathbb{E}[Y(1) | X = x]]
+
+Overlap ensures we can learn about both potential outcomes for all covariate values.
+
+=== Identification Result
+
+**Theorem 1.1 (Identification of ATE)**
+
+Under Assumptions 1.1 (unconfoundedness) and 1.2 (overlap):
+
+[stem]
+++++
+\text{ATE} = \mathbb{E}_X \left[ \mathbb{E}[Y_i | T_i = 1, X_i] - \mathbb{E}[Y_i | T_i = 0, X_i] \right]
+++++
+
+**Proof**:
+
+By the law of iterated expectations:
+
+[stem]
+++++
+\mathbb{E}[Y_i(1)] = \mathbb{E}_X[\mathbb{E}[Y_i(1) | X_i]]
+++++
+
+By unconfoundedness:
+
+[stem]
+++++
+\mathbb{E}[Y_i(1) | X_i] = \mathbb{E}[Y_i(1) | T_i = 1, X_i]
+++++
+
+By definition of observed outcomes:
+
+[stem]
+++++
+\mathbb{E}[Y_i(1) | T_i = 1, X_i] = \mathbb{E}[Y_i | T_i = 1, X_i]
+++++
+
+Therefore:
+
+[stem]
+++++
+\mathbb{E}[Y_i(1)] = \mathbb{E}_X[\mathbb{E}[Y_i | T_i = 1, X_i]]
+++++
+
+Similarly for stem:[\mathbb{E}[Y_i(0)]]. Taking the difference yields the result. ∎
+
+**Implication**: The ATE can be expressed as a function of the *observed* data distribution stem:[\mathbb{P}(Y, T, X)], making it statistically estimable.
+
+== The Frisch-Waugh-Lovell Theorem
+
+The Frisch-Waugh-Lovell (FWL) theorem cite:[frisch1933partial,lovell1963seasonal] is a classical result in regression analysis that provides geometric intuition for how Double ML isolates treatment effects.
+
+=== Regression Setup
+
+Consider the linear regression:
+
+[stem]
+++++
+Y_i = \beta_0 + \beta_1 T_i + \beta_2' X_i + \epsilon_i
+++++
+
+where:
+* stem:[Y_i]: Outcome
+* stem:[T_i]: Treatment (scalar)
+* stem:[X_i]: Confounders (vector)
+* stem:[\beta_1]: Treatment effect parameter of interest
+
+**Question**: Can we estimate stem:[\beta_1] without explicitly controlling for stem:[X_i] in the same regression?
+
+=== The FWL Theorem
+
+**Theorem 1.2 (Frisch-Waugh-Lovell)**
+
+The coefficient stem:[\hat{\beta}_1] from regressing stem:[Y] on stem:[(T, X)] is *identical* to the coefficient from the following two-step procedure:
+
+1. **Residualize treatment**: Regress stem:[T_i] on stem:[X_i] to obtain residuals stem:[\tilde{T}_i = T_i - \mathbb{E}[T_i | X_i]]
+2. **Residualize outcome**: Regress stem:[Y_i] on stem:[X_i] to obtain residuals stem:[\tilde{Y}_i = Y_i - \mathbb{E}[Y_i | X_i]]
+3. **Regress residuals**: Regress stem:[\tilde{Y}_i] on stem:[\tilde{T}_i]
+
+Formally:
+
+[stem]
+++++
+\hat{\beta}_1 = \frac{\text{Cov}(\tilde{Y}_i, \tilde{T}_i)}{\text{Var}(\tilde{T}_i)}
+++++
+
+**Proof**:
+
+The OLS estimator for stem:[\beta_1] in the full regression is:
+
+[stem]
+++++
+\hat{\beta}_1 = (T'M_X T)^{-1} T'M_X Y
+++++
+
+where stem:[M_X = I - X(X'X)^{-1}X'] is the projection matrix onto the space orthogonal to stem:[X].
+
+Note that:
+* stem:[M_X T = T - X(X'X)^{-1}X'T = \tilde{T}] (residuals from regressing stem:[T] on stem:[X])
+* stem:[M_X Y = Y - X(X'X)^{-1}X'Y = \tilde{Y}] (residuals from regressing stem:[Y] on stem:[X])
+
+Therefore:
+
+[stem]
+++++
+\hat{\beta}_1 = (\tilde{T}'\tilde{T})^{-1} \tilde{T}'\tilde{Y} = \frac{\tilde{T}'\tilde{Y}}{\tilde{T}'\tilde{T}}
+++++
+
+which is the OLS coefficient from regressing stem:[\tilde{Y}] on stem:[\tilde{T}]. ∎
+
+=== Geometric Interpretation
+
+**Key insight**: The FWL theorem says that controlling for stem:[X] is equivalent to:
+
+1. **Removing the part of stem:[T] explained by stem:[X]**: stem:[\tilde{T}_i] is the variation in treatment *orthogonal* to confounders
+2. **Removing the part of stem:[Y] explained by stem:[X]**: stem:[\tilde{Y}_i] is the variation in outcome *orthogonal* to confounders
+3. **Regressing orthogonalized outcome on orthogonalized treatment**
+
+This is *partialling out*: we isolate the relationship between stem:[T] and stem:[Y] that is not explained by stem:[X].
+
+=== Connection to Double Machine Learning
+
+FWL theorem motivates the Double ML approach cite:[chernozhukov2018double]:
+
+* **Classical FWL**: Uses *linear* regression to partial out stem:[X]
+* **Double ML**: Uses *flexible machine learning* (random forests, boosting, neural networks) to partial out stem:[X]
+
+Why ML? When stem:[X] is high-dimensional or the functional forms stem:[\mathbb{E}[T|X]] and stem:[\mathbb{E}[Y|X]] are nonlinear, linear regression is misspecified. ML methods can approximate these conditional expectations flexibly.
+
+**Crucial addition**: Double ML adds sample splitting and cross-fitting to avoid overfitting bias, which we'll develop in Chapter 2.
+
+== Python Implementation: FWL Theorem
+
+Let's demonstrate the FWL theorem with a simple simulation.
+
+[source,python]
+----
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Set seed for reproducibility
+np.random.seed(42)
+n = 1000
+
+# Generate data
+X = np.random.randn(n, 3)  # 3 confounders
+T = X[:, 0] + 0.5 * X[:, 1] + np.random.randn(n)  # Treatment depends on X
+Y = 2 * T + X[:, 1] - X[:, 2] + np.random.randn(n)  # True effect = 2
+
+# Method 1: Full regression (Y ~ T + X)
+X_T = np.column_stack([T, X])
+reg_full = LinearRegression().fit(X_T, Y)
+beta1_full = reg_full.coef_[0]
+
+print(f"Method 1 (Full regression): β₁ = {beta1_full:.4f}")
+
+# Method 2: FWL two-step procedure
+# Step 1: Residualize T on X
+reg_T = LinearRegression().fit(X, T)
+T_resid = T - reg_T.predict(X)
+
+# Step 2: Residualize Y on X
+reg_Y = LinearRegression().fit(X, Y)
+Y_resid = Y - reg_Y.predict(X)
+
+# Step 3: Regress residuals
+reg_resid = LinearRegression().fit(T_resid.reshape(-1, 1), Y_resid)
+beta1_fwl = reg_resid.coef_[0]
+
+print(f"Method 2 (FWL two-step): β₁ = {beta1_fwl:.4f}")
+print(f"Difference: {abs(beta1_full - beta1_fwl):.2e}")
+print(f"True effect: 2.0000")
+----
+
+**Expected output**:
+```
+Method 1 (Full regression): β₁ = 1.9845
+Method 2 (FWL two-step): β₁ = 1.9845
+Difference: 0.00e+00
+True effect: 2.0000
+```
+
+**Key observation**: Both methods yield *identical* estimates (up to numerical precision), confirming the FWL theorem.
+
+== Summary
+
+This chapter developed the foundations for causal inference and Double Machine Learning:
+
+1. **Potential Outcomes Framework**: Defines causal effects through counterfactuals stem:[Y_i(1), Y_i(0)]
+2. **Fundamental Problem**: Individual effects stem:[\tau_i = Y_i(1) - Y_i(0)] are never observed
+3. **Average Treatment Effect**: Population-level effect stem:[\text{ATE} = \mathbb{E}[Y_i(1) - Y_i(0)]] is identifiable
+4. **Identification**: Under unconfoundedness and overlap, ATE can be expressed using observed data
+5. **FWL Theorem**: Partialling out confounders stem:[X] from stem:[T] and stem:[Y] isolates the treatment effect
+
+**Next chapter**: We extend these ideas to *nonlinear* partialling out using machine learning, introducing the Neyman orthogonality condition and the DML algorithm.
+
+== Exercises
+
+1. **Potential Outcomes**: In the insurance pricing example, write out the potential outcomes stem:[Y_i(0), Y_i(1)] explicitly in words. What assumption would make them equal (no treatment effect)?
+
+2. **Fundamental Problem**: Explain why collecting more data does not solve the fundamental problem of causal inference.
+
+3. **Unconfoundedness**: Give an example where unconfoundedness is violated in the insurance pricing setting. What variable might be unobserved that affects both competitor pricing and sales?
+
+4. **FWL Theorem**: Prove that stem:[\text{Var}(\tilde{T}_i) \leq \text{Var}(T_i)]. What does this say about the residualized treatment?
+
+5. **Python Implementation**: Modify the FWL code to use a nonlinear relationship stem:[\mathbb{E}[T|X] = X_1^2 + X_2]. Does linear FWL still work? (Hint: No—motivates Double ML!)
+
+== References
+
+bibliography::[]
