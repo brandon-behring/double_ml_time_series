@@ -1,21 +1,26 @@
 # Current Work
 
-**Last Updated**: 2025-11-13 15:25
+**Last Updated**: 2025-11-13 16:35
 
 ---
 
 ## Right Now
-Pre-Chapter 1 verification complete ✅ - Ready to begin Chapter 1 writing
+Chapter 2 IN PROGRESS 🔄 - 3,912 words (49% of target)
+- Core theory complete: Neyman orthogonality, DML algorithm, proofs
+- 3 Python examples with EconML
+- 4 exercises with solutions
+- Compiled PDF: 326KB, zero errors
 
 ## Why
-All state tracking, Python environment, and automation in place for 110-140 hour book project. Foundation established to ensure we never lose progress throughout all 3 phases.
+Building on Chapter 1's foundation to explain why DML works with ML methods. Neyman orthogonality + sample splitting solve the regularization bias problem.
 
 ## Next Step
-Begin Chapter 1: Potential Outcomes Framework + Frisch-Waugh-Lovell Theorem
-- Target: ~7000 words (14-16 sections)
-- Duration: ~14-17 hours (spread across multiple sessions)
-- Proofs, intuition, embedded Python examples
-- Update chapter status after each subsection
+Expand Chapter 2 toward 6,000-8,000 words:
+- Add more detailed examples (heterogeneous effects, sensitivity analysis)
+- Expand Python implementations (custom DML, comparison plots)
+- Add mathematical depth (influence function derivation)
+- Duration: ~6-8 hours more
+- Update status after each major addition
 
 ## Chapter Writing Workflow (DISCIPLINE)
 
