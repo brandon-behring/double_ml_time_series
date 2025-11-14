@@ -1,0 +1,29 @@
+{
+  "simulation_name": "BIAS_VALIDATION",
+  "n_simulations": 100,
+  "sample_sizes": [
+    500,
+    1000,
+    2000
+  ],
+  "confounder_counts": [
+    5,
+    10,
+    20
+  ],
+  "true_effects": [
+    1.0,
+    2.0,
+    3.0
+  ],
+  "confounding_strengths": [
+    0.5,
+    1.0,
+    2.0
+  ],
+  "n_jobs": 48,
+  "random_state": 42,
+  "start_time": "2025-11-14T10:09:41.745334",
+  "end_time": "2025-11-14T10:37:01.442446",
+  "duration_seconds": 1639.697117
+}
