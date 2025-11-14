@@ -16,6 +16,7 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 import json
+from joblib import Parallel, delayed
 
 from src.validation.dgp_generator import DGPGenerator
 from src.validation.bias_validation import BiasValidation
@@ -106,6 +107,8 @@ def run_parameter_sweep() -> pd.DataFrame:
     """
     Run BiasValidation across all parameter combinations.
 
+    Uses parallel execution (Joblib) if USE_PARALLEL=True, otherwise sequential.
+
     Returns:
         DataFrame with validation results for each combination
     """
@@ -117,35 +120,49 @@ def run_parameter_sweep() -> pd.DataFrame:
     print(f"Monte Carlo runs per combination: {N_SIMULATIONS}")
     total_sims = total_combos * N_SIMULATIONS
     print(f"Total DML fits: {total_sims:,}")
+    print(
+        f"Parallel execution: {'YES' if USE_PARALLEL else 'NO'} (n_jobs={N_JOBS if USE_PARALLEL else 1})"
+    )
     print()
 
-    all_results = []
+    # Generate all parameter combinations
+    param_combinations = [
+        (n, p, true_effect, confounding)
+        for n in SAMPLE_SIZES
+        for p in CONFOUNDER_COUNTS
+        for true_effect in TRUE_EFFECTS
+        for confounding in CONFOUNDING_STRENGTHS
+    ]
 
-    # Loop over parameter combinations
-    for n in SAMPLE_SIZES:
-        for p in CONFOUNDER_COUNTS:
-            for true_effect in TRUE_EFFECTS:
-                for confounding in CONFOUNDING_STRENGTHS:
-                    print(
-                        f"Running: n={n}, p={p}, τ={true_effect}, confounding={confounding}",
-                        flush=True,
-                    )
+    if USE_PARALLEL:
+        # Parallel execution using Joblib
+        print(f"Executing {len(param_combinations)} combinations in parallel...")
+        all_results = Parallel(n_jobs=N_JOBS, verbose=10)(
+            delayed(run_parameter_combination)(n, p, true_effect, confounding)
+            for n, p, true_effect, confounding in param_combinations
+        )
+    else:
+        # Sequential execution (for debugging)
+        all_results = []
+        for i, (n, p, true_effect, confounding) in enumerate(param_combinations, 1):
+            print(
+                f"[{i}/{len(param_combinations)}] Running: n={n}, p={p}, τ={true_effect}, confounding={confounding}",
+                flush=True,
+            )
+            result = run_parameter_combination(n, p, true_effect, confounding)
+            all_results.append(result)
 
-                    # Run validation for this combination
-                    result = run_parameter_combination(n, p, true_effect, confounding)
-                    all_results.append(result)
-
-                    # Print status
-                    status_symbol = (
-                        "✅"
-                        if result["status"] == "PASS"
-                        else "⚠️"
-                        if result["status"] == "WARNING"
-                        else "❌"
-                    )
-                    print(
-                        f"  {status_symbol} Bias={result['bias']:.4f}, RMSE={result['rmse']:.4f}, Status={result['status']}"
-                    )
+            # Print status
+            status_symbol = (
+                "✅"
+                if result["status"] == "PASS"
+                else "⚠️"
+                if result["status"] == "WARNING"
+                else "❌"
+            )
+            print(
+                f"  {status_symbol} Bias={result['bias']:.4f}, RMSE={result['rmse']:.4f}, Status={result['status']}"
+            )
 
     # Convert to DataFrame
     df = pd.DataFrame(all_results)
