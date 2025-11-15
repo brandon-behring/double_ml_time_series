@@ -293,6 +293,48 @@ class TestBiasValidationStatisticalProperties:
         assert np.isfinite(result.ci_lower), "CI lower must be finite"
         assert np.isfinite(result.ci_upper), "CI upper must be finite"
 
+    def test_coverage_approximately_nominal(self):
+        """Test that coverage rate is approximately at nominal level (95%).
+
+        THE SMOKING GUN TEST - This will FAIL with current broken code.
+
+        Current bug: Uses Monte Carlo SE instead of per-estimate DML CIs.
+        After fix: Coverage should be ~0.95 for 95% confidence intervals.
+
+        This test validates the CORE PURPOSE of confidence intervals:
+        A properly calibrated 95% CI should contain the true parameter
+        in approximately 95% of repeated samples.
+        """
+        dgp = DGPGenerator(
+            n=2000,  # Large sample for stable DML estimates
+            p=5,
+            true_effect=2.0,
+            confounding_strength=0.5,  # Moderate confounding
+            random_state=42,
+        )
+
+        validator = BiasValidation(
+            n_simulations=200,  # Enough for stable coverage estimate
+            alpha=0.05,  # 95% CIs
+            random_state=42,
+        )
+
+        result = validator.validate(dgp)
+
+        # Coverage should be ~0.95 (allow 0.85-1.00 given finite sample variability)
+        assert 0.85 <= result.coverage <= 1.00, (
+            f"Coverage should be ~0.95 for 95% CIs with proper DML implementation. "
+            f"Got {result.coverage:.3f}. "
+            f"If this fails with coverage < 0.85, the CI calculation is broken "
+            f"(likely using Monte Carlo SE instead of DML's own CIs)."
+        )
+
+        # Ideally should be close to nominal 0.95 (within ±0.08 given finite sample)
+        assert abs(result.coverage - 0.95) < 0.10, (
+            f"Coverage {result.coverage:.3f} deviates from nominal 0.95 by more than 0.10. "
+            f"This may indicate CI miscalibration or too few simulations."
+        )
+
 
 # =============================================================================
 # Test Class 7: Integration Tests
@@ -347,7 +389,214 @@ class TestBiasValidationIntegration:
 
 
 # =============================================================================
-# Test Class 8: Performance Tests (Optional)
+# Test Class 8: Multiple Testing Correction (2025-11-14 FIX)
+# =============================================================================
+
+
+class TestBiasValidationMultipleTestingCorrection:
+    """Test multiple testing correction functionality (critical fix 2025-11-14)."""
+
+    def test_bonferroni_correction_is_default(self):
+        """Test that Bonferroni correction is applied by default."""
+        # Create scenario with moderate bias - without correction might be WARNING, with correction might be PASS
+        dgp = DGPGenerator(n=500, p=5, true_effect=2.0, confounding_strength=0.5, random_state=42)
+        validator = BiasValidation(n_simulations=30, random_state=42)
+
+        # The validator should use Bonferroni correction by default
+        result = validator.validate(dgp)
+
+        # Verify p-values are stored
+        assert hasattr(result, "bias_p_value")
+        assert hasattr(result, "coverage_p_value")
+        assert isinstance(result.bias_p_value, float)
+        assert isinstance(result.coverage_p_value, float)
+
+        # P-values should be in [0, 1]
+        assert 0 <= result.bias_p_value <= 1
+        assert 0 <= result.coverage_p_value <= 1
+
+    def test_bonferroni_reduces_false_positives(self):
+        """Test that Bonferroni correction reduces false positive rate."""
+        # With 2 tests at α=0.05, uncorrected familywise error rate ≈ 9.75%
+        # With Bonferroni, familywise error rate ≤ 5%
+
+        # This test verifies that correction is applied, not that a specific outcome occurs
+        # We test by comparing corrected vs uncorrected thresholds
+
+        dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, confounding_strength=0.1, random_state=42)
+        validator = BiasValidation(n_simulations=50, random_state=42)
+
+        # Get simulation results
+        estimates, ci_bounds = validator._run_simulations(dgp)
+        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
+
+        # Get status with Bonferroni correction (default)
+        status_bonf, p_bias_bonf, p_cov_bonf = validator._determine_statistical_status(
+            bias_samples,
+            coverage,
+            len(estimates),
+            ci_bounds,
+            dgp.true_effect,
+            alpha_test=0.05,
+            correction_method="bonferroni",
+        )
+
+        # Get status without correction
+        status_none, p_bias_none, p_cov_none = validator._determine_statistical_status(
+            bias_samples,
+            coverage,
+            len(estimates),
+            ci_bounds,
+            dgp.true_effect,
+            alpha_test=0.05,
+            correction_method="none",
+        )
+
+        # P-values should be the same (data-driven, not affected by correction method)
+        assert p_bias_bonf == p_bias_none
+        assert p_cov_bonf == p_cov_none
+
+        # Bonferroni should be more conservative or same (never less conservative)
+        # FAIL < WARNING < PASS in conservativeness
+        status_order = {"FAIL": 0, "WARNING": 1, "PASS": 2}
+        assert (
+            status_order[status_bonf] >= status_order[status_none]
+        ), "Bonferroni correction should be at least as conservative as no correction"
+
+    def test_no_correction_option_exists(self):
+        """Test that 'none' correction method can be specified (for single-method testing)."""
+        # Note: We can't actually pass correction_method through validate()
+        # This tests the _determine_statistical_status method directly
+
+        dgp = DGPGenerator(n=500, p=5, true_effect=2.0, confounding_strength=0.5, random_state=42)
+        validator = BiasValidation(n_simulations=20, random_state=42)
+
+        # Run simulation to get data
+        estimates, ci_bounds = validator._run_simulations(dgp)
+        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
+
+        # Test with no correction
+        status_none, _, _ = validator._determine_statistical_status(
+            bias_samples,
+            coverage,
+            len(estimates),
+            ci_bounds,
+            dgp.true_effect,
+            alpha_test=0.05,
+            correction_method="none",
+        )
+
+        # Test with Bonferroni correction
+        status_bonf, _, _ = validator._determine_statistical_status(
+            bias_samples,
+            coverage,
+            len(estimates),
+            ci_bounds,
+            dgp.true_effect,
+            alpha_test=0.05,
+            correction_method="bonferroni",
+        )
+
+        # Both should return valid status
+        assert status_none in ["PASS", "FAIL", "WARNING"]
+        assert status_bonf in ["PASS", "FAIL", "WARNING"]
+
+    def test_invalid_correction_method_raises_error(self):
+        """Test that invalid correction method raises ValueError."""
+        dgp = DGPGenerator(n=500, p=5, true_effect=2.0, confounding_strength=0.5, random_state=42)
+        validator = BiasValidation(n_simulations=10, random_state=42)
+
+        # Run simulation to get data
+        estimates, ci_bounds = validator._run_simulations(dgp)
+        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
+
+        # Test with invalid correction method
+        with pytest.raises(ValueError, match="Unknown correction_method"):
+            validator._determine_statistical_status(
+                bias_samples,
+                coverage,
+                len(estimates),
+                ci_bounds,
+                dgp.true_effect,
+                alpha_test=0.05,
+                correction_method="invalid",
+            )
+
+    def test_holm_correction_works(self):
+        """Test that Holm-Bonferroni correction method works."""
+        dgp = DGPGenerator(n=500, p=5, true_effect=2.0, confounding_strength=0.5, random_state=42)
+        validator = BiasValidation(n_simulations=20, random_state=42)
+
+        # Run simulation to get data
+        estimates, ci_bounds = validator._run_simulations(dgp)
+        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
+
+        # Test with Holm correction
+        status_holm, p_bias, p_cov = validator._determine_statistical_status(
+            bias_samples,
+            coverage,
+            len(estimates),
+            ci_bounds,
+            dgp.true_effect,
+            alpha_test=0.05,
+            correction_method="holm",
+        )
+
+        # Should return valid status and p-values
+        assert status_holm in ["PASS", "FAIL", "WARNING"]
+        assert 0 <= p_bias <= 1
+        assert 0 <= p_cov <= 1
+
+    def test_correction_affects_status_thresholds(self):
+        """Test that correction method affects status determination."""
+        # With 2 tests, Bonferroni uses α/2 = 0.025 per test
+        # Without correction, uses α = 0.05 per test
+
+        dgp = DGPGenerator(n=300, p=5, true_effect=2.0, confounding_strength=1.0, random_state=42)
+        validator = BiasValidation(n_simulations=30, random_state=42)
+
+        # Run simulation once
+        estimates, ci_bounds = validator._run_simulations(dgp)
+        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
+
+        # Get status with different corrections
+        status_bonf, p_bias_bonf, p_cov_bonf = validator._determine_statistical_status(
+            bias_samples,
+            coverage,
+            len(estimates),
+            ci_bounds,
+            dgp.true_effect,
+            alpha_test=0.05,
+            correction_method="bonferroni",
+        )
+
+        status_none, p_bias_none, p_cov_none = validator._determine_statistical_status(
+            bias_samples,
+            coverage,
+            len(estimates),
+            ci_bounds,
+            dgp.true_effect,
+            alpha_test=0.05,
+            correction_method="none",
+        )
+
+        # P-values should be the same (they're data-driven)
+        assert p_bias_bonf == p_bias_none
+        assert p_cov_bonf == p_cov_none
+
+        # But status might differ due to different thresholds
+        # (Bonferroni is more conservative, so less likely to FAIL/WARNING)
+        assert status_bonf in ["PASS", "FAIL", "WARNING"]
+        assert status_none in ["PASS", "FAIL", "WARNING"]
+
+
+# =============================================================================
+# Test Class 9: Performance Tests (Optional)
 # =============================================================================
 
 

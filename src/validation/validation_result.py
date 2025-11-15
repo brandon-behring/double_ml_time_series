@@ -25,6 +25,11 @@ class ValidationResult:
         n_simulations: Number of Monte Carlo simulations
         timestamp: When validation was run
         metadata: Additional method-specific information
+        ci_estimates: Optional array of CI bounds from simulations (n_simulations, 2)
+        point_estimates: Optional array of point estimates from simulations
+        bias_p_value: Optional p-value from bias hypothesis test
+        coverage_p_value: Optional p-value from coverage hypothesis test
+        statistical_status: Optional status from statistical hypothesis testing
 
     Examples:
         >>> result = ValidationResult(
@@ -53,6 +58,11 @@ class ValidationResult:
     n_simulations: int
     timestamp: datetime
     metadata: Dict[str, Any]
+    ci_estimates: Optional[np.ndarray] = None
+    point_estimates: Optional[np.ndarray] = None
+    bias_p_value: Optional[float] = None
+    coverage_p_value: Optional[float] = None
+    statistical_status: Optional[Literal["PASS", "FAIL", "WARNING"]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization.
