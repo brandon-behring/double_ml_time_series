@@ -1,0 +1,7 @@
+Configuration,Best_Bias_Method,Worst_Bias_Method,Best_MSE_Method,Best_Coverage_Method,Mean_Absolute_Bias,Mean_MSE,Mean_Coverage
+"n=500, p=5, true_effect=2.0, confounding_strength=0.5",AugmentedIPW,NaiveOLS,OLSWithControls,IPWEstimator,0.03775866319578653,0.05570089404036194,0.8571428571428571
+"n=500, p=5, true_effect=2.0, confounding_strength=1.0",OLSWithControls,NaiveOLS,AugmentedIPW,AugmentedIPW,0.10863830119994532,0.44762848212046613,0.6857142857142857
+"n=500, p=5, true_effect=2.0, confounding_strength=2.0",OLSWithControls,NaiveOLS,OLSWithControls,DML,0.27048037553693105,2.190363069998911,0.5999999999999999
+"n=1000, p=5, true_effect=2.0, confounding_strength=0.5",OLSWithControls,AugmentedIPW,OLSWithControls,IPWEstimator,0.026552579612038496,0.02700989015716717,0.8214285714285714
+"n=1000, p=5, true_effect=2.0, confounding_strength=1.0",RandomForest,XGBoost,OLSWithControls,IPWEstimator,0.0623856241449464,0.21023652536304802,0.6785714285714286
+"n=1000, p=5, true_effect=2.0, confounding_strength=2.0",OLSWithControls,XGBoost,OLSWithControls,DML,0.1648772539929604,1.3734635138564193,0.5357142857142857

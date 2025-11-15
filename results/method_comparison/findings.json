@@ -1,0 +1,93 @@
+{
+  "timestamp": "2025-11-14T19:54:32.922924",
+  "configurations": 6,
+  "methods_compared": [
+    "NaiveOLS",
+    "OLSWithControls",
+    "IPWEstimator",
+    "AugmentedIPW",
+    "RandomForest",
+    "XGBoost",
+    "DML"
+  ],
+  "simulations_per_method": 20,
+  "best_methods_by_metric": {
+    "lowest_mean_bias": {
+      "Configuration": "n=1000, p=5, true_effect=2.0, confounding_strength=0.5",
+      "Method": "DML",
+      "Bias": -0.0009384384393023026,
+      "Abs_Bias": 0.0009384384393023026,
+      "MSE": 0.0067486031795891115,
+      "RMSE": 0.08214988240764019,
+      "Coverage": 1.0,
+      "Status": "PASS",
+      "P_Value": 0.0971032705368362
+    },
+    "lowest_mse": {
+      "Configuration": "n=1000, p=5, true_effect=2.0, confounding_strength=0.5",
+      "Method": "IPWEstimator",
+      "Bias": -0.00869120767442122,
+      "Abs_Bias": 0.00869120767442122,
+      "MSE": 0.002948249558172128,
+      "RMSE": 0.05429778594171339,
+      "Coverage": 1.0,
+      "Status": "FAIL",
+      "P_Value": 0.0
+    },
+    "highest_coverage": {
+      "Configuration": "n=500, p=5, true_effect=2.0, confounding_strength=0.5",
+      "Method": "IPWEstimator",
+      "Bias": -0.0344761157798128,
+      "Abs_Bias": 0.0344761157798128,
+      "MSE": 0.011441520281092136,
+      "RMSE": 0.1069650423320261,
+      "Coverage": 1.0,
+      "Status": "FAIL",
+      "P_Value": 0.0
+    }
+  },
+  "method_statistics": {
+    "NaiveOLS": {
+      "mean_abs_bias": 0.17121383726940298,
+      "mean_mse": 3.0259703525670703,
+      "mean_coverage": 0.2916666666666667,
+      "pass_rate": 0.0
+    },
+    "OLSWithControls": {
+      "mean_abs_bias": 0.006657659609802284,
+      "mean_mse": 0.008513294918162504,
+      "mean_coverage": 0.7666666666666666,
+      "pass_rate": 0.0
+    },
+    "IPWEstimator": {
+      "mean_abs_bias": 0.08760611305483172,
+      "mean_mse": 0.6580699941261784,
+      "mean_coverage": 0.8250000000000002,
+      "pass_rate": 16.666666666666664
+    },
+    "AugmentedIPW": {
+      "mean_abs_bias": 0.0375943624072782,
+      "mean_mse": 0.029535406245602743,
+      "mean_coverage": 0.8416666666666665,
+      "pass_rate": 16.666666666666664
+    },
+    "RandomForest": {
+      "mean_abs_bias": 0.04384135469302689,
+      "mean_mse": 0.8753796752323861,
+      "mean_coverage": 0.5416666666666666,
+      "pass_rate": 33.33333333333333
+    },
+    "XGBoost": {
+      "mean_abs_bias": 0.09847774342091269,
+      "mean_mse": 0.6062844194557847,
+      "mean_coverage": 0.49166666666666664,
+      "pass_rate": 0.0
+    },
+    "DML": {
+      "mean_abs_bias": 0.030565463043950396,
+      "mean_mse": 0.11934015991130618,
+      "mean_coverage": 1.0,
+      "pass_rate": 16.666666666666664
+    }
+  }
+}

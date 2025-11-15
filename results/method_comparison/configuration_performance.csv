@@ -1,0 +1,7 @@
+Configuration,Bias,Abs_Bias,MSE,Coverage
+"n=1000, p=5, true_effect=2.0, confounding_strength=0.5",0.0002,0.0151,0.0347,0.8357
+"n=1000, p=5, true_effect=2.0, confounding_strength=1.0",0.0052,0.0483,0.2807,0.6714
+"n=1000, p=5, true_effect=2.0, confounding_strength=2.0",0.0523,0.0997,1.7997,0.5286
+"n=500, p=5, true_effect=2.0, confounding_strength=0.5",-0.0062,0.0313,0.0367,0.7714
+"n=500, p=5, true_effect=2.0, confounding_strength=1.0",0.0216,0.0603,0.3033,0.7071
+"n=500, p=5, true_effect=2.0, confounding_strength=2.0",0.0507,0.1534,2.1075,0.5643
