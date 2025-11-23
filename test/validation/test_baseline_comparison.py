@@ -252,16 +252,19 @@ class TestBaselineComparisonReproducibility:
             assert np.isclose(results1[method_name].bias, results2[method_name].bias, atol=1e-10)
 
     def test_different_seed_produces_different_results(self):
-        """Test that different random seeds produce different results."""
+        """Test that different DGP seeds produce different results (C3 fix ensures deterministic comparisons)."""
+        # After C3 fix: same DGP → same results (deterministic comparison)
+        # Different DGP seeds → different results
         comp1 = BaselineComparison(n_simulations=10, include_dml=False, random_state=42)
-        comp2 = BaselineComparison(n_simulations=10, include_dml=False, random_state=123)
+        comp2 = BaselineComparison(n_simulations=10, include_dml=False, random_state=42)
 
-        dgp = DGPGenerator(n=300, p=3, true_effect=2.0, random_state=42)
+        dgp1 = DGPGenerator(n=300, p=3, true_effect=2.0, random_state=42)
+        dgp2 = DGPGenerator(n=300, p=3, true_effect=2.0, random_state=123)
 
-        results1 = comp1.compare(dgp)
-        results2 = comp2.compare(dgp)
+        results1 = comp1.compare(dgp1)
+        results2 = comp2.compare(dgp2)
 
-        # At least some results should differ
+        # At least some results should differ (different DGPs)
         biases_differ = False
         for method_name in results1:
             if not np.isclose(results1[method_name].bias, results2[method_name].bias, atol=0.01):

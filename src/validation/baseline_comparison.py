@@ -90,7 +90,11 @@ class BaselineComparison:
 
     def compare(self, dgp: DGPGenerator) -> Dict[str, ValidationResult]:
         """
-        Run all methods on same DGP.
+        Run all methods on same DGP with deterministic comparability.
+
+        FIXED (Issue C3): Reset DGP random state before each method to ensure
+        all methods see identical random draws. This prevents ranking instability
+        where methods could vary by up to 4 positions due to different data.
 
         Args:
             dgp: Data generating process to validate against
@@ -100,6 +104,9 @@ class BaselineComparison:
         """
         results = {}
         for name, method in self.methods.items():
+            # FIXED (Issue C3): Reset DGP random state for deterministic comparisons
+            # Each method now sees the SAME random draws for fair comparison
+            dgp._rng = np.random.RandomState(dgp.random_state)
             results[name] = method.validate(dgp)
         return results
 

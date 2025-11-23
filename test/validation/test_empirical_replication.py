@@ -86,7 +86,7 @@ class TestFourZeroOneKReplicationPreprocessing:
         assert Y.shape == (9915,)
         assert T.shape == (9915,)
         assert X.shape[0] == 9915
-        assert X.shape[1] == 9  # 9 control variables (excludes nifa, tw)
+        assert X.shape[1] == 11  # 11 control variables (C5 fix: includes all covariates)
 
     def test_preprocess_data_with_p401(self):
         """Test preprocessing with p401 (participation) treatment."""
@@ -182,7 +182,7 @@ class TestFourZeroOneKReplicationPLRRandomForest:
 
         assert result.metadata["treatment"] == "e401"
         assert result.metadata["n_obs"] == 9915
-        assert result.metadata["n_controls"] == 9  # 9 controls (excludes nifa, tw)
+        assert result.metadata["n_controls"] == 11  # 11 controls (C5 fix: includes all covariates)
 
 
 class TestFourZeroOneKReplicationPLRLasso:

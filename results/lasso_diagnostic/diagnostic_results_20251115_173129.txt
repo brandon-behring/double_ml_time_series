@@ -1,0 +1,35 @@
+================================================================================
+401(k) LASSO DIAGNOSTIC ANALYSIS
+================================================================================
+
+Timestamp: 2025-11-15 17:31:29.806841
+
+BOOTSTRAP DISTRIBUTION:
+  Mean ATE: $5,263.61 ± $1,196.85
+  95% CI: ($2,933.12, $7,643.03)
+  Normality: PASS (p=0.9226)
+  Outliers: 5/1000
+  Converged: YES
+
+HYPERPARAMETER SENSITIVITY:
+  cv_folds:
+    Sensitivity: 0.003
+    Recommended: 3
+    ATE Range: $5,300.53 to $5,329.85
+  max_iter:
+    Sensitivity: 0.000
+    Recommended: 500
+    ATE Range: $5,329.85 to $5,329.85
+
+SEED SENSITIVITY:
+  Mean ATE: $5,308.46 ± $27.66
+  Range: $5,246.09 to $5,353.15
+  CV: 0.005
+
+ROOT CAUSE ANALYSIS:
+  Bootstrap distribution has 5 outliers (0.5%)
+
+RECOMMENDATIONS:
+  1. Investigate and potentially remove outlier samples
+  2. Compare Lasso solver and convergence settings with published implementation
+  3. Consider flagging Lasso as limitation and relying on RF validation
