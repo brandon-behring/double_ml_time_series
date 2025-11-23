@@ -267,7 +267,7 @@ Similarly, we can verify:
 
 \[\left. \frac{\partial}{\partial m} \mathbb{E}[\psi_{\text{DML}}] \right|_{\eta = \eta_0} = 0\]
 
-Therefore, \(\psi_{\text{DML}}\) is Neyman orthogonal. ∎
+Therefore, \(\psi_{\text{DML}}\) is Neyman orthogonal. $\qed$
 
 \subsection{Why Orthogonality Enables Machine
 Learning}\label{_why_orthogonality_enables_machine_learning}
@@ -460,7 +460,7 @@ X = np.random.randn(n, 20)
 T = (X[:, 0]**2 + X[:, 1]**2 +
      0.5 * X[:, 2] * X[:, 3] +
      np.random.randn(n))
-# Nonlinear outcome with treatment effect τ = 2.5
+# Nonlinear outcome with treatment effect $\tau$ = 2.5
 Y = (2.5 * T +                           # Treatment effect
      np.sin(X[:, 0]) +                   # Nonlinear confounder
      np.exp(X[:, 1] / 2) +               # Nonlinear confounder
@@ -667,7 +667,7 @@ print(f"E[T|X] R²: {np.mean(first_stage_T_r2):.3f} (±{np.std(first_stage_T_r2)
 print(f"E[Y|X] R²: {np.mean(first_stage_Y_r2):.3f} (±{np.std(first_stage_Y_r2):.3f})")
 # Rule of thumb: R² \textgreater{ 0.1 is usually sufficient for good DML performance}
 if np.mean(first_stage_T_r2) < 0.1:
-    print("\textbackslash{n}⚠️  WARNING: Low first{-stage R² for T. Consider:"})
+    print("\textbackslash{n}\textbf{WARNING:}  WARNING: Low first{-stage R² for T. Consider:"})
     print("   {- Adding more confounders"})
     print("   {- Using more flexible ML model"})
     print("   {- Checking for weak instruments (if using IV-DML)"})
@@ -744,7 +744,7 @@ DML is not always necessary. Here's a decision framework:
 DML}\label{_heterogeneous_treatment_effects_with_dml}
 
 So far, we've focused on the \textbf{Average Treatment Effect} (ATE):
-\(\tau = \mathbb{E}[Y_i(1) - Y_i(0)\){]}. But treatment effects often
+\(\tau = \mathbb{E}[Y_i(1) - Y_i(0)\). But treatment effects often
 vary across individuals based on observable characteristics.
 
 \subsection{Conditional Average Treatment Effect
@@ -820,7 +820,7 @@ T = 0.5 * Age + 0.2 * Income / 1000 + np.random.randn(n)
 tau_true = 5.0 - 0.08 * Age  # Effect decreases with age
 Y = tau_true * T + 0.3 * Age + 0.1 * Income / 1000 + np.random.randn(n)
 # Estimate CATE with LinearDML
-# featurizer=None means we model τ(X) = X\textquotesingle{θ (linear heterogeneity)}
+# featurizer=None means we model $\tau$(X) = X\textquotesingle{$\theta$ (linear heterogeneity)}
 dml_cate = LinearDML(
     model_y=RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42),
     model_t=RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42),
@@ -964,7 +964,7 @@ make it statistically insignificant.
   \(\hat{\tau}\) by 50\%
 \item
   \(\text{RV}_{\text{sig}} = 0.05\): A confounder explaining just 5\% of
-  variance in both could make result non-significant → \textbf{fragile}
+  variance in both could make result non-significant $\to$ \textbf{fragile}
 \end{itemize}
 
 \subsection{Python Implementation: Sensitivity
@@ -980,8 +980,8 @@ n = 1000
 U = np.random.randn(n)  # Unobserved
 X = np.random.randn(n, 5)  # Observed confounders
 # U affects both T and Y (omitted variable bias)
-T = X[:, 0] + X[:, 1] + 0.5 * U + np.random.randn(n)  # γ = 0.5
-Y = 2.0 * T + X[:, 0]**2 + X[:, 1] + 0.8 * U + np.random.randn(n)  # δ = 0.8, τ = 2.0
+T = X[:, 0] + X[:, 1] + 0.5 * U + np.random.randn(n)  # $\gamma$ = 0.5
+Y = 2.0 * T + X[:, 0]**2 + X[:, 1] + 0.8 * U + np.random.randn(n)  # $\delta$ = 0.8, $\tau$ = 2.0
 # DML without observing U (biased estimate)
 dml_biased = LinearDML(
     model_y=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
@@ -1186,7 +1186,7 @@ Method}\label{_choosing_the_right_ml_method}
 interpretable, works well with many weak predictors * \textbf{Cons}:
 Cannot capture nonlinearity, feature selection can be unstable *
 \textbf{Best for}: High-dimensional linear settings (p \textgreater{}
-n), sparse signals * \textbf{Tuning}: Use cross-validation for λ
+n), sparse signals * \textbf{Tuning}: Use cross-validation for $\lambda$
 (penalty parameter)
 
 \textbf{Random Forest}: * \textbf{Pros}: Handles nonlinearity
@@ -1247,7 +1247,7 @@ After obtaining \(\hat{\tau}_{\text{DML}}\), always check:
 \begin{minted}{python}
 # Good: R² \textgreater{ 0.1 for both T and Y}
 # Warning: R² \textless{ 0.1 suggests weak confounding (check overlap assumption)}
-# Critical: R² ≈ 0 means no confounding (maybe RCT? Or missing confounders?)
+# Critical: R² $\approx$ 0 means no confounding (maybe RCT? Or missing confounders?)
 \end{minted}
 
 \textbf{2. Residual Patterns}
@@ -1342,28 +1342,28 @@ Alternatives}\label{_when_to_use_dml_vs_alternatives}
 
 \begin{verbatim}
 Is treatment randomized (RCT)?
-├─ YES → Use simple difference-in-means (no need for DML)
-└─ NO → Continue
++- YES $\to$ Use simple difference-in-means (no need for DML)
++- NO $\to$ Continue
 
 Are confounders observed?
-├─ NO → Use instrumental variables or RDD (DML won't help)
-└─ YES → Continue
++- NO $\to$ Use instrumental variables or RDD (DML won't help)
++- YES $\to$ Continue
 
 Are confounders high-dimensional (p > n/10) or nonlinear?
-├─ NO → Use standard OLS regression (DML not needed)
-└─ YES → Continue
++- NO $\to$ Use standard OLS regression (DML not needed)
++- YES $\to$ Continue
 
 Do you have sufficient sample size (n > 500)?
-├─ NO → Use regularized regression with caution (DML needs larger n)
-└─ YES → **Use DML**
++- NO $\to$ Use regularized regression with caution (DML needs larger n)
++- YES $\to$ **Use DML**
 
 Is treatment continuous or binary?
-├─ Continuous → LinearDML
-└─ Binary → LinearDML (same class handles both)
++- Continuous $\to$ LinearDML
++- Binary $\to$ LinearDML (same class handles both)
 
 Do you expect heterogeneous effects?
-├─ YES → Use CATE estimation (LinearDML with featurizer)
-└─ NO → Use ATE estimation (LinearDML with featurizer=None)
++- YES $\to$ Use CATE estimation (LinearDML with featurizer)
++- NO $\to$ Use ATE estimation (LinearDML with featurizer=None)
 \end{verbatim}
 
 \section{Summary}\label{_summary}
@@ -1466,8 +1466,8 @@ parameter, but it's \textbf{known} by design in an RCT (e.g.,
 \(e = 0.5\) for balanced randomization).
 
 \textbf{(b)} In RCTs: * No confounding: \(T_i \perp (Y_i(0), Y_i(1))\) *
-No need to estimate conditional expectations \(\mathbb{E}[Y \mid X\){]}
-or \(\mathbb{E}[T \mid X\){]} * The propensity score \(e\) is known, not
+No need to estimate conditional expectations \(\mathbb{E}[Y \mid X\)
+or \(\mathbb{E}[T \mid X\) * The propensity score \(e\) is known, not
 estimated * Therefore, no nuisance estimation error, no need for
 orthogonality
 

@@ -240,10 +240,10 @@ For all \(x\) in the support of \(X\):
 
 \textbf{Interpretation}: Every unit has a positive probability of
 receiving treatment and control, regardless of covariates. Without
-overlap: * Some covariate values are only observed in treated group →
-Cannot estimate \(\mathbb{E}[Y(0) | X = x\){]} * Some covariate values
-are only observed in control group → Cannot estimate
-\(\mathbb{E}[Y(1) | X = x\){]}
+overlap: * Some covariate values are only observed in treated group $\to$
+Cannot estimate \(\mathbb{E}[Y(0) | X = x\) * Some covariate values
+are only observed in control group $\to$ Cannot estimate
+\(\mathbb{E}[Y(1) | X = x\)
 
 Overlap ensures we can learn about both potential outcomes for all
 covariate values.
@@ -405,11 +405,11 @@ Difference
 \bottomrule\noalign{}
 \endlastfoot
 Low (\textless{} 15) & 210 & 270 & +60 \\
-High (≥ 15) & 170 & 210 & +40 \\
+High ($\geq$ 15) & 170 & 210 & +40 \\
 \end{longtable}
 
 \textbf{Key observation}: Within each VIX stratum, the treatment effect
-is positive (high competitor prices → more sales). But:
+is positive (high competitor prices $\to$ more sales). But:
 
 \begin{itemize}
 \item
@@ -453,8 +453,8 @@ nonlinear relationships, the bias can be severe.
   competitor prices across all VIX/sentiment/rate combinations
 \item
   \textbf{Violated}: If competitors \textbf{never} raise prices when VIX
-  \textgreater{} 25 → No treated units with high VIX → Cannot estimate
-  \(\mathbb{E}[Y(1) | \text{VIX} > 25\){]}
+  \textgreater{} 25 $\to$ No treated units with high VIX $\to$ Cannot estimate
+  \(\mathbb{E}[Y(1) | \text{VIX} > 25\)
 \end{itemize}
 
 We'll explore overlap violations in detail next.
@@ -538,7 +538,7 @@ regardless of medication)
 \[\mathbb{E}[Y_i | T_i = 1] - \mathbb{E}[Y_i | T_i = 0]\]
 
 might show the new medication is much better, but this confounds: *
-\textbf{True medication effect}: \(\mathbb{E}[Y_i(1) - Y_i(0)\){]} *
+\textbf{True medication effect}: \(\mathbb{E}[Y_i(1) - Y_i(0)\) *
 \textbf{Patient selection}: Treated patients are younger, healthier,
 more likely to improve anyway
 
@@ -571,8 +571,8 @@ new medication to patients over age 75 (concern about kidney function).
 
 \begin{itemize}
 \item
-  For \(\text{age} > 75\): \(e(x) = 0\) → No treated patients → Cannot
-  estimate \(\mathbb{E}[Y(1) | \text{age} > 75\){]}
+  For \(\text{age} > 75\): \(e(x) = 0\) $\to$ No treated patients $\to$ Cannot
+  estimate \(\mathbb{E}[Y(1) | \text{age} > 75\)
 \item
   Cannot estimate treatment effect for elderly patients without
   extrapolation
@@ -629,9 +629,9 @@ The function \(e(x)\) is the \textbf{propensity score}---the probability
 of treatment given confounders.
 
 \textbf{Interpretation}: * \(e(x) > 0\): Some units with \(X = x\)
-receive treatment → Can estimate \(\mathbb{E}[Y(1) | X = x\){]} *
-\(e(x) < 1\): Some units with \(X = x\) receive control → Can estimate
-\(\mathbb{E}[Y(0) | X = x\){]} * Both required to estimate
+receive treatment $\to$ Can estimate \(\mathbb{E}[Y(1) | X = x\) *
+\(e(x) < 1\): Some units with \(X = x\) receive control $\to$ Can estimate
+\(\mathbb{E}[Y(0) | X = x\) * Both required to estimate
 \(\mathbb{E}[Y(1) | X = x\) - \textbackslash mathbb\{E\}{[}Y(0)
 \textbar{} X = x{]}{]}
 
@@ -647,14 +647,14 @@ Suppose competitor pricing depends deterministically on VIX:
 0 & \text{if VIX}_i \geq 20
 \end{cases}\]
 
-Now: * For \(\text{VIX} < 20\): \(e(x) = 1\) → All weeks have high
-competitor prices → Never observe \(Y_i(0)\) * For
-\(\text{VIX} \geq 20\): \(e(x) = 0\) → All weeks have low competitor
-prices → Never observe \(Y_i(1)\)
+Now: * For \(\text{VIX} < 20\): \(e(x) = 1\) $\to$ All weeks have high
+competitor prices $\to$ Never observe \(Y_i(0)\) * For
+\(\text{VIX} \geq 20\): \(e(x) = 0\) $\to$ All weeks have low competitor
+prices $\to$ Never observe \(Y_i(1)\)
 
 \textbf{Implication}: We cannot estimate
-\(\mathbb{E}[Y(0) | \text{VIX} < 20\){]} or
-\(\mathbb{E}[Y(1) | \text{VIX} \geq 20\){]}.
+\(\mathbb{E}[Y(0) | \text{VIX} < 20\) or
+\(\mathbb{E}[Y(1) | \text{VIX} \geq 20\).
 
 The ATE is \textbf{not identified} without additional assumptions (e.g.,
 parametric extrapolation).
@@ -665,11 +665,11 @@ In practice, overlap often holds technically but is weak:
 
 \begin{itemize}
 \item
-  \(e(x) = 0.02\): Only 2\% of units with \(X = x\) are treated → Huge
-  variance in \(\hat{\mathbb{E}}[Y(1) | X = x\){]}
+  \(e(x) = 0.02\): Only 2\% of units with \(X = x\) are treated $\to$ Huge
+  variance in \(\hat{\mathbb{E}}[Y(1) | X = x\)
 \item
-  \(e(x) = 0.98\): Only 2\% of units with \(X = x\) are controls → Huge
-  variance in \(\hat{\mathbb{E}}[Y(0) | X = x\){]}
+  \(e(x) = 0.98\): Only 2\% of units with \(X = x\) are controls $\to$ Huge
+  variance in \(\hat{\mathbb{E}}[Y(0) | X = x\)
 \end{itemize}
 
 \textbf{Solution approaches}: 1. \textbf{Trimming}: Drop units with
@@ -924,8 +924,8 @@ Since $\Var(\E[T_i \mid X_i]) \geq 0$, we have $\Var(\tilde{T}_i) \leq \Var(T_i)
 
 \textbf{Why this matters}: If confounders strongly predict treatment ($X$ explains most variation in $T$), then:
 \begin{itemize}
-\item $\Var(\tilde{T}_i)$ is small → Less ``identifying variation''
-\item Standard errors on $\hat{\beta}_1$ are large → Imprecise estimates
+\item $\Var(\tilde{T}_i)$ is small $\to$ Less ``identifying variation''
+\item Standard errors on $\hat{\beta}_1$ are large $\to$ Imprecise estimates
 \item This is the \textbf{strong confounding} problem---mitigated by larger sample sizes or stronger instruments
 \end{itemize}
 \end{remark}
@@ -936,9 +936,9 @@ Since $\Var(\E[T_i \mid X_i]) \geq 0$, we have $\Var(\tilde{T}_i) \leq \Var(T_i)
 
 This measures the fraction of treatment variation explained by
 confounders. For causal inference: * \(R^2_{T \sim X} \approx 0\): Weak
-confounding → Large identifying variation *
-\(R^2_{T \sim X} \approx 1\): Strong confounding → Small identifying
-variation → Imprecise estimates
+confounding $\to$ Large identifying variation *
+\(R^2_{T \sim X} \approx 1\): Strong confounding $\to$ Small identifying
+variation $\to$ Imprecise estimates
 
 \textbf{Example}: In our insurance pricing setup: * If VIX, sentiment,
 and rates strongly predict competitor pricing (\(R^2 = 0.85\)), only
@@ -952,7 +952,7 @@ residual variation is what identifies the treatment effect * Large
 The FWL theorem is a special case of orthogonal decomposition in Hilbert
 space. Let \(\mathcal{H}\) be the space of square-integrable random
 variables with inner product
-\(\langle Y, Z \rangle = \mathbb{E}[YZ\){]}.
+\(\langle Y, Z \rangle = \mathbb{E}[YZ\).
 
 \textbf{Decomposition}: Any \(T \in \mathcal{H}\) can be uniquely
 decomposed as:
@@ -960,7 +960,7 @@ decomposed as:
 \[T = P_X T + (I - P_X) T = \mathbb{E}[T | X] + \tilde{T}\]
 
 where: * \(P_X\): Projection operator onto the subspace spanned by \(X\)
-* \(\mathbb{E}[T | X\){]}: Component of \(T\) in the \(X\)-subspace *
+* \(\mathbb{E}[T | X\): Component of \(T\) in the \(X\)-subspace *
 \(\tilde{T}\): Component of \(T\) orthogonal to \(X\)
 
 \textbf{Orthogonality}: By definition of projection:
@@ -996,7 +996,7 @@ FWL theorem motivates the Double ML approach
 \end{itemize}
 
 Why ML? When \(X\) is high-dimensional or the functional forms
-\(\mathbb{E}[T|X\){]} and \(\mathbb{E}[Y|X\){]} are nonlinear, linear
+\(\mathbb{E}[T|X]\) and \(\mathbb{E}[Y|X\) are nonlinear, linear
 regression is misspecified. ML methods can approximate these conditional
 expectations flexibly.
 
@@ -1007,8 +1007,8 @@ cross-fitting to avoid overfitting bias, which we'll develop in Chapter
 \subsection{Why Machine Learning? The Nonlinearity
 Problem}\label{_why_machine_learning_the_nonlinearity_problem}
 
-Linear regression for partialling out assumes \(\mathbb{E}[T|X\){]} and
-\(\mathbb{E}[Y|X\){]} are linear in \(X\). When this fails, FWL produces
+Linear regression for partialling out assumes \(\mathbb{E}[T|X]\) and
+\(\mathbb{E}[Y|X\) are linear in \(X\). When this fails, FWL produces
 biased estimates.
 
 \textbf{Example: Nonlinear confounding}
@@ -1020,21 +1020,21 @@ T_i &= X_{i1}^2 + X_{i2} + \epsilon_i^T \\
 Y_i &= 2 T_i + X_{i1}^2 + X_{i2}^3 + \epsilon_i^Y
 \end{align}
 
-where: * \(\mathbb{E}[T|X\){]} is quadratic in \(X_1\) *
-\(\mathbb{E}[Y|X\){]} is cubic in \(X_2\) * True treatment effect
+where: * \(\mathbb{E}[T|X]\) is quadratic in \(X_1\) *
+\(\mathbb{E}[Y|X]\) is cubic in \(X_2\) * True treatment effect
 \(\beta_1 = 2\)
 
 \textbf{Linear FWL fails}: 1. Regress \(T\) on \(X\) (linear regression)
-→ Misspecified, underestimates \(\mathbb{E}[T|X\){]} 2. Regress \(Y\) on
-\(X\) (linear regression) → Misspecified, underestimates
-\(\mathbb{E}[Y|X\){]} 3. Residuals \(\tilde{T}, \tilde{Y\){]} still
+$\to$ Misspecified, underestimates \(\mathbb{E}[T|X]\) 2. Regress \(Y\) on
+\(X\) (linear regression) $\to$ Misspecified, underestimates
+\(\mathbb{E}[Y|X]\) 3. Residuals \(\tilde{T}, \tilde{Y}\) still
 contain confounding from \(X\) 4. Final estimate
 \(\hat{\beta}_1 \neq 2\) is biased
 
 \textbf{Machine learning solution}: * Use \textbf{random forests} or
-\textbf{boosting} to estimate \(\mathbb{E}[T|X\){]} nonparametrically *
+\textbf{boosting} to estimate \(\mathbb{E}[T|X]\) nonparametrically *
 Use \textbf{neural networks} or \textbf{splines} to estimate
-\(\mathbb{E}[Y|X\){]} flexibly * Residuals properly remove nonlinear
+\(\mathbb{E}[Y|X]\) flexibly * Residuals properly remove nonlinear
 confounding * Final estimate converges to \(\beta_1 = 2\)
 
 \subsection{The High-Dimensional
@@ -1053,7 +1053,7 @@ conditions, economic indicators
 \textbf{Linear regression breaks down}: * \(p > n\): Regression is
 undefined (underdetermined system) * \(p \approx n\): Regression is
 highly unstable (overfitting) * Large \(p\): Need regularization (Lasso,
-Ridge) → Introduces bias
+Ridge) $\to$ Introduces bias
 
 \textbf{Machine learning handles high dimensions}: * \textbf{Random
 forests}: Split on important variables, ignore noise variables *
@@ -1069,7 +1069,7 @@ When using regularized estimators (Lasso, Ridge, neural networks), a new
 problem emerges: \textbf{regularization bias}.
 
 \textbf{The issue}: Suppose we use Lasso to estimate
-\(\hat{m}(X) = \mathbb{E}[Y|X\){]}. The Lasso estimate is:
+\(\hat{m}(X) = \mathbb{E}[Y|X\). The Lasso estimate is:
 
 \[\hat{m}(X) = \arg\min_m \mathbb{E}[(Y - m(X))^2] + \lambda \|m\|_1\]
 
@@ -1079,9 +1079,9 @@ The penalty term \(\lambda \|m\|_1\) introduces bias:
 
 even with infinite data!
 
-\textbf{Naive FWL with Lasso}: 1. Estimate \(\hat{m}_T(X)\) with Lasso →
-biased toward zero 2. Compute \(\tilde{T}_i = T_i - \hat{m}_T(X_i)\) →
-Residuals \textbf{not} mean-zero 3. Estimate \(\hat{\beta}_1\) → Biased
+\textbf{Naive FWL with Lasso}: 1. Estimate \(\hat{m}_T(X)\) with Lasso $\to$
+biased toward zero 2. Compute \(\tilde{T}_i = T_i - \hat{m}_T(X_i)\) $\to$
+Residuals \textbf{not} mean-zero 3. Estimate \(\hat{\beta}_1\) $\to$ Biased
 due to regularization bias in step 1
 
 \textbf{Double ML solution (preview)}:
@@ -1126,7 +1126,7 @@ demographics
 baseline HbA1c, BMI (3 confounders) * \textbf{Double ML}: If using full
 EHR (thousands of diagnosis codes, lab values, medications)
 
-\textbf{Rule of thumb}: \(p > 20\) or suspected nonlinearity → Try
+\textbf{Rule of thumb}: \(p > 20\) or suspected nonlinearity $\to$ Try
 Double ML
 
 \subsection{Computational
@@ -1173,7 +1173,7 @@ X_T = np.column_stack([T, X])
 reg_full = LinearRegression().fit(X_T, Y)
 beta1_full = reg_full.coef_[0]
 
-print(f"Method 1 (Full regression): β₁ = {beta1_full:.4f}")
+print(f"Method 1 (Full regression): $\beta$$_1$ = {beta1_full:.4f}")
 
 # Method 2: FWL two-step procedure
 # Step 1: Residualize T on X
@@ -1188,7 +1188,7 @@ Y_resid = Y - reg_Y.predict(X)
 reg_resid = LinearRegression().fit(T_resid.reshape(-1, 1), Y_resid)
 beta1_fwl = reg_resid.coef_[0]
 
-print(f"Method 2 (FWL two-step): β₁ = {beta1_fwl:.4f}")
+print(f"Method 2 (FWL two-step): $\beta$$_1$ = {beta1_fwl:.4f}")
 print(f"Difference: {abs(beta1_full - beta1_fwl):.2e}")
 print(f"True effect: 2.0000")
 \end{minted}
@@ -1196,8 +1196,8 @@ print(f"True effect: 2.0000")
 \textbf{Expected output}:
 
 \begin{verbatim}
-Method 1 (Full regression): β₁ = 1.9845
-Method 2 (FWL two-step): β₁ = 1.9845
+Method 1 (Full regression): $\beta$$_1$ = 1.9845
+Method 2 (FWL two-step): $\beta$$_1$ = 1.9845
 Difference: 0.00e+00
 True effect: 2.0000
 \end{verbatim}
@@ -1220,7 +1220,7 @@ Machine Learning:
   \(\tau_i = Y_i(1) - Y_i(0)\) are never observed
 \item
   \textbf{Average Treatment Effect}: Population-level effect
-  \(\text{ATE} = \mathbb{E}[Y_i(1) - Y_i(0)\){]} is identifiable
+  \(\text{ATE} = \mathbb{E}[Y_i(1) - Y_i(0)\) is identifiable
 \item
   \textbf{Identification}: Under unconfoundedness and overlap, ATE can
   be expressed using observed data
@@ -1272,13 +1272,13 @@ good overlap is often necessary.
 
 The Frisch-Waugh-Lovell theorem shows that "controlling for confounders"
 is mathematically equivalent to: 1. Residualizing treatment on
-confounders: \(\tilde{T} = T - \mathbb{E}[T|X\){]} 2. Residualizing
-outcome on confounders: \(\tilde{Y} = Y - \mathbb{E}[Y|X\){]} 3.
+confounders: \(\tilde{T} = T - \mathbb{E}[T|X\) 2. Residualizing
+outcome on confounders: \(\tilde{Y} = Y - \mathbb{E}[Y|X\) 3.
 Regressing orthogonalized outcome on orthogonalized treatment
 
 This partialling-out interpretation generalizes beyond linear
 regression: * \textbf{Classical econometrics}: Use linear regression for
-\(\mathbb{E}[T|X\){]} and \(\mathbb{E}[Y|X\){]} * \textbf{Modern ML}:
+\(\mathbb{E}[T|X]\) and \(\mathbb{E}[Y|X\) * \textbf{Modern ML}:
 Use random forests, boosting, or neural networks for flexible
 approximation
 
@@ -1293,7 +1293,7 @@ Chapter 2 develops the Double Machine Learning framework rigorously:
 
 \textbf{Neyman Orthogonality}: We'll show why the treatment effect
 \(\beta_1\) is \textbf{orthogonal} to nuisance parameters
-\(\mathbb{E}[T|X\), \textbackslash mathbb\{E\}{[}Y\textbar X{]}{]} in a
+\(\mathbb{E}[T|X]\), \textbackslash mathbb\{E\}{[}Y\textbar X{]}{]} in a
 precise sense. This orthogonality means regularization bias in nuisance
 estimation doesn't contaminate \(\hat{\beta}_1\) to first order.
 
@@ -1362,11 +1362,11 @@ and sales?
 \textbf{Solution}: Suppose competitors have access to a proprietary
 consumer confidence survey (not publicly available) that predicts
 insurance demand. They use this to set prices: * High survey confidence
-→ Competitors raise prices (high demand expected) * Low survey
-confidence → Competitors lower prices (low demand expected)
+$\to$ Competitors raise prices (high demand expected) * Low survey
+confidence $\to$ Competitors lower prices (low demand expected)
 
-This survey also affects our sales: * High confidence → More consumers
-buy (including from us) * Low confidence → Fewer consumers buy
+This survey also affects our sales: * High confidence $\to$ More consumers
+buy (including from us) * Low confidence $\to$ Fewer consumers buy
 
 Now unconfoundedness is violated: * \(T_i\) (competitor pricing) is
 affected by unobserved confidence * \(Y_i(0), Y_i(1)\) (our sales under
@@ -1389,7 +1389,7 @@ prices (\(e(x) = 0\) for VIX \textgreater{} 25). Can we still estimate:
 \[\text{ATE} = \mathbb{E}_X[\mathbb{E}[Y(1) | X] - \mathbb{E}[Y(0) | X]]\]
 
 For VIX \textgreater{} 25, we cannot estimate
-\(\mathbb{E}[Y(1) | \text{VIX} > 25\){]} (no treated units with high
+\(\mathbb{E}[Y(1) | \text{VIX} > 25\) (no treated units with high
 VIX). Without this, the full ATE is not identified.
 
 (b) \textbf{Yes}. The conditional ATE is:
@@ -1398,8 +1398,8 @@ VIX). Without this, the full ATE is not identified.
 
 Within the VIX \textless{} 25 subpopulation, overlap holds (both high
 and low competitor prices observed). We can estimate both
-\(\mathbb{E}[Y(1) | X, \text{VIX} < 25\){]} and
-\(\mathbb{E}[Y(0) | X, \text{VIX} < 25\){]}.
+\(\mathbb{E}[Y(1) | X, \text{VIX} < 25\) and
+\(\mathbb{E}[Y(0) | X, \text{VIX} < 25\).
 
 \textbf{Caveat}: This changes the estimand from "ATE for all weeks" to
 "ATE for low-VIX weeks".
@@ -1408,7 +1408,7 @@ and low competitor prices observed). We can estimate both
 
 \textbf{Exercise 1.5} (Variance Decomposition): Prove that
 \(\text{Var}(\tilde{T}_i) \leq \text{Var}(T_i)\) where
-\(\tilde{T}_i = T_i - \mathbb{E}[T_i | X_i\){]}.
+\(\tilde{T}_i = T_i - \mathbb{E}[T_i | X_i\).
 
 \textbf{Solution}: (Already proven in Theorem 1.3, reproduced here for
 completeness)
@@ -1417,7 +1417,7 @@ By the law of total variance:
 
 \[\text{Var}(T_i) = \mathbb{E}[\text{Var}(T_i | X_i)] + \text{Var}(\mathbb{E}[T_i | X_i])\]
 
-By construction, \(\tilde{T}_i\) and \(\mathbb{E}[T_i | X_i\){]} are
+By construction, \(\tilde{T}_i\) and \(\mathbb{E}[T_i | X_i\) are
 uncorrelated:
 
 \[\mathbb{E}[\tilde{T}_i \cdot \mathbb{E}[T_i | X_i]] = \mathbb{E}[\mathbb{E}[\tilde{T}_i | X_i] \cdot \mathbb{E}[T_i | X_i]] = 0\]
@@ -1489,16 +1489,16 @@ Does linear FWL recover the true effect \(\beta_1 = 2\)? If not, what
 estimator would work?
 
 \textbf{Solution}: Linear FWL will be biased because: 1. Regressing
-\(T\) on \(X\) (linear) cannot capture \(\mathbb{E}[T|X\) = X\_1\^{}2 +
-X\_2{]} 2. Regressing \(Y\) on \(X\) (linear) cannot capture
-\(\mathbb{E}[Y|X\) = 2\textbackslash mathbb\{E\}{[}T\textbar X{]} +
-X\_1\^{}2 + X\_2\^{}3{]} 3. Residuals \(\tilde{T}, \tilde{Y\){]} still
+\(T\) on \(X\) (linear) cannot capture \(\mathbb{E}[T|X] = X_1^2 + X_2\)
+2. Regressing \(Y\) on \(X\) (linear) cannot capture
+\(\mathbb{E}[Y|X] = 2\mathbb{E}[T|X] + X_1^2 + X_2^3\)
+3. Residuals \(\tilde{T}, \tilde{Y}\) still
 contain nonlinear confounding
 
 \textbf{What would work}: * \textbf{Polynomial regression}: Include
 \(X_1^2, X_2^3\) in the regression * \textbf{Random Forest}: Use
-RandomForestRegressor to estimate \(\mathbb{E}[T|X\){]} and
-\(\mathbb{E}[Y|X\){]} * \textbf{Double ML}: Use flexible ML in
+RandomForestRegressor to estimate \(\mathbb{E}[T|X]\) and
+\(\mathbb{E}[Y|X\) * \textbf{Double ML}: Use flexible ML in
 cross-fitting framework (Chapter 2)
 
 \textbf{Exercise 1.8} (Effective Sample Size): In the propensity score
@@ -1516,7 +1516,7 @@ units: * Units with \(e(X_i) \approx 1\): Low weights (already likely to
 be treated) * Units with \(e(X_i) \approx 0\): High weights (unlikely to
 be treated but got treated anyway)
 
-High variance in weights → Effective sample size \textless{} actual
+High variance in weights $\to$ Effective sample size \textless{} actual
 sample size.
 
 Formally:
