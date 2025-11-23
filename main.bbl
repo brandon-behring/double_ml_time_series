@@ -1,0 +1,34 @@
+\providecommand{\bysame}{\leavevmode\hbox to3em{\hrulefill}\thinspace}
+\providecommand{\MR}{\relax\ifhmode\unskip\space\fi MR }
+% \MRhref is called by the amsart/book/proc definition of \MR.
+\providecommand{\MRhref}[2]{%
+  \href{http://www.ams.org/mathscinet-getitem?mr=#1}{#2}
+}
+\providecommand{\href}[2]{#2}
+\begin{thebibliography}{1}
+
+\bibitem{chernozhukov2018double}
+Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian
+  Hansen, Whitney Newey, and James Robins, \emph{Double/debiased machine
+  learning for treatment and structural parameters}, The Econometrics Journal
+  \textbf{21} (2018), no.~1, C1--C68.
+
+\bibitem{frisch1933partial}
+Ragnar Frisch and Frederick~V Waugh, \emph{Partial time regressions as compared
+  with individual trends}, Econometrica \textbf{1} (1933), no.~4, 387--401.
+
+\bibitem{holland1986statistics}
+Paul~W Holland, \emph{Statistics and causal inference}, Journal of the American
+  Statistical Association \textbf{81} (1986), no.~396, 945--960.
+
+\bibitem{lovell1963seasonal}
+Michael~C Lovell, \emph{Seasonal adjustment of economic time series and
+  multiple regression analysis}, Journal of the American Statistical
+  Association \textbf{58} (1963), no.~304, 993--1010.
+
+\bibitem{rubin1974estimating}
+Donald~B Rubin, \emph{Estimating causal effects of treatments in randomized and
+  nonrandomized studies}, Journal of Educational Psychology \textbf{66} (1974),
+  no.~5, 688--701.
+
+\end{thebibliography}
