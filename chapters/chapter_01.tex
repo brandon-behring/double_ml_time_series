@@ -184,10 +184,10 @@ Identifiable}\label{_why_the_ate_is_identifiable}
 While individual effects \(\tau_i\) are never observed, the ATE can be
 estimated by comparing treated and control groups:
 
-\[\begin{align}
+\begin{align}
 \text{ATE} &= \mathbb{E}[Y_i(1)] - \mathbb{E}[Y_i(0)] \\
 &= \mathbb{E}[Y_i | T_i = 1] - \mathbb{E}[Y_i | T_i = 0] \quad \text{(under randomization)}
-\end{align}\]
+\end{align}
 
 The second line holds \textbf{if and only if} treatment assignment is
 randomized (or "as-if" randomized after conditioning on confounders).
@@ -971,10 +971,10 @@ This says \(\tilde{T}\) is uncorrelated with any function of \(X\).
 
 \textbf{FWL in Hilbert space notation}:
 
-\[\begin{align}
+\begin{align}
 \beta_1 &= \frac{\langle Y, \tilde{T} \rangle}{\langle \tilde{T}, \tilde{T} \rangle} \\
 &= \frac{\langle \tilde{Y}, \tilde{T} \rangle}{\langle \tilde{T}, \tilde{T} \rangle} \quad \text{(since } \langle Y - \tilde{Y}, \tilde{T} \rangle = 0\text{)}
-\end{align}\]
+\end{align}
 
 This geometric view clarifies \textbf{why} FWL works: we're computing
 the treatment effect using only the components of \(Y\) and \(T\) that
@@ -1015,10 +1015,10 @@ biased estimates.
 
 Suppose the true data-generating process is:
 
-\[\begin{align}
+\begin{align}
 T_i &= X_{i1}^2 + X_{i2} + \epsilon_i^T \\
 Y_i &= 2 T_i + X_{i1}^2 + X_{i2}^3 + \epsilon_i^Y
-\end{align}\]
+\end{align}
 
 where: * \(\mathbb{E}[T|X\){]} is quadratic in \(X_1\) *
 \(\mathbb{E}[Y|X\){]} is cubic in \(X_2\) * True treatment effect

@@ -16,11 +16,11 @@ powerful tool for causal inference under unconfoundedness. The FWL
 approach allows us to estimate treatment effects by "partialling out"
 confounders through residualization:
 
-\[\begin{align}
+\begin{align}
 \tilde{T}_i &= T_i - \mathbb{E}[T_i \mid X_i] \\
 \tilde{Y}_i &= Y_i - \mathbb{E}[Y_i \mid X_i] \\
 \hat{\tau} &= \frac{\text{Cov}(\tilde{T}_i, \tilde{Y}_i)}{\text{Var}(\tilde{T}_i)}
-\end{align}\]
+\end{align}
 
 This works perfectly when the conditional expectations
 \(\mathbb{E}[T_i \mid X_i]\) and \(\mathbb{E}[Y_i \mid X_i]\) can be
@@ -169,11 +169,11 @@ Let's check if this satisfies Neyman orthogonality.
 
 \textbf{Check orthogonality with respect to} \(m\):
 
-\[\begin{align}
+\begin{align}
 \mathbb{E}[\psi_{\text{naive}}(W; \tau_0, \eta)]
 &= \mathbb{E}[(T - m(X)) \cdot (Y - \tau_0 T - g(X))] \\
 &= \mathbb{E}[(T - m(X)) \cdot (g_0(X) - g(X) + \epsilon)]
-\end{align}\]
+\end{align}
 
 Taking the derivative with respect to \(m\) (formally, the Gateaux
 derivative):
@@ -225,30 +225,30 @@ and similarly for \(m\).
 
 First, expand the expectation:
 
-\[\begin{align}
+\begin{align}
 \mathbb{E}[\psi_{\text{DML}}(W; \tau_0, \eta)]
 &= \mathbb{E}[(T - m(X)) \cdot (Y - \ell(X) - \tau_0 (T - m(X)))] \\
 &= \mathbb{E}[(T - m(X)) \cdot (Y - \ell(X) - \tau_0 T + \tau_0 m(X))]
-\end{align}\]
+\end{align}
 
 Substitute the true model \(Y = \tau_0 T + g_0(X) + \epsilon\) and
 \(T = m_0(X) + v\):
 
-\[\begin{align}
+\begin{align}
 &= \mathbb{E}[(v + m_0(X) - m(X)) \cdot (\tau_0 T + g_0(X) + \epsilon - \ell(X) - \tau_0 T + \tau_0 m(X))] \\
 &= \mathbb{E}[(v + m_0(X) - m(X)) \cdot (g_0(X) - \ell(X) + \tau_0 m(X) + \epsilon)]
-\end{align}\]
+\end{align}
 
 Now note that \(\ell_0(X) = \mathbb{E}[Y \mid X\) =
 \textbackslash tau\_0 m\_0(X) + g\_0(X){]}.
 
 At \(\eta = \eta_0\), this becomes:
 
-\[\begin{align}
+\begin{align}
 &= \mathbb{E}[v \cdot (g_0(X) - \ell_0(X) + \tau_0 m_0(X) + \epsilon)] \\
 &= \mathbb{E}[v \cdot (g_0(X) - (\tau_0 m_0(X) + g_0(X)) + \tau_0 m_0(X) + \epsilon)] \\
 &= \mathbb{E}[v \cdot \epsilon] = 0
-\end{align}\]
+\end{align}
 
 by \(\mathbb{E}[v \mid X\) = 0{]} and \(\mathbb{E}[\epsilon \mid T, X\)
 = 0{]}.
