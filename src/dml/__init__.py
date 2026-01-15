@@ -18,10 +18,13 @@ from .fwl import (
     fwl_vs_ols_comparison,
 )
 from .robinson import robinson_estimator
+from .double_ml import double_ml, DMLResult
 
 __all__ = [
     "fwl_estimate",
     "fwl_residualize",
     "fwl_vs_ols_comparison",
     "robinson_estimator",
+    "double_ml",
+    "DMLResult",
 ]
