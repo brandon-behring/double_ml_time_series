@@ -26,7 +26,11 @@ See: `~/Claude/lever_of_archimedes/patterns/` for:
 
 **Double Machine Learning for Time Series** - Academic reference book on DML methodology with focus on time series causal inference for insurance/annuity competitor pricing with macroeconomic controls.
 
-**Status**: Phase 1A Complete - Chapters 1-2 (13,213 words, 43 pages)
+**Current Status** (2026-01-23):
+- Phase 1A: Complete - Chapters 1-2 content restructured
+- Book infrastructure: Rebuilt with amsbook + natbib
+- Code: Static DML implementations verified (FWL, Robinson, DML)
+- Time Series: NOT YET IMPLEMENTED (planned Phase 2)
 
 **Build System**: Native LaTeX (amsbook class) with zero-error compilation requirement.
 
@@ -36,19 +40,39 @@ See: `~/Claude/lever_of_archimedes/patterns/` for:
 
 ```bash
 # Build complete book
-make
+pdflatex -shell-escape main.tex && bibtex main && pdflatex -shell-escape main.tex
 
-# Build and open PDF
-make view
+# Run tests (from repo root)
+pytest test/validation/ -v
 
-# Run tests
-pytest tests/ --cov=src -v
+# Quick DML verification
+python -c "from src.dml import double_ml, fwl_estimate, robinson_estimator; print('OK')"
 
-# Check LaTeX errors
-make check-errors
+# Install in development mode (required for imports)
+pip install -e .
+```
 
-# Clean build artifacts
-make clean
+---
+
+## Project Structure
+
+```
+src/
+├── dml/
+│   ├── fwl.py           # Frisch-Waugh-Lovell theorem
+│   ├── robinson.py      # Robinson estimator
+│   └── double_ml.py     # DML with cross-fitting
+└── validation/
+    ├── dgp_generator.py # Synthetic data generation
+    └── ...              # Baseline comparisons
+
+test/
+└── validation/          # 27+ tests pass
+
+chapters/
+├── chapter_01.tex       # Potential Outcomes + FWL
+├── chapter_02.tex       # Neyman Orthogonality + DML
+└── chapter_03.tex       # Validation (skeleton)
 ```
 
 ---
@@ -79,8 +103,16 @@ make clean
 ## State Files
 
 - `docs/CURRENT_WORK.md` - Current task (30-sec resume)
-- `docs/plans/active/CHAPTER_STATUS.md` - Granular progress
-- `docs/plans/active/DOUBLE_ML_VOL2_2025-11-13.md` - Master plan
+- `docs/MASTER_ROADMAP_2025-11-21.md` - Master 11-chapter plan
+- `docs/IMPLEMENTATION_STRATEGY_REPORT.md` - Time series DML roadmap
+
+---
+
+## Known Limitations (Document as you work)
+
+1. **Not Time Series Yet**: Despite repo name, current code is i.i.d. only
+2. **Chapter 3 Incomplete**: Only outline exists, needs full implementation
+3. **No Dynamic DML**: Sequential g-estimation planned for Phase 2
 
 ---
 

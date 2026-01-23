@@ -48,7 +48,7 @@ Econometrica, 56(4), 931-954.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -162,7 +162,7 @@ def _compute_r2(y_true: NDArray, y_pred: NDArray) -> float:
     """Compute R² (coefficient of determination)."""
     ss_res = np.sum((y_true - y_pred) ** 2)
     ss_tot = np.sum((y_true - y_true.mean()) ** 2)
-    return 1 - ss_res / ss_tot if ss_tot > 1e-10 else 0.0
+    return float(1 - ss_res / ss_tot) if ss_tot > 1e-10 else 0.0
 
 
 def _cross_fit_nuisance(
@@ -259,7 +259,7 @@ def _influence_function_se(
         Influence function values.
     """
     n = len(Y_tilde)
-    T_tilde_sq_mean = np.mean(T_tilde ** 2)
+    T_tilde_sq_mean = np.mean(T_tilde**2)
 
     # Influence function
     psi = (Y_tilde - theta * T_tilde) * T_tilde / T_tilde_sq_mean
@@ -276,7 +276,9 @@ def double_ml(
     T: NDArray[np.float64],
     X: NDArray[np.float64],
     n_folds: int = 5,
-    model: Optional[Union[BaseEstimator, Literal["ridge", "random_forest", "gradient_boosting"]]] = None,
+    model: Optional[
+        Union[BaseEstimator, Literal["ridge", "random_forest", "gradient_boosting"]]
+    ] = None,
     outcome_model: Optional[BaseEstimator] = None,
     treatment_model: Optional[BaseEstimator] = None,
     alpha: float = 0.05,
@@ -356,7 +358,8 @@ def double_ml(
         model = "random_forest"
 
     if isinstance(model, str):
-        base_model = _get_nuisance_model(model)
+        model_type = cast(Literal["ridge", "random_forest", "gradient_boosting"], model)
+        base_model = _get_nuisance_model(model_type)
     else:
         base_model = model
 
@@ -385,7 +388,7 @@ def double_ml(
     T_tilde = T - T_hat
 
     # Step 4: Estimate theta
-    T_tilde_sq_sum = np.sum(T_tilde ** 2)
+    T_tilde_sq_sum = np.sum(T_tilde**2)
 
     if T_tilde_sq_sum < 1e-10:
         raise ValueError(
@@ -504,9 +507,9 @@ def demonstrate_cross_fitting_benefit(seed: int = 42, n_sims: int = 100) -> None
     true_theta = 2.0
     n_obs = 500
 
-    robinson_thetas = []
-    dml_thetas = []
-    dml_coverages = []
+    robinson_thetas_list: list[float] = []
+    dml_thetas_list: list[float] = []
+    dml_coverages: list[bool] = []
 
     for i in range(n_sims):
         X = np.random.randn(n_obs, 3)
@@ -516,23 +519,25 @@ def demonstrate_cross_fitting_benefit(seed: int = 42, n_sims: int = 100) -> None
         robinson_result = robinson_estimator(Y, T, X, model="random_forest")
         dml_result = double_ml(Y, T, X, model="random_forest", n_folds=5)
 
-        robinson_thetas.append(robinson_result.theta)
-        dml_thetas.append(dml_result.theta)
-        dml_coverages.append(
-            dml_result.ci_lower <= true_theta <= dml_result.ci_upper
-        )
+        robinson_thetas_list.append(robinson_result.theta)
+        dml_thetas_list.append(dml_result.theta)
+        dml_coverages.append(dml_result.ci_lower <= true_theta <= dml_result.ci_upper)
 
-    robinson_thetas = np.array(robinson_thetas)
-    dml_thetas = np.array(dml_thetas)
+    robinson_thetas = np.array(robinson_thetas_list)
+    dml_thetas = np.array(dml_thetas_list)
 
     print(f"Results ({n_sims} simulations):")
     print()
     print("                     Robinson       DML (5-fold)")
     print("                     --------       ------------")
     print(f"  Mean θ̂:           {np.mean(robinson_thetas):.4f}         {np.mean(dml_thetas):.4f}")
-    print(f"  Bias:             {np.mean(robinson_thetas) - true_theta:.4f}         {np.mean(dml_thetas) - true_theta:.4f}")
+    print(
+        f"  Bias:             {np.mean(robinson_thetas) - true_theta:.4f}         {np.mean(dml_thetas) - true_theta:.4f}"
+    )
     print(f"  Std Dev:          {np.std(robinson_thetas):.4f}         {np.std(dml_thetas):.4f}")
-    print(f"  RMSE:             {np.sqrt(np.mean((robinson_thetas - true_theta)**2)):.4f}         {np.sqrt(np.mean((dml_thetas - true_theta)**2)):.4f}")
+    print(
+        f"  RMSE:             {np.sqrt(np.mean((robinson_thetas - true_theta)**2)):.4f}         {np.sqrt(np.mean((dml_thetas - true_theta)**2)):.4f}"
+    )
     print(f"  95% CI Coverage:  N/A*           {np.mean(dml_coverages):.1%}")
     print()
     print("  *Robinson's naive SE doesn't account for nuisance estimation,")

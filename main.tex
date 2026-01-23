@@ -21,6 +21,10 @@
     bgcolor=gray!5
 }
 
+% Algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
 % Graphics and figures
 \usepackage{graphicx}
 \usepackage{caption}
@@ -32,7 +36,7 @@
 \usepackage{longtable}  % Multi-page tables
 
 % Bibliography
-\usepackage{cite}       % Better citation formatting
+\usepackage[round,numbers]{natbib}  % Numbered citations with \citet, \citep
 
 % Hyperlinks (LOAD LAST)
 \usepackage{hyperref}
@@ -61,6 +65,7 @@
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{assumption}{Assumption}[chapter]
 
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}[chapter]
@@ -94,6 +99,24 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\plim}{plim}
+
+% Causal inference specific
+\newcommand{\ate}{\tau}                    % Average treatment effect
+\newcommand{\att}{\tau_{\text{ATT}}}       % ATT
+\newcommand{\atc}{\tau_{\text{ATC}}}       % ATC
+\newcommand{\cate}{\tau(x)}                % Conditional ATE
+\newcommand{\poty}[1]{Y^{(#1)}}            % Potential outcome Y(t)
+\newcommand{\propensity}{e(X)}             % Propensity score
+\newcommand{\independent}{\perp\!\!\!\perp} % Statistical independence
+\newcommand{\indep}{\perp\!\!\!\perp}       % Alias for independence
+
+% DML-specific commands
+\newcommand{\nuisance}{\eta}               % Nuisance function
+\newcommand{\score}{\psi}                  % Score function
+\newcommand{\residual}[1]{\tilde{#1}}      % Residualized variable
+
+% Insight box environment
+\newenvironment{insight}{\par\medskip\noindent\textbf{$\bigstar$ Insight:}\itshape}{\par\medskip}
 
 % ============================================================================
 % DOCUMENT METADATA
@@ -176,7 +199,7 @@ This book develops the theory and practice of Double Machine Learning (DML) for 
 
 \backmatter
 
-\bibliographystyle{amsplain}
-\bibliography{chapters/bibliography}
+\bibliographystyle{plainnat}
+\bibliography{bibliography}
 
 \end{document}

@@ -46,7 +46,7 @@ and structural parameters. The Econometrics Journal, 21(1), C1-C68.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -132,14 +132,16 @@ def _compute_r2(y_true: NDArray, y_pred: NDArray) -> float:
     """Compute R² (coefficient of determination)."""
     ss_res = np.sum((y_true - y_pred) ** 2)
     ss_tot = np.sum((y_true - y_true.mean()) ** 2)
-    return 1 - ss_res / ss_tot if ss_tot > 1e-10 else 0.0
+    return float(1 - ss_res / ss_tot) if ss_tot > 1e-10 else 0.0
 
 
 def robinson_estimator(
     Y: NDArray[np.float64],
     T: NDArray[np.float64],
     X: NDArray[np.float64],
-    model: Optional[Union[BaseEstimator, Literal["ridge", "random_forest", "gradient_boosting"]]] = None,
+    model: Optional[
+        Union[BaseEstimator, Literal["ridge", "random_forest", "gradient_boosting"]]
+    ] = None,
 ) -> RobinsonResult:
     """Robinson (1988) semiparametric estimator.
 
@@ -207,8 +209,9 @@ def robinson_estimator(
         model = "random_forest"
 
     if isinstance(model, str):
-        outcome_model = _get_nuisance_model(model)
-        treatment_model = _get_nuisance_model(model)
+        model_type = cast(Literal["ridge", "random_forest", "gradient_boosting"], model)
+        outcome_model = _get_nuisance_model(model_type)
+        treatment_model = _get_nuisance_model(model_type)
     else:
         outcome_model = clone(model)
         treatment_model = clone(model)
@@ -228,7 +231,7 @@ def robinson_estimator(
     T_tilde = T - T_hat
 
     # Step 4: Robinson formula
-    T_tilde_sq_sum = np.sum(T_tilde ** 2)
+    T_tilde_sq_sum = np.sum(T_tilde**2)
 
     if T_tilde_sq_sum < 1e-10:
         raise ValueError(
@@ -294,10 +297,12 @@ def compare_fwl_vs_robinson(
     }
 
     if true_theta is not None:
+        fwl_bias = fwl_result.theta - true_theta
+        robinson_bias = robinson_result.theta - true_theta
         result["true_theta"] = true_theta
-        result["fwl_bias"] = fwl_result.theta - true_theta
-        result["robinson_bias"] = robinson_result.theta - true_theta
-        result["fwl_better"] = abs(result["fwl_bias"]) < abs(result["robinson_bias"])
+        result["fwl_bias"] = fwl_bias
+        result["robinson_bias"] = robinson_bias
+        result["fwl_better"] = abs(fwl_bias) < abs(robinson_bias)
 
     return result
 

@@ -9,6 +9,13 @@ description = "Volume 2: Double Machine Learning for Time Series Causal Inferenc
 authors = [{name = "Brandon Behring"}]
 requires-python = ">=3.11"
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.setuptools.package-dir]
+"" = "."
+
 [tool.black]
 line-length = 100
 target-version = ["py311"]
@@ -50,7 +57,7 @@ exclude = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["test"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "--cov=src --cov-report=term-missing --cov-report=html -v"
