@@ -53,8 +53,31 @@ Thumbs.db
 
 # Project specific
 output/
-*.pdf
 *.log
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.run.xml
+*.toc
+*.synctex.gz
+*.glo
+*.idx
+*.ist
+*.acn
+
+# Minted cache
+_minted/
+_minted-*/
+
+# PDF (keep main.pdf for sharing)
+*.pdf
+!main.pdf
 
 # But keep generated PDFs in specific output directory for milestones
 !docs/output/*.pdf

@@ -1,133 +1,39 @@
-\documentclass[11pt,oneside]{amsbook}
+% Double Machine Learning for Time Series
+% Tufte-style layout with wide margins
+%
+% Build with: lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex
 
-% ============================================================================
-% PACKAGE IMPORTS
-% ============================================================================
+\documentclass[11pt,oneside]{scrbook}
 
-% Mathematics packages
-\usepackage{mathtools}  % Enhanced version of amsmath (already loaded by amsbook)
-\usepackage{amssymb}    % Math symbols (blackboard bold, etc.)
-\usepackage{amsthm}     % Theorem environments (already loaded by amsbook)
-
-% Code listings with syntax highlighting
-\usepackage{minted}     % Requires: pip install Pygments
-\setminted{
-    breaklines=true,
-    fontsize=\small,
-    linenos=true,
-    frame=lines,
-    framesep=2mm,
-    baselinestretch=1.2,
-    bgcolor=gray!5
-}
-
-% Algorithms
-\usepackage{algorithm}
-\usepackage{algorithmic}
-
-% Graphics and figures
-\usepackage{graphicx}
-\usepackage{caption}
-\usepackage{subcaption}
-
-% Tables
-\usepackage{booktabs}   % Professional tables
-\usepackage{array}      % Extended column formatting
-\usepackage{longtable}  % Multi-page tables
-
-% Bibliography
-\usepackage[round,numbers]{natbib}  % Numbered citations with \citet, \citep
-
-% Hyperlinks (LOAD LAST)
-\usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    citecolor=blue,
-    urlcolor=blue,
-    pdftitle={Double Machine Learning for Time Series},
-    pdfauthor={Brandon Behring},
-    bookmarks=true,
-    bookmarksnumbered=true
-}
-
-% ============================================================================
-% THEOREM ENVIRONMENTS
-% ============================================================================
-
-\theoremstyle{definition}
-\newtheorem{definition}{Definition}[chapter]
-\newtheorem{example}{Example}[chapter]
-\newtheorem{exercise}{Exercise}[chapter]
-
-\theoremstyle{plain}
-\newtheorem{theorem}{Theorem}[chapter]
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{assumption}{Assumption}[chapter]
-
-\theoremstyle{remark}
-\newtheorem{remark}{Remark}[chapter]
-\newtheorem{note}{Note}[chapter]
-
-% ============================================================================
-% CUSTOM COMMANDS
-% ============================================================================
-
-% Probability and statistics
-\newcommand{\E}{\mathbb{E}}         % Expectation
-\newcommand{\Var}{\mathrm{Var}}     % Variance
-\newcommand{\Cov}{\mathrm{Cov}}     % Covariance
-\newcommand{\Prob}{\mathbb{P}}      % Probability
-
-% Common sets
-\newcommand{\R}{\mathbb{R}}         % Real numbers
-\newcommand{\N}{\mathbb{N}}         % Natural numbers
-\newcommand{\Z}{\mathbb{Z}}         % Integers
-
-% Indicators and norms
-\newcommand{\indicator}[1]{\mathbb{1}\{#1\}}
-\newcommand{\norm}[1]{\|#1\|}
-
-% Convergence
-\newcommand{\convd}{\xrightarrow{d}}   % Convergence in distribution
-\newcommand{\convp}{\xrightarrow{p}}   % Convergence in probability
-\newcommand{\convas}{\xrightarrow{a.s.}}  % Almost sure convergence
-
-% Operators
-\DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\argmin}{arg\,min}
-\DeclareMathOperator*{\plim}{plim}
-
-% Causal inference specific
-\newcommand{\ate}{\tau}                    % Average treatment effect
-\newcommand{\att}{\tau_{\text{ATT}}}       % ATT
-\newcommand{\atc}{\tau_{\text{ATC}}}       % ATC
-\newcommand{\cate}{\tau(x)}                % Conditional ATE
-\newcommand{\poty}[1]{Y^{(#1)}}            % Potential outcome Y(t)
-\newcommand{\propensity}{e(X)}             % Propensity score
-\newcommand{\independent}{\perp\!\!\!\perp} % Statistical independence
-\newcommand{\indep}{\perp\!\!\!\perp}       % Alias for independence
-
-% DML-specific commands
-\newcommand{\nuisance}{\eta}               % Nuisance function
-\newcommand{\score}{\psi}                  % Score function
-\newcommand{\residual}[1]{\tilde{#1}}      % Residualized variable
-
-% Insight box environment
-\newenvironment{insight}{\par\medskip\noindent\textbf{$\bigstar$ Insight:}\itshape}{\par\medskip}
+% Load Tufte-style preamble (fonts, geometry, colors, callouts, math)
+\usepackage{shared/dml-preamble-tufte}
 
 % ============================================================================
 % DOCUMENT METADATA
 % ============================================================================
 
-\title{Double Machine Learning for Time Series:\\
-A Production Guide to Causal Inference}
+\renewcommand{\guidetitle}{Double Machine Learning for Time Series}
+\renewcommand{\guidesubtitle}{A Production Guide to Causal Inference}
+\renewcommand{\guideauthor}{Brandon Behring}
+\renewcommand{\guideversion}{1.0}
+\renewcommand{\guidedate}{\today}
+\renewcommand{\guideedition}{Digital}
+\renewcommand{\volumeshort}{DML}
 
-\author{Brandon Behring}
+% ============================================================================
+% BIBLIOGRAPHY
+% ============================================================================
 
-\date{\today}
+\addbibresource{bibliography.bib}
+
+% ============================================================================
+% PDF METADATA
+% ============================================================================
+
+\hypersetup{
+    pdftitle={Double Machine Learning for Time Series},
+    pdfauthor={Brandon Behring}
+}
 
 % ============================================================================
 % DOCUMENT BODY
@@ -141,15 +47,18 @@ A Production Guide to Causal Inference}
 
 \frontmatter
 
-\maketitle
+\makeguidecover
 
 \tableofcontents
 
 \chapter{Preface}
 
-This book develops the theory and practice of Double Machine Learning (DML) for time series causal inference, with particular focus on insurance and annuity pricing applications.
+This book develops the theory and practice of Double Machine Learning (DML)
+for time series causal inference, with particular focus on insurance and
+annuity pricing applications.
 
-\textbf{Key Features:}
+\keyresult{
+\textbf{What you'll learn:}
 \begin{itemize}
     \item Rigorous mathematical foundations with complete proofs
     \item Production-ready Python implementations using EconML
@@ -157,13 +66,16 @@ This book develops the theory and practice of Double Machine Learning (DML) for 
     \item Real-world applications to competitor pricing with macroeconomic controls
     \item Hardware optimization for 64-core systems (parallelization)
 \end{itemize}
+}
 
+\insight{
 \textbf{Prerequisites:}
 \begin{itemize}
     \item Linear regression, probability theory, statistical inference
     \item Python programming (NumPy, pandas, scikit-learn)
     \item Familiarity with machine learning basics
 \end{itemize}
+}
 
 % ----------------------------------------------------------------------------
 % MAIN MATTER
@@ -199,7 +111,6 @@ This book develops the theory and practice of Double Machine Learning (DML) for 
 
 \backmatter
 
-\bibliographystyle{plainnat}
-\bibliography{bibliography}
+\printbibliography[heading=bibintoc,title={References}]
 
 \end{document}

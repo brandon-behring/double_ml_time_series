@@ -85,6 +85,7 @@ observational studies, defines causality through counterfactuals.
 
 \begin{definition}[Potential Outcomes]
 \label{def:potential_outcomes}
+\marginnote[Key Idea]{Each unit has two potential outcomes: $Y(0)$ and $Y(1)$. Only one is ever observed.}%
 For each unit $i$ and treatment value $t \in \{0, 1\}$, define:
 \[
 Y_i(t) = \text{Outcome unit } i \text{ would have if assigned treatment } t
@@ -127,12 +128,16 @@ This is the difference in outcomes under treatment versus control \textbf{for th
 \section{The Fundamental Problem of Causal
 Inference}\label{_the_fundamental_problem_of_causal_inference}
 
+\marginwarning[Critical]{This is \emph{not} a statistical problem---no amount of data can solve it!}%
 \textbf{Fundamental Problem} \cite{holland1986statistics}:
 \textbf{We can never observe both potential outcomes for the same unit
 at the same time.}
 
-For unit \(i\): * If \(T_i = 1\), we observe \(Y_i(1)\) but not
-\(Y_i(0)\) * If \(T_i = 0\), we observe \(Y_i(0)\) but not \(Y_i(1)\)
+For unit $i$:
+\begin{itemize}
+\item If $T_i = 1$, we observe $Y_i(1)$ but not $Y_i(0)$
+\item If $T_i = 0$, we observe $Y_i(0)$ but not $Y_i(1)$
+\end{itemize}
 
 Therefore, the individual treatment effect \(\tau_i = Y_i(1) - Y_i(0)\)
 is \textbf{never directly observable}.
@@ -170,6 +175,7 @@ on \textbf{population-level} average effects.
 
 \begin{definition}[Average Treatment Effect]
 \label{def:ate}
+\marginnote[ATE]{The main estimand in DML. We give up on individual $\tau_i$ and estimate the population average.}%
 The Average Treatment Effect (ATE) is the expected difference in potential outcomes:
 \[
 \text{ATE} = \E[Y_i(1) - Y_i(0)] = \E[Y_i(1)] - \E[Y_i(0)]
@@ -192,12 +198,11 @@ estimated by comparing treated and control groups:
 The second line holds \textbf{if and only if} treatment assignment is
 randomized (or "as-if" randomized after conditioning on confounders).
 
-\textbf{Intuition}: In a randomized experiment: *
-\(\mathbb{E}[Y_i(1) | T_i = 1\) =
-\textbackslash mathbb\{E\}{[}Y\_i(1){]}{]}: Treated units are
-representative of the population * \(\mathbb{E}[Y_i(0) | T_i = 0\) =
-\textbackslash mathbb\{E\}{[}Y\_i(0){]}{]}: Control units are
-representative of the population
+\textbf{Intuition}: In a randomized experiment:
+\begin{itemize}
+\item $\E[Y_i(1) \mid T_i = 1] = \E[Y_i(1)]$: Treated units are representative of the population
+\item $\E[Y_i(0) \mid T_i = 0] = \E[Y_i(0)]$: Control units are representative of the population
+\end{itemize}
 
 Therefore, comparing treated vs. control groups recovers the ATE.
 
@@ -211,6 +216,7 @@ distribution?}
 \subsection{Conditional Independence
 Assumption}\label{_conditional_independence_assumption}
 
+\marginnote[Untestable]{This assumption cannot be directly verified---it involves counterfactuals. Domain knowledge is essential.}%
 \textbf{Assumption 1.1 (Unconfoundedness / Conditional Independence)}
 
 Treatment assignment is independent of potential outcomes, conditional
@@ -232,6 +238,7 @@ knowledge.
 
 \subsection{Overlap (Positivity)}\label{_overlap_positivity}
 
+\margintip[Testable]{Unlike unconfoundedness, overlap \emph{can} be checked by examining propensity scores.}%
 \textbf{Assumption 1.2 (Overlap / Positivity)}
 
 For all \(x\) in the support of \(X\):
@@ -328,12 +335,14 @@ For each week \(i\), two potential outcomes exist:
   \(Y_i(1)\): Sales if competitors had high prices that week
 \end{itemize}
 
-\textbf{Week 1 example}: Suppose in reality \(T_1 = 1\) (competitors had
-high prices) and we observed \(Y_1 = 245\) sales.
+\textbf{Week 1 example}: Suppose in reality $T_1 = 1$ (competitors had
+high prices) and we observed $Y_1 = 245$ sales.
 
-The potential outcomes are: * \(Y_1(1) = 245\): Observed (this actually
-happened) * \(Y_1(0) = ?\): Counterfactual (what would have happened if
-competitors had low prices)
+The potential outcomes are:
+\begin{itemize}
+\item $Y_1(1) = 245$: Observed (this actually happened)
+\item $Y_1(0) = ?$: Counterfactual (what would have happened if competitors had low prices)
+\end{itemize}
 
 We might guess \(Y_1(0) = 180\) (fewer sales with cheaper competitor
 alternatives), implying an individual treatment effect
@@ -495,8 +504,11 @@ characteristics.
 \subsection{Potential Outcomes in
 Healthcare}\label{_potential_outcomes_in_healthcare}
 
-For each patient \(i\): * \(Y_i(1)\): Change in HbA1c if given new
-medication * \(Y_i(0)\): Change in HbA1c if given standard medication
+For each patient $i$:
+\begin{itemize}
+\item $Y_i(1)$: Change in HbA1c if given new medication
+\item $Y_i(0)$: Change in HbA1c if given standard medication
+\end{itemize}
 
 \textbf{Patient 42 example}: Suppose patient 42 receives the new
 medication (\(T_{42} = 1\)) and experiences \(Y_{42} = -1.8\) (HbA1c
@@ -525,22 +537,28 @@ doctors prescribe treatments based on patient characteristics that also
 affect outcomes.
 
 \textbf{Scenario}: Suppose doctors prescribe the new medication
-primarily to: * Younger patients (better adherence) * Patients with
-higher baseline HbA1c (more room for improvement) * Patients with fewer
-comorbidities (lower risk of side effects)
+primarily to:
+\begin{itemize}
+\item Younger patients (better adherence)
+\item Patients with higher baseline HbA1c (more room for improvement)
+\item Patients with fewer comorbidities (lower risk of side effects)
+\end{itemize}
 
-Now: * \(T_i\) is related to age, baseline HbA1c, comorbidities * These
-variables also affect \(Y_i\) (younger patients may improve more
-regardless of medication)
+Now:
+\begin{itemize}
+\item $T_i$ is related to age, baseline HbA1c, comorbidities
+\item These variables also affect $Y_i$ (younger patients may improve more regardless of medication)
+\end{itemize}
 
 \textbf{Naive comparison} (biased):
 
 \[\mathbb{E}[Y_i | T_i = 1] - \mathbb{E}[Y_i | T_i = 0]\]
 
-might show the new medication is much better, but this confounds: *
-\textbf{True medication effect}: \(\mathbb{E}[Y_i(1) - Y_i(0)\) *
-\textbf{Patient selection}: Treated patients are younger, healthier,
-more likely to improve anyway
+might show the new medication is much better, but this confounds:
+\begin{itemize}
+\item \textbf{True medication effect}: $\E[Y_i(1) - Y_i(0)]$
+\item \textbf{Patient selection}: Treated patients are younger, healthier, more likely to improve anyway
+\end{itemize}
 
 \subsection{Unconfoundedness in
 Healthcare}\label{_unconfoundedness_in_healthcare}
@@ -550,14 +568,17 @@ treatment assignment is "as-if randomized":
 
 \[\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i\]
 
-\textbf{When plausible}: * If doctors prescribe based solely on
-observable characteristics (age, baseline HbA1c, comorbidities, etc.) *
-All relevant patient features are recorded in electronic health records
+\textbf{When plausible}:
+\begin{itemize}
+\item If doctors prescribe based solely on observable characteristics (age, baseline HbA1c, comorbidities, etc.)
+\item All relevant patient features are recorded in electronic health records
+\end{itemize}
 
-\textbf{When violated}: * Doctors have private information not in the
-EHR (patient motivation, family support, subtle clinical signs) *
-Patients self-select into treatment based on unobservable factors (fear
-of side effects, personal preferences)
+\textbf{When violated}:
+\begin{itemize}
+\item Doctors have private information not in the EHR (patient motivation, family support, subtle clinical signs)
+\item Patients self-select into treatment based on unobservable factors (fear of side effects, personal preferences)
+\end{itemize}
 
 \subsection{Overlap in Healthcare}\label{_overlap_in_healthcare}
 
@@ -578,11 +599,12 @@ new medication to patients over age 75 (concern about kidney function).
   extrapolation
 \end{itemize}
 
-\textbf{Practical solution}: Either: 1. \textbf{Restrict population}:
-Estimate ATE only for ages 18-75 (where overlap holds) 2.
-\textbf{Collect more data}: Find hospitals that do prescribe to elderly
-patients 3. \textbf{Randomized trial}: If effect on elderly is crucial,
-conduct RCT
+\textbf{Practical solution}: Either:
+\begin{enumerate}
+\item \textbf{Restrict population}: Estimate ATE only for ages 18-75 (where overlap holds)
+\item \textbf{Collect more data}: Find hospitals that do prescribe to elderly patients
+\item \textbf{Randomized trial}: If effect on elderly is crucial, conduct RCT
+\end{enumerate}
 
 \subsection{Why This Example Matters}\label{_why_this_example_matters}
 
@@ -607,11 +629,12 @@ Healthcare provides clear intuition for key concepts:
   randomization is unethical
 \end{enumerate}
 
-\textbf{Connection to insurance pricing}: Same framework, different
-domain: * Healthcare: Doctors select patients for treatment based on
-characteristics * Insurance: Competitors set prices based on market
-conditions * Both: Need to condition on confounders to identify causal
-effects
+\textbf{Connection to insurance pricing}: Same framework, different domain:
+\begin{itemize}
+\item Healthcare: Doctors select patients for treatment based on characteristics
+\item Insurance: Competitors set prices based on market conditions
+\item Both: Need to condition on confounders to identify causal effects
+\end{itemize}
 
 \section{Understanding Overlap: A Critical
 Requirement}\label{_understanding_overlap_a_critical_requirement}
@@ -628,12 +651,12 @@ inference. Let's see what happens when it fails.
 The function \(e(x)\) is the \textbf{propensity score}---the probability
 of treatment given confounders.
 
-\textbf{Interpretation}: * \(e(x) > 0\): Some units with \(X = x\)
-receive treatment $\to$ Can estimate \(\mathbb{E}[Y(1) | X = x\) *
-\(e(x) < 1\): Some units with \(X = x\) receive control $\to$ Can estimate
-\(\mathbb{E}[Y(0) | X = x\) * Both required to estimate
-\(\mathbb{E}[Y(1) | X = x\) - \textbackslash mathbb\{E\}{[}Y(0)
-\textbar{} X = x{]}{]}
+\textbf{Interpretation}:
+\begin{itemize}
+\item $e(x) > 0$: Some units with $X = x$ receive treatment $\to$ Can estimate $\E[Y(1) \mid X = x]$
+\item $e(x) < 1$: Some units with $X = x$ receive control $\to$ Can estimate $\E[Y(0) \mid X = x]$
+\item Both required to estimate $\E[Y(1) \mid X = x] - \E[Y(0) \mid X = x]$
+\end{itemize}
 
 \subsection{What Happens When Overlap
 Fails?}\label{_what_happens_when_overlap_fails}
@@ -672,11 +695,12 @@ In practice, overlap often holds technically but is weak:
   variance in \(\hat{\mathbb{E}}[Y(0) | X = x\)
 \end{itemize}
 
-\textbf{Solution approaches}: 1. \textbf{Trimming}: Drop units with
-\(e(x)\) close to 0 or 1 (changes estimand to trimmed population) 2.
-\textbf{Weighting}: Propensity score weighting (upweight rare treatment
-assignments) 3. \textbf{Regularization}: Shrink extreme propensity score
-weights
+\textbf{Solution approaches}:
+\begin{enumerate}
+\item \textbf{Trimming}: Drop units with $e(x)$ close to 0 or 1 (changes estimand to trimmed population)
+\item \textbf{Weighting}: Propensity score weighting (upweight rare treatment assignments)
+\item \textbf{Regularization}: Shrink extreme propensity score weights
+\end{enumerate}
 
 Double ML handles near-violations through flexible propensity score
 estimation and cross-fitting, which we'll see in Chapter 2.
@@ -821,6 +845,7 @@ controlling for \(X_i\) in the same regression?
 
 \begin{theorem}[Frisch-Waugh-Lovell]
 \label{thm:fwl}
+\marginnote[Foundation]{FWL is the theoretical foundation for DML. The ``double'' refers to partialling out from both $Y$ and $T$.}%
 The coefficient $\hat{\beta}_1$ from regressing $Y$ on $(T, X)$ is \textbf{identical} to the coefficient from the following two-step procedure:
 \begin{enumerate}
 \item \textbf{Residualize treatment}: Regress $T_i$ on $X_i$ to obtain residuals $\tilde{T}_i = T_i - \E[T_i \mid X_i]$
@@ -950,24 +975,26 @@ residual variation is what identifies the treatment effect * Large
 (Advanced)}\label{_orthogonal_decomposition_advanced}
 
 The FWL theorem is a special case of orthogonal decomposition in Hilbert
-space. Let \(\mathcal{H}\) be the space of square-integrable random
-variables with inner product
-\(\langle Y, Z \rangle = \mathbb{E}[YZ\).
+space. Let $\mathcal{H}$ be the space of square-integrable random
+variables with inner product $\langle Y, Z \rangle = \E[YZ]$.
 
-\textbf{Decomposition}: Any \(T \in \mathcal{H}\) can be uniquely
+\textbf{Decomposition}: Any $T \in \mathcal{H}$ can be uniquely
 decomposed as:
 
-\[T = P_X T + (I - P_X) T = \mathbb{E}[T | X] + \tilde{T}\]
+\[T = P_X T + (I - P_X) T = \E[T \mid X] + \tilde{T}\]
 
-where: * \(P_X\): Projection operator onto the subspace spanned by \(X\)
-* \(\mathbb{E}[T | X\): Component of \(T\) in the \(X\)-subspace *
-\(\tilde{T}\): Component of \(T\) orthogonal to \(X\)
+where:
+\begin{itemize}
+\item $P_X$: Projection operator onto the subspace spanned by $X$
+\item $\E[T \mid X]$: Component of $T$ in the $X$-subspace
+\item $\tilde{T}$: Component of $T$ orthogonal to $X$
+\end{itemize}
 
 \textbf{Orthogonality}: By definition of projection:
 
-\[\langle \tilde{T}, h(X) \rangle = \mathbb{E}[\tilde{T} \cdot h(X)] = 0 \quad \text{for all} \quad h\]
+\[\langle \tilde{T}, h(X) \rangle = \E[\tilde{T} \cdot h(X)] = 0 \quad \text{for all} \quad h\]
 
-This says \(\tilde{T}\) is uncorrelated with any function of \(X\).
+This says $\tilde{T}$ is uncorrelated with any function of $X$.
 
 \textbf{FWL in Hilbert space notation}:
 
@@ -977,7 +1004,7 @@ This says \(\tilde{T}\) is uncorrelated with any function of \(X\).
 \end{align}
 
 This geometric view clarifies \textbf{why} FWL works: we're computing
-the treatment effect using only the components of \(Y\) and \(T\) that
+the treatment effect using only the components of $Y$ and $T$ that
 are orthogonal to confounders.
 
 \subsection{Connection to Double Machine
@@ -1024,46 +1051,56 @@ where: * \(\mathbb{E}[T|X]\) is quadratic in \(X_1\) *
 \(\mathbb{E}[Y|X]\) is cubic in \(X_2\) * True treatment effect
 \(\beta_1 = 2\)
 
-\textbf{Linear FWL fails}: 1. Regress \(T\) on \(X\) (linear regression)
-$\to$ Misspecified, underestimates \(\mathbb{E}[T|X]\) 2. Regress \(Y\) on
-\(X\) (linear regression) $\to$ Misspecified, underestimates
-\(\mathbb{E}[Y|X]\) 3. Residuals \(\tilde{T}, \tilde{Y}\) still
-contain confounding from \(X\) 4. Final estimate
-\(\hat{\beta}_1 \neq 2\) is biased
+\textbf{Linear FWL fails}:
+\begin{enumerate}
+\item Regress $T$ on $X$ (linear regression) $\to$ Misspecified, underestimates $\E[T \mid X]$
+\item Regress $Y$ on $X$ (linear regression) $\to$ Misspecified, underestimates $\E[Y \mid X]$
+\item Residuals $\tilde{T}, \tilde{Y}$ still contain confounding from $X$
+\item Final estimate $\hat{\beta}_1 \neq 2$ is biased
+\end{enumerate}
 
-\textbf{Machine learning solution}: * Use \textbf{random forests} or
-\textbf{boosting} to estimate \(\mathbb{E}[T|X]\) nonparametrically *
-Use \textbf{neural networks} or \textbf{splines} to estimate
-\(\mathbb{E}[Y|X]\) flexibly * Residuals properly remove nonlinear
-confounding * Final estimate converges to \(\beta_1 = 2\)
+\textbf{Machine learning solution}:
+\begin{itemize}
+\item Use \textbf{random forests} or \textbf{boosting} to estimate $\E[T \mid X]$ nonparametrically
+\item Use \textbf{neural networks} or \textbf{splines} to estimate $\E[Y \mid X]$ flexibly
+\item Residuals properly remove nonlinear confounding
+\item Final estimate converges to $\beta_1 = 2$
+\end{itemize}
 
 \subsection{The High-Dimensional
 Setting}\label{_the_high_dimensional_setting}
 
-Modern applications often have: * \(p\) confounders where \(p\) is large
-(hundreds or thousands) * \(p\) may even exceed \(n\) (more variables
-than observations)
+Modern applications often have:
+\begin{itemize}
+\item $p$ confounders where $p$ is large (hundreds or thousands)
+\item $p$ may even exceed $n$ (more variables than observations)
+\end{itemize}
 
-\textbf{Examples}: * \textbf{Healthcare}: Electronic health records with
-thousands of diagnosis codes, lab values, medications *
-\textbf{Marketing}: User demographics, browsing history, click patterns,
-device info * \textbf{Insurance}: Competitor product features, market
-conditions, economic indicators
+\textbf{Examples}:
+\begin{itemize}
+\item \textbf{Healthcare}: Electronic health records with thousands of diagnosis codes, lab values, medications
+\item \textbf{Marketing}: User demographics, browsing history, click patterns, device info
+\item \textbf{Insurance}: Competitor product features, market conditions, economic indicators
+\end{itemize}
 
-\textbf{Linear regression breaks down}: * \(p > n\): Regression is
-undefined (underdetermined system) * \(p \approx n\): Regression is
-highly unstable (overfitting) * Large \(p\): Need regularization (Lasso,
-Ridge) $\to$ Introduces bias
+\textbf{Linear regression breaks down}:
+\begin{itemize}
+\item $p > n$: Regression is undefined (underdetermined system)
+\item $p \approx n$: Regression is highly unstable (overfitting)
+\item Large $p$: Need regularization (Lasso, Ridge) $\to$ Introduces bias
+\end{itemize}
 
-\textbf{Machine learning handles high dimensions}: * \textbf{Random
-forests}: Split on important variables, ignore noise variables *
-\textbf{Gradient boosting}: Sequentially add weak learners focusing on
-residuals * \textbf{Neural networks}: Learn low-dimensional
-representations * \textbf{Lasso regression}: Automatic variable
-selection with \(\ell_1\) penalty
+\textbf{Machine learning handles high dimensions}:
+\begin{itemize}
+\item \textbf{Random forests}: Split on important variables, ignore noise variables
+\item \textbf{Gradient boosting}: Sequentially add weak learners focusing on residuals
+\item \textbf{Neural networks}: Learn low-dimensional representations
+\item \textbf{Lasso regression}: Automatic variable selection with $\ell_1$ penalty
+\end{itemize}
 
 \subsection{The Regularization Bias
 Problem}\label{subsec:ch01_regularization_bias}
+\marginwarning[Key Problem]{This is why naive ML fails for causal inference. Chapter 2 shows how DML solves it.}%
 
 When using regularized estimators (Lasso, Ridge, neural networks), a new
 problem emerges: \textbf{regularization bias}.
@@ -1079,10 +1116,12 @@ The penalty term \(\lambda \|m\|_1\) introduces bias:
 
 even with infinite data!
 
-\textbf{Naive FWL with Lasso}: 1. Estimate \(\hat{m}_T(X)\) with Lasso $\to$
-biased toward zero 2. Compute \(\tilde{T}_i = T_i - \hat{m}_T(X_i)\) $\to$
-Residuals \textbf{not} mean-zero 3. Estimate \(\hat{\beta}_1\) $\to$ Biased
-due to regularization bias in step 1
+\textbf{Naive FWL with Lasso}:
+\begin{enumerate}
+\item Estimate $\hat{m}_T(X)$ with Lasso $\to$ biased toward zero
+\item Compute $\tilde{T}_i = T_i - \hat{m}_T(X_i)$ $\to$ Residuals \textbf{not} mean-zero
+\item Estimate $\hat{\beta}_1$ $\to$ Biased due to regularization bias in step 1
+\end{enumerate}
 
 \textbf{Double ML solution (preview)}:
 
@@ -1095,11 +1134,12 @@ effect \(\beta_1\) is \textbf{orthogonal} to the nuisance parameters
 This \textbf{Neyman orthogonality} means that small errors in
 \(\hat{m}(X)\) don't affect \(\hat{\beta}_1\) to first order.
 
-\textbf{Solution approach}: 1. \textbf{Sample splitting}: Use different
-data for estimating \(\hat{m}(X)\) and \(\hat{\beta}_1\) 2.
-\textbf{Cross-fitting}: Repeat with role reversal and average 3.
-\textbf{Result}: Regularization bias cancels out,
-\(\hat{\beta}_1 \to \beta_1\)
+\textbf{Solution approach}:
+\begin{enumerate}
+\item \textbf{Sample splitting}: Use different data for estimating $\hat{m}(X)$ and $\hat{\beta}_1$
+\item \textbf{Cross-fitting}: Repeat with role reversal and average
+\item \textbf{Result}: Regularization bias cancels out, $\hat{\beta}_1 \to \beta_1$
+\end{enumerate}
 
 We'll develop this rigorously in Chapter 2 with the Neyman orthogonality
 condition and the DML algorithm.
@@ -1132,23 +1172,35 @@ Double ML
 \subsection{Computational
 Considerations}\label{_computational_considerations}
 
-\textbf{Linear FWL}: * Fast: \(O(np^2)\) for \(n\) observations, \(p\)
-confounders * Scales to \(n = 10^6\), \(p = 10^3\) * No hyperparameter
-tuning needed
+\textbf{Linear FWL}:
+\begin{itemize}
+\item Fast: $O(np^2)$ for $n$ observations, $p$ confounders
+\item Scales to $n = 10^6$, $p = 10^3$
+\item No hyperparameter tuning needed
+\end{itemize}
 
-\textbf{Double ML with Random Forests}: * Moderate:
-\(O(n \log n \cdot p \cdot \text{trees})\) * Requires hyperparameter
-tuning (max depth, min samples per leaf) * Parallelizes well (n\_jobs=48
-on 64-core system) * Scales to \(n = 10^6\), \(p = 10^4\)
+\textbf{Double ML with Random Forests}:
+\begin{itemize}
+\item Moderate: $O(n \log n \cdot p \cdot \text{trees})$
+\item Requires hyperparameter tuning (max depth, min samples per leaf)
+\item Parallelizes well (n\_jobs=48 on 64-core system)
+\item Scales to $n = 10^6$, $p = 10^4$
+\end{itemize}
 
-\textbf{Double ML with Neural Networks}: * Slow: Depends on architecture
-and optimization * Requires careful hyperparameter tuning (layers,
-width, learning rate, regularization) * Benefits from GPU acceleration *
-Best for very large \(n\) (\(>10^6\)) and complex nonlinearity
+\textbf{Double ML with Neural Networks}:
+\begin{itemize}
+\item Slow: Depends on architecture and optimization
+\item Requires careful hyperparameter tuning (layers, width, learning rate, regularization)
+\item Benefits from GPU acceleration
+\item Best for very large $n$ ($>10^6$) and complex nonlinearity
+\end{itemize}
 
-\textbf{Practical workflow}: 1. Start with linear FWL (fast baseline) 2.
-Try Random Forest DML (good default for nonlinearity) 3. Use neural
-networks only if RF insufficient and computational budget allows
+\textbf{Practical workflow}:
+\begin{enumerate}
+\item Start with linear FWL (fast baseline)
+\item Try Random Forest DML (good default for nonlinearity)
+\item Use neural networks only if RF insufficient and computational budget allows
+\end{enumerate}
 
 \section{Python Implementation: FWL
 Theorem}\label{_python_implementation_fwl_theorem}
@@ -1211,22 +1263,16 @@ This chapter developed the foundations for causal inference and Double
 Machine Learning:
 
 \begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  \textbf{Potential Outcomes Framework}: Defines causal effects through
-  counterfactuals \(Y_i(1), Y_i(0)\)
-\item
-  \textbf{Fundamental Problem}: Individual effects
-  \(\tau_i = Y_i(1) - Y_i(0)\) are never observed
-\item
-  \textbf{Average Treatment Effect}: Population-level effect
-  \(\text{ATE} = \mathbb{E}[Y_i(1) - Y_i(0)\) is identifiable
-\item
-  \textbf{Identification}: Under unconfoundedness and overlap, ATE can
+\item \textbf{Potential Outcomes Framework}: Defines causal effects through
+  counterfactuals $Y_i(1), Y_i(0)$
+\item \textbf{Fundamental Problem}: Individual effects
+  $\tau_i = Y_i(1) - Y_i(0)$ are never observed
+\item \textbf{Average Treatment Effect}: Population-level effect
+  $\text{ATE} = \E[Y_i(1) - Y_i(0)]$ is identifiable
+\item \textbf{Identification}: Under unconfoundedness and overlap, ATE can
   be expressed using observed data
-\item
-  \textbf{FWL Theorem}: Partialling out confounders \(X\) from \(T\) and
-  \(Y\) isolates the treatment effect
+\item \textbf{FWL Theorem}: Partialling out confounders $X$ from $T$ and
+  $Y$ isolates the treatment effect
 \end{enumerate}
 
 \textbf{Next chapter}: We extend these ideas to \textbf{nonlinear}
@@ -1270,17 +1316,21 @@ good overlap is often necessary.
 
 \textbf{3. FWL is the bridge from linear regression to modern causal ML}
 
-The Frisch-Waugh-Lovell theorem shows that "controlling for confounders"
-is mathematically equivalent to: 1. Residualizing treatment on
-confounders: \(\tilde{T} = T - \mathbb{E}[T|X\) 2. Residualizing
-outcome on confounders: \(\tilde{Y} = Y - \mathbb{E}[Y|X\) 3.
-Regressing orthogonalized outcome on orthogonalized treatment
+The Frisch-Waugh-Lovell theorem shows that ``controlling for confounders''
+is mathematically equivalent to:
+\begin{enumerate}
+\item Residualizing treatment on confounders: $\tilde{T} = T - \E[T \mid X]$
+\item Residualizing outcome on confounders: $\tilde{Y} = Y - \E[Y \mid X]$
+\item Regressing orthogonalized outcome on orthogonalized treatment
+\end{enumerate}
 
 This partialling-out interpretation generalizes beyond linear
-regression: * \textbf{Classical econometrics}: Use linear regression for
-\(\mathbb{E}[T|X]\) and \(\mathbb{E}[Y|X\) * \textbf{Modern ML}:
-Use random forests, boosting, or neural networks for flexible
-approximation
+regression:
+\begin{itemize}
+\item \textbf{Classical econometrics}: Use linear regression for
+$\E[T \mid X]$ and $\E[Y \mid X]$
+\item \textbf{Modern ML}: Use random forests, boosting, or neural networks for flexible approximation
+\end{itemize}
 
 But naively replacing linear regression with ML introduces
 \textbf{regularization bias}---penalized estimators (Lasso, Ridge,
@@ -1292,25 +1342,31 @@ through Neyman orthogonality and cross-fitting.
 Chapter 2 develops the Double Machine Learning framework rigorously:
 
 \textbf{Neyman Orthogonality}: We'll show why the treatment effect
-\(\beta_1\) is \textbf{orthogonal} to nuisance parameters
-\(\mathbb{E}[T|X]\), \textbackslash mathbb\{E\}{[}Y\textbar X{]}{]} in a
+$\beta_1$ is \textbf{orthogonal} to nuisance parameters
+$\E[T \mid X]$, $\E[Y \mid X]$ in a
 precise sense. This orthogonality means regularization bias in nuisance
-estimation doesn't contaminate \(\hat{\beta}_1\) to first order.
+estimation doesn't contaminate $\hat{\beta}_1$ to first order.
 
-\textbf{The DML Algorithm}: The complete procedure with: 1.
-\textbf{Sample splitting}: Divide data into \(K\) folds 2.
-\textbf{Cross-fitting}: Estimate nuisance parameters on one fold,
-treatment effect on another 3. \textbf{Aggregation}: Average across
-folds
+\textbf{The DML Algorithm}: The complete procedure with:
+\begin{enumerate}
+\item \textbf{Sample splitting}: Divide data into $K$ folds
+\item \textbf{Cross-fitting}: Estimate nuisance parameters on one fold, treatment effect on another
+\item \textbf{Aggregation}: Average across folds
+\end{enumerate}
 
-\textbf{Theoretical guarantees}: Under high-level conditions: *
-\(\sqrt{n}\)-consistency and asymptotic normality * Valid confidence
-intervals using cross-fit standard errors * Robustness to slow
-convergence of ML estimators
+\textbf{Theoretical guarantees}: Under high-level conditions:
+\begin{itemize}
+\item $\sqrt{n}$-consistency and asymptotic normality
+\item Valid confidence intervals using cross-fit standard errors
+\item Robustness to slow convergence of ML estimators
+\end{itemize}
 
-\textbf{Python implementation}: Working code using EconML with: * Random
-Forest nuisance estimation * Inference with confidence intervals *
-Comparison to naive approaches
+\textbf{Python implementation}: Working code using EconML with:
+\begin{itemize}
+\item Random Forest nuisance estimation
+\item Inference with confidence intervals
+\item Comparison to naive approaches
+\end{itemize}
 
 By the end of Chapter 2, you'll have a complete, validated DML
 implementation ready for the insurance competitor pricing application in
@@ -1324,32 +1380,39 @@ Chapter 4.
 example, write out the potential outcomes \(Y_i(0), Y_i(1)\) explicitly
 in words. What assumption would make them equal (no treatment effect)?
 
-\textbf{Solution}: For week \(i\): * \(Y_i(1)\): Number of annuities
-sold in week \(i\) if competitors had high prices * \(Y_i(0)\): Number
-of annuities sold in week \(i\) if competitors had low prices
+\textbf{Solution}: For week $i$:
+\begin{itemize}
+\item $Y_i(1)$: Number of annuities sold in week $i$ if competitors had high prices
+\item $Y_i(0)$: Number of annuities sold in week $i$ if competitors had low prices
+\end{itemize}
 
-For no treatment effect: \(Y_i(1) = Y_i(0)\) for all \(i\). This
+For no treatment effect: $Y_i(1) = Y_i(0)$ for all $i$. This
 requires that competitor pricing has \textbf{zero causal effect} on our
-sales. Plausible if: * Customers are completely insensitive to
-competitor prices (no price shopping) * Our product is perfectly
-differentiated (no substitution) * Competitor prices don't signal market
-conditions
+sales. Plausible if:
+\begin{itemize}
+\item Customers are completely insensitive to competitor prices (no price shopping)
+\item Our product is perfectly differentiated (no substitution)
+\item Competitor prices don't signal market conditions
+\end{itemize}
 
 \textbf{Exercise 1.2} (Fundamental Problem): Explain why collecting more
 data does not solve the fundamental problem of causal inference. What
 would we need to observe to compute individual treatment effects?
 
 \textbf{Solution}: The fundamental problem is that we can never observe
-\(Y_i(1)\) and \(Y_i(0)\) for the same unit \(i\) simultaneously---this
-is logically impossible. Collecting more data gives us: * More weeks
-with \(T_i = 1\) (high competitor prices) * More weeks with \(T_i = 0\)
-(low competitor prices)
+$Y_i(1)$ and $Y_i(0)$ for the same unit $i$ simultaneously---this
+is logically impossible. Collecting more data gives us:
+\begin{itemize}
+\item More weeks with $T_i = 1$ (high competitor prices)
+\item More weeks with $T_i = 0$ (low competitor prices)
+\end{itemize}
 
-But for any specific week \(i\), we still only observe one potential
-outcome. To compute \(\tau_i = Y_i(1) - Y_i(0)\), we would need to: 1.
-\textbf{Time travel}: Observe week \(i\) twice with different competitor
-prices, or 2. \textbf{Parallel universes}: Observe both treatments
-simultaneously in the same week
+But for any specific week $i$, we still only observe one potential
+outcome. To compute $\tau_i = Y_i(1) - Y_i(0)$, we would need to:
+\begin{enumerate}
+\item \textbf{Time travel}: Observe week $i$ twice with different competitor prices, or
+\item \textbf{Parallel universes}: Observe both treatments simultaneously in the same week
+\end{enumerate}
 
 Neither is feasible. We can only estimate \textbf{average} effects
 across units.
@@ -1368,11 +1431,12 @@ confidence $\to$ Competitors lower prices (low demand expected)
 This survey also affects our sales: * High confidence $\to$ More consumers
 buy (including from us) * Low confidence $\to$ Fewer consumers buy
 
-Now unconfoundedness is violated: * \(T_i\) (competitor pricing) is
-affected by unobserved confidence * \(Y_i(0), Y_i(1)\) (our sales under
-both treatments) are also affected by unobserved confidence *
-Conditioning on observed \(X_i\) (VIX, sentiment, treasury rates) is
-insufficient
+Now unconfoundedness is violated:
+\begin{itemize}
+\item $T_i$ (competitor pricing) is affected by unobserved confidence
+\item $Y_i(0), Y_i(1)$ (our sales under both treatments) are also affected by unobserved confidence
+\item Conditioning on observed $X_i$ (VIX, sentiment, treasury rates) is insufficient
+\end{itemize}
 
 Result: \(\{Y_i(0), Y_i(1)\} \not\perp\!\!\!\perp T_i \mid X_i\)
 
@@ -1510,31 +1574,32 @@ size and when this is problematic.
 
 \textbf{Why weighting reduces effective sample size}:
 
-Inverse propensity weights are \(w_i = 1/e(X_i)\) for treated and
-\(w_i = 1/(1-e(X_i))\) for controls. When \(e(X_i)\) varies across
-units: * Units with \(e(X_i) \approx 1\): Low weights (already likely to
-be treated) * Units with \(e(X_i) \approx 0\): High weights (unlikely to
-be treated but got treated anyway)
+Inverse propensity weights are $w_i = 1/e(X_i)$ for treated and
+$w_i = 1/(1-e(X_i))$ for controls. When $e(X_i)$ varies across units:
+\begin{itemize}
+\item Units with $e(X_i) \approx 1$: Low weights (already likely to be treated)
+\item Units with $e(X_i) \approx 0$: High weights (unlikely to be treated but got treated anyway)
+\end{itemize}
 
-High variance in weights $\to$ Effective sample size \textless{} actual
-sample size.
+High variance in weights $\to$ Effective sample size $<$ actual sample size.
 
 Formally:
 
 \[n_{\text{eff}} = \frac{(\sum w_i)^2}{\sum w_i^2}\]
 
-\textbf{When problematic}: * \textbf{Near-violations}: If some
-\(e(X_i) \approx 0.01\), weights can be 100+, drastically reducing
-\(n_{\text{eff}}\) * \textbf{Precision loss}: Effective 213/250 means we
-lost 37 units worth of information (15\%) * \textbf{Variance inflation}:
-Standard errors increase by \(\sqrt{250/213} \approx 1.08\)
+\textbf{When problematic}:
+\begin{itemize}
+\item \textbf{Near-violations}: If some $e(X_i) \approx 0.01$, weights can be 100+, drastically reducing $n_{\text{eff}}$
+\item \textbf{Precision loss}: Effective 213/250 means we lost 37 units worth of information (15\%)
+\item \textbf{Variance inflation}: Standard errors increase by $\sqrt{250/213} \approx 1.08$
+\end{itemize}
 
-\textbf{Remedies}: 1. \textbf{Trimming}: Drop units with
-\(e(X_i) < 0.05\) or \(e(X_i) > 0.95\) 2. \textbf{Weight truncation}:
-Cap weights at percentiles (e.g., 99th) 3. \textbf{Doubly robust
-estimation}: Combine weighting with outcome modeling
+\textbf{Remedies}:
+\begin{enumerate}
+\item \textbf{Trimming}: Drop units with $e(X_i) < 0.05$ or $e(X_i) > 0.95$
+\item \textbf{Weight truncation}: Cap weights at percentiles (e.g., 99th)
+\item \textbf{Doubly robust estimation}: Combine weighting with outcome modeling
+\end{enumerate}
 
-\section{References}\label{_references}
-
-bibliography::{[}{]}
+% References handled by main.tex bibliography
 

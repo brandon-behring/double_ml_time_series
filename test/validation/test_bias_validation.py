@@ -157,6 +157,7 @@ class TestBiasValidationEdgeCases:
         assert np.isfinite(result.bias)
         assert np.isfinite(result.mse)
 
+    @pytest.mark.slow
     def test_large_sample_size(self):
         """Test validation with large sample size (n=10000)."""
         dgp = DGPGenerator(n=5000, p=5, true_effect=2.0, confounding_strength=0.5, random_state=42)
@@ -293,6 +294,7 @@ class TestBiasValidationStatisticalProperties:
         assert np.isfinite(result.ci_lower), "CI lower must be finite"
         assert np.isfinite(result.ci_upper), "CI upper must be finite"
 
+    @pytest.mark.slow
     def test_coverage_approximately_nominal(self):
         """Test that coverage rate is approximately at nominal level (95%).
 
@@ -415,6 +417,7 @@ class TestBiasValidationMultipleTestingCorrection:
         assert 0 <= result.bias_p_value <= 1
         assert 0 <= result.coverage_p_value <= 1
 
+    @pytest.mark.slow
     def test_bonferroni_reduces_false_positives(self):
         """Test that Bonferroni correction reduces false positive rate."""
         # With 2 tests at α=0.05, uncorrected familywise error rate ≈ 9.75%

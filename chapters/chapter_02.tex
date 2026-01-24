@@ -128,6 +128,7 @@ Condition}\label{_neyman_orthogonality_condition}
 
 \begin{definition}[Neyman Orthogonality]
 \label{def:neyman_orthogonality}
+\marginnote[Key Insight]{Orthogonality means first-order bias in nuisance $\hat{\eta}$ doesn't affect $\hat{\tau}$. This is why ML works!}%
 A score function $\psi(W; \tau, \eta)$ satisfies the \textbf{Neyman orthogonality condition} at $(\tau_0, \eta_0)$ if:
 \[
 \left. \frac{\partial}{\partial \eta} \E[\psi(W; \tau_0, \eta)] \right|_{\eta = \eta_0} = 0
@@ -148,17 +149,22 @@ This means:
 \subsection{Example: Partially Linear
 Model}\label{_example_partially_linear_model}
 
-Consider the \textbf{partially linear model} from Chapter 1:
-
-\[Y_i = \tau \cdot T_i + g_0(X_i) + \epsilon_i\]
-
-with \(\mathbb{E}[\epsilon_i \mid T_i, X_i\) = 0{]}.
-
-We also model the treatment:
-
-\[T_i = m_0(X_i) + v_i\]
-
-with \(\mathbb{E}[v_i \mid X_i\) = 0{]}.
+\begin{definition}[Partially Linear Model]
+\label{def:partially_linear_model}
+The \textbf{partially linear model} specifies:
+\begin{align}
+Y_i &= \tau \cdot T_i + g_0(X_i) + \epsilon_i \\
+T_i &= m_0(X_i) + v_i
+\end{align}
+where:
+\begin{itemize}
+\item $Y_i$ is the outcome, $T_i$ is treatment, $X_i$ are confounders
+\item $g_0(X)$ is the direct effect of confounders on outcome
+\item $m_0(X) = \E[T \mid X]$ is the propensity function
+\item $\E[\epsilon_i \mid T_i, X_i] = 0$ (exogeneity)
+\item $\E[v_i \mid X_i] = 0$ (treatment residual is mean-zero)
+\end{itemize}
+\end{definition}
 
 The \textbf{naive FWL score} is:
 
@@ -209,14 +215,17 @@ Notice the key difference: we use \(\ell(X_i)\) (the unconditional
 expectation of \(Y\) given \(X\)) instead of \(g(X_i)\) (the direct
 effect of \(X\) on \(Y\) controlling for \(T\)).
 
-Under the model, \(\ell_0(X) = \mathbb{E}[Y \mid X\) =
-\textbackslash tau\_0 \textbackslash cdot m\_0(X) + g\_0(X){]}.
+Under the model, $\ell_0(X) = \E[Y \mid X] = \tau_0 \cdot m_0(X) + g_0(X)$.
 
-The score function \(\psi_{\text{DML}}(W; \tau, \eta)\) satisfies the
-Neyman orthogonality condition at \((\tau_0, \eta_0)\) where
-\(\eta_0 = (\ell_0, m_0)\).
+\begin{theorem}[Neyman Orthogonality of DML Score]
+\label{thm:dml_orthogonality}
+\sidenote{The proof shows that using $\ell_0(X) = \E[Y \mid X]$ instead of $g_0(X)$ achieves orthogonality.}%
+The score function $\psi_{\text{DML}}(W; \tau, \eta)$ satisfies the
+Neyman orthogonality condition at $(\tau_0, \eta_0)$ where
+$\eta_0 = (\ell_0, m_0)$.
+\end{theorem}
 
-\textbf{Proof}:
+\begin{proof}
 
 We need to verify:
 
@@ -240,19 +249,17 @@ Substitute the true model \(Y = \tau_0 T + g_0(X) + \epsilon\) and
 &= \mathbb{E}[(v + m_0(X) - m(X)) \cdot (g_0(X) - \ell(X) + \tau_0 m(X) + \epsilon)]
 \end{align}
 
-Now note that \(\ell_0(X) = \mathbb{E}[Y \mid X\) =
-\textbackslash tau\_0 m\_0(X) + g\_0(X){]}.
+Now note that $\ell_0(X) = \E[Y \mid X] = \tau_0 m_0(X) + g_0(X)$.
 
 At \(\eta = \eta_0\), this becomes:
 
 \begin{align}
 &= \mathbb{E}[v \cdot (g_0(X) - \ell_0(X) + \tau_0 m_0(X) + \epsilon)] \\
 &= \mathbb{E}[v \cdot (g_0(X) - (\tau_0 m_0(X) + g_0(X)) + \tau_0 m_0(X) + \epsilon)] \\
-&= \mathbb{E}[v \cdot \epsilon] = 0
+&= \E[v \cdot \epsilon] = 0
 \end{align}
 
-by \(\mathbb{E}[v \mid X\) = 0{]} and \(\mathbb{E}[\epsilon \mid T, X\)
-= 0{]}.
+by $\E[v \mid X] = 0$ and $\E[\epsilon \mid T, X] = 0$.
 
 Now take the derivative with respect to \(\ell\):
 
@@ -266,9 +273,10 @@ At \(\eta = \eta_0\), we have \(m = m_0\), so:
 
 Similarly, we can verify:
 
-\[\left. \frac{\partial}{\partial m} \mathbb{E}[\psi_{\text{DML}}] \right|_{\eta = \eta_0} = 0\]
+\[\left. \frac{\partial}{\partial m} \E[\psi_{\text{DML}}] \right|_{\eta = \eta_0} = 0\]
 
-Therefore, \(\psi_{\text{DML}}\) is Neyman orthogonal. $\qed$
+Therefore, $\psi_{\text{DML}}$ is Neyman orthogonal.
+\end{proof}
 
 \subsection{Why Orthogonality Enables Machine
 Learning}\label{_why_orthogonality_enables_machine_learning}
@@ -348,34 +356,25 @@ Solution}\label{_sample_splitting_the_dml_solution}
 \textbf{Double Machine Learning} solves this via \textbf{sample
 splitting} (also called \textbf{cross-fitting}):
 
+\begin{definition}[Cross-Fitting Procedure]
+\label{def:cross_fitting}
+\marginnote[Why $K$-fold?]{$K=5$ is the default. Larger $K$ uses more data for nuisance estimation but increases computation.}%
+The DML cross-fitting procedure:
 \begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  \textbf{Split data} into \(K\) roughly equal-sized folds:
-  \(I_1, \ldots, I_K\)
-\item
-  \textbf{For each fold} \(k = 1, \ldots, K\):
-
+\item \textbf{Split data} into $K$ roughly equal-sized folds: $I_1, \ldots, I_K$
+\item \textbf{For each fold} $k = 1, \ldots, K$:
   \begin{enumerate}
-  \def\labelenumii{\alph{enumii}.}
-  \item
-    Estimate nuisance functions on the complement: \(\hat{\ell}^{(-k)}\)
-    and \(\hat{m}^{(-k)}\) using \(\bigcup_{j \neq k} I_j\)
-  \item
-    Compute fold-specific estimate \(\hat{\tau}_k\) by solving:
-    {[}latexmath{]} + \textbackslash frac\{1\}\{\textbar I\_k\textbar\}
-    \textbackslash sum\_\{i \textbackslash in I\_k\}
-    \textbackslash psi(W\_i;
-    \textbackslash hat\{\textbackslash tau\}\_k,
-    \textbackslash hat\{\textbackslash eta\}\^{}\{(-k)\}) = 0 +
+  \item Estimate nuisance functions on the complement: $\hat{\ell}^{(-k)}$
+    and $\hat{m}^{(-k)}$ using $\bigcup_{j \neq k} I_j$
+  \item Compute fold-specific estimate $\hat{\tau}_k$ by solving:
+    \[\frac{1}{|I_k|} \sum_{i \in I_k} \psi(W_i; \hat{\tau}_k, \hat{\eta}^{(-k)}) = 0\]
   \end{enumerate}
-\item
-  \textbf{Aggregate} across folds: {[}latexmath{]} +
-  \textbackslash hat\{\textbackslash tau\}\_\{\textbackslash text\{DML\}\}
-  = \textbackslash frac\{1\}\{K\} \textbackslash sum\_\{k=1\}\^{}K
-  \textbackslash hat\{\textbackslash tau\}\_k +
+\item \textbf{Aggregate} across folds:
+  \[\hat{\tau}_{\text{DML}} = \frac{1}{K} \sum_{k=1}^K \hat{\tau}_k\]
 \end{enumerate}
+\end{definition}
 
+\margintip[Essential]{Without sample splitting, overfitting in nuisance estimation contaminates $\hat{\tau}$---even with orthogonality!}%
 \textbf{Key Property}: For each observation \(i \in I_k\), the nuisance
 functions \(\hat{\eta}^{(-k)}\) were estimated on \textbf{different
 data} (not including \(i\)). This breaks the overfitting bias.
@@ -415,24 +414,25 @@ estimates.
 \subsection{Variance Estimation and
 Inference}\label{_variance_estimation_and_inference}
 
-After obtaining \(\hat{\tau}_{\text{DML}}\), we need the standard error
+After obtaining $\hat{\tau}_{\text{DML}}$, we need the standard error
 for confidence intervals and hypothesis tests.
 
+\begin{theorem}[Asymptotic Normality of DML]
+\label{thm:dml_asymptotic_normality}
+\marginnote[Inference]{This theorem guarantees valid confidence intervals even with ML nuisance estimation.}%
 Under regularity conditions (smoothness, overlap, bounded moments), the
 DML estimator satisfies:
-
 \[\sqrt{n}(\hat{\tau}_{\text{DML}} - \tau_0) \xrightarrow{d} N(0, \Sigma)\]
-
 where the asymptotic variance is:
+\[\Sigma = \E\left[\frac{\psi(W_i; \tau_0, \eta_0)^2}{(\E[\partial_\tau \psi(W_i; \tau_0, \eta_0)])^2}\right]\]
+\end{theorem}
 
-\[\Sigma = \mathbb{E}\left[\frac{\psi(W_i; \tau_0, \eta_0)^2}{(\mathbb{E}[\partial_\tau \psi(W_i; \tau_0, \eta_0)])^2}\right]\]
-
-\textbf{Practical Variance Estimator}:
-
-\[\hat{\Sigma} = \frac{1}{n} \sum_{i=1}^n \frac{\psi(W_i; \hat{\tau}_{\text{DML}}, \hat{\eta}^{(-k(i))})^2}{(\frac{1}{n}\sum_{i=1}^n \partial_\tau \psi(W_i; \hat{\tau}_{\text{DML}}, \hat{\eta}^{(-k(i))}))^2}\]
-
-where \(k(i)\) denotes the fold containing observation \(i\), and
-\(\hat{\eta}^{(-k(i))}\) is the nuisance estimate from the complement.
+\begin{remark}[Practical Variance Estimation]
+The asymptotic variance can be consistently estimated by:
+\[\hat{\Sigma} = \frac{1}{n} \sum_{i=1}^n \frac{\psi(W_i; \hat{\tau}_{\text{DML}}, \hat{\eta}^{(-k(i))})^2}{\left(\frac{1}{n}\sum_{i=1}^n \partial_\tau \psi(W_i; \hat{\tau}_{\text{DML}}, \hat{\eta}^{(-k(i))})\right)^2}\]
+where $k(i)$ denotes the fold containing observation $i$, and
+$\hat{\eta}^{(-k(i))}$ is the nuisance estimate from the complement.
+\end{remark}
 
 \textbf{Confidence Interval} (95\%):
 
@@ -455,13 +455,13 @@ from sklearn.linear_model import LassoCV
 # Set seed for reproducibility
 np.random.seed(42)
 n = 2000
-# Generate high{-dimensional confounders (p = 20)}
+# Generate high-dimensional confounders (p = 20)
 X = np.random.randn(n, 20)
 # Nonlinear treatment assignment
 T = (X[:, 0]**2 + X[:, 1]**2 +
      0.5 * X[:, 2] * X[:, 3] +
      np.random.randn(n))
-# Nonlinear outcome with treatment effect $\tau$ = 2.5
+# Nonlinear outcome with treatment effect tau = 2.5
 Y = (2.5 * T +                           # Treatment effect
      np.sin(X[:, 0]) +                   # Nonlinear confounder
      np.exp(X[:, 1] / 2) +               # Nonlinear confounder
@@ -475,7 +475,7 @@ dml = LinearDML(
                                    min_samples_leaf=20, random_state=42),
     discrete_treatment=False,
     linear_first_stages=False,
-    cv=5,  # 5{-fold cross-fitting}
+    cv=5,  # 5-fold cross-fitting
     random_state=42
 )
 # Fit DML estimator
@@ -539,12 +539,12 @@ T = X[:, 0]**2 + X[:, 1]**2 + 0.5 * X[:, 2] * X[:, 3] + np.random.randn(n)
 Y = 2.5 * T + np.sin(X[:, 0]) + np.exp(X[:, 1] / 2) + X[:, 2]**2 + np.random.randn(n)
 # Test different ML methods
 ml_methods = {
-    \textquotesingle{Lasso'}: LassoCV(cv=5, random_state=42),
-    \textquotesingle{Ridge'}: RidgeCV(cv=5),
-    \textquotesingle{Random Forest'}: RandomForestRegressor(n_estimators=100, max_depth=5,
-                                            min_samples_leaf=20, random_state=42),
-    \textquotesingle{Gradient Boosting'}: GradientBoostingRegressor(n_estimators=100, max_depth=3,
-                                                     learning_rate=0.1, random_state=42)
+    'Lasso': LassoCV(cv=5, random_state=42),
+    'Ridge': RidgeCV(cv=5),
+    'Random Forest': RandomForestRegressor(n_estimators=100, max_depth=5,
+                                           min_samples_leaf=20, random_state=42),
+    'Gradient Boosting': GradientBoostingRegressor(n_estimators=100, max_depth=3,
+                                                   learning_rate=0.1, random_state=42)
 }
 results = []
 for name, model in ml_methods.items():
@@ -561,36 +561,36 @@ for name, model in ml_methods.items():
     ci_lower = tau_interval[0].mean()
     ci_upper = tau_interval[1].mean()
     results.append({
-        \textquotesingle{Method'}: name,
-        \textquotesingle{Estimate'}: tau,
-        \textquotesingle{CI_Lower'}: ci_lower,
-        \textquotesingle{CI_Upper'}: ci_upper,
-        \textquotesingle{Bias'}: abs(tau - 2.5),
-        \textquotesingle{CI_Width'}: ci_upper - ci_lower
-    \)}
+        'Method': name,
+        'Estimate': tau,
+        'CI_Lower': ci_lower,
+        'CI_Upper': ci_upper,
+        'Bias': abs(tau - 2.5),
+        'CI_Width': ci_upper - ci_lower
+    })
 # Display results
 import pandas as pd
 df_results = pd.DataFrame(results)
 print(df_results.to_string(index=False))
 # Visualize
 fig, ax = plt.subplots(figsize=(10, 6))
-methods = df_results[\textquotesingle{Method'}]
-estimates = df_results[\textquotesingle{Estimate'}]
-ci_lower = df_results[\textquotesingle{CI_Lower'}]
-ci_upper = df_results[\textquotesingle{CI_Upper'}]
+methods = df_results['Method']
+estimates = df_results['Estimate']
+ci_lower = df_results['CI_Lower']
+ci_upper = df_results['CI_Upper']
 ax.errorbar(range(len(methods)), estimates,
             yerr=[estimates - ci_lower, ci_upper - estimates],
-            fmt=\textquotesingle{o'}, capsize=5, capthick=2, markersize=8)
-ax.axhline(y=2.5, color=\textquotesingle{red'}, linestyle=\textquotesingle{--'}, label=\textquotesingle{True ATE'})
+            fmt='o', capsize=5, capthick=2, markersize=8)
+ax.axhline(y=2.5, color='red', linestyle='--', label='True ATE')
 ax.set_xticks(range(len(methods)))
-ax.set_xticklabels(methods, rotation=45, ha=\textquotesingle{right'})
-ax.set_ylabel(\textquotesingle{Treatment Effect Estimate'})
-ax.set_title(\textquotesingle{DML Estimates with Different ML Methods'})
+ax.set_xticklabels(methods, rotation=45, ha='right')
+ax.set_ylabel('Treatment Effect Estimate')
+ax.set_title('DML Estimates with Different ML Methods')
 ax.legend()
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig(\textquotesingle{../../output/dml_ml_comparison.png'}, dpi=300, bbox_inches=\textquotesingle{tight'})
-print("\textbackslash{n}Plot saved to output/dml_ml_comparison.png")
+plt.savefig('../../output/dml_ml_comparison.png', dpi=300, bbox_inches='tight')
+print("\nPlot saved to output/dml_ml_comparison.png")
 \end{minted}
 
 \textbf{Expected Output}:
@@ -621,6 +621,7 @@ Gradient Boosting     2.501     2.412     2.590  0.001     0.178
   flexible
 \end{enumerate}
 
+\sidenote{Random Forest is a good default for DML. Use Gradient Boosting when maximum accuracy is critical.}%
 \textbf{Recommendation}: For complex nonlinear confounding, tree-based
 methods (Random Forest, Gradient Boosting) outperform linear methods
 (Lasso, Ridge).
@@ -642,7 +643,7 @@ n = 2000
 X = np.random.randn(n, 20)
 T = X[:, 0]**2 + X[:, 1]**2 + 0.5 * X[:, 2] * X[:, 3] + np.random.randn(n)
 Y = 2.5 * T + np.sin(X[:, 0]) + np.exp(X[:, 1] / 2) + X[:, 2]**2 + np.random.randn(n)
-# Manually perform cross{-fitting to inspect first stages}
+# Manually perform cross-fitting to inspect first stages
 from sklearn.model_selection import KFold
 kfold = KFold(n_splits=5, shuffle=True, random_state=42)
 first_stage_T_r2 = []
@@ -651,27 +652,27 @@ for train_idx, test_idx in kfold.split(X):
     X_train, X_test = X[train_idx], X[test_idx]
     T_train, T_test = T[train_idx], T[test_idx]
     Y_train, Y_test = Y[train_idx], Y[test_idx]
-    # Fit first{-stage models}
+    # Fit first-stage models
     model_T = RandomForestRegressor(n_estimators=100, max_depth=5,
                                      min_samples_leaf=20, random_state=42)
     model_Y = RandomForestRegressor(n_estimators=100, max_depth=5,
                                      min_samples_leaf=20, random_state=42)
     model_T.fit(X_train, T_train)
     model_Y.fit(X_train, Y_train)
-    # Evaluate on held{-out fold}
+    # Evaluate on held-out fold
     T_pred = model_T.predict(X_test)
     Y_pred = model_Y.predict(X_test)
     first_stage_T_r2.append(r2_score(T_test, T_pred))
     first_stage_Y_r2.append(r2_score(Y_test, Y_pred))
-print("First{-Stage Diagnostics:"})
-print(f"E[T|X] R²: {np.mean(first_stage_T_r2):.3f} (±{np.std(first_stage_T_r2):.3f})")
-print(f"E[Y|X] R²: {np.mean(first_stage_Y_r2):.3f} (±{np.std(first_stage_Y_r2):.3f})")
-# Rule of thumb: R² \textgreater{ 0.1 is usually sufficient for good DML performance}
+print("First-Stage Diagnostics:")
+print(f"E[T|X] R^2: {np.mean(first_stage_T_r2):.3f} (+/-{np.std(first_stage_T_r2):.3f})")
+print(f"E[Y|X] R^2: {np.mean(first_stage_Y_r2):.3f} (+/-{np.std(first_stage_Y_r2):.3f})")
+# Rule of thumb: R^2 > 0.1 is usually sufficient for good DML performance
 if np.mean(first_stage_T_r2) < 0.1:
-    print("\textbackslash{n}\textbf{WARNING:}  WARNING: Low first{-stage R² for T. Consider:"})
-    print("   {- Adding more confounders"})
-    print("   {- Using more flexible ML model"})
-    print("   {- Checking for weak instruments (if using IV-DML)"})
+    print("\nWARNING: Low first-stage R^2 for T. Consider:")
+    print("   - Adding more confounders")
+    print("   - Using more flexible ML model")
+    print("   - Checking for weak instruments (if using IV-DML)")
 \end{minted}
 
 \textbf{Expected Output}:
@@ -682,6 +683,7 @@ E[T|X] R²: 0.723 (±0.018)
 E[Y|X] R²: 0.891 (±0.009)
 \end{verbatim}
 
+\marginwarning[Diagnostic]{$R^2 < 0.1$ is a red flag. Either confounding is weak (good!) or you're missing important confounders (bad!).}%
 \textbf{Interpretation}:
 
 \begin{itemize}
@@ -817,11 +819,11 @@ Income = np.random.lognormal(mean=10, sigma=0.5, size=n)  # Income
 X = np.column_stack([Age, Income])
 # Treatment: Competitor price increase (correlated with age)
 T = 0.5 * Age + 0.2 * Income / 1000 + np.random.randn(n)
-# Heterogeneous effect: Younger customers more price{-sensitive}
+# Heterogeneous effect: Younger customers more price-sensitive
 tau_true = 5.0 - 0.08 * Age  # Effect decreases with age
 Y = tau_true * T + 0.3 * Age + 0.1 * Income / 1000 + np.random.randn(n)
 # Estimate CATE with LinearDML
-# featurizer=None means we model $\tau$(X) = X\textquotesingle{$\theta$ (linear heterogeneity)}
+# featurizer=None means we model tau(X) = X'theta (linear heterogeneity)
 dml_cate = LinearDML(
     model_y=RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42),
     model_t=RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42),
@@ -1075,7 +1077,7 @@ influence function satisfies:
 
 \begin{itemize}
 \item
-  \(\mathbb{E}[\psi(W_i; \tau_0, \eta_0)\) = 0{]} (mean-zero)
+  \(\mathbb{E}[\psi(W_i; \tau_0, \eta_0)] = 0\) (mean-zero)
 \item
   \(\text{Var}(\psi)\) determines asymptotic variance:
   \(\text{Avar}(\hat{\tau}) = \text{Var}(\psi) / n\)
@@ -1138,9 +1140,7 @@ Under regularity conditions:
   \textbf{Smoothness}: \(m_0, \ell_0 \in C^2\) (twice continuously
   differentiable)
 \item
-  \textbf{Moment bounds}: \(\mathbb{E}[Y_i^4\),
-  \textbackslash mathbb\{E\}{[}T\_i\^{}4{]} \textless{}
-  \textbackslash infty{]}
+  \textbf{Moment bounds}: \(\mathbb{E}[Y_i^4], \mathbb{E}[T_i^4] < \infty\)
 \item
   \textbf{Nuisance convergence}:
   \(\|\hat{\ell} - \ell_0\|_2, \|\hat{m} - m_0\|_2 = o_p(n^{-1/4})\)
@@ -1186,8 +1186,7 @@ Method}\label{_choosing_the_right_ml_method}
 \textbf{Lasso/Ridge} (Linear + Regularization): * \textbf{Pros}: Fast,
 interpretable, works well with many weak predictors * \textbf{Cons}:
 Cannot capture nonlinearity, feature selection can be unstable *
-\textbf{Best for}: High-dimensional linear settings (p \textgreater{}
-n), sparse signals * \textbf{Tuning}: Use cross-validation for $\lambda$
+\textbf{Best for}: High-dimensional linear settings ($p > n$), sparse signals * \textbf{Tuning}: Use cross-validation for $\lambda$
 (penalty parameter)
 
 \textbf{Random Forest}: * \textbf{Pros}: Handles nonlinearity
@@ -1207,7 +1206,7 @@ learning\_rate=0.01-0.1, max\_depth=3-6, n\_estimators=100-1000
 \textbf{Neural Networks}: * \textbf{Pros}: Ultimate flexibility, can
 learn complex patterns * \textbf{Cons}: Requires large n, difficult
 hyperparameter tuning, black box * \textbf{Best for}: Very large
-datasets (n \textgreater{} 10,000), image/text confounders *
+datasets ($n > 10{,}000$), image/text confounders *
 \textbf{Tuning}: Architecture search, regularization (dropout, L2),
 learning rate scheduling
 
@@ -1246,9 +1245,9 @@ After obtaining \(\hat{\tau}_{\text{DML}}\), always check:
 \textbf{1. First-Stage Fit Quality}
 
 \begin{minted}{python}
-# Good: R² \textgreater{ 0.1 for both T and Y}
-# Warning: R² \textless{ 0.1 suggests weak confounding (check overlap assumption)}
-# Critical: R² $\approx$ 0 means no confounding (maybe RCT? Or missing confounders?)
+# Good: R^2 > 0.1 for both T and Y
+# Warning: R^2 < 0.1 suggests weak confounding (check overlap assumption)
+# Critical: R^2 ~ 0 means no confounding (maybe RCT? Or missing confounders?)
 \end{minted}
 
 \textbf{2. Residual Patterns}
@@ -1261,20 +1260,20 @@ Y_resid = Y - model_y.predict(X)
 # Plot residuals vs. fitted values
 fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 axes[0].scatter(model_t.predict(X), T_resid, alpha=0.3)
-axes[0].set_xlabel(\textquotesingle{Fitted T'})
-axes[0].set_ylabel(\textquotesingle{T Residuals'})
-axes[0].set_title(\textquotesingle{Treatment Residuals'})
-axes[0].axhline(y=0, color=\textquotesingle{r'}, linestyle=\textquotesingle{--'})
+axes[0].set_xlabel('Fitted T')
+axes[0].set_ylabel('T Residuals')
+axes[0].set_title('Treatment Residuals')
+axes[0].axhline(y=0, color='r', linestyle='--')
 axes[1].scatter(model_y.predict(X), Y_resid, alpha=0.3)
-axes[1].set_xlabel(\textquotesingle{Fitted Y'})
-axes[1].set_ylabel(\textquotesingle{Y Residuals'})
-axes[1].set_title(\textquotesingle{Outcome Residuals'})
-axes[1].axhline(y=0, color=\textquotesingle{r'}, linestyle=\textquotesingle{--'})
+axes[1].set_xlabel('Fitted Y')
+axes[1].set_ylabel('Y Residuals')
+axes[1].set_title('Outcome Residuals')
+axes[1].axhline(y=0, color='r', linestyle='--')
 plt.tight_layout()
 # Look for:
-# {- Patterns in residuals (suggest misspecification)}
-# {- Heteroskedasticity (non-constant variance)}
-# {- Outliers (extreme leverage points)}
+# - Patterns in residuals (suggest misspecification)
+# - Heteroskedasticity (non-constant variance)
+# - Outliers (extreme leverage points)
 \end{minted}
 
 \textbf{3. Sensitivity to Fold Assignment}
@@ -1335,7 +1334,7 @@ results
 50\% of data, reducing accuracy.
 
 \textbf{Fix}: * Use \texttt{cv=5} as default (good balance) * Increase
-to \texttt{cv=10} for larger datasets (n \textgreater{} 5,000) *
+to \texttt{cv=10} for larger datasets ($n > 5{,}000$) *
 Leave-one-out (\texttt{cv=n}) is optimal but computationally expensive
 
 \subsection{When to Use DML vs.
@@ -1467,13 +1466,13 @@ parameter, but it's \textbf{known} by design in an RCT (e.g.,
 \(e = 0.5\) for balanced randomization).
 
 \textbf{(b)} In RCTs: * No confounding: \(T_i \perp (Y_i(0), Y_i(1))\) *
-No need to estimate conditional expectations \(\mathbb{E}[Y \mid X\)
-or \(\mathbb{E}[T \mid X\) * The propensity score \(e\) is known, not
+No need to estimate conditional expectations \(\mathbb{E}[Y \mid X]\)
+or \(\mathbb{E}[T \mid X]\) * The propensity score \(e\) is known, not
 estimated * Therefore, no nuisance estimation error, no need for
 orthogonality
 
 \textbf{(c)} If we estimate \(e\) incorrectly: * Bias in \(\hat{\tau}\):
-\(\mathbb{E}[\hat{\tau}\) \textbackslash neq \textbackslash tau\_0{]} *
+\(\mathbb{E}[\hat{\tau}] \neq \tau_0\) *
 Variance inflation: IPW weights \(1/\hat{e}\) become unstable * But in
 practice, \(e\) is known from randomization protocol
 
@@ -1489,7 +1488,7 @@ Consider the naive FWL score:
 \[\psi_{\text{naive}}(W_i; \tau, \eta) = (T_i - m(X_i)) \cdot (Y_i - \tau \cdot T_i - g(X_i))\]
 
 Suppose we estimate \(m(X)\) with bias \(\hat{m}(X) - m_0(X) = b_n(X)\)
-where \(\mathbb{E}[b_n(X)^2\) = O(n\^{}\{-1\}){]}.
+where \(\mathbb{E}[b_n(X)^2] = O(n^{-1})\).
 
 \textbf{(a)} Show that the bias in \(\hat{\tau}\) is first-order:
 \(O(n^{-1/2})\).
@@ -1520,15 +1519,14 @@ If \(\hat{g}\) also has bias, this is \(O(n^{-1})\). Solving for
 
 \[\hat{\tau} - \tau_0 \approx \frac{\mathbb{E}[b_n(X) \cdot (\ldots)]}{\mathbb{E}[(T - m_0(X))^2]} = O(n^{-1})\]
 
-Therefore, \(\mathbb{E}[\hat{\tau} - \tau_0\) = O(n\^{}\{-1\}){]}, which
+Therefore, \(\mathbb{E}[\hat{\tau} - \tau_0] = O(n^{-1})\), which
 means:
 
 \[\sqrt{n}(\hat{\tau} - \tau_0) = O(\sqrt{n} \cdot n^{-1}) = O(n^{-1/2}) \not\to 0\]
 
 \textbf{(b)} For \(\sqrt{n}\)-consistency, we need
 \(\sqrt{n}(\hat{\tau} - \tau_0) = O_p(1)\) (bounded in probability). But
-here, the bias dominates: \(\sqrt{n} \mathbb{E}[\hat{\tau} - \tau_0\) =
-O(n\^{}\{-1/2\}){]}, which does not vanish. The estimator is
+here, the bias dominates: \(\sqrt{n} \mathbb{E}[\hat{\tau} - \tau_0] = O(n^{-1/2})\), which does not vanish. The estimator is
 \textbf{inconsistent}.
 
 \subsection{Exercise 2.3: Sample Splitting Necessity
@@ -1546,7 +1544,7 @@ n = 1000
 X = np.random.randn(n, 10)
 T = X[:, 0]**2 + X[:, 1] + np.random.randn(n)
 Y = 3.0 * T + X[:, 0]**2 + X[:, 1]**3 + np.random.randn(n)
-# Proper DML with cross{-fitting}
+# Proper DML with cross-fitting
 dml_proper = LinearDML(
     model_y=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
     model_t=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
@@ -1560,7 +1558,7 @@ tau_proper = dml_proper.effect(X).mean()
 #   1. Fit model_T on full data, predict T_hat
 #   2. Fit model_Y on full data, predict Y_hat
 #   3. Compute residuals T_resid, Y_resid
-#   4. Regress Y_resid \textasciitilde{ T_resid (final stage)}
+#   4. Regress Y_resid on T_resid (final stage)
 #   5. Compare tau_naive to tau_proper
 # YOUR CODE HERE
 print(f"True ATE: 3.00")
@@ -1626,10 +1624,10 @@ from sklearn.linear_model import Ridge
 from sklearn.tree import DecisionTreeRegressor
 from econml.dml import LinearDML
 models_to_test = {
-    \textquotesingle{Ridge'}: Ridge(),
-    \textquotesingle{Shallow Tree'}: DecisionTreeRegressor(max_depth=2, random_state=42),
-    \textquotesingle{Deep Tree'}: DecisionTreeRegressor(max_depth=10, random_state=42),
-    \textquotesingle{Random Forest'}: RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42)
+    'Ridge': Ridge(),
+    'Shallow Tree': DecisionTreeRegressor(max_depth=2, random_state=42),
+    'Deep Tree': DecisionTreeRegressor(max_depth=10, random_state=42),
+    'Random Forest': RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42)
 }
 results = []
 for name, model in models_to_test.items():
@@ -1637,7 +1635,7 @@ for name, model in models_to_test.items():
     dml.fit(Y, T, X=X, W=None)
     tau = dml.effect(X).mean()
     bias = abs(tau - 3.0)
-    results.append({\textquotesingle{Model'}: name, \textquotesingle{Estimate'}: tau, \textquotesingle{Bias'}: bias\)}
+    results.append({'Model': name, 'Estimate': tau, 'Bias': bias})
 import pandas as pd
 df = pd.DataFrame(results)
 print(df.to_string(index=False))
@@ -1672,9 +1670,5 @@ print(df.to_string(index=False))
 \textbf{Lesson}: First-stage flexibility matters, but overfitting
 control (via ensembles, cross-validation) is crucial.
 
-\textbf{Precision Improvement:} - You said: "continue from where we left
-it off without asking any further questions" - Concise: "Continue
-Chapter 2 writing" - Precise:
-\texttt{exec\ chapter2\_writing\ \&\&\ update\ CHAPTER\_STATUS} -
-Pattern: exec {[}task{]} \&\& update {[}status\_file{]}
+% End of Chapter 2
 
