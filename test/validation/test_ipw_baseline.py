@@ -19,6 +19,7 @@ from src.validation.validation_result import ValidationResult
 class TestIPWEstimator:
     """Test suite for IPWEstimator."""
 
+    @pytest.mark.unit
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = IPWEstimator(n_simulations=10, alpha=0.05, random_state=42)
@@ -132,6 +133,7 @@ class TestIPWEstimator:
 class TestAugmentedIPW:
     """Test suite for AugmentedIPW estimator."""
 
+    @pytest.mark.unit
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = AugmentedIPW(n_simulations=10, alpha=0.05, random_state=42)

@@ -19,6 +19,7 @@ from src.validation.baseline_comparison import BaselineComparison
 class TestBaselineComparisonBasic:
     """Test basic functionality of BaselineComparison."""
 
+    @pytest.mark.unit
     def test_instantiation_without_dml(self):
         """Test instantiation without DML method."""
         comp = BaselineComparison(n_simulations=10, include_dml=False)
@@ -26,6 +27,7 @@ class TestBaselineComparisonBasic:
         assert not comp.include_dml
         assert len(comp.methods) == 4  # OLS + IPW methods only
 
+    @pytest.mark.unit
     def test_instantiation_with_dml(self):
         """Test instantiation with DML method included."""
         comp = BaselineComparison(n_simulations=10, include_dml=True)

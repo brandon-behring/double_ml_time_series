@@ -19,6 +19,7 @@ from src.validation.validation_result import ValidationResult
 class TestRandomForestEstimator:
     """Test suite for RandomForestEstimator."""
 
+    @pytest.mark.unit
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = RandomForestEstimator(n_simulations=10, alpha=0.05, random_state=42)
@@ -163,6 +164,7 @@ class TestRandomForestEstimator:
 class TestXGBoostEstimator:
     """Test suite for XGBoostEstimator."""
 
+    @pytest.mark.unit
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = XGBoostEstimator(n_simulations=10, alpha=0.05, random_state=42)

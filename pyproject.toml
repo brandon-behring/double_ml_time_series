@@ -62,6 +62,7 @@ python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "--cov=src --cov-report=term-missing --cov-report=html -v"
 markers = [
+    "unit: marks pure unit tests - no estimation, <100ms each (run with '-m unit')",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "validation: marks validation tests",
 ]

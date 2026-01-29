@@ -21,6 +21,7 @@ from src.validation.parallel import (
 )
 
 
+@pytest.mark.unit
 class TestOptimalJobCalculation:
     """Test automatic n_jobs optimization based on workload."""
 
@@ -53,6 +54,7 @@ class TestOptimalJobCalculation:
         assert n_jobs <= 8
 
 
+@pytest.mark.unit
 class TestParallelMap:
     """Test basic parallel_map functionality."""
 
@@ -286,6 +288,7 @@ class TestParallelExecutor:
         assert results2 == [2, 4, 6]
 
 
+@pytest.mark.unit
 class TestChunkWorkload:
     """Test workload chunking utilities."""
 

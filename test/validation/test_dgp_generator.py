@@ -3,6 +3,8 @@ Tests for DGP (Data Generating Process) Generator.
 
 Test-first development: These tests are written BEFORE implementation.
 The DGP generator must create synthetic data with known properties for validation.
+
+All tests in this module are unit tests (data generation, no estimation).
 """
 
 import numpy as np
@@ -10,6 +12,9 @@ import pytest
 from dataclasses import asdict
 
 from src.validation.dgp_generator import DGPGenerator, DGPResult
+
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
 
 
 class TestDGPResult:

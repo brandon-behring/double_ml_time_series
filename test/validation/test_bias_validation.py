@@ -28,6 +28,7 @@ from src.validation.validation_result import ValidationResult
 class TestBiasValidationBasicFunctionality:
     """Test basic functionality of BiasValidation validation method."""
 
+    @pytest.mark.unit
     def test_instantiation(self):
         """Test that BiasValidation can be instantiated with default parameters."""
         validator = BiasValidation()
@@ -236,6 +237,7 @@ class TestBiasValidationEdgeCases:
 class TestBiasValidationParameterValidation:
     """Test parameter validation and error handling."""
 
+    @pytest.mark.unit
     def test_negative_n_simulations_raises_error(self):
         """Test that negative n_simulations raises ValueError."""
         # TODO: Implement
@@ -243,11 +245,13 @@ class TestBiasValidationParameterValidation:
         #     BiasValidationValidation(n_simulations=-100)
         pass
 
+    @pytest.mark.unit
     def test_zero_n_simulations_raises_error(self):
         """Test that zero n_simulations raises ValueError."""
         # TODO: Implement
         pass
 
+    @pytest.mark.unit
     def test_invalid_alpha_raises_error(self):
         """Test that invalid alpha (not in [0,1]) raises ValueError."""
         # TODO: Implement

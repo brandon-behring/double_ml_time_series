@@ -18,6 +18,7 @@ from src.validation.validation_result import ValidationResult
 class TestNaiveOLS:
     """Test suite for NaiveOLS estimator."""
 
+    @pytest.mark.unit
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = NaiveOLS(n_simulations=10, alpha=0.05, random_state=42)
@@ -164,6 +165,7 @@ class TestNaiveOLS:
 class TestOLSWithControls:
     """Test suite for OLSWithControls estimator."""
 
+    @pytest.mark.unit
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = OLSWithControls(n_simulations=10, alpha=0.05, random_state=42)

@@ -3,11 +3,16 @@ Unit tests for EnhancedDGPGenerator.
 
 Tests heterogeneous treatment effects, misspecification scenarios,
 and assumption violations.
+
+All tests in this module are unit tests (data generation, no estimation).
 """
 
 import pytest
 import numpy as np
 from src.validation.enhanced_dgp import EnhancedDGPGenerator, EnhancedDGPResult
+
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
 
 
 class TestEnhancedDGPBasicFunctionality:

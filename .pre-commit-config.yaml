@@ -15,10 +15,10 @@ repos:
 
   - repo: local
     hooks:
-      # Run FAST validation tests before commit (skip slow Monte Carlo tests)
-      - id: validation-tests
-        name: Run fast validation tests
-        entry: bash -c 'source venv/bin/activate && python -m pytest test/validation/ -v --tb=short -m "not slow" || (echo "❌ Tests failed. Fix errors before committing."; exit 1)'
+      # Run UNIT tests only before commit (instantiation, serialization, validation - no estimation)
+      - id: unit-tests
+        name: Run unit tests
+        entry: bash -c 'source venv/bin/activate && python -m pytest test/validation/ -v --tb=short -m "unit" --no-cov || (echo "❌ Unit tests failed. Fix errors before committing."; exit 1)'
         language: system
         pass_filenames: false
         stages: [pre-commit]

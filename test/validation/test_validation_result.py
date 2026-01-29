@@ -2,6 +2,8 @@
 Tests for ValidationResult dataclass.
 
 Test-first development: Ensure ValidationResult serialization and methods work correctly.
+
+All tests in this module are unit tests (no estimation, pure serialization).
 """
 
 import json
@@ -9,6 +11,9 @@ from datetime import datetime
 import pytest
 
 from src.validation.validation_result import ValidationResult
+
+# Mark all tests in this module as unit tests
+pytestmark = pytest.mark.unit
 
 
 class TestValidationResultCreation:

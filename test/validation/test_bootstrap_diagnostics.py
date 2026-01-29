@@ -28,6 +28,7 @@ from src.validation.dgp_generator import DGPGenerator
 class TestBootstrapDiagnosticsBasicFunctionality:
     """Test basic functionality of BootstrapDiagnostics."""
 
+    @pytest.mark.unit
     def test_instantiation_default(self):
         """Test instantiation with default parameters."""
         dgp = DGPGenerator(n=100, p=3, true_effect=2.0, random_state=42)
@@ -38,6 +39,7 @@ class TestBootstrapDiagnosticsBasicFunctionality:
         assert diag.random_state is None
         assert diag.data is not None
 
+    @pytest.mark.unit
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         dgp = DGPGenerator(n=100, p=3, true_effect=2.0, random_state=42)
