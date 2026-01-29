@@ -117,6 +117,7 @@ class TestParallelMap:
 class TestParallelMonteCarlo:
     """Test Monte Carlo simulation utilities."""
 
+    @pytest.mark.slow
     def test_monte_carlo_runs_correct_count(self):
         """Should execute exact number of simulations."""
 
@@ -126,6 +127,7 @@ class TestParallelMonteCarlo:
         results = parallel_monte_carlo(sim, n_simulations=100, n_jobs=4, show_progress=False)
         assert len(results) == 100
 
+    @pytest.mark.slow
     def test_monte_carlo_reproducibility_with_seed(self):
         """Same seed should produce identical results."""
 
@@ -142,6 +144,7 @@ class TestParallelMonteCarlo:
 
         assert np.allclose(results1, results2)
 
+    @pytest.mark.slow
     def test_monte_carlo_different_seeds_differ(self):
         """Different seeds should produce different results."""
 
@@ -158,6 +161,7 @@ class TestParallelMonteCarlo:
 
         assert not np.allclose(results1, results2)
 
+    @pytest.mark.slow
     def test_monte_carlo_passes_kwargs(self):
         """Should pass additional kwargs to simulation function."""
 
@@ -177,6 +181,7 @@ class TestParallelMonteCarlo:
         # Check mean is approximately 5.0
         assert abs(np.mean(results) - 5.0) < 0.5
 
+    @pytest.mark.slow
     def test_monte_carlo_statistical_properties(self):
         """Monte Carlo should produce correct statistical properties."""
 
@@ -373,6 +378,7 @@ class TestPerformance:
         # Verify results match (speedup is hardware/load dependent)
         assert par_results == seq_results
 
+    @pytest.mark.slow
     def test_large_workload_integration(self):
         """Integration test with realistic workload."""
 

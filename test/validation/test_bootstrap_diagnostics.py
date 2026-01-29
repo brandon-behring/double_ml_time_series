@@ -90,6 +90,7 @@ class TestBootstrapDiagnosticsBasicFunctionality:
 class TestBootstrapDiagnosticsConvergence:
     """Test convergence diagnostic functionality."""
 
+    @pytest.mark.slow
     def test_convergence_detects_stability(self):
         """Test that convergence diagnostic detects stable bootstrap estimates."""
         dgp = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
@@ -172,6 +173,7 @@ class TestBootstrapDiagnosticsConvergence:
 class TestBootstrapDiagnosticsDistribution:
     """Test distribution diagnostic functionality."""
 
+    @pytest.mark.slow
     def test_distribution_returns_valid_statistics(self):
         """Test that distribution diagnostic returns valid statistics."""
         dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
@@ -190,6 +192,7 @@ class TestBootstrapDiagnosticsDistribution:
         # Symmetry score in [0, 1]
         assert 0.0 <= result.symmetry_score <= 1.0
 
+    @pytest.mark.slow
     def test_distribution_diagnostics_includes_percentiles(self):
         """Test that distribution diagnostics include percentile information."""
         dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
@@ -288,6 +291,7 @@ class TestBootstrapDiagnosticsRecommendations:
 class TestBootstrapDiagnosticsReproducibility:
     """Test reproducibility with random seeds."""
 
+    @pytest.mark.slow
     def test_same_seed_produces_identical_convergence_results(self):
         """Test that same seed produces identical convergence diagnostics."""
         dgp1 = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
@@ -310,6 +314,7 @@ class TestBootstrapDiagnosticsReproducibility:
         np.testing.assert_array_almost_equal(result1.estimates, result2.estimates)
         assert result1.convergence_score == result2.convergence_score
 
+    @pytest.mark.slow
     def test_same_seed_produces_identical_distribution_results(self):
         """Test that same seed produces identical distribution diagnostics."""
         dgp1 = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
@@ -328,6 +333,7 @@ class TestBootstrapDiagnosticsReproducibility:
         assert result1.skewness == result2.skewness
         assert result1.kurtosis == result2.kurtosis
 
+    @pytest.mark.slow
     def test_different_seed_produces_different_results(self):
         """Test that different seeds produce different results."""
         dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
@@ -377,6 +383,7 @@ class TestBootstrapDiagnosticsEdgeCases:
         assert isinstance(result, DistributionDiagnostic)
         assert result.n_bootstrap == 50
 
+    @pytest.mark.slow
     def test_lineardml_estimator(self):
         """Test diagnostics work with LinearDML estimator."""
         dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
@@ -440,6 +447,7 @@ class TestBootstrapDiagnosticsEdgeCases:
 class TestBootstrapDiagnosticsStatisticalProperties:
     """Test statistical properties of diagnostics."""
 
+    @pytest.mark.slow
     def test_convergence_score_in_valid_range(self):
         """Test that convergence score is in [0, 1]."""
         dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
@@ -452,6 +460,7 @@ class TestBootstrapDiagnosticsStatisticalProperties:
 
         assert 0.0 <= result.convergence_score <= 1.0
 
+    @pytest.mark.slow
     def test_symmetry_score_in_valid_range(self):
         """Test that symmetry score is in [0, 1]."""
         dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
@@ -474,6 +483,7 @@ class TestBootstrapDiagnosticsStatisticalProperties:
 
         assert all(se >= 0 for se in result.std_errors)
 
+    @pytest.mark.slow
     def test_normality_pvalue_in_valid_range(self):
         """Test that normality p-value is in [0, 1]."""
         dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
@@ -506,6 +516,7 @@ class TestBootstrapDiagnosticsStatisticalProperties:
 class TestBootstrapDiagnosticsIntegration:
     """Test integration with DGP and end-to-end workflows."""
 
+    @pytest.mark.slow
     def test_full_workflow_bias_convergence(self):
         """Test complete workflow for bias convergence analysis."""
         # Generate data
@@ -529,6 +540,7 @@ class TestBootstrapDiagnosticsIntegration:
         assert result.recommended_n in [100, 200, 500]
         assert "monte_carlo_error" in result.diagnostics
 
+    @pytest.mark.slow
     def test_full_workflow_distribution_analysis(self):
         """Test complete workflow for distribution analysis."""
         # Generate data

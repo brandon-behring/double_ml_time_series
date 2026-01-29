@@ -35,6 +35,7 @@ class TestBiasValidationBasicFunctionality:
         assert validator.alpha == 0.05
         assert validator.random_state is None
 
+    @pytest.mark.slow
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         validator = BiasValidation(n_simulations=500, alpha=0.01, random_state=42)
@@ -63,6 +64,7 @@ class TestBiasValidationBasicFunctionality:
 class TestBiasValidationValidationLogic:
     """Test validation logic and correctness."""
 
+    @pytest.mark.slow
     def test_detects_no_bias_with_correct_estimator(self):
         """Test that validator detects no bias when estimator is unbiased."""
         # DGP with low confounding - DML should be nearly unbiased
@@ -74,6 +76,7 @@ class TestBiasValidationValidationLogic:
         assert abs(result.bias) < 0.15, f"Expected low bias, got {result.bias}"
         assert result.status in ["PASS", "WARNING"], f"Expected PASS/WARNING, got {result.status}"
 
+    @pytest.mark.slow
     def test_pass_status_with_good_estimator(self):
         """Test PASS status with properly specified estimator."""
         # Simple DGP with moderate sample size - should get PASS

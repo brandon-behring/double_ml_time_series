@@ -26,6 +26,7 @@ class TestRandomForestEstimator:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
+    @pytest.mark.slow
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = RandomForestEstimator(
@@ -169,6 +170,7 @@ class TestXGBoostEstimator:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
+    @pytest.mark.slow
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = XGBoostEstimator(

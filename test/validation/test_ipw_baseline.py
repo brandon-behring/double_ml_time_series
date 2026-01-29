@@ -26,6 +26,7 @@ class TestIPWEstimator:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
+    @pytest.mark.slow
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = IPWEstimator(n_simulations=50, alpha=0.01, random_state=123)
@@ -138,6 +139,7 @@ class TestAugmentedIPW:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
+    @pytest.mark.slow
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = AugmentedIPW(n_simulations=50, alpha=0.01, random_state=123)

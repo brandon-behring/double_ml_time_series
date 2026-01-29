@@ -1,62 +1,62 @@
 # Current Work
 
-**Last Updated**: 2026-01-23
+**Last Updated**: 2026-01-29
 
 ---
 
 ## Right Now
 
-**Comprehensive Rebuild Complete** ✅
+**Gate 1 Verification Complete** ✅
 
-Infrastructure rebuilt after Jan 15 restart:
-- ✅ Book infrastructure rebuilt (amsbook + natbib + algorithm packages)
-- ✅ Chapter headers added (`\chapter{}` declarations)
-- ✅ Test infrastructure fixed (`pip install -e .` for imports)
-- ✅ CLAUDE.md updated with accurate state
-- ✅ 27 tests passing
+Chapter 3 written and infrastructure optimized:
+- ✅ Book: 77 pages (main.tex compiles 0 errors)
+- ✅ Tests: 331 total (43 marked @slow, 288 fast for pre-commit)
+- ✅ Pre-commit hooks optimized to run ~100 fast tests
+- ✅ Chapter 3 complete (Validation Framework)
 
 **Code Status**:
 - FWL, Robinson, DML implementations verified working
+- 7-method validation suite implemented
 - Static (i.i.d.) DML only - NOT time series yet
 
 **Book Status**:
-- main.tex: 62 pages, 0 errors
-- Chapter 1: Potential Outcomes + FWL (proper `\chapter{}` structure)
-- Chapter 2: Neyman Orthogonality + DML (proper `\chapter{}` structure)
-- Chapter 3: Validation outline only (~30% complete)
+- main.tex: 77 pages, 0 errors
+- Chapter 1: Potential Outcomes + FWL (complete)
+- Chapter 2: Neyman Orthogonality + DML (complete)
+- Chapter 3: Validation Framework (complete)
 
 ---
 
 ## Why
 
-The Jan 15 restart deleted Dynamic DML code. This rebuild:
+Building comprehensive DML reference book with rigorous validation:
 1. Verified existing implementations work
 2. Fixed infrastructure issues
 3. Documented actual state (not claimed state)
-4. Prepared for Phase 2 (time series)
+4. Ready for Phase 2 (time series)
 
 ---
 
 ## Next Steps
 
 **Immediate** (choose one):
-1. Complete Chapter 3 (Validation) - ~8-12 hours
-2. Begin Phase 2 (Dynamic DML) - see `docs/IMPLEMENTATION_STRATEGY_REPORT.md`
-3. Run full validation battery on existing implementations
+1. Begin Phase 2 (Dynamic DML) - see `docs/IMPLEMENTATION_STRATEGY_REPORT.md`
+2. Complete Chapter 4 (Sensitivity Analysis)
+3. Run full validation battery report
 
-**Chapter 3 Needs**:
-- Section 2: Baseline Methods Comparison (~15 pages)
-- Section 3: DML Deep Dive (~18 pages)
-- Section 4: Statistical Testing Framework (~12 pages)
-- Section 5: Computational Performance (~10 pages)
-- Section 6: Practical Recommendations (~8 pages)
+**Phase 2 (Dynamic DML) Roadmap**:
+- Rolling-window DML for time series
+- Sequential g-estimation
+- Macroeconomic control integration
+- See `docs/IMPLEMENTATION_STRATEGY_REPORT.md`
 
 ---
 
 ## Context for Return
 
-- **Build**: `pdflatex -shell-escape main.tex` (0 errors, 62 pages)
-- **Tests**: `pytest test/validation/ -v` (27 pass)
+- **Build**: `pdflatex -shell-escape main.tex` (0 errors, 77 pages)
+- **Tests**: `pytest test/validation/ -v` (331 tests, 43 slow)
+- **Fast tests**: `pytest test/validation/ -m "not slow"` (~288 tests, <2 min)
 - **Install**: `pip install -e .` (required for imports)
 - **Master plan**: `docs/MASTER_ROADMAP_2025-11-21.md`
 - **Time series roadmap**: `docs/IMPLEMENTATION_STRATEGY_REPORT.md`
@@ -67,5 +67,4 @@ The Jan 15 restart deleted Dynamic DML code. This rebuild:
 ## Known Issues
 
 1. **Not Time Series**: Current code is i.i.d. only despite repo name
-2. **Chapter 3 Skeleton**: Outline exists but content missing
-3. **Stale logs/results**: `results/` and `logs/` may be outdated
+2. **Stale logs/results**: `results/` and `logs/` may be outdated
