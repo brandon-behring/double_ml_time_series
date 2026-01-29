@@ -14,6 +14,13 @@ from .parallel import (
 )
 from .bias_validation import BiasValidation
 
+# Phase 2A stubs (not yet implemented)
+from .stationarity import (
+    StationarityDiagnostic,
+    StationarityResult,
+    ComprehensiveStationarityResult,
+)
+
 __all__ = [
     "DGPGenerator",
     "DGPResult",
@@ -27,4 +34,8 @@ __all__ = [
     "chunk_workload",
     "get_optimal_n_jobs",
     "BiasValidation",
+    # Phase 2A stubs
+    "StationarityDiagnostic",
+    "StationarityResult",
+    "ComprehensiveStationarityResult",
 ]

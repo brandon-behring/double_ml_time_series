@@ -49,15 +49,15 @@ Phase 1 of the Double Machine Learning for Time Series book is complete. All fou
 
 | Category | Count | Purpose |
 |----------|-------|---------|
-| **Total Tests** | 395 | Full suite |
-| **Unit (fast)** | 144 | Pre-commit hooks |
-| **Slow (validation)** | 47 | Monte Carlo, empirical |
+| **Total Tests** | 409 | Full suite |
+| **Fast (not slow)** | 360 | Pre-commit hooks |
+| **Slow (validation)** | 49 | Monte Carlo, empirical |
 | **Coverage** | 20% | Acceptable for validation-heavy code |
 
 ### Test Markers
 ```bash
-pytest test/ -m "not slow"     # Fast tests (~288, <2 min)
-pytest test/ -m slow           # Slow tests (47, 5+ min)
+pytest test/ -m "not slow"     # Fast tests (360, <2 min)
+pytest test/ -m slow           # Slow tests (49, 5+ min)
 pytest test/ -v                # All tests
 ```
 
@@ -142,7 +142,7 @@ pytest test/ -v                # All tests
 **Rationale**:
 1. All four foundation chapters written and validated
 2. 7-method validation suite operational
-3. 395 tests passing
+3. 409 tests passing
 4. Zero LaTeX errors
 5. Clear path to Phase 2
 

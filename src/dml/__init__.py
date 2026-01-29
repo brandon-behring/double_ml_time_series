@@ -20,11 +20,32 @@ from .fwl import (
 from .robinson import robinson_estimator
 from .double_ml import double_ml, DMLResult
 
+# Phase 2A stubs (not yet implemented)
+from .dynamic_dml import DynamicDML, DynamicDMLResult, RollingWindowDML, PanelDML
+from .cross_fitting import (
+    TimeSeriesCrossValidator,
+    BlockedTimeSeriesCV,
+    PurgedGroupTimeSeriesCV,
+)
+from .hac import newey_west_se, newey_west_covariance, HACEstimator
+
 __all__ = [
+    # Phase 1 (implemented)
     "fwl_estimate",
     "fwl_residualize",
     "fwl_vs_ols_comparison",
     "robinson_estimator",
     "double_ml",
     "DMLResult",
+    # Phase 2A stubs (not yet implemented)
+    "DynamicDML",
+    "DynamicDMLResult",
+    "RollingWindowDML",
+    "PanelDML",
+    "TimeSeriesCrossValidator",
+    "BlockedTimeSeriesCV",
+    "PurgedGroupTimeSeriesCV",
+    "newey_west_se",
+    "newey_west_covariance",
+    "HACEstimator",
 ]
