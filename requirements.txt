@@ -38,6 +38,7 @@ papermill>=2.4  # Parallel notebook execution
 # Testing
 pytest>=7.4
 pytest-cov>=4.1
+pytest-watch>=4.2  # TDD watch mode: auto-run tests on file save
 
 # Code quality
 black>=23.11

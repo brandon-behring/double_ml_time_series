@@ -2,7 +2,7 @@
 #
 # Build professional PDFs with native LaTeX equation rendering
 
-.PHONY: all clean chapter1 chapter2 help view install-deps
+.PHONY: all clean chapter1 chapter2 help view install-deps test test-unit test-integration test-all test-watch test-coverage
 
 # Main targets
 MAIN = main
@@ -136,3 +136,54 @@ help:
 	@echo "  3. pdflatex (second pass, resolve citations)"
 	@echo "  4. pdflatex (third pass, resolve cross-references)"
 	@echo ""
+	@echo "Test targets:"
+	@echo "  test-unit        Run unit tests only (~3s, pre-commit level)"
+	@echo "  test-integration Run integration tests (~10min, excludes slow)"
+	@echo "  test-all         Run full test suite (~30min, includes slow)"
+	@echo "  test-watch       TDD watch mode (auto-run unit tests on save)"
+	@echo "  test-coverage    Run tests with coverage report"
+	@echo ""
+
+# ============================================================================
+# Test Targets (TDD Workflow)
+# ============================================================================
+
+# Alias for test-unit (default test target)
+test: test-unit
+
+# Fast unit tests (pre-commit level) - ~3 seconds
+# Tests: instantiation, serialization, validation (no estimation)
+test-unit:
+	@echo "Running unit tests (fast, ~3s)..."
+	. venv/bin/activate && python -m pytest test/validation/ -v -m "unit" --no-cov --tb=short
+	@echo "✓ Unit tests complete"
+
+# Integration tests (excludes slow Monte Carlo) - ~10 minutes
+# This is what pre-push runs
+test-integration:
+	@echo "Running integration tests (medium, ~10min)..."
+	. venv/bin/activate && python -m pytest test/validation/ -v -m "not slow" --no-cov --tb=short
+	@echo "✓ Integration tests complete"
+
+# Full test suite including slow tests - ~30 minutes
+# Run before releases or major merges
+test-all:
+	@echo "Running full test suite (slow, ~30min)..."
+	. venv/bin/activate && python -m pytest test/validation/ -v --tb=short
+	@echo "✓ Full test suite complete"
+
+# TDD watch mode - auto-run unit tests on file save
+# Usage: make test-watch (then edit code, tests auto-run)
+# Press Ctrl+C to exit
+test-watch:
+	@echo "Starting TDD watch mode..."
+	@echo "  - Tests auto-run when files change"
+	@echo "  - Press Ctrl+C to exit"
+	@echo ""
+	. venv/bin/activate && ptw test/validation/ -- -m "unit" --no-cov -q
+
+# Coverage report (generates HTML report in htmlcov/)
+test-coverage:
+	@echo "Running tests with coverage..."
+	. venv/bin/activate && python -m pytest test/validation/ --cov=src/validation --cov-report=html --cov-report=term-missing
+	@echo "✓ Coverage report generated: htmlcov/index.html"

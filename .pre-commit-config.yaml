@@ -23,21 +23,17 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
-      # Run FULL test suite on push (including slow Monte Carlo tests)
-      - id: full-test-suite
-        name: Run full test suite
-        entry: bash -c 'source venv/bin/activate && python -m pytest test/validation/ -v --tb=short || (echo "❌ Full tests failed. Fix errors before pushing."; exit 1)'
+      # Run INTEGRATION tests on push (excludes slow Monte Carlo, ~10min instead of ~30min)
+      # Slow tests run in CI or via `make test-all`
+      - id: integration-test-suite
+        name: Run integration tests (excludes slow)
+        entry: bash -c 'source venv/bin/activate && python -m pytest test/validation/ -v --tb=short -m "not slow" || (echo "❌ Integration tests failed. Fix errors before pushing."; exit 1)'
         language: system
         pass_filenames: false
         stages: [pre-push]
 
-      # Check test coverage
-      - id: test-coverage-check
-        name: Check test coverage
-        entry: bash -c 'source venv/bin/activate && python -m pytest test/validation/ --cov=src/validation --cov-report=term-missing --cov-fail-under=80 || (echo "⚠️  Coverage below 80%. Add more tests."; exit 1)'
-        language: system
-        pass_filenames: false
-        stages: [pre-push]
+      # Coverage check moved to CI/manual - running `make test-coverage` when needed
+      # This avoids doubling test runtime on pre-push (was: ~30min coverage + ~30min full suite)
 
       # Validate template syntax
       - id: template-validation
