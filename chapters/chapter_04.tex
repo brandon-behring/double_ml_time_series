@@ -1,0 +1,464 @@
+% Chapter 4: Cross-Sectional Application with Sensitivity Analysis
+% ============================================================================
+% This chapter demonstrates DML on real data (OJ dataset) with sensitivity
+% analysis to assess robustness to unmeasured confounding.
+% ============================================================================
+
+\chapter{Cross-Sectional Application: Price Elasticity with Sensitivity Analysis}
+\label{ch:cross_sectional_application}
+
+\section{Introduction}\label{sec:ch04_introduction}
+
+Chapters 1--3 established the theoretical foundations and validated DML on synthetic data where the true treatment effect is known. This chapter takes the critical step of applying DML to real observational data---where the true causal effect is unknown and unmeasured confounding is a genuine concern.
+
+\keyresult{
+\textbf{Chapter Objectives:}
+\begin{itemize}
+    \item Apply DML to estimate price elasticity of demand using real retail data
+    \item Compare DML estimates with OLS baselines to quantify confounding adjustment
+    \item Introduce Rosenbaum bounds sensitivity analysis for robustness assessment
+    \item Develop practical recommendations for reporting DML results
+\end{itemize}
+}
+
+\subsection{Why Sensitivity Analysis Matters}
+
+The unconfoundedness assumption---that all confounders are observed and controlled---is fundamentally untestable. No matter how many covariates we include, there may exist unmeasured factors affecting both treatment and outcome. This creates a persistent concern: \textit{How robust are our findings to potential hidden bias?}
+
+Sensitivity analysis addresses this by asking: ``How strong would unmeasured confounding need to be to qualitatively change our conclusions?'' If even modest confounding could overturn our results, we should interpret them cautiously. If only implausibly strong confounding could matter, we gain confidence in our findings.
+
+\subsection{Chapter Roadmap}
+
+\begin{itemize}
+    \item \textbf{Section 4.2}: The OJ Dataset---exploratory analysis and preprocessing
+    \item \textbf{Section 4.3}: DML Estimation---step-by-step price elasticity estimation
+    \item \textbf{Section 4.4}: Baseline Comparison---quantifying the value of DML
+    \item \textbf{Section 4.5}: Sensitivity Analysis---Rosenbaum bounds methodology
+    \item \textbf{Section 4.6}: Recommendations---when to trust DML estimates
+    \item \textbf{Section 4.7}: Exercises
+\end{itemize}
+
+% ============================================================================
+\section{The Orange Juice Dataset}\label{sec:oj_dataset}
+% ============================================================================
+
+\subsection{Data Description}
+
+We analyze the Dominick's Orange Juice dataset, a benchmark in causal inference and marketing econometrics. The data comes from Dominick's Finer Foods, a major Chicago-area supermarket chain, and contains weekly store-level sales from 83 stores over 121 weeks.
+
+\begin{table}[h]
+\centering
+\caption{Orange Juice Dataset Variables}
+\label{tab:oj_variables}
+\begin{tabular}{lll}
+\hline
+\textbf{Variable} & \textbf{Description} & \textbf{Role} \\
+\hline
+\texttt{logmove} & Log of units sold & Outcome (Y) \\
+\texttt{price} & Shelf price per unit & Treatment (T)\textsuperscript{*} \\
+\texttt{feat} & Featured in store advertisement & Confounder (X) \\
+\texttt{INCOME} & Median household income (log scale) & Confounder (X) \\
+\texttt{AGE60} & Proportion of population over 60 & Confounder (X) \\
+\texttt{brand} & Brand identifier & Grouping variable \\
+\hline
+\multicolumn{3}{l}{\small \textsuperscript{*}We use $T = \log(\texttt{price})$ for elasticity interpretation}
+\end{tabular}
+\end{table}
+
+\subsection{The Causal Question}
+
+We seek to estimate the \textbf{price elasticity of demand}: the percentage change in quantity demanded for a 1\% change in price. In the log-log specification:
+
+\begin{equation}
+\texttt{logmove} = \tau \cdot \log(\texttt{price}) + g(X) + \varepsilon
+\end{equation}
+
+where $\tau$ is the price elasticity (expected to be negative by the law of demand).
+
+\insight{
+\textbf{Why OJ Data for DML?}
+
+The OJ dataset is ideal for demonstrating DML because:
+\begin{enumerate}
+    \item \textbf{Known benchmark}: Published elasticity estimates provide validation ($\tau \approx -2.5$ to $-3.5$)
+    \item \textbf{Clear confounding}: Store characteristics (income, demographics) affect both pricing and demand
+    \item \textbf{Large sample}: $n \approx 29{,}000$ observations ensure statistical power
+    \item \textbf{Realistic complexity}: Nonlinear relationships between confounders and outcomes
+\end{enumerate}
+}
+
+\subsection{Loading the Data}
+
+Our implementation provides a clean interface for loading the OJ dataset:
+
+\begin{minted}[fontsize=\small]{python}
+from src.data import OJDataLoader
+
+# Load with default confounders
+loader = OJDataLoader()
+data = loader.load()
+
+print(data.summary())
+# Orange Juice Dataset Summary
+# ============================
+# Observations:     28,947
+# Features:         3
+# Feature names:    feat, INCOME, AGE60
+#
+# Outcome (Y = log sales):
+#   Mean:           9.168
+#   Range:          [4.159, 13.482]
+#
+# Treatment (T = log price):
+#   Mean:           0.784
+#   Range:          [-0.654, 1.353]
+\end{minted}
+
+The loader handles downloading, caching, and preprocessing. Treatment $T$ is automatically transformed to log-price for elasticity interpretation.
+
+\subsection{Exploratory Analysis}
+
+Before estimation, we examine the data for potential issues:
+
+\begin{minted}[fontsize=\small]{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Basic correlations
+print("Correlation matrix:")
+print(f"  Corr(Y, T) = {np.corrcoef(data.Y, data.T)[0,1]:.3f}")
+print(f"  Corr(T, INCOME) = {np.corrcoef(data.T, data.X[:,1])[0,1]:.3f}")
+print(f"  Corr(Y, INCOME) = {np.corrcoef(data.Y, data.X[:,1])[0,1]:.3f}")
+
+# Output:
+# Corr(Y, T) = -0.421  (negative, as expected)
+# Corr(T, INCOME) = 0.182  (higher income areas have higher prices)
+# Corr(Y, INCOME) = 0.089  (modest demand effect)
+\end{minted}
+
+The correlations reveal a classic confounding pattern: higher-income areas tend to have both higher prices (stores charge more) and higher baseline demand. Naive regression of $Y$ on $T$ would underestimate the true price sensitivity because it conflates the negative price effect with the positive income effect.
+
+% ============================================================================
+\section{DML Price Elasticity Estimation}\label{sec:dml_estimation}
+% ============================================================================
+
+\subsection{The Five-Step DML Pipeline}
+
+We now apply the DML methodology developed in Chapter 2 to estimate price elasticity:
+
+\begin{enumerate}
+    \item \textbf{Define the problem}: Partially linear model with log-price treatment
+    \item \textbf{Choose nuisance models}: Random Forest for flexible confounding control
+    \item \textbf{Set cross-fitting folds}: 5-fold for bias-variance balance
+    \item \textbf{Estimate with DML}: Cross-fit nuisance, compute residualized effect
+    \item \textbf{Report results}: Point estimate, confidence interval, diagnostics
+\end{enumerate}
+
+\subsection{Implementation}
+
+\begin{minted}[fontsize=\small]{python}
+from src.dml import double_ml
+
+# Run DML estimation
+result = double_ml(
+    Y=data.Y,          # Log sales
+    T=data.T,          # Log price
+    X=data.X,          # Confounders [feat, INCOME, AGE60]
+    n_folds=5,
+    model="random_forest",
+    random_state=42,
+)
+
+print(result.summary())
+\end{minted}
+
+\begin{verbatim}
+Double Machine Learning Results
+================================
+Treatment Effect (θ):    -2.8347
+Standard Error:          0.0412
+t-statistic:             -68.81
+p-value:                 0.0000
+95% Confidence Interval: [-2.9154, -2.7540]
+
+Nuisance Model Diagnostics:
+  Outcome R² (CV):       0.421
+  Treatment R² (CV):     0.187
+  Number of folds:       5
+
+Interpretation:
+  A 1% increase in price is associated with a
+  2.83% decrease in quantity demanded (p<0.001).
+\end{verbatim}
+
+\keyresult{
+\textbf{DML Estimate}: Price elasticity = $-2.83$ with 95\% CI $[-2.92, -2.75]$
+
+This estimate falls within the expected range from the literature ($-2.5$ to $-3.5$), confirming that our DML implementation produces economically sensible results on real data.
+}
+
+\subsection{First-Stage Diagnostics}
+
+The nuisance model R² values provide important diagnostics:
+
+\begin{itemize}
+    \item \textbf{Outcome R² = 0.42}: Confounders explain substantial outcome variation (good)
+    \item \textbf{Treatment R² = 0.19}: Moderate treatment prediction (sufficient variation remains)
+\end{itemize}
+
+If treatment R² were too high (e.g., >0.9), it would indicate near-deterministic treatment assignment, violating the overlap assumption and leading to unstable estimates.
+
+% ============================================================================
+\section{Baseline Comparison}\label{sec:baseline_comparison}
+% ============================================================================
+
+To quantify the value of DML's confounding adjustment, we compare against OLS baselines:
+
+\subsection{Three Estimators}
+
+\begin{minted}[fontsize=\small]{python}
+from sklearn.linear_model import LinearRegression
+import numpy as np
+
+# 1. Naive OLS: Y ~ T (ignores confounders)
+naive = LinearRegression()
+naive.fit(data.T.reshape(-1, 1), data.Y)
+naive_theta = naive.coef_[0]
+
+# 2. OLS with Controls: Y ~ T + X
+TX = np.column_stack([data.T, data.X])
+controls = LinearRegression()
+controls.fit(TX, data.Y)
+controls_theta = controls.coef_[0]
+
+# 3. DML (from above)
+dml_theta = result.theta
+
+print(f"Naive OLS:       θ = {naive_theta:.4f}")
+print(f"OLS + Controls:  θ = {controls_theta:.4f}")
+print(f"DML:             θ = {dml_theta:.4f}")
+\end{minted}
+
+\begin{table}[h]
+\centering
+\caption{Estimator Comparison for OJ Price Elasticity}
+\label{tab:estimator_comparison}
+\begin{tabular}{lccc}
+\hline
+\textbf{Method} & \textbf{Estimate} & \textbf{95\% CI} & \textbf{Handles Nonlinearity} \\
+\hline
+Naive OLS & $-2.64$ & $[-2.69, -2.59]$ & No \\
+OLS + Controls & $-2.76$ & $[-2.81, -2.71]$ & No \\
+\textbf{DML} & $-2.83$ & $[-2.92, -2.75]$ & \textbf{Yes} \\
+\hline
+\end{tabular}
+\end{table}
+
+\insight{
+\textbf{Interpretation of Differences}
+
+The progression from $-2.64$ (naive) to $-2.83$ (DML) reveals:
+\begin{enumerate}
+    \item \textbf{Naive to OLS+Controls} ($\Delta = -0.12$): Linear confounding adjustment
+    \item \textbf{OLS+Controls to DML} ($\Delta = -0.07$): Nonlinear confounding adjustment
+\end{enumerate}
+
+Both adjustments move the estimate toward stronger price sensitivity, consistent with the confounding story: income positively correlates with both price and demand, biasing naive estimates toward zero.
+}
+
+% ============================================================================
+\section{Sensitivity Analysis: Rosenbaum Bounds}\label{sec:sensitivity_analysis}
+% ============================================================================
+
+\subsection{The Unconfoundedness Problem}
+
+Even with DML controlling for observed confounders $X$, we cannot rule out unmeasured confounders $U$ that affect both treatment and outcome. The unconfoundedness assumption:
+
+\begin{equation}
+Y(t) \perp T \mid X \quad \forall t
+\end{equation}
+
+is fundamentally untestable with observational data.
+
+\subsection{Rosenbaum's Sensitivity Framework}
+
+Rosenbaum (2002) introduced a principled approach to this problem. The key idea: instead of testing unconfoundedness, we ask how strong hidden bias would need to be to alter our conclusions.
+
+\subsubsection{The Sensitivity Parameter $\Gamma$}
+
+Define $\Gamma$ as the odds ratio of treatment assignment for two units with identical observed covariates but potentially different unmeasured confounders:
+
+\begin{equation}
+\frac{1}{\Gamma} \leq \frac{\pi_i / (1-\pi_i)}{\pi_j / (1-\pi_j)} \leq \Gamma \quad \text{for } X_i = X_j
+\end{equation}
+
+where $\pi_i = P(T_i = 1 \mid X_i, U_i)$.
+
+\begin{itemize}
+    \item $\Gamma = 1$: No hidden bias (perfect randomization within covariate strata)
+    \item $\Gamma = 2$: Unmeasured confounding could double the odds of treatment
+    \item $\Gamma = 3$: Unmeasured confounding could triple the odds of treatment
+\end{itemize}
+
+\subsubsection{The Critical $\Gamma$}
+
+We compute p-values at each $\Gamma$ level. The \textbf{critical $\Gamma$} is the smallest value at which the treatment effect becomes statistically insignificant (p > 0.05). Larger critical $\Gamma$ indicates more robust findings.
+
+\subsection{Applying Sensitivity Analysis to OJ Results}
+
+\begin{minted}[fontsize=\small]{python}
+from src.sensitivity import compute_sensitivity_for_dml
+
+sensitivity = compute_sensitivity_for_dml(
+    theta=result.theta,
+    se=result.se,
+    n_samples=data.n_samples,
+    treatment_r2=result.treatment_r2_cv,
+    gamma_max=3.0,
+    alpha=0.05,
+)
+
+print(sensitivity.summary())
+\end{minted}
+
+\begin{verbatim}
+Rosenbaum Bounds Sensitivity Analysis
+=====================================
+Treatment Effect:     θ̂ = -2.8347
+Standard Error:       SE = 0.0412
+Significance Level:   α = 0.05
+
+Critical Gamma:       Γ_crit = 2.80
+Interpretation:       Robust
+
+Explanation:
+  An unmeasured confounder would need to change treatment odds
+  by a factor of 2.80x between similar units
+  to render this effect statistically insignificant.
+
+P-values at Selected Γ:
+  Γ = 1.0: p = 0.0000 (no hidden bias)
+  Γ = 1.5: p = 0.0000
+  Γ = 2.0: p = 0.0001
+  Γ = 3.0: p = 0.0847
+\end{verbatim}
+
+\keyresult{
+\textbf{Sensitivity Result}: $\Gamma_{\text{crit}} = 2.80$ (Robust)
+
+The OJ price elasticity estimate is robust to substantial unmeasured confounding. An unmeasured factor would need to nearly triple the odds of treatment assignment (e.g., observing a high vs.\ low price) to render our finding insignificant.
+}
+
+\subsection{Interpreting the Sensitivity Plot}
+
+\begin{minted}[fontsize=\small]{python}
+from src.sensitivity import RosenbaumBounds
+import matplotlib.pyplot as plt
+
+bounds = RosenbaumBounds(gamma_max=3.0)
+sensitivity_result = bounds.analyze(
+    theta=result.theta,
+    se=result.se,
+    n_treated=data.n_samples // 2,
+    n_control=data.n_samples // 2,
+)
+
+fig = bounds.plot_sensitivity(sensitivity_result)
+plt.savefig("figures/ch04_sensitivity_plot.pdf")
+\end{minted}
+
+The sensitivity plot shows p-values increasing as $\Gamma$ increases. The shaded region indicates where the effect remains statistically significant. The critical $\Gamma$ marks the boundary.
+
+\subsection{Interpretation Guidelines}
+
+\begin{table}[h]
+\centering
+\caption{Sensitivity Analysis Interpretation Guide}
+\label{tab:sensitivity_interpretation}
+\begin{tabular}{lll}
+\hline
+\textbf{$\Gamma_{\text{crit}}$ Range} & \textbf{Interpretation} & \textbf{Action} \\
+\hline
+$> 2.0$ & Robust & Report with confidence \\
+$1.5$ -- $2.0$ & Moderately Robust & Report with caveats \\
+$1.2$ -- $1.5$ & Sensitive & Investigate confounders \\
+$< 1.2$ & Fragile & Strong caution warranted \\
+\hline
+\end{tabular}
+\end{table}
+
+For our OJ estimate with $\Gamma_{\text{crit}} = 2.80$, we can report the price elasticity with confidence. An unmeasured confounder would need to have an implausibly strong effect on pricing to overturn our conclusions.
+
+% ============================================================================
+\section{Practical Recommendations}\label{sec:recommendations}
+% ============================================================================
+
+\subsection{When to Trust DML Estimates}
+
+Based on our experience with the OJ application, we recommend:
+
+\begin{enumerate}
+    \item \textbf{First-stage R² in moderate range}: Outcome R² > 0.1 (confounders matter); Treatment R² < 0.8 (overlap maintained)
+
+    \item \textbf{Estimates in expected range}: Compare to literature benchmarks when available
+
+    \item \textbf{Sensitivity analysis passes}: $\Gamma_{\text{crit}} > 1.5$ for policy recommendations
+
+    \item \textbf{Results stable across specifications}: Try different nuisance models, fold counts
+\end{enumerate}
+
+\subsection{Reporting Checklist}
+
+When presenting DML results, include:
+
+\begin{itemize}
+    \item Point estimate with confidence interval
+    \item First-stage diagnostics (outcome and treatment R²)
+    \item Comparison to relevant baselines (OLS, literature)
+    \item Sensitivity analysis with critical $\Gamma$
+    \item Robustness checks (different models, features)
+\end{itemize}
+
+\insight{
+\textbf{The Sensitivity Analysis Habit}
+
+We recommend \textit{always} conducting sensitivity analysis for observational studies. Even when $\Gamma_{\text{crit}}$ is high, reporting it:
+\begin{enumerate}
+    \item Demonstrates methodological rigor
+    \item Provides readers quantitative robustness assessment
+    \item Anticipates reviewer concerns about unmeasured confounding
+    \item Establishes bounds on uncertainty beyond standard errors
+\end{enumerate}
+}
+
+% ============================================================================
+\section{Exercises}\label{sec:ch04_exercises}
+% ============================================================================
+
+\begin{enumerate}
+    \item \textbf{Brand-Specific Elasticity}: Use \texttt{OJDataLoader(brand="tropicana")} to estimate elasticity for a single brand. How does it compare to the pooled estimate? What does heterogeneity across brands suggest about market segmentation?
+
+    \item \textbf{Extended Confounders}: Add \texttt{EDUC}, \texttt{ETHNIC}, and \texttt{HHLARGE} to the confounder set. Does the elasticity estimate change? What does this suggest about the adequacy of the original three-variable specification?
+
+    \item \textbf{Sensitivity Exploration}: For your brand-specific estimate from Exercise 1, conduct sensitivity analysis. Is the single-brand estimate more or less robust than the pooled estimate? Why might this be?
+
+    \item \textbf{Nuisance Model Comparison}: Re-run the OJ analysis using \texttt{model="ridge"} and \texttt{model="gradient\_boosting"}. How do the estimates and diagnostics change? When might you prefer each model?
+\end{enumerate}
+
+% ============================================================================
+\section{Chapter Summary}\label{sec:ch04_summary}
+% ============================================================================
+
+This chapter demonstrated DML application on real observational data:
+
+\keyresult{
+\textbf{Key Findings:}
+\begin{enumerate}
+    \item \textbf{DML produces credible estimates}: Price elasticity of $-2.83$ matches literature benchmarks
+    \item \textbf{Confounding adjustment matters}: DML differs from naive OLS by 7\% ($-2.83$ vs $-2.64$)
+    \item \textbf{Sensitivity analysis quantifies robustness}: $\Gamma_{\text{crit}} = 2.80$ indicates robust findings
+    \item \textbf{Complete pipeline exists}: Data loading $\to$ DML estimation $\to$ Sensitivity analysis
+\end{enumerate}
+}
+
+Chapter 5 extends these methods to \textit{time series} data, where temporal dependence introduces new challenges for causal inference.
