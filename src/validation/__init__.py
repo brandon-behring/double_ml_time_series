@@ -1,6 +1,15 @@
 """Validation infrastructure for Double ML methods."""
 
 from .dgp_generator import DGPGenerator, DGPResult
+from .dgp_generator_ts import (
+    TimeSeriesDGPGenerator,
+    TimeSeriesDGPResult,
+    BreakDGPGenerator,
+    BreakDGPResult,
+    create_ar_dgp,
+    create_panel_dgp,
+    create_break_dgp,
+)
 from .validation_result import ValidationResult
 from .storage import ResultStorage
 from . import plotting
@@ -22,8 +31,18 @@ from .stationarity import (
 )
 
 __all__ = [
+    # i.i.d. DGP
     "DGPGenerator",
     "DGPResult",
+    # Time Series DGP
+    "TimeSeriesDGPGenerator",
+    "TimeSeriesDGPResult",
+    "BreakDGPGenerator",
+    "BreakDGPResult",
+    "create_ar_dgp",
+    "create_panel_dgp",
+    "create_break_dgp",
+    # Other
     "ValidationResult",
     "ResultStorage",
     "plotting",
