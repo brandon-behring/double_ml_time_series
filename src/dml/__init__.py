@@ -20,7 +20,7 @@ from .fwl import (
 from .robinson import robinson_estimator
 from .double_ml import double_ml, DMLResult
 
-# Phase 2A stubs (not yet implemented)
+# Phase 2A (implemented)
 from .dynamic_dml import DynamicDML, DynamicDMLResult, RollingWindowDML, PanelDML
 from .cross_fitting import (
     TimeSeriesCrossValidator,
@@ -37,7 +37,7 @@ __all__ = [
     "robinson_estimator",
     "double_ml",
     "DMLResult",
-    # Phase 2A stubs (not yet implemented)
+    # Phase 2A (implemented)
     "DynamicDML",
     "DynamicDMLResult",
     "RollingWindowDML",
