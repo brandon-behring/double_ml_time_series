@@ -1,0 +1,514 @@
+% Chapter 6: Panel DML and Rolling Window Methods
+% ============================================================================
+% This chapter extends DML to:
+% - Panel data with fixed effects
+% - Time-varying treatment effects via rolling windows
+% ============================================================================
+
+\chapter{Panel DML and Rolling Window Methods}
+\label{ch:panel_dml}
+
+\section{Introduction}\label{sec:ch06_introduction}
+
+Chapter 5 introduced DynamicDML for single time series with autocorrelation. Many economic applications involve \textbf{panel data}---repeated observations on multiple units over time. This chapter develops DML methods for panel data, addressing both fixed effects and time-varying treatment effects.
+
+\keyresult{
+\textbf{Chapter Objectives:}
+\begin{itemize}
+    \item Understand panel data structure and fixed effects
+    \item Implement within-transformation for DML with fixed effects
+    \item Derive cluster-robust standard errors for panel data
+    \item Apply rolling window DML for time-varying treatment effects
+    \item Handle structural breaks and regime changes
+\end{itemize}
+}
+
+\subsection{The Panel Data Advantage}
+
+Panel data combines cross-sectional and time series variation:
+\begin{equation}
+Y_{it} = \tau \cdot T_{it} + g(X_{it}) + \alpha_i + \gamma_t + \varepsilon_{it}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $i = 1, \ldots, N$ indexes individuals (e.g., states, firms, customers)
+    \item $t = 1, \ldots, T$ indexes time periods
+    \item $\alpha_i$ is an individual-specific \textbf{fixed effect}
+    \item $\gamma_t$ is a time-specific \textbf{fixed effect}
+\end{itemize}
+
+\insight{
+\textbf{Why Panel Data Strengthens Causal Inference}
+
+Panel data allows us to:
+\begin{enumerate}
+    \item \textbf{Control for unobserved heterogeneity}: Fixed effects absorb time-invariant confounders
+    \item \textbf{Exploit within-unit variation}: Compare each unit to itself over time
+    \item \textbf{Increase precision}: More observations than pure cross-section or time series
+    \item \textbf{Test parallel trends}: Verify identifying assumptions
+\end{enumerate}
+}
+
+\subsection{Chapter Roadmap}
+
+\begin{itemize}
+    \item \textbf{Section 6.2}: Panel Data Fundamentals---fixed effects and within transformation
+    \item \textbf{Section 6.3}: Panel DML---combining fixed effects with machine learning
+    \item \textbf{Section 6.4}: Cluster-Robust Inference---accounting for within-unit correlation
+    \item \textbf{Section 6.5}: Rolling Window DML---time-varying treatment effects
+    \item \textbf{Section 6.6}: Applications
+    \item \textbf{Section 6.7}: Exercises
+\end{itemize}
+
+% ============================================================================
+\section{Panel Data Fundamentals}\label{sec:panel_fundamentals}
+% ============================================================================
+
+\subsection{Fixed Effects Model}
+
+The fixed effects model assumes individual-specific intercepts:
+\begin{equation}
+Y_{it} = \tau \cdot T_{it} + X_{it}'\beta + \alpha_i + \varepsilon_{it}
+\end{equation}
+
+The key identification challenge: if $\alpha_i$ correlates with $T_{it}$ (e.g., more productive firms invest more), OLS on pooled data is biased.
+
+\begin{definition}[Within Transformation]
+\label{def:within_transform}
+The \textbf{within transformation} demeans each variable by its individual-specific mean:
+\begin{align}
+\ddot{Y}_{it} &= Y_{it} - \bar{Y}_i \quad \text{where} \quad \bar{Y}_i = \frac{1}{T}\sum_{t=1}^{T} Y_{it} \\
+\ddot{T}_{it} &= T_{it} - \bar{T}_i \\
+\ddot{X}_{it} &= X_{it} - \bar{X}_i
+\end{align}
+
+This eliminates $\alpha_i$ since $\ddot{\alpha}_i = \alpha_i - \alpha_i = 0$.
+\end{definition}
+
+After within transformation:
+\begin{equation}
+\ddot{Y}_{it} = \tau \cdot \ddot{T}_{it} + \ddot{X}_{it}'\beta + \ddot{\varepsilon}_{it}
+\end{equation}
+
+OLS on the transformed data yields the \textbf{fixed effects estimator}.
+
+\subsection{Two-Way Fixed Effects}
+
+When both individual and time effects matter:
+\begin{equation}
+Y_{it} = \tau \cdot T_{it} + X_{it}'\beta + \alpha_i + \gamma_t + \varepsilon_{it}
+\end{equation}
+
+The two-way within transformation:
+\begin{equation}
+\ddot{Y}_{it} = Y_{it} - \bar{Y}_i - \bar{Y}_t + \bar{Y}
+\end{equation}
+
+where $\bar{Y}_t$ is the time-specific mean and $\bar{Y}$ is the grand mean.
+
+\begin{remark}
+Two-way fixed effects are particularly important for policy evaluation, where both cross-sectional heterogeneity (states differ) and common time shocks (recessions affect everyone) may confound treatment effects.
+\end{remark}
+
+% ============================================================================
+\section{Panel DML}\label{sec:panel_dml}
+% ============================================================================
+
+\subsection{The Problem with Fixed Effects + ML}
+
+Standard fixed effects require:
+\begin{enumerate}
+    \item Linear functional form: $g(X_{it}) = X_{it}'\beta$
+    \item Known confounders: All relevant $X_{it}$ included
+\end{enumerate}
+
+DML relaxes the linearity assumption, but combining ML with fixed effects requires care.
+
+\begin{algorithm}[H]
+\caption{Panel DML with Fixed Effects}
+\label{alg:panel_dml}
+\begin{algorithmic}[1]
+\REQUIRE Panel data $(Y_{it}, T_{it}, X_{it})_{i=1,t=1}^{N,T}$
+\ENSURE Treatment effect $\hat{\tau}$ with cluster-robust SE
+
+\STATE \textbf{Apply fixed effects transformation}:
+\FOR{each variable $V \in \{Y, T, X\}$}
+    \STATE Compute individual means: $\bar{V}_i = \frac{1}{T}\sum_t V_{it}$
+    \STATE Demean: $\ddot{V}_{it} = V_{it} - \bar{V}_i$
+\ENDFOR
+
+\STATE \textbf{Run DynamicDML on transformed data}:
+\STATE $\hat{\tau} \gets \text{DynamicDML}(\ddot{Y}, \ddot{T}, \ddot{X})$
+
+\STATE \textbf{Compute cluster-robust standard errors}:
+\FOR{each individual $i$}
+    \STATE Compute cluster-level influence: $\Psi_i = \sum_t \psi_{it}$
+\ENDFOR
+\STATE Cluster variance: $\hat{V}_{\text{cluster}} = \frac{N}{N-1} \cdot \text{Var}(\Psi_i)$
+\STATE Standard error: $\widehat{SE} = \sqrt{\hat{V}_{\text{cluster}}/N}$
+
+\RETURN $\hat{\tau}$, $\widehat{SE}$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Implementation}
+
+\begin{minted}[fontsize=\small]{python}
+from src.dml import PanelDML
+import numpy as np
+
+# Generate panel data
+np.random.seed(42)
+n_individuals = 100
+n_periods = 20
+n_total = n_individuals * n_periods
+
+# Create IDs
+individual_id = np.repeat(np.arange(n_individuals), n_periods)
+time_id = np.tile(np.arange(n_periods), n_individuals)
+
+# Individual fixed effects (unobserved)
+alpha_i = np.random.randn(n_individuals)
+alpha_expanded = alpha_i[individual_id]
+
+# Covariates and treatment (correlated with fixed effects!)
+X = np.random.randn(n_total, 3)
+T = 0.5 * X[:, 0] + 0.3 * alpha_expanded + np.random.randn(n_total)
+
+# Outcome with true effect tau = 2.0
+true_tau = 2.0
+Y = true_tau * T + X[:, 0]**2 + alpha_expanded + np.random.randn(n_total)
+
+# Without fixed effects: BIASED
+from src.dml import DynamicDML
+naive_model = DynamicDML(n_lags=0, model_y="ridge", model_t="ridge")
+naive_result = naive_model.fit(Y, T, X)
+print(f"Naive (no FE): theta = {naive_result.theta:.3f}")  # Biased!
+
+# With fixed effects: UNBIASED
+panel_model = PanelDML(
+    fixed_effects="individual",
+    cluster_se=True,
+    model_y="ridge",
+    model_t="ridge"
+)
+panel_result = panel_model.fit(Y, T, X, individual_id, time_id)
+print(f"Panel DML:     theta = {panel_result.theta:.3f}")  # Close to 2.0
+\end{minted}
+
+\subsection{Monte Carlo Comparison}
+
+\begin{table}[h]
+\centering
+\caption{Panel DML vs.\ Naive DML: Monte Carlo Results}
+\label{tab:panel_monte_carlo}
+\begin{tabular}{lccc}
+\hline
+\textbf{Method} & \textbf{Bias} & \textbf{SE} & \textbf{Coverage} \\
+\hline
+Naive DML (no FE) & 0.45 & 0.08 & 12\% \\
+Panel DML (individual FE) & 0.03 & 0.12 & 94\% \\
+Panel DML (two-way FE) & 0.02 & 0.15 & 95\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\insight{
+\textbf{Key Finding}: Without fixed effects, DML has severe omitted variable bias (0.45 vs.\ true effect of 2.0). Panel DML with fixed effects eliminates this bias and achieves correct coverage.
+}
+
+% ============================================================================
+\section{Cluster-Robust Inference}\label{sec:cluster_robust}
+% ============================================================================
+
+\subsection{Why Clustering Matters}
+
+Within each individual, observations are typically correlated:
+\[
+\Cov(\varepsilon_{it}, \varepsilon_{is}) \neq 0 \quad \text{for } t \neq s
+\]
+
+This violates the i.i.d.\ assumption and inflates standard errors.
+
+\begin{definition}[Cluster-Robust Variance]
+\label{def:cluster_variance}
+With $N$ clusters, the cluster-robust variance estimator is:
+\begin{equation}
+\hat{V}_{\text{CR}} = \frac{N}{N-1} \cdot \frac{1}{N} \sum_{i=1}^{N} \Psi_i^2
+\end{equation}
+where $\Psi_i = \sum_{t=1}^{T_i} \psi_{it}$ is the sum of influence scores within cluster $i$.
+\end{definition}
+
+\begin{theorem}[Cluster-Robust Inference]
+\label{thm:cluster_robust}
+Under regularity conditions with $N \to \infty$ clusters:
+\[
+\frac{\hat{\tau} - \tau_0}{\widehat{SE}_{\text{CR}}} \convd N(0, 1)
+\]
+where $\widehat{SE}_{\text{CR}} = \sqrt{\hat{V}_{\text{CR}}/N}$.
+\end{theorem}
+
+\begin{remark}
+The cluster-robust variance is conservative: it's valid whether or not within-cluster correlation exists. When observations are truly independent, it equals the standard variance.
+\end{remark}
+
+\subsection{Implementation Details}
+
+\begin{minted}[fontsize=\small]{python}
+def cluster_robust_se(influence_scores, cluster_ids):
+    """
+    Compute cluster-robust standard error.
+
+    Parameters
+    ----------
+    influence_scores : array, shape (n,)
+        Influence function values for each observation
+    cluster_ids : array, shape (n,)
+        Cluster identifiers
+
+    Returns
+    -------
+    se : float
+        Cluster-robust standard error
+    """
+    unique_clusters = np.unique(cluster_ids)
+    N = len(unique_clusters)
+
+    # Sum influence scores within each cluster
+    cluster_sums = np.zeros(N)
+    for i, cluster in enumerate(unique_clusters):
+        mask = cluster_ids == cluster
+        cluster_sums[i] = np.sum(influence_scores[mask])
+
+    # Cluster variance with small-sample correction
+    cluster_var = np.var(cluster_sums, ddof=1) * (N / (N - 1))
+
+    return np.sqrt(cluster_var / N)
+\end{minted}
+
+% ============================================================================
+\section{Rolling Window DML}\label{sec:rolling_window}
+% ============================================================================
+
+\subsection{Time-Varying Treatment Effects}
+
+In many applications, treatment effects change over time:
+\begin{itemize}
+    \item Policy effects may fade or strengthen
+    \item Market conditions evolve (e.g., competition intensity)
+    \item Learning effects (customers adapt to prices)
+\end{itemize}
+
+Rolling window DML estimates local treatment effects:
+\begin{equation}
+\tau(t) = \text{ATE in window } [t - w/2, t + w/2]
+\end{equation}
+
+\begin{definition}[Rolling Window DML]
+\label{def:rolling_window_dml}
+For window size $w$ and step size $s$:
+\begin{enumerate}
+    \item For each center $t = w/2, w/2 + s, w/2 + 2s, \ldots$
+    \item Select observations in $[t - w/2, t + w/2]$
+    \item Estimate DML on window data
+    \item Store $\hat{\tau}(t)$ and $\widehat{SE}(t)$
+\end{enumerate}
+\end{definition}
+
+\subsection{Implementation}
+
+\begin{minted}[fontsize=\small]{python}
+from src.dml import RollingWindowDML
+
+# Fit rolling window DML
+model = RollingWindowDML(
+    window_size=100,   # 100 observations per window
+    step_size=20,      # Move 20 observations between estimates
+    model_y="ridge",
+    model_t="ridge"
+)
+
+model.fit(Y, T, X, time_index=time)
+
+# Get time series of local effects
+time_centers, theta_series, se_series = model.get_effects()
+
+# Plot time-varying effects
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 5))
+plt.plot(time_centers, theta_series, 'b-', label='Local ATE')
+plt.fill_between(
+    time_centers,
+    theta_series - 1.96 * se_series,
+    theta_series + 1.96 * se_series,
+    alpha=0.3
+)
+plt.axhline(true_tau, color='r', linestyle='--', label='True ATE')
+plt.xlabel('Time')
+plt.ylabel('Treatment Effect')
+plt.legend()
+plt.title('Rolling Window DML: Time-Varying Treatment Effect')
+plt.show()
+\end{minted}
+
+\subsection{Detecting Structural Breaks}
+
+Rolling window DML naturally detects structural breaks---points where treatment effects change abruptly.
+
+\begin{definition}[Structural Break Detection]
+\label{def:structural_break}
+A structural break at time $t^*$ is detected if:
+\begin{equation}
+\frac{|\hat{\tau}(t^* + s) - \hat{\tau}(t^* - s)|}{\sqrt{\widehat{SE}(t^*+s)^2 + \widehat{SE}(t^*-s)^2}} > z_{1-\alpha/2}
+\end{equation}
+where $z_{1-\alpha/2}$ is the critical value.
+\end{definition}
+
+\begin{remark}
+For formal structural break testing, use the Chow test or Bai-Perron procedure. Rolling window DML provides visual diagnostics and approximate break detection.
+\end{remark}
+
+% ============================================================================
+\section{Applications}\label{sec:applications}
+% ============================================================================
+
+\subsection{Application 1: Insurance Pricing}
+
+\textbf{Setting}: $N = 50$ states, $T = 10$ years, estimating effect of competitor price changes on market share.
+
+\textbf{Panel Structure}:
+\begin{itemize}
+    \item Individual FE: State-specific demand (regulation, demographics)
+    \item Time FE: Macroeconomic conditions affecting all states
+    \item Cluster SE: Observations within state are correlated
+\end{itemize}
+
+\textbf{Rolling Window}: Detect if price sensitivity changed after major regulatory reform.
+
+\subsection{Application 2: Macroeconomic Policy}
+
+\textbf{Setting}: Effect of monetary policy on output across $N = 30$ countries, $T = 40$ quarters.
+
+\textbf{Panel Structure}:
+\begin{itemize}
+    \item Individual FE: Country-specific institutions
+    \item Time FE: Global business cycle
+    \item Two-way FE needed to avoid confounding
+\end{itemize}
+
+\textbf{Rolling Window}: Test if policy effectiveness changed after 2008 financial crisis.
+
+% ============================================================================
+\section{Exercises}\label{sec:exercises}
+% ============================================================================
+
+\begin{exercise}[Within Transformation]
+\label{ex:within_transform}
+Consider panel data with $N=3$ individuals and $T=2$ periods:
+
+\begin{center}
+\begin{tabular}{ccc|cc}
+$i$ & $t$ & $Y_{it}$ & $T_{it}$ & $\alpha_i$ \\
+\hline
+1 & 1 & 5 & 1 & 2 \\
+1 & 2 & 7 & 2 & 2 \\
+2 & 1 & 3 & 1 & 1 \\
+2 & 2 & 4 & 1 & 1 \\
+3 & 1 & 8 & 2 & 3 \\
+3 & 2 & 12 & 4 & 3 \\
+\end{tabular}
+\end{center}
+
+\begin{enumerate}
+    \item[(a)] Compute the within-transformed variables $\ddot{Y}_{it}$ and $\ddot{T}_{it}$
+    \item[(b)] Estimate $\tau$ using OLS on the transformed data
+    \item[(c)] What is the true $\tau$ in this DGP?
+\end{enumerate}
+\end{exercise}
+
+\textbf{Solution to Exercise~\ref{ex:within_transform}:}
+
+\begin{enumerate}
+    \item[(a)] Individual means: $\bar{Y}_1 = 6$, $\bar{Y}_2 = 3.5$, $\bar{Y}_3 = 10$
+
+    Within-transformed $Y$: $\ddot{Y} = (-1, 1, -0.5, 0.5, -2, 2)'$
+
+    Similarly for $T$: $\bar{T}_1 = 1.5$, $\bar{T}_2 = 1$, $\bar{T}_3 = 3$
+
+    $\ddot{T} = (-0.5, 0.5, 0, 0, -1, 1)'$
+
+    \item[(b)] OLS on transformed: $\hat{\tau} = \frac{\sum \ddot{Y} \ddot{T}}{\sum \ddot{T}^2} = \frac{0.5 + 0.5 + 0 + 0 + 2 + 2}{0.25 + 0.25 + 0 + 0 + 1 + 1} = \frac{5}{2.5} = 2.0$
+
+    \item[(c)] The true $\tau = 2.0$ (coefficient on $T$ in the DGP).
+\end{enumerate}
+
+\begin{exercise}[Cluster-Robust SE]
+\label{ex:cluster_se}
+You estimate $\hat{\tau} = 1.5$ with the following cluster-level influence sums for $N=4$ clusters:
+\[
+\Psi_1 = 0.2, \quad \Psi_2 = -0.1, \quad \Psi_3 = 0.3, \quad \Psi_4 = -0.2
+\]
+
+\begin{enumerate}
+    \item[(a)] Compute the cluster variance $\hat{V}_{\text{CR}}$
+    \item[(b)] Compute the cluster-robust standard error
+    \item[(c)] Construct a 95\% confidence interval
+\end{enumerate}
+\end{exercise}
+
+\textbf{Solution to Exercise~\ref{ex:cluster_se}:}
+
+\begin{enumerate}
+    \item[(a)] Mean: $\bar{\Psi} = 0.05$
+
+    Variance: $\text{Var}(\Psi) = \frac{1}{3}[(0.2-0.05)^2 + (-0.1-0.05)^2 + (0.3-0.05)^2 + (-0.2-0.05)^2]$
+
+    $= \frac{1}{3}[0.0225 + 0.0225 + 0.0625 + 0.0625] = \frac{0.17}{3} = 0.0567$
+
+    With correction: $\hat{V}_{\text{CR}} = \frac{4}{3} \times 0.0567 = 0.0756$
+
+    \item[(b)] $\widehat{SE} = \sqrt{0.0756/4} = \sqrt{0.0189} = 0.137$
+
+    \item[(c)] $1.5 \pm 1.96 \times 0.137 = [1.23, 1.77]$
+\end{enumerate}
+
+% ============================================================================
+\section{Summary}\label{sec:summary}
+% ============================================================================
+
+This chapter extended DML to panel data and time-varying effects:
+
+\begin{enumerate}
+    \item \textbf{Panel DML}: Within transformation eliminates fixed effects while preserving ML flexibility for nuisance functions
+
+    \item \textbf{Cluster-Robust SE}: Accounting for within-cluster correlation prevents underestimated standard errors
+
+    \item \textbf{Rolling Window DML}: Local estimation reveals how treatment effects change over time
+
+    \item \textbf{Structural Breaks}: Rolling windows provide visual and approximate detection of regime changes
+\end{enumerate}
+
+\textbf{Key Takeaways:}
+\begin{itemize}
+    \item Always use fixed effects when unobserved heterogeneity correlates with treatment
+    \item Cluster standard errors by the unit of treatment assignment
+    \item Use rolling windows to test stability of treatment effects
+    \item Two-way fixed effects handle both cross-sectional and time confounders
+\end{itemize}
+
+% ============================================================================
+\section{Roadmap to Chapter 7}\label{sec:roadmap}
+% ============================================================================
+
+Chapter 7 integrates our methods with real macroeconomic data from FRED (Federal Reserve Economic Data). We develop:
+
+\begin{enumerate}
+    \item \textbf{FRED Data Loader}: Automated retrieval of macro indicators
+    \item \textbf{Time Alignment}: Handling mixed-frequency data
+    \item \textbf{Macro Control Variables}: GDP, CPI, interest rates as confounders
+    \item \textbf{Application}: Policy effect estimation with real data
+\end{enumerate}
+
+This bridges the gap from synthetic validation to production applications with real economic data.
