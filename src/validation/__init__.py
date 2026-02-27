@@ -23,11 +23,17 @@ from .parallel import (
 )
 from .bias_validation import BiasValidation
 
-# Phase 2A stubs (not yet implemented)
+# Phase 2A (fully implemented)
 from .stationarity import (
     StationarityDiagnostic,
     StationarityResult,
     ComprehensiveStationarityResult,
+)
+from .insurance_dgp import (
+    InsuranceDGPParams,
+    InsuranceDGPResult,
+    create_insurance_dgp,
+    validate_dgp_recovery,
 )
 
 __all__ = [
@@ -53,8 +59,13 @@ __all__ = [
     "chunk_workload",
     "get_optimal_n_jobs",
     "BiasValidation",
-    # Phase 2A stubs
+    # Phase 2A
     "StationarityDiagnostic",
     "StationarityResult",
     "ComprehensiveStationarityResult",
+    # Insurance DGP
+    "InsuranceDGPParams",
+    "InsuranceDGPResult",
+    "create_insurance_dgp",
+    "validate_dgp_recovery",
 ]

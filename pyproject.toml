@@ -61,6 +61,8 @@ testpaths = ["test"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "--cov=src --cov-report=term-missing --cov-report=html -v"
+# Don't collect tests from src directory (test_stationarity function is not a test)
+norecursedirs = ["src", ".git", "venv", "__pycache__"]
 markers = [
     "unit: marks pure unit tests - no estimation, <100ms each (run with '-m unit')",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",

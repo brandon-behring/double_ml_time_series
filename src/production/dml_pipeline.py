@@ -1,0 +1,670 @@
+"""
+End-to-end DML pipeline for production deployment.
+
+This module provides InsuranceDMLPipeline, a complete production pipeline
+for insurance/annuity competitor pricing analysis.
+
+Pipeline stages:
+1. Data ingestion (FRED macro + insurance pricing data)
+2. Feature engineering (transformers, interactions)
+3. DML estimation (with proper time series cross-fitting)
+4. Monitoring integration (causal-specific checks)
+5. Model versioning (registry integration)
+6. Inference serving (batch and online)
+
+Key design principle: Separate training and inference paths clearly,
+as DML requires different handling than standard ML prediction.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import StandardScaler
+
+# Import our DML components
+try:
+    from src.dml.double_ml import double_ml  # noqa: F401
+    from src.dml.cross_fitting import TimeSeriesCrossValidator  # noqa: F401
+    from src.dml.hac import newey_west_se
+    from src.dml.dynamic_dml import DynamicDML  # noqa: F401
+
+    DML_AVAILABLE = True
+except ImportError:
+    DML_AVAILABLE = False
+
+# Import production components
+from src.production.model_registry import DMLModelVersion, DMLModelRegistry
+from src.production.causal_monitor import CausalMonitor, MonitoringResult
+from src.production.retrain_pipeline import RetrainScheduler, RetrainTrigger
+
+
+@dataclass
+class PipelineConfig:
+    """
+    Configuration for InsuranceDMLPipeline.
+
+    Attributes:
+        n_folds: Number of cross-fitting folds
+        n_jobs: Parallel jobs for estimation
+        random_state: Random seed for reproducibility
+        model_registry_path: Path for model versioning
+        propensity_model: Model for treatment propensity
+        outcome_model: Model for outcome regression
+        use_hac: Use HAC standard errors for time series
+        hac_bandwidth: Bandwidth for HAC (None = auto)
+        monitoring_enabled: Enable production monitoring
+        feature_columns: List of feature/covariate column names
+        treatment_column: Treatment variable name
+        outcome_column: Outcome variable name
+        time_column: Time index column name (for time series)
+        entity_column: Entity/panel identifier (for panel data)
+    """
+
+    n_folds: int = 5
+    n_jobs: int = -1
+    random_state: int = 42
+    model_registry_path: str = "./models/dml_registry"
+    propensity_model: Optional[Any] = None
+    outcome_model: Optional[Any] = None
+    use_hac: bool = True
+    hac_bandwidth: Optional[int] = None
+    monitoring_enabled: bool = True
+    feature_columns: List[str] = field(default_factory=list)
+    treatment_column: str = "treatment"
+    outcome_column: str = "outcome"
+    time_column: Optional[str] = None
+    entity_column: Optional[str] = None
+
+
+@dataclass
+class PipelineResult:
+    """
+    Result from a pipeline fit or predict operation.
+
+    Attributes:
+        ate: Average Treatment Effect estimate
+        ate_se: Standard error of ATE
+        ate_ci_lower: Lower bound of 95% CI
+        ate_ci_upper: Upper bound of 95% CI
+        cate: Conditional ATE (if computed)
+        nuisance_metrics: R² for propensity and outcome models
+        monitoring_results: Results from causal monitoring
+        model_version: Version ID of fitted model
+        fit_timestamp: When model was fitted
+        metadata: Additional metadata
+    """
+
+    ate: float
+    ate_se: float
+    ate_ci_lower: float
+    ate_ci_upper: float
+    cate: Optional[np.ndarray] = None
+    nuisance_metrics: Dict[str, float] = field(default_factory=dict)
+    monitoring_results: List[MonitoringResult] = field(default_factory=list)
+    model_version: Optional[str] = None
+    fit_timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        return {
+            "ate": self.ate,
+            "ate_se": self.ate_se,
+            "ate_ci_lower": self.ate_ci_lower,
+            "ate_ci_upper": self.ate_ci_upper,
+            "nuisance_metrics": self.nuisance_metrics,
+            "monitoring_results": [r.to_dict() for r in self.monitoring_results],
+            "model_version": self.model_version,
+            "fit_timestamp": self.fit_timestamp,
+            "metadata": self.metadata,
+        }
+
+
+class InsuranceDMLPipeline:
+    """
+    Production DML pipeline for insurance/annuity pricing analysis.
+
+    Integrates:
+    - Feature transformation (scaling, encoding)
+    - DML estimation with time series cross-validation
+    - HAC standard errors for autocorrelated data
+    - Model versioning and registry
+    - Causal-specific monitoring
+    - Retraining triggers
+
+    Example:
+        >>> from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+        >>>
+        >>> config = PipelineConfig(
+        ...     feature_columns=["age", "income", "tenure", "macro_gdp"],
+        ...     treatment_column="competitor_price",
+        ...     outcome_column="retention",
+        ...     time_column="quarter",
+        ...     propensity_model=RandomForestClassifier(n_estimators=100),
+        ...     outcome_model=RandomForestRegressor(n_estimators=100),
+        ... )
+        >>>
+        >>> pipeline = InsuranceDMLPipeline(config)
+        >>> result = pipeline.fit(X, T, Y)
+        >>> print(f"ATE: {result.ate:.3f} ({result.ate_ci_lower:.3f}, {result.ate_ci_upper:.3f})")
+    """
+
+    def __init__(self, config: Optional[PipelineConfig] = None):
+        """
+        Initialize insurance DML pipeline.
+
+        Args:
+            config: Pipeline configuration (uses defaults if None)
+        """
+        self.config = config or PipelineConfig()
+
+        # Initialize components
+        self._scaler: Optional[StandardScaler] = None
+        self._fitted = False
+        self._propensity_scores: Optional[np.ndarray] = None
+        self._nuisance_models: Optional[Dict[int, Tuple[Any, Any]]] = None
+        self._ate: Optional[float] = None
+        self._ate_se: Optional[float] = None
+        self._current_version: Optional[DMLModelVersion] = None
+
+        # Initialize model registry
+        self._registry = DMLModelRegistry(self.config.model_registry_path)
+
+        # Initialize monitoring
+        if self.config.monitoring_enabled:
+            self._monitor = CausalMonitor()
+            self._scheduler = RetrainScheduler(monitor=self._monitor)
+        else:
+            self._monitor = None
+            self._scheduler = None
+
+        # Set default models if not provided
+        if self.config.propensity_model is None:
+            from sklearn.linear_model import LogisticRegressionCV
+
+            self.config.propensity_model = LogisticRegressionCV(cv=3, max_iter=1000)
+
+        if self.config.outcome_model is None:
+            from sklearn.linear_model import RidgeCV
+
+            self.config.outcome_model = RidgeCV(cv=3)
+
+    def _prepare_data(
+        self,
+        X: np.ndarray,
+        T: np.ndarray,
+        Y: np.ndarray,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Prepare data for DML estimation.
+
+        Args:
+            X: Covariate matrix (n_samples, n_features)
+            T: Treatment vector (n_samples,)
+            Y: Outcome vector (n_samples,)
+
+        Returns:
+            Tuple of (X_scaled, T, Y) arrays
+        """
+        X = np.asarray(X)
+        T = np.asarray(T).flatten()
+        Y = np.asarray(Y).flatten()
+
+        if X.ndim == 1:
+            X = X.reshape(-1, 1)
+
+        # Fit or transform with scaler
+        if self._scaler is None:
+            self._scaler = StandardScaler()
+            X_scaled = self._scaler.fit_transform(X)
+        else:
+            X_scaled = self._scaler.transform(X)
+
+        return X_scaled, T, Y
+
+    def _create_cross_validator(self, n_samples: int) -> Union["TimeSeriesCrossValidator", Any]:
+        """
+        Create appropriate cross-validator.
+
+        Uses TimeSeriesCrossValidator if time_column is specified,
+        otherwise uses standard KFold.
+
+        Args:
+            n_samples: Number of samples
+
+        Returns:
+            Cross-validator instance
+        """
+        if self.config.time_column is not None and DML_AVAILABLE:
+            return TimeSeriesCrossValidator(
+                n_splits=self.config.n_folds,
+                gap=0,
+            )
+        else:
+            from sklearn.model_selection import KFold
+
+            return KFold(
+                n_splits=self.config.n_folds,
+                shuffle=True,
+                random_state=self.config.random_state,
+            )
+
+    def fit(
+        self,
+        X: np.ndarray,
+        T: np.ndarray,
+        Y: np.ndarray,
+        baseline_ate: Optional[float] = None,
+        baseline_ate_se: Optional[float] = None,
+    ) -> PipelineResult:
+        """
+        Fit DML pipeline to data.
+
+        Performs:
+        1. Data preparation (scaling)
+        2. Cross-fitted nuisance model estimation
+        3. ATE estimation with orthogonalization
+        4. HAC standard errors (if enabled)
+        5. Monitoring checks
+        6. Model versioning
+
+        Args:
+            X: Covariate matrix (n_samples, n_features)
+            T: Treatment vector (n_samples,)
+            Y: Outcome vector (n_samples,)
+            baseline_ate: Optional baseline ATE for effect stability check
+            baseline_ate_se: Optional baseline SE for effect stability check
+
+        Returns:
+            PipelineResult with estimates and diagnostics
+        """
+        # Prepare data
+        X_scaled, T, Y = self._prepare_data(X, T, Y)
+        n_samples = len(T)
+
+        # Create cross-validator
+        cv = self._create_cross_validator(n_samples)
+
+        # Fit nuisance models and compute orthogonalized residuals
+        propensity_scores = np.zeros(n_samples)
+        outcome_predictions = np.zeros(n_samples)
+        self._nuisance_models = {}
+
+        propensity_r2_list = []
+        outcome_r2_list = []
+
+        for fold_idx, (train_idx, test_idx) in enumerate(cv.split(X_scaled)):
+            X_train, X_test = X_scaled[train_idx], X_scaled[test_idx]
+            T_train, T_test = T[train_idx], T[test_idx]
+            Y_train, Y_test = Y[train_idx], Y[test_idx]
+
+            # Clone and fit propensity model
+            from sklearn.base import clone
+
+            prop_model = clone(self.config.propensity_model)
+            out_model = clone(self.config.outcome_model)
+
+            # Fit propensity (treatment) model
+            if hasattr(prop_model, "predict_proba"):
+                prop_model.fit(X_train, T_train)
+                propensity_scores[test_idx] = prop_model.predict_proba(X_test)[:, 1]
+                # Pseudo-R² for classification
+                prop_r2 = prop_model.score(X_test, T_test)
+            else:
+                # Continuous treatment
+                prop_model.fit(X_train, T_train)
+                propensity_scores[test_idx] = prop_model.predict(X_test)
+                prop_r2 = prop_model.score(X_test, T_test)
+
+            # Fit outcome model (on control or full sample depending on setup)
+            out_model.fit(X_train, Y_train)
+            outcome_predictions[test_idx] = out_model.predict(X_test)
+            out_r2 = out_model.score(X_test, Y_test)
+
+            propensity_r2_list.append(prop_r2)
+            outcome_r2_list.append(out_r2)
+
+            # Store fitted models
+            self._nuisance_models[fold_idx] = (prop_model, out_model)
+
+        # Compute DML estimate
+        # Using simplified doubly-robust estimator
+        # theta = E[(Y - m(X)) / e(X) * T] + E[m(X)]
+        # For binary treatment:
+        # theta = mean((Y - Y_hat) * T / e_hat - (Y - Y_hat) * (1-T) / (1-e_hat))
+
+        # Clip propensity scores for stability
+        e_clipped = np.clip(propensity_scores, 0.01, 0.99)
+
+        # Residualized outcome
+        Y_residual = Y - outcome_predictions
+
+        # AIPW estimator for binary treatment
+        if len(np.unique(T)) <= 2:
+            # Binary treatment
+            treated_term = Y_residual * T / e_clipped
+            control_term = Y_residual * (1 - T) / (1 - e_clipped)
+            psi = treated_term - control_term
+        else:
+            # Continuous treatment - use partially linear model approach
+            T_residual = T - propensity_scores
+            # Estimate coefficient via regression of Y_residual on T_residual
+            ate_coefficient = np.sum(Y_residual * T_residual) / np.sum(T_residual**2)
+            psi = Y_residual - ate_coefficient * T_residual
+            self._ate = ate_coefficient
+
+        # Compute ATE
+        if len(np.unique(T)) <= 2:
+            self._ate = np.mean(psi)
+        ate = self._ate
+
+        # Compute standard error
+        if self.config.use_hac and DML_AVAILABLE:
+            se = newey_west_se(psi, bandwidth=self.config.hac_bandwidth)
+        else:
+            se = np.std(psi) / np.sqrt(n_samples)
+
+        self._ate_se = se
+        self._propensity_scores = propensity_scores
+
+        # Compute confidence interval
+        ci_lower = ate - 1.96 * se
+        ci_upper = ate + 1.96 * se
+
+        # Aggregate nuisance metrics
+        nuisance_metrics = {
+            "r2_propensity": float(np.mean(propensity_r2_list)),
+            "r2_outcome": float(np.mean(outcome_r2_list)),
+            "r2_propensity_min": float(np.min(propensity_r2_list)),
+            "r2_outcome_min": float(np.min(outcome_r2_list)),
+        }
+
+        # Run monitoring
+        monitoring_results = []
+        if self._monitor is not None:
+            monitoring_results = self._monitor.run_all_checks(
+                propensity_scores=propensity_scores,
+                r2_propensity=nuisance_metrics["r2_propensity"],
+                r2_outcome=nuisance_metrics["r2_outcome"],
+                current_effect=ate,
+                baseline_effect=baseline_ate,
+                current_se=se,
+                baseline_se=baseline_ate_se,
+            )
+
+        # Create model version
+        hyperparameters = {
+            "n_folds": self.config.n_folds,
+            "use_hac": self.config.use_hac,
+            "hac_bandwidth": self.config.hac_bandwidth,
+            "propensity_model": str(type(self.config.propensity_model).__name__),
+            "outcome_model": str(type(self.config.outcome_model).__name__),
+        }
+
+        feature_names = (
+            self.config.feature_columns
+            if self.config.feature_columns
+            else [f"X_{i}" for i in range(X_scaled.shape[1])]
+        )
+
+        self._current_version = DMLModelVersion.create(
+            model_type="double_ml",
+            nuisance_models=self._nuisance_models,
+            feature_names=feature_names,
+            treatment_name=self.config.treatment_column,
+            outcome_name=self.config.outcome_column,
+            hyperparameters=hyperparameters,
+            metrics=nuisance_metrics,
+            feature_transformer=self._scaler,
+        )
+
+        # Register model
+        version_id = self._registry.register(self._current_version)
+
+        self._fitted = True
+
+        return PipelineResult(
+            ate=ate,
+            ate_se=se,
+            ate_ci_lower=ci_lower,
+            ate_ci_upper=ci_upper,
+            nuisance_metrics=nuisance_metrics,
+            monitoring_results=monitoring_results,
+            model_version=version_id,
+            metadata={
+                "n_samples": n_samples,
+                "n_features": X_scaled.shape[1],
+                "n_folds": self.config.n_folds,
+            },
+        )
+
+    def predict_propensity(self, X: np.ndarray) -> np.ndarray:
+        """
+        Predict treatment propensity for new data.
+
+        Uses averaged predictions across all cross-fitting folds.
+
+        Args:
+            X: Covariate matrix (n_samples, n_features)
+
+        Returns:
+            Propensity score predictions (n_samples,)
+
+        Raises:
+            ValueError: If pipeline not fitted
+        """
+        if not self._fitted:
+            raise ValueError("Pipeline must be fitted before prediction")
+
+        X = np.asarray(X)
+        if X.ndim == 1:
+            X = X.reshape(-1, 1)
+
+        X_scaled = self._scaler.transform(X)
+        n_samples = X_scaled.shape[0]
+
+        # Average across folds
+        propensity_sum = np.zeros(n_samples)
+        for fold_idx, (prop_model, _) in self._nuisance_models.items():
+            if hasattr(prop_model, "predict_proba"):
+                propensity_sum += prop_model.predict_proba(X_scaled)[:, 1]
+            else:
+                propensity_sum += prop_model.predict(X_scaled)
+
+        return propensity_sum / len(self._nuisance_models)
+
+    def evaluate_retrain_need(
+        self,
+        X_new: np.ndarray,
+        T_new: np.ndarray,
+        X_baseline: Optional[np.ndarray] = None,
+        T_baseline: Optional[np.ndarray] = None,
+    ) -> Tuple[List[MonitoringResult], Optional[RetrainTrigger]]:
+        """
+        Evaluate if retraining is needed based on new data.
+
+        Args:
+            X_new: New covariate data
+            T_new: New treatment data
+            X_baseline: Optional baseline covariates for comparison
+            T_baseline: Optional baseline treatment for comparison
+
+        Returns:
+            Tuple of (monitoring_results, retrain_trigger_or_none)
+
+        Raises:
+            ValueError: If monitoring not enabled
+        """
+        if self._scheduler is None:
+            raise ValueError("Monitoring must be enabled for retrain evaluation")
+
+        if not self._fitted:
+            raise ValueError("Pipeline must be fitted before evaluation")
+
+        # Predict propensity on new data
+        propensity_new = self.predict_propensity(X_new)
+
+        # Get nuisance metrics
+        r2_prop = self._current_version.metrics.get("r2_propensity", 0.5)
+        r2_out = self._current_version.metrics.get("r2_outcome", 0.5)
+
+        return self._scheduler.evaluate_and_monitor(
+            propensity_scores=propensity_new,
+            treatment_current=T_new,
+            treatment_baseline=T_baseline,
+            r2_propensity=r2_prop,
+            r2_outcome=r2_out,
+            X_current=X_new,
+            X_baseline=X_baseline,
+        )
+
+    def promote_to_production(self) -> str:
+        """
+        Promote current model to production.
+
+        Returns:
+            Version ID promoted to production
+        """
+        if self._current_version is None:
+            raise ValueError("No model fitted to promote")
+
+        # First promote to staging
+        self._registry.promote_to_staging(self._current_version.version_id)
+
+        # Then to production
+        return self._registry.promote_to_production()
+
+    def rollback(self, to_version: Optional[str] = None) -> str:
+        """
+        Rollback to previous production version.
+
+        Args:
+            to_version: Specific version to rollback to (None = previous)
+
+        Returns:
+            Version ID rolled back to
+        """
+        return self._registry.rollback(to_version)
+
+    def get_production_model(self) -> Optional[DMLModelVersion]:
+        """Return current production model, or None if not set."""
+        return self._registry.get_production()
+
+    def list_versions(self) -> List[Dict[str, Any]]:
+        """List all registered model versions."""
+        return self._registry.list_versions()
+
+    def save(self, path: Union[str, Path]) -> Path:
+        """
+        Save pipeline state.
+
+        Args:
+            path: Directory to save to
+
+        Returns:
+            Path to saved pipeline
+        """
+        import pickle
+
+        path = Path(path)
+        path.mkdir(parents=True, exist_ok=True)
+
+        # Save configuration
+        config_data = {
+            "n_folds": self.config.n_folds,
+            "n_jobs": self.config.n_jobs,
+            "random_state": self.config.random_state,
+            "use_hac": self.config.use_hac,
+            "hac_bandwidth": self.config.hac_bandwidth,
+            "monitoring_enabled": self.config.monitoring_enabled,
+            "feature_columns": self.config.feature_columns,
+            "treatment_column": self.config.treatment_column,
+            "outcome_column": self.config.outcome_column,
+            "time_column": self.config.time_column,
+            "entity_column": self.config.entity_column,
+        }
+
+        import json
+
+        with open(path / "config.json", "w") as f:
+            json.dump(config_data, f, indent=2)
+
+        # Save scaler
+        if self._scaler is not None:
+            with open(path / "scaler.pkl", "wb") as f:
+                pickle.dump(self._scaler, f)
+
+        # Save fitted state
+        state = {
+            "fitted": self._fitted,
+            "ate": self._ate,
+            "ate_se": self._ate_se,
+            "current_version_id": (
+                self._current_version.version_id if self._current_version else None
+            ),
+        }
+        with open(path / "state.json", "w") as f:
+            json.dump(state, f, indent=2)
+
+        return path
+
+    @classmethod
+    def load(cls, path: Union[str, Path]) -> "InsuranceDMLPipeline":
+        """
+        Load pipeline from saved state.
+
+        Args:
+            path: Directory containing saved pipeline
+
+        Returns:
+            Loaded InsuranceDMLPipeline instance
+        """
+        import json
+        import pickle
+
+        path = Path(path)
+
+        # Load configuration
+        with open(path / "config.json") as f:
+            config_data = json.load(f)
+
+        config = PipelineConfig(**config_data)
+        pipeline = cls(config)
+
+        # Load scaler
+        scaler_path = path / "scaler.pkl"
+        if scaler_path.exists():
+            with open(scaler_path, "rb") as f:
+                pipeline._scaler = pickle.load(f)
+
+        # Load state
+        with open(path / "state.json") as f:
+            state = json.load(f)
+
+        pipeline._fitted = state["fitted"]
+        pipeline._ate = state["ate"]
+        pipeline._ate_se = state["ate_se"]
+
+        # Load current version if available
+        if state["current_version_id"]:
+            try:
+                pipeline._current_version = pipeline._registry.get(state["current_version_id"])
+                # Restore nuisance models
+                models = pipeline._current_version.get_nuisance_models()
+                if isinstance(models, dict):
+                    pipeline._nuisance_models = models
+            except KeyError:
+                pass  # Version not in registry
+
+        return pipeline
+
+    def __repr__(self) -> str:
+        status = "fitted" if self._fitted else "not fitted"
+        version = self._current_version.version_id if self._current_version else "none"
+        return f"InsuranceDMLPipeline(status={status}, version={version})"
