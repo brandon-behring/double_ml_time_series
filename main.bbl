@@ -177,6 +177,106 @@
       \field{pages}{993\bibrangedash 1010}
       \range{pages}{18}
     \endentry
+    \entry{newey1987}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=058d74ae5e89fbd5a49ebdbe97b4c922}{%
+           family={Newey},
+           familyi={N\bibinitperiod},
+           given={Whitney\bibnamedelima K},
+           giveni={W\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+        {{hash=c9458dd7fe490cece576ba5c37b500fb}{%
+           family={West},
+           familyi={W\bibinitperiod},
+           given={Kenneth\bibnamedelima D},
+           giveni={K\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+      }
+      \strng{namehash}{d3fa486ef38e9026d7e9a49009f51077}
+      \strng{fullhash}{d3fa486ef38e9026d7e9a49009f51077}
+      \strng{fullhashraw}{d3fa486ef38e9026d7e9a49009f51077}
+      \strng{bibnamehash}{d3fa486ef38e9026d7e9a49009f51077}
+      \strng{authorbibnamehash}{d3fa486ef38e9026d7e9a49009f51077}
+      \strng{authornamehash}{d3fa486ef38e9026d7e9a49009f51077}
+      \strng{authorfullhash}{d3fa486ef38e9026d7e9a49009f51077}
+      \strng{authorfullhashraw}{d3fa486ef38e9026d7e9a49009f51077}
+      \field{sortinit}{N}
+      \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Econometrica}
+      \field{number}{3}
+      \field{title}{A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix}
+      \field{volume}{55}
+      \field{year}{1987}
+      \field{pages}{703\bibrangedash 708}
+      \range{pages}{6}
+    \endentry
+    \entry{nie2021quasi}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=5d7f65b7cbc98c0f42680d2152ed13c0}{%
+           family={Nie},
+           familyi={N\bibinitperiod},
+           given={Xinkun},
+           giveni={X\bibinitperiod}}}%
+        {{hash=e22c2c3bb1bd12e43f46c07ea788b581}{%
+           family={Wager},
+           familyi={W\bibinitperiod},
+           given={Stefan},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{107119e30dba36dbb23cae173c2ad1c2}
+      \strng{fullhash}{107119e30dba36dbb23cae173c2ad1c2}
+      \strng{fullhashraw}{107119e30dba36dbb23cae173c2ad1c2}
+      \strng{bibnamehash}{107119e30dba36dbb23cae173c2ad1c2}
+      \strng{authorbibnamehash}{107119e30dba36dbb23cae173c2ad1c2}
+      \strng{authornamehash}{107119e30dba36dbb23cae173c2ad1c2}
+      \strng{authorfullhash}{107119e30dba36dbb23cae173c2ad1c2}
+      \strng{authorfullhashraw}{107119e30dba36dbb23cae173c2ad1c2}
+      \field{sortinit}{N}
+      \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biometrika}
+      \field{number}{2}
+      \field{title}{Quasi-oracle estimation of heterogeneous treatment effects}
+      \field{volume}{108}
+      \field{year}{2021}
+      \field{pages}{299\bibrangedash 319}
+      \range{pages}{21}
+    \endentry
+    \entry{dePrado2018}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=723f4a692f09739ed98959e8b98cf81e}{%
+           family={Prado},
+           familyi={P\bibinitperiod},
+           given={Marcos\bibnamedelima Lopez},
+           giveni={M\bibinitperiod\bibinitdelim L\bibinitperiod},
+           prefix={de},
+           prefixi={d\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {John Wiley \& Sons}%
+      }
+      \strng{namehash}{723f4a692f09739ed98959e8b98cf81e}
+      \strng{fullhash}{723f4a692f09739ed98959e8b98cf81e}
+      \strng{fullhashraw}{723f4a692f09739ed98959e8b98cf81e}
+      \strng{bibnamehash}{723f4a692f09739ed98959e8b98cf81e}
+      \strng{authorbibnamehash}{723f4a692f09739ed98959e8b98cf81e}
+      \strng{authornamehash}{723f4a692f09739ed98959e8b98cf81e}
+      \strng{authorfullhash}{723f4a692f09739ed98959e8b98cf81e}
+      \strng{authorfullhashraw}{723f4a692f09739ed98959e8b98cf81e}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Advances in Financial Machine Learning}
+      \field{year}{2018}
+    \endentry
     \entry{rubin1974estimating}{article}{}{}
       \name{author}{1}{}{%
         {{hash=49a367b6280de8a239f8bbdd573f996f}{%
@@ -206,6 +306,41 @@
       \field{year}{1974}
       \field{pages}{688\bibrangedash 701}
       \range{pages}{14}
+    \endentry
+    \entry{wager2018estimation}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=e22c2c3bb1bd12e43f46c07ea788b581}{%
+           family={Wager},
+           familyi={W\bibinitperiod},
+           given={Stefan},
+           giveni={S\bibinitperiod}}}%
+        {{hash=cab7b4f39472e6c01dc0fc30a32c6d89}{%
+           family={Athey},
+           familyi={A\bibinitperiod},
+           given={Susan},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{d4c64d08a4af7035a4061fd6e82a6d2d}
+      \strng{fullhash}{d4c64d08a4af7035a4061fd6e82a6d2d}
+      \strng{fullhashraw}{d4c64d08a4af7035a4061fd6e82a6d2d}
+      \strng{bibnamehash}{d4c64d08a4af7035a4061fd6e82a6d2d}
+      \strng{authorbibnamehash}{d4c64d08a4af7035a4061fd6e82a6d2d}
+      \strng{authornamehash}{d4c64d08a4af7035a4061fd6e82a6d2d}
+      \strng{authorfullhash}{d4c64d08a4af7035a4061fd6e82a6d2d}
+      \strng{authorfullhashraw}{d4c64d08a4af7035a4061fd6e82a6d2d}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the American Statistical Association}
+      \field{number}{523}
+      \field{title}{Estimation and inference of heterogeneous treatment effects using random forests}
+      \field{volume}{113}
+      \field{year}{2018}
+      \field{pages}{1228\bibrangedash 1242}
+      \range{pages}{15}
     \endentry
   \enddatalist
 \endrefsection

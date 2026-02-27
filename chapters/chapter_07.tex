@@ -1,0 +1,716 @@
+% Chapter 7: FRED Integration - Macroeconomic Controls
+% ============================================================================
+% This chapter develops data integration with FRED for real-world DML:
+% - Understanding macroeconomic confounding
+% - FREDLoader architecture and usage
+% - Frequency alignment and transformations
+% - Application to insurance pricing with macro controls
+% ============================================================================
+
+\chapter{FRED Integration: Macroeconomic Controls}
+\label{ch:fred_integration}
+
+\section{Introduction}\label{sec:ch07_introduction}
+
+Chapters 5--6 developed time series and panel DML methods using synthetic data. Production applications require \textbf{real macroeconomic controls}---GDP, inflation, interest rates---that create common confounders across economic units. This chapter integrates our methods with Federal Reserve Economic Data (FRED), the canonical source for U.S.\ macroeconomic time series.
+
+\keyresult{
+\textbf{Chapter Objectives:}
+\begin{itemize}
+    \item Understand macroeconomic confounding in causal inference
+    \item Use the \texttt{FREDLoader} class for automated data retrieval
+    \item Handle frequency conversion and missing data alignment
+    \item Apply macro controls to time series and panel DML
+    \item Validate with synthetic FRED-like data for testing
+\end{itemize}
+}
+
+\subsection{Why Macroeconomic Controls Matter}
+
+Consider estimating the effect of competitor price changes on insurance sales:
+\begin{equation}
+Y_t = \tau \cdot T_t + g(X_t) + \varepsilon_t
+\end{equation}
+
+Without macro controls, we conflate two effects:
+\begin{enumerate}
+    \item \textbf{Direct effect}: Competitor lowers price $\Rightarrow$ customer switches
+    \item \textbf{Macro confounding}: Recession $\Rightarrow$ (competitor lowers price AND customers reduce purchases)
+\end{enumerate}
+
+Interest rates illustrate the problem clearly: when rates rise, both insurance pricing (investment income) and customer demand (savings behavior) change simultaneously.
+
+\insight{
+\textbf{Common Macro Confounders in Economic Analysis}
+
+\begin{center}
+\begin{tabular}{ll}
+\textbf{Confounder} & \textbf{Affects Both Treatment AND Outcome} \\
+\hline
+Interest rates & Pricing decisions, demand, investment returns \\
+GDP growth & Business expansion, consumer spending \\
+Unemployment & Labor costs, purchasing power \\
+Inflation & Price adjustments, real purchasing power \\
+\end{tabular}
+\end{center}
+
+Omitting these creates \textbf{omitted variable bias} even with sophisticated ML nuisance models.
+}
+
+\subsection{Chapter Roadmap}
+
+\begin{itemize}
+    \item \textbf{Section 7.2}: Macroeconomic Confounding---formal framework
+    \item \textbf{Section 7.3}: FRED Data Architecture---the \texttt{FREDLoader} class
+    \item \textbf{Section 7.4}: Data Alignment and Preprocessing---frequency conversion, transforms
+    \item \textbf{Section 7.5}: Integration with Time Series DML
+    \item \textbf{Section 7.6}: Applications
+    \item \textbf{Section 7.7}: Exercises
+\end{itemize}
+
+% ============================================================================
+\section{Macroeconomic Confounding}\label{sec:macro_confounding}
+% ============================================================================
+
+\subsection{Formal Framework}
+
+Let $M_t$ denote a vector of macroeconomic conditions at time $t$. The complete causal model is:
+\begin{align}
+Y_t &= \tau \cdot T_t + g(X_t, M_t) + \varepsilon_t \label{eq:full_model} \\
+T_t &= h(X_t, M_t) + \eta_t \label{eq:treatment_model}
+\end{align}
+
+\begin{definition}[Macro Confounding]
+\label{def:macro_confounding}
+Macroeconomic conditions $M_t$ are \textbf{confounders} if:
+\begin{enumerate}
+    \item $M_t$ affects outcome: $\frac{\partial E[Y_t]}{\partial M_t} \neq 0$
+    \item $M_t$ affects treatment: $\frac{\partial E[T_t]}{\partial M_t} \neq 0$
+    \item $M_t$ is not caused by treatment: $T_t \not\to M_t$
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[Omitted Macro Bias]
+\label{thm:omitted_macro}
+If $M_t$ satisfies Definition~\ref{def:macro_confounding} and is omitted from the model, the DML estimator has asymptotic bias:
+\begin{equation}
+\plim(\hat{\tau} - \tau_0) = \frac{\Cov(\tilde{T}_t, g(X_t, M_t))}{\Var(\tilde{T}_t)}
+\end{equation}
+where $\tilde{T}_t = T_t - \hat{\ell}(X_t)$ excludes macro controls from the propensity model.
+\end{theorem}
+
+\begin{proof}
+The DML moment condition is:
+\[
+E[\psi(W_t; \tau, \hat{\eta})] = E[(Y_t - \tau T_t - \hat{m}(X_t))(T_t - \hat{\ell}(X_t))]
+\]
+
+With omitted $M_t$, the residual $Y_t - \tau_0 T_t - \hat{m}(X_t) = g(X_t, M_t) - \hat{m}(X_t) + \varepsilon_t$ contains the macro component. Since $T_t$ also depends on $M_t$ through (\ref{eq:treatment_model}), the treatment residual $\tilde{T}_t$ correlates with this omitted component, violating the orthogonality condition.
+\end{proof}
+
+\begin{remark}
+The bias direction depends on whether macro conditions create positive or negative correlation between treatment and outcome residuals. During recessions, both prices (treatment) and sales (outcome) may fall, creating positive bias that overstates the causal effect.
+\end{remark}
+
+\subsection{Identification with Macro Controls}
+
+Including $M_t$ in the control set restores identification:
+
+\begin{corollary}[Macro-Adjusted DML]
+\label{cor:macro_dml}
+Under conditional independence given $(X_t, M_t)$:
+\begin{equation}
+Y_t(t) \indep T_t \mid X_t, M_t
+\end{equation}
+the DML estimator with augmented controls $\tilde{X}_t = (X_t, M_t)$ is consistent:
+\begin{equation}
+\hat{\tau} \convp \tau_0
+\end{equation}
+\end{corollary}
+
+% ============================================================================
+\section{FRED Data Architecture}\label{sec:fred_architecture}
+% ============================================================================
+
+The Federal Reserve Bank of St.\ Louis maintains FRED (Federal Reserve Economic Data), containing over 800,000 time series. Our \texttt{FREDLoader} class in \texttt{src/data/fred\_loader.py} provides standardized access.
+
+\subsection{Core Classes}
+
+\begin{minted}[fontsize=\small]{python}
+from dataclasses import dataclass
+from typing import Dict, List
+import pandas as pd
+
+@dataclass
+class MacroControlsResult:
+    """Result container for macro control variables.
+
+    Attributes:
+        data: DataFrame with aligned macro indicators
+        metadata: Dict with series metadata
+        start_date: Actual start date of data
+        end_date: Actual end date of data
+        frequency: Data frequency (D/W/M/Q/A)
+        missing_pct: Dict of missing data percentages by series
+    """
+    data: pd.DataFrame
+    metadata: Dict[str, Dict[str, str]]
+    start_date: str
+    end_date: str
+    frequency: str
+    missing_pct: Dict[str, float]
+\end{minted}
+
+\subsection{Standard Macro Series}
+
+The loader includes pre-defined series covering major macroeconomic categories:
+
+\begin{table}[h]
+\centering
+\caption{FRED Standard Macro Series for DML}
+\label{tab:fred_series}
+\begin{tabular}{llll}
+\hline
+\textbf{Category} & \textbf{Series ID} & \textbf{Description} & \textbf{Transform} \\
+\hline
+Output & GDPC1 & Real GDP & pct\_change \\
+       & INDPRO & Industrial Production & pct\_change \\
+\hline
+Prices & CPIAUCSL & Consumer Price Index & pct\_change\_yoy \\
+       & PCEPI & PCE Price Index & pct\_change\_yoy \\
+\hline
+Labor & UNRATE & Unemployment Rate & level \\
+      & PAYEMS & Nonfarm Payrolls & pct\_change \\
+\hline
+Rates & FEDFUNDS & Federal Funds Rate & level \\
+      & GS10 & 10-Year Treasury & level \\
+      & TB3MS & 3-Month T-Bill & level \\
+\hline
+Financial & SP500 & S\&P 500 Index & pct\_change \\
+          & VIXCLS & VIX Volatility & level \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Pre-Defined Control Sets}
+
+For convenience, we provide curated control sets:
+
+\begin{minted}[fontsize=\small]{python}
+MACRO_CONTROL_SETS = {
+    # Minimal controls for most applications
+    "basic": ["GDPC1", "CPIAUCSL", "UNRATE", "FEDFUNDS"],
+
+    # Extended set for macro-sensitive applications
+    "comprehensive": [
+        "GDPC1", "CPIAUCSL", "UNRATE", "FEDFUNDS",
+        "GS10", "INDPRO", "UMCSENT"
+    ],
+
+    # Financial market focus
+    "financial": ["SP500", "VIXCLS", "GS10", "TB3MS", "FEDFUNDS"],
+
+    # Labor market analysis
+    "labor": ["UNRATE", "PAYEMS", "GDPC1"],
+
+    # Inflation-focused studies
+    "inflation": ["CPIAUCSL", "PCEPI", "FEDFUNDS", "GS10"],
+}
+\end{minted}
+
+\insight{
+\textbf{Choosing a Control Set}
+
+\begin{itemize}
+    \item \texttt{basic}: Default choice---captures business cycle, prices, policy
+    \item \texttt{comprehensive}: Add when treatment/outcome are macro-sensitive
+    \item \texttt{financial}: Insurance, portfolio, market microstructure studies
+    \item \texttt{labor}: Employment, wage, human capital applications
+    \item \texttt{inflation}: Pricing studies where real vs.\ nominal distinction matters
+\end{itemize}
+
+Start with \texttt{basic}; add series if domain knowledge suggests relevance.
+}
+
+\subsection{FREDLoader Class}
+
+\begin{minted}[fontsize=\small]{python}
+from src.data import FREDLoader
+
+# Initialize (API key from environment or parameter)
+loader = FREDLoader(api_key="your_api_key")  # or FRED_API_KEY env var
+
+# Fetch basic macro controls
+result = loader.get_macro_controls(
+    start_date="2015-01-01",
+    end_date="2023-12-31",
+    series_set="basic",      # Which control set
+    frequency="M",           # Monthly alignment
+)
+
+print(result.data.head())
+#             GDPC1  CPIAUCSL  UNRATE  FEDFUNDS
+# 2015-01-31   2.31      0.24    5.70      0.11
+# 2015-02-28   2.14     -0.43    5.50      0.11
+# ...
+
+print(result.missing_pct)
+# {'GDPC1': 0.0, 'CPIAUCSL': 0.0, 'UNRATE': 0.0, 'FEDFUNDS': 0.0}
+\end{minted}
+
+\subsection{Caching System}
+
+API calls are cached to \texttt{\textasciitilde/.cache/fred\_dml/} for 24 hours:
+
+\begin{minted}[fontsize=\small]{python}
+# First call: fetches from FRED API
+result1 = loader.get_macro_controls("2020-01-01", "2023-12-31")
+
+# Second call within 24h: reads from cache (instant)
+result2 = loader.get_macro_controls("2020-01-01", "2023-12-31")
+
+# Force fresh fetch
+result3 = loader.get_series("GDPC1", use_cache=False)
+\end{minted}
+
+% ============================================================================
+\section{Data Alignment and Preprocessing}\label{sec:data_alignment}
+% ============================================================================
+
+\subsection{Frequency Conversion}
+
+FRED series have different native frequencies:
+\begin{itemize}
+    \item \textbf{Daily (D)}: Financial prices (SP500, VIX)
+    \item \textbf{Weekly (W)}: Credit conditions (TOTCI)
+    \item \textbf{Monthly (M)}: Labor, prices (UNRATE, CPI)
+    \item \textbf{Quarterly (Q)}: GDP, investment (GDPC1)
+    \item \textbf{Annual (A)}: Structural indicators
+\end{itemize}
+
+The loader automatically converts to your target frequency:
+
+\begin{minted}[fontsize=\small]{python}
+# Monthly alignment (most common)
+monthly = loader.get_macro_controls(
+    start_date="2015-01-01",
+    end_date="2023-12-31",
+    frequency="M"  # Converts all series to monthly
+)
+
+# Quarterly alignment (for GDP-matched analysis)
+quarterly = loader.get_macro_controls(
+    start_date="2015-01-01",
+    end_date="2023-12-31",
+    frequency="Q"
+)
+\end{minted}
+
+\begin{definition}[Frequency Conversion Methods]
+\label{def:freq_conversion}
+Converting from higher to lower frequency (downsampling):
+\begin{itemize}
+    \item \textbf{mean}: Average within period (default for rates)
+    \item \textbf{last}: End-of-period value (stocks, indices)
+    \item \textbf{sum}: Period total (flows like income)
+\end{itemize}
+
+Converting from lower to higher frequency (upsampling) uses forward-fill.
+\end{definition}
+
+\begin{remark}
+Quarterly GDP is repeated for each month within the quarter when converting to monthly frequency. This introduces measurement staleness but preserves information content.
+\end{remark}
+
+\subsection{Transformations}
+
+Raw FRED series often require transformation for stationarity and interpretability:
+
+\begin{table}[h]
+\centering
+\caption{FRED Series Transformations}
+\label{tab:transforms}
+\begin{tabular}{lll}
+\hline
+\textbf{Transform} & \textbf{Formula} & \textbf{Use Case} \\
+\hline
+level & $X_t$ & Rates, ratios (UNRATE, FEDFUNDS) \\
+pct\_change & $100 \times \frac{X_t - X_{t-1}}{X_{t-1}}$ & Growth rates \\
+pct\_change\_yoy & $100 \times \frac{X_t - X_{t-12}}{X_{t-12}}$ & YoY inflation \\
+diff & $X_t - X_{t-1}$ & First differences \\
+log & $\ln(X_t)$ & Log levels \\
+log\_diff & $100 \times (\ln X_t - \ln X_{t-1})$ & Log returns \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{minted}[fontsize=\small]{python}
+# Custom transforms override defaults
+result = loader.get_macro_controls(
+    start_date="2015-01-01",
+    end_date="2023-12-31",
+    series_set="basic",
+    transforms={
+        "GDPC1": "log_diff",    # Log growth instead of pct_change
+        "FEDFUNDS": "diff",     # Rate changes instead of level
+    }
+)
+\end{minted}
+
+\subsection{Missing Data Handling}
+
+FRED series have gaps from holidays, reporting delays, or series discontinuities:
+
+\begin{minted}[fontsize=\small]{python}
+result = loader.get_macro_controls(
+    start_date="2015-01-01",
+    end_date="2023-12-31",
+    fill_method="ffill"  # Forward-fill (default)
+    # fill_method="interpolate"  # Linear interpolation
+)
+
+# Check missing data before filling
+print(result.missing_pct)
+# {'GDPC1': 66.7, 'CPIAUCSL': 0.0, ...}  # GDP is quarterly
+\end{minted}
+
+\begin{remark}
+High missing percentages for quarterly series (like GDPC1) when targeting monthly frequency are expected. The 66.7\% reflects forward-filling the quarterly value across three months.
+\end{remark}
+
+% ============================================================================
+\section{Integration with Time Series DML}\label{sec:integration_dml}
+% ============================================================================
+
+\subsection{Basic Integration Pattern}
+
+Combining macro controls with DynamicDML:
+
+\begin{minted}[fontsize=\small]{python}
+import numpy as np
+from src.data import FREDLoader, create_synthetic_fred_data
+from src.dml import DynamicDML
+
+# Get macro controls (or use synthetic for testing)
+# For production: loader = FREDLoader(); macro = loader.get_macro_controls(...)
+macro = create_synthetic_fred_data(
+    start_date="2015-01-01",
+    end_date="2023-12-31",
+    frequency="M",
+    seed=42
+)
+
+# Your treatment/outcome data (must align temporally)
+n = len(macro.data)
+np.random.seed(42)
+
+# Simulate: macro conditions affect both treatment AND outcome
+T = 0.3 * macro.data["FEDFUNDS"].values + np.random.randn(n)
+Y = 2.0 * T + 0.5 * macro.data["GDPC1"].values + np.random.randn(n)
+
+# Firm-specific controls
+X_firm = np.random.randn(n, 3)
+
+# WITHOUT macro controls: BIASED
+model_naive = DynamicDML(n_lags=2, model_y="ridge", model_t="ridge")
+result_naive = model_naive.fit(Y, T, X_firm)
+print(f"Naive (no macro): theta = {result_naive.theta:.3f}")  # Biased!
+
+# WITH macro controls: UNBIASED
+X_full = np.column_stack([X_firm, macro.data.values])
+model_macro = DynamicDML(n_lags=2, model_y="ridge", model_t="ridge")
+result_macro = model_macro.fit(Y, T, X_full)
+print(f"With macro:       theta = {result_macro.theta:.3f}")  # Close to 2.0
+\end{minted}
+
+\subsection{Regularization Considerations}
+
+Adding macro controls increases dimensionality. Regularization prevents overfitting:
+
+\begin{minted}[fontsize=\small]{python}
+from sklearn.linear_model import RidgeCV, LassoCV
+
+# Ridge: shrinks all coefficients (keeps all controls)
+model_ridge = DynamicDML(
+    n_lags=2,
+    model_y=RidgeCV(alphas=[0.1, 1.0, 10.0]),
+    model_t=RidgeCV(alphas=[0.1, 1.0, 10.0])
+)
+
+# Lasso: performs variable selection (may drop irrelevant macro)
+model_lasso = DynamicDML(
+    n_lags=2,
+    model_y=LassoCV(cv=5),
+    model_t=LassoCV(cv=5)
+)
+\end{minted}
+
+\insight{
+\textbf{Ridge vs.\ Lasso for Macro Controls}
+
+\begin{itemize}
+    \item \textbf{Ridge} (recommended): Keeps all macro controls with shrinkage. Safer when unsure which controls matter.
+    \item \textbf{Lasso}: May drop important confounders if coefficient is small but non-zero. Use only when confident in sparsity.
+\end{itemize}
+
+For causal inference, Ridge's ``keep everything'' approach is typically safer than Lasso's selection.
+}
+
+\subsection{HAC Inference with Macro Controls}
+
+Macro variables are highly persistent (autocorrelated), which affects standard errors:
+
+\begin{minted}[fontsize=\small]{python}
+from src.dml import DynamicDML
+
+# Longer bandwidth for persistent macro controls
+model = DynamicDML(
+    n_lags=3,
+    hac_kernel="bartlett",
+    hac_bandwidth="auto",  # Andrews' optimal bandwidth
+    model_y="ridge",
+    model_t="ridge"
+)
+
+result = model.fit(Y, T, X_with_macro)
+print(f"HAC SE: {result.se:.4f}, bandwidth: {result.hac_bandwidth}")
+\end{minted}
+
+\begin{remark}
+The optimal HAC bandwidth often increases when macro controls are included, reflecting the added autocorrelation structure. Let the automatic bandwidth selector adapt.
+\end{remark}
+
+% ============================================================================
+\section{Applications}\label{sec:ch07_applications}
+% ============================================================================
+
+\subsection{Application 1: Insurance Pricing with Interest Rate Controls}
+
+\textbf{Setting}: Estimate competitor price effect on annuity sales, controlling for interest rate confounding.
+
+\begin{itemize}
+    \item \textbf{Treatment} $T_t$: Competitor rate change (bps)
+    \item \textbf{Outcome} $Y_t$: Our annuity sales (units)
+    \item \textbf{Confounders} $M_t$: Fed funds rate, 10-year Treasury, inflation
+\end{itemize}
+
+\textbf{Confounding mechanism}: When rates rise, competitors may delay rate increases (lower $T_t$), while higher rates attract more annuity buyers (higher $Y_t$). Without controlling for rates, we underestimate the causal effect.
+
+\begin{minted}[fontsize=\small]{python}
+from src.data import create_synthetic_fred_data
+from src.dml import DynamicDML, PanelDML
+import numpy as np
+
+# Macro environment
+macro = create_synthetic_fred_data("2015-01-01", "2023-12-31", "M", seed=42)
+fed_funds = macro.data["FEDFUNDS"].values
+treasury_10y = fed_funds + 1.5 + np.random.randn(len(fed_funds)) * 0.3
+
+# Competitor pricing responds to rates (negative: delay increases when rates high)
+competitor_rate_change = -0.3 * fed_funds + np.random.randn(len(fed_funds)) * 2
+
+# Our sales respond to both competitor AND rates (positive: high rates = more sales)
+true_effect = -0.8  # Competitor rate cuts hurt our sales
+our_sales = (
+    true_effect * competitor_rate_change +
+    2.0 * fed_funds +  # Confounding!
+    np.random.randn(len(fed_funds)) * 5
+)
+
+# Without macro controls
+X_naive = np.ones((len(fed_funds), 1))  # Intercept only
+model_naive = DynamicDML(n_lags=1, model_y="ridge", model_t="ridge")
+result_naive = model_naive.fit(our_sales, competitor_rate_change, X_naive)
+print(f"Naive estimate: {result_naive.theta:.2f}")  # Biased toward zero
+
+# With rate controls
+X_rates = np.column_stack([fed_funds, treasury_10y])
+model_rates = DynamicDML(n_lags=1, model_y="ridge", model_t="ridge")
+result_rates = model_rates.fit(our_sales, competitor_rate_change, X_rates)
+print(f"Rate-controlled: {result_rates.theta:.2f}")  # Close to -0.8
+\end{minted}
+
+\subsection{Application 2: Macroeconomic Policy Effects}
+
+\textbf{Setting}: Effect of monetary policy surprise on equity returns.
+
+\begin{itemize}
+    \item \textbf{Treatment} $T_t$: Fed funds rate surprise (deviation from expected)
+    \item \textbf{Outcome} $Y_t$: S\&P 500 monthly return
+    \item \textbf{Controls} $M_t$: Inflation, unemployment, GDP growth
+\end{itemize}
+
+\begin{minted}[fontsize=\small]{python}
+# Synthetic policy study
+macro = create_synthetic_fred_data("2000-01-01", "2023-12-31", "M", seed=123)
+
+# Policy surprise (orthogonal to macro if Taylor rule holds)
+policy_surprise = np.random.randn(len(macro.data)) * 0.25
+
+# Market return responds to surprise AND macro state
+true_policy_effect = -5.0  # 25bp surprise = -1.25% return
+sp500_return = (
+    true_policy_effect * policy_surprise +
+    0.5 * macro.data["GDPC1"].values +  # GDP matters
+    -0.3 * macro.data["UNRATE"].values +  # Unemployment matters
+    np.random.randn(len(macro.data)) * 3
+)
+
+# Full macro controls
+X_macro = macro.data.values
+model = DynamicDML(n_lags=0, model_y="ridge", model_t="ridge")
+result = model.fit(sp500_return, policy_surprise, X_macro)
+print(f"Policy effect: {result.theta:.2f} ({result.ci_lower:.2f}, {result.ci_upper:.2f})")
+\end{minted}
+
+% ============================================================================
+\section{Exercises}\label{sec:ch07_exercises}
+% Note: Using ch07_ prefix to avoid multiply-defined label warnings
+% ============================================================================
+
+\begin{exercise}[Control Set Selection]
+\label{ex:control_selection}
+You're studying the effect of minimum wage increases on employment in the restaurant industry.
+
+\begin{enumerate}
+    \item[(a)] Which FRED control set would you start with? Why?
+    \item[(b)] What additional series might be relevant beyond the standard sets?
+    \item[(c)] Should you use Ridge or Lasso for the nuisance models? Justify.
+\end{enumerate}
+\end{exercise}
+
+\textbf{Solution to Exercise~\ref{ex:control_selection}:}
+
+\begin{enumerate}
+    \item[(a)] Start with \texttt{labor} set: \texttt{UNRATE}, \texttt{PAYEMS}, \texttt{GDPC1}. Employment outcomes are directly tied to labor market conditions and business cycle.
+
+    \item[(b)] Additional relevant series:
+    \begin{itemize}
+        \item Food price indices (food-away-from-home CPI component)
+        \item Consumer spending on food services
+        \item Regional unemployment if studying state-level variation
+    \end{itemize}
+
+    \item[(c)] \textbf{Ridge} is recommended. Labor market confounders likely all matter to some degree. Lasso might drop unemployment if its coefficient is small but non-zero, inducing omitted variable bias. For causal inference, including a marginally relevant confounder is safer than accidentally omitting it.
+\end{enumerate}
+
+\begin{exercise}[Frequency Alignment]
+\label{ex:frequency}
+You have daily stock returns and want to control for quarterly GDP and monthly unemployment.
+
+\begin{enumerate}
+    \item[(a)] What target frequency should you choose? Why?
+    \item[(b)] How does forward-filling quarterly GDP affect your analysis?
+    \item[(c)] Propose an alternative to forward-filling that might reduce staleness.
+\end{enumerate}
+\end{exercise}
+
+\textbf{Solution to Exercise~\ref{ex:frequency}:}
+
+\begin{enumerate}
+    \item[(a)] \textbf{Monthly} is the best compromise. Daily would require excessive forward-filling of GDP (90 days stale). Monthly balances information content with temporal resolution.
+
+    \item[(b)] Forward-filling means January--March all use Q4 GDP (reported in January). This:
+    \begin{itemize}
+        \item Introduces 0--2 month staleness
+        \item May create artificial autocorrelation in residuals
+        \item Understates within-quarter variation
+    \end{itemize}
+
+    \item[(c)] Alternatives:
+    \begin{itemize}
+        \item \textbf{GDP nowcasts}: Use Atlanta Fed GDPNow for real-time estimates
+        \item \textbf{Monthly proxies}: Industrial production (INDPRO) as monthly GDP proxy
+        \item \textbf{Mixed-frequency models}: MIDAS regression handles different frequencies directly
+    \end{itemize}
+\end{enumerate}
+
+\begin{exercise}[Synthetic Data Validation]
+\label{ex:synthetic_validation}
+Use \texttt{create\_synthetic\_fred\_data} to validate that macro controls eliminate bias.
+
+\begin{enumerate}
+    \item[(a)] Generate synthetic data with known confounding structure
+    \item[(b)] Estimate DML without and with macro controls
+    \item[(c)] Verify that the controlled estimate is unbiased and has correct coverage
+\end{enumerate}
+\end{exercise}
+
+\textbf{Solution to Exercise~\ref{ex:synthetic_validation}:}
+
+\begin{minted}[fontsize=\small]{python}
+import numpy as np
+from src.data import create_synthetic_fred_data
+from src.dml import DynamicDML
+
+# Monte Carlo validation
+n_sims = 200
+true_tau = 1.5
+results_naive = []
+results_controlled = []
+
+for sim in range(n_sims):
+    # Generate macro data
+    macro = create_synthetic_fred_data("2015-01-01", "2023-12-31", "M", seed=sim)
+    n = len(macro.data)
+
+    # Confounded DGP
+    T = 0.5 * macro.data["FEDFUNDS"].values + np.random.randn(n)
+    Y = true_tau * T + 1.0 * macro.data["GDPC1"].values + np.random.randn(n)
+
+    # Naive estimate
+    X_naive = np.ones((n, 1))
+    model_n = DynamicDML(n_lags=1, model_y="ridge", model_t="ridge")
+    res_n = model_n.fit(Y, T, X_naive)
+    results_naive.append(res_n.theta)
+
+    # Controlled estimate
+    X_ctrl = macro.data.values
+    model_c = DynamicDML(n_lags=1, model_y="ridge", model_t="ridge")
+    res_c = model_c.fit(Y, T, X_ctrl)
+    results_controlled.append(res_c.theta)
+
+print(f"Naive bias: {np.mean(results_naive) - true_tau:.3f}")
+print(f"Controlled bias: {np.mean(results_controlled) - true_tau:.3f}")
+# Expected: Naive bias >> 0, Controlled bias ~ 0
+\end{minted}
+
+% ============================================================================
+\section{Summary}\label{sec:summary_ch07}
+% ============================================================================
+
+This chapter integrated real macroeconomic data with time series DML:
+
+\begin{enumerate}
+    \item \textbf{Macro Confounding}: Omitting macro controls creates bias when economic conditions affect both treatment and outcome
+
+    \item \textbf{FREDLoader}: Standardized access to FRED with caching, frequency conversion, and pre-defined control sets
+
+    \item \textbf{Data Alignment}: Handling mixed-frequency data through resampling and appropriate transforms
+
+    \item \textbf{DML Integration}: Augmenting control matrices with macro variables while managing dimensionality through regularization
+\end{enumerate}
+
+\textbf{Key Takeaways:}
+\begin{itemize}
+    \item Always include macro controls when treatment/outcome are economically determined
+    \item Start with \texttt{basic} control set; expand based on domain knowledge
+    \item Use Ridge regularization to avoid accidentally dropping confounders
+    \item Validate with synthetic data using \texttt{create\_synthetic\_fred\_data}
+    \item Let automatic HAC bandwidth adapt to added persistence
+\end{itemize}
+
+% ============================================================================
+\section{Roadmap to Chapter 8}\label{sec:roadmap_ch07}
+% ============================================================================
+
+Chapter 8 applies our complete toolkit to the target application: \textbf{competitor pricing in insurance/annuity markets}. We combine:
+
+\begin{enumerate}
+    \item \textbf{Panel DML}: Multiple product lines across time
+    \item \textbf{FRED integration}: Interest rates, GDP, inflation as macro controls
+    \item \textbf{Rolling windows}: Detecting if price sensitivity changes over time
+    \item \textbf{Production pipeline}: End-to-end workflow from raw data to causal estimates
+\end{enumerate}
+
+This synthesizes Chapters 5--7 into a complete causal inference workflow for real-world pricing decisions.

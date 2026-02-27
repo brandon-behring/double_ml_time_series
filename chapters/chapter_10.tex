@@ -1,0 +1,863 @@
+% Chapter 10: Production Pipeline for Causal Inference
+% ============================================================================
+% This chapter covers:
+% - Why production causal inference differs from standard ML
+% - Model serialization and versioning for DML
+% - Inference APIs for CATE estimation
+% - Causal-specific monitoring (overlap, treatment shift, nuisance degradation)
+% - Retraining triggers unique to causal inference
+% - End-to-end pipeline with Airflow/Prefect
+% ============================================================================
+
+\chapter{Production Pipeline for Causal Inference}
+\label{ch:production}
+
+\section{Introduction}\label{sec:ch10_introduction}
+
+Chapters 1--9 developed the theory, methodology, and validation of Double Machine Learning for causal inference. This chapter bridges the gap between research and production deployment. Deploying causal inference systems differs fundamentally from standard machine learning in ways that practitioners must understand to build reliable systems.
+
+\keyresult{
+\textbf{Chapter Objectives:}
+\begin{itemize}
+    \item Understand why causal inference deployment differs from standard ML
+    \item Design model serialization for DML's two-stage architecture
+    \item Build inference APIs for treatment effect estimation
+    \item Implement causal-specific monitoring (not just prediction accuracy)
+    \item Create intelligent retraining triggers based on causal validity
+    \item Assemble end-to-end production pipelines
+\end{itemize}
+}
+
+\subsection{The Production Paradox}
+
+Standard machine learning production systems monitor prediction accuracy against ground truth. A deployed image classifier can be evaluated against labeled images. A recommendation system can be evaluated by click-through rates. The feedback loop is direct: prediction $\rightarrow$ observation $\rightarrow$ accuracy.
+
+Causal inference breaks this paradigm fundamentally:
+
+\begin{keyinsight}[The Fundamental Problem of Production Causal Inference]
+We \textbf{cannot directly monitor treatment effect accuracy} in production because counterfactual outcomes are never observed. A system predicting ``treatment would increase retention by 5\%'' cannot be validated by observing both outcomes for the same unit.
+\end{keyinsight}
+
+This creates a production monitoring challenge without parallel in standard ML. Instead of monitoring prediction accuracy, we must monitor the \textit{conditions under which our estimates remain valid}:
+
+\begin{enumerate}
+    \item \textbf{Overlap violations} (positivity breakdown)
+    \item \textbf{Treatment distribution shift} (assignment mechanism change)
+    \item \textbf{Nuisance model degradation} (first-stage fit quality)
+    \item \textbf{Effect stability} (is the treatment effect itself changing?)
+\end{enumerate}
+
+\begin{table}[htbp]
+\centering
+\caption{Production monitoring: Standard ML vs. Causal Inference}
+\label{tab:ml_vs_causal_monitoring}
+\begin{tabular}{lll}
+\toprule
+\textbf{Aspect} & \textbf{Standard ML} & \textbf{Causal Inference} \\
+\midrule
+Ground truth & Observable & Never observable \\
+Primary metric & Prediction accuracy & Nuisance fit quality \\
+Feature drift & Monitor input distribution & Monitor treatment distribution \\
+Overlap & N/A & Critical (positivity) \\
+Retraining trigger & Accuracy degradation & Identification breakdown \\
+Validation & Holdout set & Refutation tests \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Model Serialization for DML}\label{sec:model_serialization}
+
+DML models have a unique architecture requiring specialized serialization:
+
+\subsection{Components to Serialize}
+
+A production DML model consists of:
+
+\begin{enumerate}
+    \item \textbf{Nuisance models} for each cross-fitting fold
+    \begin{itemize}
+        \item Propensity model: $\hat{e}(X) \approx P(T=1|X)$
+        \item Outcome model: $\hat{m}(X) \approx \mathbb{E}[Y|X]$
+    \end{itemize}
+    \item \textbf{Cross-fitting configuration} (K folds, temporal blocking)
+    \item \textbf{Feature transformer} (scaling, encoding)
+    \item \textbf{HAC parameters} for time series standard errors
+    \item \textbf{Training metadata} (data snapshot, hyperparameters)
+\end{enumerate}
+
+\begin{lstlisting}[language=Python, caption={DML model version structure}]
+@dataclass
+class DMLModelVersion:
+    """Versioned DML model with full serialization support."""
+
+    version_id: str  # Unique hash-based identifier
+    created_at: str
+    model_type: str  # "double_ml", "dynamic_dml", etc.
+    n_folds: int
+
+    # Serialized nuisance models by fold
+    nuisance_models: Dict[int, Tuple[bytes, bytes]]
+
+    # Feature specification
+    feature_names: List[str]
+    treatment_name: str
+    outcome_name: str
+
+    # Reproducibility
+    hyperparameters: Dict[str, Any]
+    metrics: Dict[str, float]  # R² propensity, R² outcome
+
+    @classmethod
+    def create(
+        cls,
+        model_type: str,
+        nuisance_models: Dict[int, Tuple[Any, Any]],
+        feature_names: List[str],
+        treatment_name: str,
+        outcome_name: str,
+        hyperparameters: Dict[str, Any],
+        **kwargs,
+    ) -> "DMLModelVersion":
+        """Create versioned model with content-based hash."""
+        # Serialize nuisance models per fold
+        serialized = {}
+        for fold_idx, (prop, out) in nuisance_models.items():
+            serialized[fold_idx] = (
+                pickle.dumps(prop),
+                pickle.dumps(out),
+            )
+
+        # Generate version ID from content hash
+        timestamp = datetime.utcnow().isoformat()
+        version_id = f"dml-{compute_hash(...)[:12]}"
+
+        return cls(version_id=version_id, ...)
+\end{lstlisting}
+
+\subsection{Model Registry Operations}
+
+A DML-aware model registry supports:
+
+\begin{itemize}
+    \item \textbf{Registration}: Store versioned models with full metadata
+    \item \textbf{Retrieval}: Load specific version for inference
+    \item \textbf{Promotion}: Staging $\rightarrow$ Production workflow
+    \item \textbf{Rollback}: Revert to previous production version
+    \item \textbf{Lineage}: Track which data/config produced which model
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={Model registry workflow}]
+# Initialize registry
+registry = DMLModelRegistry("./models/dml_registry")
+
+# After training
+version_id = registry.register(model_version)
+
+# Promotion workflow
+registry.promote_to_staging(version_id)
+
+# After validation passes
+registry.promote_to_production()
+
+# If issues detected
+registry.rollback(to_version="dml-abc123")
+\end{lstlisting}
+
+\subsection{Persistence Format}
+
+Models are persisted as directories containing:
+
+\begin{verbatim}
+dml-abc123xyz/
+├── metadata.json          # Version info, hyperparameters
+├── propensity_fold_0.pkl  # Serialized propensity model
+├── outcome_fold_0.pkl     # Serialized outcome model
+├── propensity_fold_1.pkl
+├── outcome_fold_1.pkl
+├── ...
+└── feature_transformer.pkl  # Optional scaler/encoder
+\end{verbatim}
+
+This structure enables:
+\begin{itemize}
+    \item Atomic updates (complete version or nothing)
+    \item Efficient fold-level updates (not full model)
+    \item Human-readable metadata inspection
+    \item Git-compatible versioning (track \texttt{metadata.json})
+\end{itemize}
+
+
+\section{Inference APIs}\label{sec:inference_apis}
+
+Production inference for causal models differs from standard ML prediction.
+
+\subsection{Batch vs. Real-time Inference}
+
+\begin{table}[htbp]
+\centering
+\caption{Inference patterns for causal models}
+\label{tab:inference_patterns}
+\begin{tabular}{lll}
+\toprule
+\textbf{Pattern} & \textbf{Use Case} & \textbf{Latency} \\
+\midrule
+Batch scoring & Periodic CATE updates for all customers & Minutes \\
+Real-time API & On-demand treatment decisions & <100ms \\
+Streaming & Continuous effect monitoring & Sub-second \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{API Design for CATE Estimation}
+
+A production CATE API should provide:
+
+\begin{lstlisting}[language=Python, caption={CATE estimation API}]
+class CATEInferenceAPI:
+    """Production API for treatment effect estimation."""
+
+    def estimate_cate(
+        self,
+        features: Dict[str, Any],
+        return_confidence: bool = True,
+    ) -> CATEResponse:
+        """
+        Estimate conditional treatment effect.
+
+        Args:
+            features: Covariate values for the unit
+            return_confidence: Include confidence intervals
+
+        Returns:
+            CATEResponse with effect estimate and metadata
+        """
+        X = self._transform_features(features)
+
+        # Compute CATE using averaged nuisance models
+        cate = self._compute_cate(X)
+
+        # Compute confidence interval
+        ci_lower, ci_upper = self._compute_ci(X, cate)
+
+        # Check overlap (propensity extremity)
+        propensity = self._predict_propensity(X)
+        overlap_warning = self._check_overlap(propensity)
+
+        return CATEResponse(
+            cate=cate,
+            ci_lower=ci_lower,
+            ci_upper=ci_upper,
+            propensity=propensity,
+            overlap_warning=overlap_warning,
+            model_version=self._current_version,
+        )
+\end{lstlisting}
+
+\subsection{Response Structure}
+
+A complete CATE response includes uncertainty and validity flags:
+
+\begin{lstlisting}[language=Python, caption={CATE response structure}]
+@dataclass
+class CATEResponse:
+    cate: float           # Point estimate
+    ci_lower: float       # 95% CI lower
+    ci_upper: float       # 95% CI upper
+    propensity: float     # P(T=1|X) for this unit
+    overlap_warning: bool # True if propensity extreme
+    model_version: str    # For reproducibility
+    timestamp: str        # Inference timestamp
+\end{lstlisting}
+
+\begin{keyinsight}[Always Return Propensity with CATE]
+Including the propensity score in CATE responses enables downstream systems to filter or down-weight estimates with poor overlap. A CATE estimate with $\hat{e}(X) = 0.001$ is extrapolation, not estimation.
+\end{keyinsight}
+
+
+\section{Causal-Specific Monitoring}\label{sec:causal_monitoring}
+
+The heart of production causal inference is monitoring the \textit{conditions for valid inference}, not prediction accuracy.
+
+\subsection{Overlap Violations (Positivity)}
+
+The positivity assumption requires $0 < P(T=1|X) < 1$ for all $X$. In practice, we need propensity scores bounded away from 0 and 1:
+
+\begin{equation}
+\epsilon < \hat{e}(X) < 1 - \epsilon, \quad \text{typically } \epsilon = 0.01
+\end{equation}
+
+\begin{lstlisting}[language=Python, caption={Overlap monitoring}]
+def check_overlap_violations(
+    propensity_scores: np.ndarray,
+    clip_min: float = 0.01,
+    clip_max: float = 0.99,
+) -> MonitoringResult:
+    """Check for positivity violations."""
+
+    too_low = propensity_scores < clip_min
+    too_high = propensity_scores > clip_max
+    violation_rate = (np.sum(too_low) + np.sum(too_high)) / len(propensity_scores)
+
+    if violation_rate >= 0.10:  # >10% violations
+        level = AlertLevel.CRITICAL
+        message = f"CRITICAL: {violation_rate:.1%} overlap violations"
+    elif violation_rate >= 0.05:
+        level = AlertLevel.WARNING
+        message = f"WARNING: {violation_rate:.1%} overlap violations"
+    else:
+        level = AlertLevel.OK
+        message = f"Overlap OK: {violation_rate:.1%} violations"
+
+    return MonitoringResult(
+        check_name="overlap_violations",
+        level=level,
+        value=violation_rate,
+        message=message,
+    )
+\end{lstlisting}
+
+\subsection{Treatment Distribution Shift}
+
+Unlike standard feature drift, treatment distribution shift indicates the \textit{assignment mechanism} may have changed. This is causal-specific:
+
+\begin{itemize}
+    \item Standard ML: Features changed $\rightarrow$ model may underfit
+    \item Causal inference: Treatment assignment changed $\rightarrow$ \textbf{identification may fail}
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={Treatment shift monitoring}]
+def check_treatment_shift(
+    treatment_current: np.ndarray,
+    treatment_baseline: np.ndarray,
+) -> MonitoringResult:
+    """Detect treatment distribution shift."""
+
+    # For binary treatment: proportion difference
+    # For continuous: KS statistic
+    if is_binary(treatment_current):
+        p_current = np.mean(treatment_current)
+        p_baseline = np.mean(treatment_baseline)
+        metric = abs(p_current - p_baseline)
+    else:
+        metric, _ = ks_2samp(treatment_current, treatment_baseline)
+
+    if metric >= 0.10:
+        level = AlertLevel.CRITICAL
+        message = "Treatment assignment mechanism may have changed"
+    # ...
+\end{lstlisting}
+
+\subsection{Nuisance Model Degradation}
+
+DML validity requires well-fitting nuisance models. We monitor nuisance $R^2$, not treatment effect accuracy (which is unknowable):
+
+\begin{lstlisting}[language=Python, caption={Nuisance degradation monitoring}]
+def check_nuisance_degradation(
+    r2_propensity: float,
+    r2_outcome: float,
+    warning_threshold: float = 0.50,
+    critical_threshold: float = 0.30,
+) -> MonitoringResult:
+    """Check nuisance model fit quality."""
+
+    min_r2 = min(r2_propensity, r2_outcome)
+
+    if min_r2 < critical_threshold:
+        level = AlertLevel.CRITICAL
+        message = f"Nuisance fit poor (R²={min_r2:.2f}). DML may be biased."
+    elif min_r2 < warning_threshold:
+        level = AlertLevel.WARNING
+        message = f"Nuisance fit degraded (R²={min_r2:.2f})"
+    else:
+        level = AlertLevel.OK
+
+    return MonitoringResult(...)
+\end{lstlisting}
+
+\begin{keyinsight}[Why We Monitor Nuisance $R^2$, Not Effect Accuracy]
+The DML bias term depends on the product of nuisance errors:
+\[
+\text{Bias} \propto \|\hat{m} - m_0\| \cdot \|\hat{e} - e_0\|
+\]
+Poor nuisance fit indicates potential bias. But we cannot directly measure treatment effect accuracy because counterfactuals are unobserved.
+\end{keyinsight}
+
+\subsection{Effect Stability}
+
+Large changes in estimated treatment effects over time warrant investigation:
+
+\begin{lstlisting}[language=Python, caption={Effect stability monitoring}]
+def check_effect_stability(
+    current_effect: float,
+    baseline_effect: float,
+    current_se: Optional[float] = None,
+    baseline_se: Optional[float] = None,
+) -> MonitoringResult:
+    """Monitor treatment effect stability over time."""
+
+    if abs(baseline_effect) < 1e-10:
+        relative_change = float("inf") if abs(current_effect) > 1e-10 else 0.0
+    else:
+        relative_change = abs(current_effect - baseline_effect) / abs(baseline_effect)
+
+    if relative_change >= 0.50:  # 50% change
+        level = AlertLevel.CRITICAL
+        message = f"Effect changed {relative_change:.0%}: investigate cause"
+    elif relative_change >= 0.20:  # 20% change
+        level = AlertLevel.WARNING
+    # ...
+\end{lstlisting}
+
+Effect changes may indicate:
+\begin{itemize}
+    \item Genuine time-varying effects (valid, requires dynamic modeling)
+    \item Model degradation (problematic)
+    \item Selection/survivorship bias in new data (problematic)
+    \item Treatment definition changed (problematic)
+\end{itemize}
+
+
+\section{Retraining Triggers}\label{sec:retraining_triggers}
+
+Standard ML retraining triggers focus on prediction accuracy degradation. Causal inference requires different triggers aligned with identification assumptions.
+
+\subsection{Causal-Specific Triggers}
+
+\begin{table}[htbp]
+\centering
+\caption{Retraining triggers: Standard ML vs. Causal Inference}
+\label{tab:retrain_triggers}
+\begin{tabular}{lll}
+\toprule
+\textbf{Standard ML} & \textbf{Causal Inference} & \textbf{Rationale} \\
+\midrule
+Accuracy drop & N/A & Counterfactuals unobserved \\
+Feature drift & Covariate drift & Affects nuisance models \\
+Class imbalance & Treatment shift & Assignment mechanism changed \\
+--- & Overlap violations & Positivity breakdown \\
+--- & Nuisance $R^2$ drop & DML validity threatened \\
+Scheduled & Scheduled & Preventive maintenance \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Scheduler Design}
+
+\begin{lstlisting}[language=Python, caption={Retraining scheduler}]
+class RetrainScheduler:
+    """Intelligent retraining scheduler for DML pipelines."""
+
+    def __init__(self, config: RetrainSchedulerConfig):
+        self.config = config
+        self.monitor = CausalMonitor()
+
+    def evaluate_retrain_need(
+        self,
+        monitoring_results: List[MonitoringResult],
+        n_samples: int,
+    ) -> Optional[RetrainTrigger]:
+        """Evaluate if retraining is needed."""
+
+        # Check cooldown (avoid excessive retraining)
+        if self.is_in_cooldown():
+            return None
+
+        # Check minimum sample threshold
+        if n_samples < self.config.min_samples:
+            return None
+
+        # Map monitoring results to triggers
+        for result in monitoring_results:
+            if result.level == AlertLevel.CRITICAL:
+                return RetrainTrigger(
+                    trigger_type=self._result_to_trigger_type(result),
+                    severity=AlertLevel.CRITICAL,
+                    reason=result.message,
+                )
+
+        # Check scheduled retraining
+        return self.check_scheduled_retrain()
+\end{lstlisting}
+
+\subsection{Trigger Types}
+
+\begin{lstlisting}[language=Python, caption={Trigger type enumeration}]
+class TriggerType(Enum):
+    SCHEDULED = "scheduled"           # Time-based
+    OVERLAP_VIOLATION = "overlap"     # Positivity breakdown
+    TREATMENT_SHIFT = "treatment"     # Assignment mechanism
+    NUISANCE_DEGRADATION = "nuisance" # First-stage fit
+    EFFECT_INSTABILITY = "effect"     # Effect magnitude change
+    COVARIATE_SHIFT = "covariate"     # Feature distribution
+    MANUAL = "manual"                 # Human-initiated
+\end{lstlisting}
+
+
+\section{End-to-End Pipeline}\label{sec:complete_pipeline}
+
+This section assembles all components into a production-ready pipeline.
+
+\subsection{Pipeline Architecture}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=2cm,
+    box/.style={rectangle, draw, minimum width=3cm, minimum height=1cm, align=center},
+    decision/.style={diamond, draw, minimum width=2cm, minimum height=1cm, align=center, aspect=2}
+]
+
+% Nodes
+\node[box] (data) {Data Ingestion\\(FRED + Insurance)};
+\node[box, below of=data] (features) {Feature Engineering};
+\node[box, below of=features] (dml) {DML Estimation\\(Cross-fitting)};
+\node[box, below of=dml] (monitor) {Causal Monitoring};
+\node[decision, below of=monitor] (trigger) {Retrain?};
+\node[box, right of=trigger, xshift=3cm] (retrain) {Retrain Pipeline};
+\node[box, below of=trigger, yshift=-1cm] (serve) {Model Serving};
+
+% Edges
+\draw[->] (data) -- (features);
+\draw[->] (features) -- (dml);
+\draw[->] (dml) -- (monitor);
+\draw[->] (monitor) -- (trigger);
+\draw[->] (trigger) -- node[above] {yes} (retrain);
+\draw[->] (trigger) -- node[right] {no} (serve);
+\draw[->] (retrain) |- (dml);
+
+\end{tikzpicture}
+\caption{Production DML pipeline architecture}
+\label{fig:pipeline_architecture}
+\end{figure}
+
+\subsection{InsuranceDMLPipeline Implementation}
+
+\begin{lstlisting}[language=Python, caption={Complete production pipeline}]
+class InsuranceDMLPipeline:
+    """Production DML pipeline for insurance pricing analysis."""
+
+    def __init__(self, config: PipelineConfig):
+        self.config = config
+        self._registry = DMLModelRegistry(config.model_registry_path)
+        self._monitor = CausalMonitor()
+        self._scheduler = RetrainScheduler(monitor=self._monitor)
+
+    def fit(
+        self,
+        X: np.ndarray,
+        T: np.ndarray,
+        Y: np.ndarray,
+        baseline_ate: Optional[float] = None,
+    ) -> PipelineResult:
+        """
+        Fit DML pipeline to data.
+
+        Stages:
+        1. Data preparation (scaling)
+        2. Cross-fitted nuisance estimation
+        3. ATE estimation with orthogonalization
+        4. HAC standard errors (time series)
+        5. Monitoring checks
+        6. Model versioning
+        """
+        # Prepare data
+        X_scaled, T, Y = self._prepare_data(X, T, Y)
+
+        # Create cross-validator
+        cv = self._create_cross_validator(len(T))
+
+        # Fit nuisance models per fold
+        propensity_scores = np.zeros(len(T))
+        outcome_predictions = np.zeros(len(T))
+        nuisance_models = {}
+
+        for fold_idx, (train_idx, test_idx) in enumerate(cv.split(X_scaled)):
+            prop_model, out_model = self._fit_fold(
+                X_scaled, T, Y, train_idx, test_idx
+            )
+            propensity_scores[test_idx] = self._predict_propensity(
+                prop_model, X_scaled[test_idx]
+            )
+            outcome_predictions[test_idx] = out_model.predict(X_scaled[test_idx])
+            nuisance_models[fold_idx] = (prop_model, out_model)
+
+        # Compute ATE via orthogonalization
+        ate, ate_se = self._compute_ate(
+            Y, outcome_predictions, T, propensity_scores
+        )
+
+        # Run monitoring
+        monitoring_results = self._monitor.run_all_checks(
+            propensity_scores=propensity_scores,
+            r2_propensity=self._compute_r2(propensity_scores, T),
+            r2_outcome=self._compute_r2(outcome_predictions, Y),
+            current_effect=ate,
+            baseline_effect=baseline_ate,
+        )
+
+        # Create and register model version
+        version = DMLModelVersion.create(
+            model_type="double_ml",
+            nuisance_models=nuisance_models,
+            feature_names=self.config.feature_columns,
+            treatment_name=self.config.treatment_column,
+            outcome_name=self.config.outcome_column,
+            hyperparameters=self._get_hyperparameters(),
+        )
+        version_id = self._registry.register(version)
+
+        return PipelineResult(
+            ate=ate,
+            ate_se=ate_se,
+            ate_ci_lower=ate - 1.96 * ate_se,
+            ate_ci_upper=ate + 1.96 * ate_se,
+            nuisance_metrics={"r2_propensity": ..., "r2_outcome": ...},
+            monitoring_results=monitoring_results,
+            model_version=version_id,
+        )
+\end{lstlisting}
+
+\subsection{Workflow Orchestration}
+
+For production, integrate with Airflow or Prefect:
+
+\begin{lstlisting}[language=Python, caption={Airflow DAG skeleton}]
+# airflow_dags/dml_retrain.py
+
+from airflow import DAG
+from airflow.operators.python import PythonOperator, BranchPythonOperator
+from datetime import datetime, timedelta
+
+default_args = {
+    "owner": "causal-ml",
+    "retries": 1,
+    "retry_delay": timedelta(minutes=5),
+}
+
+with DAG(
+    dag_id="dml_retrain_pipeline",
+    default_args=default_args,
+    schedule_interval="@daily",
+    start_date=datetime(2024, 1, 1),
+    catchup=False,
+) as dag:
+
+    load_data = PythonOperator(
+        task_id="load_data",
+        python_callable=load_inference_data,
+    )
+
+    run_monitoring = PythonOperator(
+        task_id="run_monitoring",
+        python_callable=run_causal_monitoring,
+    )
+
+    evaluate_retrain = BranchPythonOperator(
+        task_id="evaluate_retrain",
+        python_callable=evaluate_retrain_trigger,
+    )
+
+    retrain_model = PythonOperator(
+        task_id="retrain_model",
+        python_callable=retrain_dml_pipeline,
+    )
+
+    validate_model = PythonOperator(
+        task_id="validate_model",
+        python_callable=validate_new_model,
+    )
+
+    promote_staging = PythonOperator(
+        task_id="promote_staging",
+        python_callable=promote_to_staging,
+    )
+
+    skip_retrain = PythonOperator(
+        task_id="skip_retrain",
+        python_callable=lambda: None,
+    )
+
+    # Define dependencies
+    load_data >> run_monitoring >> evaluate_retrain
+    evaluate_retrain >> [retrain_model, skip_retrain]
+    retrain_model >> validate_model >> promote_staging
+\end{lstlisting}
+
+
+\section{Insurance Pricing Case Study}\label{sec:insurance_case_study}
+
+We conclude with a complete example applying the production pipeline to insurance competitor pricing.
+
+\subsection{Problem Setup}
+
+An insurance company wants to estimate how competitor pricing affects policy retention:
+\begin{itemize}
+    \item \textbf{Treatment}: Competitor price difference (continuous)
+    \item \textbf{Outcome}: Retention indicator (binary)
+    \item \textbf{Confounders}: Customer demographics, policy features, macroeconomic conditions
+    \item \textbf{Time series}: Quarterly observations with autocorrelation
+\end{itemize}
+
+\subsection{Pipeline Configuration}
+
+\begin{lstlisting}[language=Python, caption={Insurance pipeline configuration}]
+from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+from src.production import InsuranceDMLPipeline, PipelineConfig
+
+config = PipelineConfig(
+    n_folds=5,
+    model_registry_path="./models/insurance_dml",
+
+    # Nuisance models
+    propensity_model=GradientBoostingClassifier(
+        n_estimators=100,
+        max_depth=4,
+        random_state=42,
+    ),
+    outcome_model=GradientBoostingRegressor(
+        n_estimators=100,
+        max_depth=4,
+        random_state=42,
+    ),
+
+    # Time series configuration
+    use_hac=True,
+    time_column="quarter",
+
+    # Feature specification
+    feature_columns=[
+        "age", "income", "tenure", "coverage_amount",
+        "gdp_growth", "unemployment", "interest_rate",
+    ],
+    treatment_column="competitor_price_diff",
+    outcome_column="retained",
+)
+
+pipeline = InsuranceDMLPipeline(config)
+\end{lstlisting}
+
+\subsection{Training and Monitoring}
+
+\begin{lstlisting}[language=Python, caption={Training with monitoring}]
+# Load data
+X, T, Y = load_insurance_data()
+
+# Fit pipeline
+result = pipeline.fit(X, T, Y)
+
+print(f"ATE: {result.ate:.4f}")
+print(f"95% CI: [{result.ate_ci_lower:.4f}, {result.ate_ci_upper:.4f}]")
+print(f"Nuisance R² (propensity): {result.nuisance_metrics['r2_propensity']:.3f}")
+print(f"Nuisance R² (outcome): {result.nuisance_metrics['r2_outcome']:.3f}")
+
+# Check monitoring
+for check in result.monitoring_results:
+    if not check.is_ok():
+        print(f"ALERT: {check.message}")
+
+# Promote to production
+pipeline.promote_to_production()
+\end{lstlisting}
+
+\subsection{Production Inference}
+
+\begin{lstlisting}[language=Python, caption={Production inference}]
+# Evaluate retraining need with new data
+X_new, T_new = load_new_quarter_data()
+
+results, trigger = pipeline.evaluate_retrain_need(
+    X_new, T_new,
+    X_baseline=X[:len(X_new)],
+    T_baseline=T[:len(X_new)],
+)
+
+if trigger is not None:
+    print(f"Retrain triggered: {trigger.reason}")
+    # Initiate retraining workflow
+else:
+    print("Model stable - no retraining needed")
+
+    # Predict propensity for new customers
+    propensity = pipeline.predict_propensity(X_new)
+
+    # Flag high-risk customers (extreme propensity)
+    high_risk = (propensity < 0.05) | (propensity > 0.95)
+    print(f"High-risk customers: {np.sum(high_risk)} ({np.mean(high_risk):.1%})")
+\end{lstlisting}
+
+
+\section{Exercises}\label{sec:ch10_exercises}
+
+\begin{exercise}[Monitoring Dashboard]
+Design a monitoring dashboard for a production DML system. What visualizations would you include? Consider:
+\begin{enumerate}
+    \item Propensity score distribution over time
+    \item Treatment distribution shift tracking
+    \item Nuisance model $R^2$ trends
+    \item Effect estimate stability with confidence bands
+\end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Retraining Threshold Calibration]
+The default overlap violation threshold of 10\% for CRITICAL alerts may be too aggressive or lenient depending on the application. Describe a procedure for calibrating this threshold using:
+\begin{enumerate}
+    \item Monte Carlo simulation with known treatment effects
+    \item Historical data from past model deployments
+\end{enumerate}
+\end{exercise}
+
+\begin{exercise}[A/B Test Integration]
+Propose how to integrate randomized A/B tests with a production DML system. How can occasional randomization provide:
+\begin{enumerate}
+    \item Validation of DML estimates
+    \item Ground truth for effect stability monitoring
+    \item Retraining triggers when observational estimates diverge from experimental
+\end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Multi-Treatment Extension]
+Extend the production pipeline to handle multiple treatments simultaneously. What additional monitoring is needed when:
+\begin{enumerate}
+    \item Treatments are mutually exclusive (one of K)
+    \item Treatments can be combined (2\textsuperscript{K} combinations)
+    \item Treatment assignment is continuous multivariate
+\end{enumerate}
+\end{exercise}
+
+
+\section{Summary}\label{sec:ch10_summary}
+
+This chapter developed production infrastructure for causal inference systems:
+
+\keyresult{
+\textbf{Key Takeaways:}
+\begin{itemize}
+    \item Production causal inference \textbf{cannot monitor treatment effect accuracy} directly
+    \item Monitor \textbf{identification conditions}: overlap, treatment shift, nuisance fit
+    \item DML models require \textbf{specialized serialization} for cross-fitting structure
+    \item Retraining triggers must be \textbf{causal-specific}, not accuracy-based
+    \item End-to-end pipelines integrate monitoring, versioning, and orchestration
+\end{itemize}
+}
+
+The production module developed here provides:
+\begin{itemize}
+    \item \texttt{DMLModelVersion}, \texttt{DMLModelRegistry}: Model versioning
+    \item \texttt{CausalMonitor}: Overlap, treatment shift, nuisance, effect monitoring
+    \item \texttt{RetrainScheduler}: Causal-specific retraining triggers
+    \item \texttt{InsuranceDMLPipeline}: End-to-end integration
+\end{itemize}
+
+\vspace{1em}
+
+\begin{tcolorbox}[colback=gray!5, colframe=gray!75, title={Chapter Checklist}]
+\begin{itemize}
+    \item[$\square$] Understand why causal production differs from standard ML
+    \item[$\square$] Design model serialization for DML architecture
+    \item[$\square$] Implement causal-specific monitoring (4 checks)
+    \item[$\square$] Configure retraining triggers based on identification
+    \item[$\square$] Assemble end-to-end pipeline with orchestration
+\end{itemize}
+\end{tcolorbox}
+
+The next and final appendix provides a roadmap for implementing this book's methodology in Julia, offering performance advantages for large-scale causal inference.

@@ -1,0 +1,680 @@
+% Chapter 9: Heterogeneity Analysis - Conditional Average Treatment Effects
+% ============================================================================
+% This chapter covers:
+% - CATE estimation theory and practice
+% - CausalForestDML for non-parametric heterogeneity
+% - Best linear predictor of CATE
+% - Heterogeneity visualization and interpretation
+% - Policy-relevant subgroup analysis
+% ============================================================================
+
+\chapter{Heterogeneity Analysis}
+\label{ch:heterogeneity}
+
+\section{Introduction}\label{sec:ch09_introduction}
+
+Chapters 1--8 focused on estimating the \textbf{Average Treatment Effect} (ATE)---a single number summarizing the causal effect across an entire population. But in practice, treatment effects often vary across individuals or units. Understanding this \textbf{heterogeneity} is essential for:
+
+\begin{itemize}
+    \item \textbf{Targeting}: Who benefits most from treatment?
+    \item \textbf{Policy design}: Should treatment be universal or selective?
+    \item \textbf{Mechanism understanding}: Why do effects vary?
+    \item \textbf{External validity}: Will effects generalize to new populations?
+\end{itemize}
+
+\keyresult{
+\textbf{Chapter Objectives:}
+\begin{itemize}
+    \item Define and estimate Conditional Average Treatment Effects (CATE)
+    \item Apply CausalForestDML for non-parametric heterogeneity discovery
+    \item Construct the Best Linear Predictor (BLP) for effect heterogeneity
+    \item Visualize and interpret heterogeneous effects
+    \item Connect to policy-relevant decision-making
+\end{itemize}
+}
+
+\subsection{From ATE to CATE}
+
+The Average Treatment Effect answers ``\textit{what is the effect on average?}'' The Conditional Average Treatment Effect answers ``\textit{what is the effect for units with characteristics $X = x$?}''
+
+\begin{definition}[Conditional Average Treatment Effect]
+\label{def:cate}
+For a unit with covariates $X = x$, the CATE is:
+\begin{equation}
+\tau(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]
+\label{eq:cate_definition}
+\end{equation}
+The ATE is the expectation of CATE over the covariate distribution:
+\begin{equation}
+\tau_{\text{ATE}} = \mathbb{E}[\tau(X)] = \mathbb{E}[\mathbb{E}[Y(1) - Y(0) \mid X]]
+\end{equation}
+\end{definition}
+
+\insight{
+\textbf{Why Heterogeneity Matters}
+
+Consider a training program evaluation:
+\begin{itemize}
+    \item ATE = \$1,000 wage increase (statistically significant)
+    \item But: $\tau(x) = \$3,000$ for workers without college degree
+    \item And: $\tau(x) = -\$500$ for workers with graduate degrees
+\end{itemize}
+
+A universal program might be inefficient; targeted rollout could double the benefit at half the cost.
+}
+
+\subsection{Chapter Roadmap}
+
+\begin{itemize}
+    \item \textbf{Section \ref{sec:ch09_cate_theory}}: CATE Theory---identifiability and estimation challenges
+    \item \textbf{Section \ref{sec:ch09_dml_heterogeneity}}: DML for Heterogeneous Effects---extending the framework
+    \item \textbf{Section \ref{sec:ch09_causal_forest}}: CausalForestDML---non-parametric heterogeneity
+    \item \textbf{Section \ref{sec:ch09_blp}}: Best Linear Predictor---summarizing heterogeneity
+    \item \textbf{Section \ref{sec:ch09_visualization}}: Visualization and Interpretation
+    \item \textbf{Section \ref{sec:ch09_subgroups}}: Subgroup Analysis and Policy Trees
+    \item \textbf{Section \ref{sec:ch09_exercises}}: Exercises
+\end{itemize}
+
+
+% ============================================================================
+\section{CATE Theory}\label{sec:ch09_cate_theory}
+% ============================================================================
+
+\subsection{Identification}
+
+CATE identification requires the same assumptions as ATE, applied conditionally:
+
+\begin{theorem}[CATE Identification]
+\label{thm:cate_identification}
+Under the following assumptions:
+\begin{enumerate}
+    \item \textbf{Conditional unconfoundedness}: $(Y(0), Y(1)) \perp T \mid X$
+    \item \textbf{Overlap}: $0 < P(T = 1 \mid X = x) < 1$ for all $x$ in the support
+    \item \textbf{SUTVA}: No interference, single version of treatment
+\end{enumerate}
+the CATE is identified as:
+\begin{equation}
+\tau(x) = \mathbb{E}[Y \mid T = 1, X = x] - \mathbb{E}[Y \mid T = 0, X = x]
+\end{equation}
+\end{theorem}
+
+\subsection{Estimation Challenges}
+
+CATE estimation faces challenges beyond ATE:
+
+\begin{enumerate}
+    \item \textbf{High dimensionality}: $\tau(x)$ is a function, not a scalar
+    \item \textbf{Curse of dimensionality}: Local estimation becomes sparse
+    \item \textbf{Regularization bias}: Standard ML methods induce bias in conditional means
+    \item \textbf{Inference complexity}: Constructing valid CIs for $\tau(x)$ requires special care
+\end{enumerate}
+
+\begin{definition}[Nuisance Functions for CATE]
+\label{def:cate_nuisance}
+CATE estimation requires estimating:
+\begin{align}
+\mu_0(x) &= \mathbb{E}[Y \mid T = 0, X = x] \quad \text{(control outcome)} \\
+\mu_1(x) &= \mathbb{E}[Y \mid T = 1, X = x] \quad \text{(treated outcome)} \\
+e(x) &= P(T = 1 \mid X = x) \quad \text{(propensity score)}
+\end{align}
+The naive CATE estimator $\hat{\tau}(x) = \hat{\mu}_1(x) - \hat{\mu}_0(x)$ inherits regularization bias from ML estimation.
+\end{definition}
+
+
+% ============================================================================
+\section{DML for Heterogeneous Effects}\label{sec:ch09_dml_heterogeneity}
+% ============================================================================
+
+The key insight from Chernozhukov et al. (2018) extends naturally to CATE: use Neyman orthogonal scores to eliminate first-stage bias.
+
+\subsection{The R-Learner Framework}
+
+\begin{definition}[R-Learner for CATE]
+\label{def:r_learner}
+The R-Learner (\cite{nie2021quasi}) minimizes a weighted squared loss:
+\begin{equation}
+\hat{\tau}(\cdot) = \argmin_{\tau \in \mathcal{T}} \sum_{i=1}^{n} \left( \underbrace{Y_i - \hat{m}(X_i)}_{\text{residualized } Y} - \underbrace{(T_i - \hat{e}(X_i))}_{\text{residualized } T} \cdot \tau(X_i) \right)^2
+\label{eq:r_learner}
+\end{equation}
+where $\hat{m}(x) = \mathbb{E}[Y \mid X = x]$ (marginal outcome).
+\end{definition}
+
+This is exactly DML applied point-wise:
+\begin{enumerate}
+    \item Residualize $Y$ on $X$: $\tilde{Y}_i = Y_i - \hat{m}(X_i)$
+    \item Residualize $T$ on $X$: $\tilde{T}_i = T_i - \hat{e}(X_i)$
+    \item Regress $\tilde{Y}$ on $\tilde{T} \cdot \tau(X)$
+\end{enumerate}
+
+\subsection{Implementation with EconML}
+
+EconML provides production-ready implementations:
+
+\begin{minted}[fontsize=\small]{python}
+from econml.dml import LinearDML, CausalForestDML
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+
+# Generate heterogeneous DGP
+np.random.seed(42)
+n = 2000
+X = np.random.randn(n, 5)
+T = np.random.binomial(1, 0.5, n)
+
+# True heterogeneous effect: tau(X) = 1 + 2*X_0
+true_tau = 1 + 2 * X[:, 0]
+Y = true_tau * T + X @ np.array([1, 0.5, -0.3, 0.2, 0.1]) + np.random.randn(n)
+
+# LinearDML with effect modifiers
+est_linear = LinearDML(
+    model_y=RandomForestRegressor(n_estimators=100, n_jobs=-1),
+    model_t=RandomForestClassifier(n_estimators=100, n_jobs=-1),
+    discrete_treatment=True,
+    cv=5
+)
+est_linear.fit(Y, T, X=X[:, :2], W=X[:, 2:])  # X=effect modifiers, W=controls
+
+# Get CATE estimates
+cate_linear = est_linear.effect(X[:, :2])
+\end{minted}
+
+\insight{
+\textbf{X vs W in EconML}
+
+EconML distinguishes:
+\begin{itemize}
+    \item \textbf{X (effect modifiers)}: Variables the CATE depends on---$\tau(X)$
+    \item \textbf{W (controls)}: Variables needed for unconfoundedness but not effect heterogeneity
+\end{itemize}
+
+Putting everything in X leads to curse of dimensionality. Putting effect modifiers in W throws away heterogeneity information. Good practice: domain knowledge guides the split.
+}
+
+
+% ============================================================================
+\section{CausalForestDML}\label{sec:ch09_causal_forest}
+% ============================================================================
+
+When effect heterogeneity is non-linear or involves interactions, parametric models fail. CausalForestDML combines random forests with DML orthogonalization.
+
+\subsection{Theory}
+
+\begin{definition}[Causal Forest]
+\label{def:causal_forest}
+A causal forest (\cite{wager2018estimation}) is a random forest where:
+\begin{enumerate}
+    \item Each tree splits to maximize heterogeneity in $\tau(X)$
+    \item Predictions are \textbf{honest}: training data for splits differs from prediction data
+    \item Local estimates use a neighborhood weighted by tree proximity
+\end{enumerate}
+The splitting criterion maximizes:
+\begin{equation}
+\text{Heterogeneity gain} \propto (\hat{\tau}_{\text{left}} - \hat{\tau}_{\text{right}})^2
+\end{equation}
+\end{definition}
+
+CausalForestDML adds DML orthogonalization: first residualize $Y$ and $T$, then fit a causal forest to the residuals.
+
+\subsection{Implementation}
+
+\begin{minted}[fontsize=\small]{python}
+from econml.dml import CausalForestDML
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+
+# CausalForestDML for non-parametric heterogeneity
+est_cf = CausalForestDML(
+    model_y=RandomForestRegressor(n_estimators=100, n_jobs=-1),
+    model_t=RandomForestClassifier(n_estimators=100, n_jobs=-1),
+    discrete_treatment=True,
+    n_estimators=200,        # Number of trees in causal forest
+    min_samples_leaf=10,     # Minimum samples per leaf
+    max_depth=None,          # Grow trees to full depth
+    honest=True,             # Use honest trees (separate split/estimation data)
+    inference=True,          # Enable confidence intervals
+    cv=5,
+    n_jobs=-1,
+    random_state=42
+)
+
+est_cf.fit(Y, T, X=X, W=None)
+
+# CATE predictions with confidence intervals
+cate_pred = est_cf.effect(X)
+cate_lower, cate_upper = est_cf.effect_interval(X, alpha=0.05)
+
+print(f"Average CATE: {cate_pred.mean():.3f}")
+print(f"CATE std: {cate_pred.std():.3f}")
+print(f"True tau std: {true_tau.std():.3f}")
+\end{minted}
+
+\subsection{Inference}
+
+CausalForestDML provides valid inference through the \texttt{effect\_inference} method:
+
+\begin{minted}[fontsize=\small]{python}
+# Detailed inference for individual units
+inference_results = est_cf.effect_inference(X[:5])
+summary_df = inference_results.summary_frame(alpha=0.05)
+print(summary_df)
+
+# Columns: point_estimate, stderr, zstat, pvalue, ci_lower, ci_upper
+
+# Population summary
+pop_summary = est_cf.effect_inference(X).population_summary(alpha=0.05)
+print(pop_summary)
+\end{minted}
+
+
+% ============================================================================
+\section{Best Linear Predictor of CATE}\label{sec:ch09_blp}
+% ============================================================================
+
+While $\hat{\tau}(x)$ gives individual predictions, the \textbf{Best Linear Predictor} (BLP) summarizes heterogeneity in an interpretable way.
+
+\subsection{Theory}
+
+\begin{definition}[Best Linear Predictor]
+\label{def:blp}
+The BLP projects the true CATE onto a linear function of effect modifiers:
+\begin{equation}
+\tau_{\text{BLP}}(X) = \alpha + X'\beta^*
+\end{equation}
+where $\beta^* = \argmin_{\beta} \mathbb{E}[(\tau(X) - X'\beta)^2]$.
+
+The BLP answers: ``Which covariates \textit{linearly} predict effect heterogeneity?''
+\end{definition}
+
+\begin{theorem}[BLP Interpretation]
+\label{thm:blp_interpretation}
+The BLP coefficient $\beta^*_j$ measures the \textbf{marginal association} between covariate $X_j$ and treatment effect $\tau(X)$, holding other covariates fixed (in a linear projection sense).
+\end{theorem}
+
+\subsection{Implementation}
+
+EconML's \texttt{const\_marginal\_effect} and model summaries provide BLP-like quantities:
+
+\begin{minted}[fontsize=\small]{python}
+from econml.dml import LinearDML
+
+# LinearDML naturally gives BLP interpretation
+est_linear = LinearDML(
+    model_y=RandomForestRegressor(n_estimators=100, n_jobs=-1),
+    model_t=RandomForestClassifier(n_estimators=100, n_jobs=-1),
+    discrete_treatment=True,
+    fit_cate_intercept=True,
+    cv=5
+)
+
+# Effect modifiers: X[:, :2], Controls: X[:, 2:]
+est_linear.fit(Y, T, X=X[:, :2], W=X[:, 2:])
+
+# BLP coefficients (effect of X on tau)
+print("\n=== Best Linear Predictor Coefficients ===")
+print(est_linear.summary())
+
+# The const_marginal_effect gives the intercept (ATE)
+ate = est_linear.const_marginal_effect()
+print(f"\nATE (CATE intercept): {ate[0]:.3f}")
+\end{minted}
+
+\subsection{Chernozhukov et al. (2018) BLP Test}
+
+The original DML paper proposes a specific BLP analysis:
+
+\begin{minted}[fontsize=\small]{python}
+def compute_blp_statistics(est, X_test, y_test, t_test, w_test=None):
+    """
+    Compute BLP statistics following Chernozhukov et al. (2018).
+
+    Returns:
+        - beta_1: BLP coefficient (measures heterogeneity)
+        - standard error
+        - p-value for testing H0: beta_1 = 0 (no heterogeneity)
+    """
+    # Get CATE predictions
+    cate_pred = est.effect(X_test)
+
+    # Center the CATE predictions
+    cate_centered = cate_pred - cate_pred.mean()
+
+    # BLP regression: tau_hat = alpha + beta * (tau_tilde - mean(tau_tilde))
+    # Under the null of no heterogeneity, beta = 0
+    from scipy import stats
+    import statsmodels.api as sm
+
+    # Use weighted least squares with propensity weights
+    X_blp = sm.add_constant(cate_centered)
+    model = sm.OLS(cate_pred, X_blp)
+    results = model.fit()
+
+    beta_1 = results.params[1]
+    se_beta_1 = results.bse[1]
+    pval = results.pvalues[1]
+
+    return {
+        'beta_1': beta_1,
+        'se': se_beta_1,
+        'pvalue': pval,
+        'significant_heterogeneity': pval < 0.05
+    }
+
+blp_stats = compute_blp_statistics(est_cf, X, Y, T)
+print(f"BLP beta_1: {blp_stats['beta_1']:.3f}")
+print(f"P-value for heterogeneity: {blp_stats['pvalue']:.4f}")
+\end{minted}
+
+
+% ============================================================================
+\section{Visualization and Interpretation}\label{sec:ch09_visualization}
+% ============================================================================
+
+Effective visualization reveals heterogeneity patterns.
+
+\subsection{CATE Distribution}
+
+\begin{minted}[fontsize=\small]{python}
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+
+# Distribution of CATE estimates
+ax = axes[0]
+ax.hist(cate_pred, bins=30, edgecolor='black', alpha=0.7)
+ax.axvline(cate_pred.mean(), color='red', linestyle='--',
+           label=f'Mean={cate_pred.mean():.2f}')
+ax.axvline(0, color='black', linestyle='-', alpha=0.5)
+ax.set_xlabel('Estimated CATE')
+ax.set_ylabel('Frequency')
+ax.set_title('Distribution of Treatment Effects')
+ax.legend()
+
+# CATE vs key covariate
+ax = axes[1]
+sort_idx = np.argsort(X[:, 0])
+ax.scatter(X[sort_idx, 0], cate_pred[sort_idx], alpha=0.3, s=10)
+ax.plot(X[sort_idx, 0], true_tau[sort_idx], 'r-',
+        linewidth=2, label='True CATE')
+ax.set_xlabel('X_0 (key effect modifier)')
+ax.set_ylabel('CATE')
+ax.set_title('CATE vs Effect Modifier')
+ax.legend()
+
+# Confidence intervals for sorted CATE
+ax = axes[2]
+sorted_idx = np.argsort(cate_pred)[:100]  # Bottom 100
+x_plot = np.arange(len(sorted_idx))
+ax.errorbar(x_plot, cate_pred[sorted_idx],
+            yerr=[cate_pred[sorted_idx] - cate_lower[sorted_idx],
+                  cate_upper[sorted_idx] - cate_pred[sorted_idx]],
+            fmt='o', markersize=3, capsize=2, alpha=0.5)
+ax.axhline(0, color='red', linestyle='--')
+ax.set_xlabel('Unit (sorted by CATE)')
+ax.set_ylabel('CATE with 95% CI')
+ax.set_title('Individual CATE Estimates')
+
+plt.tight_layout()
+plt.savefig('cate_visualization.pdf', bbox_inches='tight')
+\end{minted}
+
+\subsection{Partial Dependence Plots}
+
+\begin{minted}[fontsize=\small]{python}
+def plot_cate_partial_dependence(est, X, feature_idx, feature_name, n_grid=50):
+    """
+    Plot CATE as a function of one feature, averaging over others.
+
+    This is analogous to partial dependence plots for ML models.
+    """
+    x_grid = np.linspace(X[:, feature_idx].min(),
+                         X[:, feature_idx].max(), n_grid)
+
+    cate_grid = []
+    cate_lower_grid = []
+    cate_upper_grid = []
+
+    for x_val in x_grid:
+        # Create modified X with feature_idx fixed at x_val
+        X_mod = X.copy()
+        X_mod[:, feature_idx] = x_val
+
+        # Average CATE over all other covariates
+        cate = est.effect(X_mod).mean()
+        lower, upper = est.effect_interval(X_mod, alpha=0.05)
+
+        cate_grid.append(cate)
+        cate_lower_grid.append(lower.mean())
+        cate_upper_grid.append(upper.mean())
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(x_grid, cate_grid, 'b-', linewidth=2, label='CATE')
+    plt.fill_between(x_grid, cate_lower_grid, cate_upper_grid,
+                     alpha=0.2, label='95% CI')
+    plt.axhline(0, color='red', linestyle='--', alpha=0.5)
+    plt.xlabel(feature_name)
+    plt.ylabel('Conditional Average Treatment Effect')
+    plt.title(f'CATE Partial Dependence: {feature_name}')
+    plt.legend()
+    plt.tight_layout()
+
+    return x_grid, cate_grid
+
+# Example usage
+plot_cate_partial_dependence(est_cf, X, 0, 'X_0 (effect modifier)')
+\end{minted}
+
+
+% ============================================================================
+\section{Subgroup Analysis and Policy Trees}\label{sec:ch09_subgroups}
+% ============================================================================
+
+Heterogeneity analysis often culminates in \textbf{actionable subgroups}---identifying who should receive treatment.
+
+\subsection{CATE-Based Subgroups}
+
+\begin{minted}[fontsize=\small]{python}
+def analyze_subgroups(cate_pred, X, feature_names, n_groups=4):
+    """
+    Analyze treatment effect heterogeneity by CATE quartiles.
+    """
+    quartiles = np.percentile(cate_pred, [25, 50, 75])
+
+    groups = np.digitize(cate_pred, quartiles)
+
+    results = []
+    for g in range(4):
+        mask = groups == g
+        group_data = {
+            'group': g + 1,
+            'n': mask.sum(),
+            'cate_mean': cate_pred[mask].mean(),
+            'cate_std': cate_pred[mask].std(),
+        }
+
+        # Add covariate means for interpretation
+        for i, name in enumerate(feature_names):
+            group_data[f'{name}_mean'] = X[mask, i].mean()
+
+        results.append(group_data)
+
+    import pandas as pd
+    return pd.DataFrame(results)
+
+feature_names = [f'X_{i}' for i in range(X.shape[1])]
+subgroups = analyze_subgroups(cate_pred, X, feature_names)
+print(subgroups.to_string())
+\end{minted}
+
+\subsection{Policy Trees with EconML}
+
+EconML provides \texttt{SingleTreeCateInterpreter} for interpretable subgroup identification:
+
+\begin{minted}[fontsize=\small]{python}
+from econml.cate_interpreter import SingleTreeCateInterpreter
+
+# Fit interpretable tree to CATE
+intrp = SingleTreeCateInterpreter(
+    include_model_uncertainty=True,
+    max_depth=3,               # Shallow for interpretability
+    min_samples_leaf=50,       # Ensure reliable subgroups
+    min_impurity_decrease=0.01
+)
+
+# X should be the effect modifiers used in estimation
+intrp.interpret(est_cf, X)
+
+# Visualize the tree
+plt.figure(figsize=(20, 10))
+intrp.plot(feature_names=feature_names, fontsize=10)
+plt.title('CATE Interpretation Tree')
+plt.tight_layout()
+plt.savefig('cate_tree.pdf', bbox_inches='tight')
+\end{minted}
+
+\subsection{Policy Trees for Treatment Assignment}
+
+Beyond interpretation, we can learn \textbf{optimal treatment policies}:
+
+\begin{minted}[fontsize=\small]{python}
+from econml.cate_interpreter import SingleTreePolicyInterpreter
+
+# Policy tree: who should be treated?
+# Accounts for treatment costs
+policy_intrp = SingleTreePolicyInterpreter(
+    include_model_uncertainty=True,
+    max_depth=2,
+    min_samples_leaf=100,
+    min_impurity_decrease=0.001
+)
+
+# Treatment cost: only treat if CATE > 0.2
+treatment_cost = 0.2 * np.ones(len(X))
+policy_intrp.interpret(est_cf, X, sample_treatment_costs=treatment_cost)
+
+# Visualize policy
+plt.figure(figsize=(15, 8))
+policy_intrp.plot(feature_names=feature_names, fontsize=12)
+plt.title('Optimal Treatment Policy Tree (cost = 0.2)')
+plt.tight_layout()
+\end{minted}
+
+\insight{
+\textbf{Policy Trees vs. Prediction Trees}
+
+\textbf{Prediction trees} minimize squared error in predicting $\tau(x)$. They may include irrelevant splits if they marginally improve prediction.
+
+\textbf{Policy trees} maximize \textit{policy value}---the expected benefit from following the tree's treatment rule. Splits that don't change the optimal decision are pruned.
+
+For deployment, policy trees provide cleaner, more actionable rules.
+}
+
+
+% ============================================================================
+\section{Application: Insurance Pricing Heterogeneity}\label{sec:ch09_application}
+% ============================================================================
+
+Let's apply heterogeneity analysis to the insurance pricing context from Chapter 8.
+
+\begin{minted}[fontsize=\small]{python}
+from src.validation import create_insurance_dgp
+from econml.dml import CausalForestDML
+
+# Generate insurance DGP with heterogeneous effects
+dgp = create_insurance_dgp(
+    realism="moderate",
+    n_periods=120,
+    n_products=20,
+    true_tau=-0.8,  # Base effect
+    seed=42
+)
+
+# Effect modifiers: product characteristics that might affect tau
+# - product_size: larger products may be less price-sensitive
+# - distribution_channel: different channels have different elasticities
+# - customer_age: demographics affect price sensitivity
+
+# Simulate heterogeneity based on product characteristics
+n_obs = len(dgp.Y)
+product_idx = dgp.panel_info['product_idx']
+n_products = dgp.params.n_products
+
+# Create product-level effect modifiers
+np.random.seed(42)
+product_size = np.random.exponential(1.0, n_products)
+channel_type = np.random.choice([0, 1], n_products)  # 0=direct, 1=broker
+
+X_effect = np.column_stack([
+    product_size[product_idx],
+    channel_type[product_idx]
+])
+
+# Controls: macro confounders
+W_controls = dgp.macro_controls
+
+# Fit CausalForestDML
+est_insurance = CausalForestDML(
+    model_y='auto',
+    model_t='auto',
+    discrete_treatment=False,
+    n_estimators=200,
+    min_samples_leaf=20,
+    cv=3,
+    n_jobs=-1,
+    random_state=42
+)
+
+est_insurance.fit(dgp.Y, dgp.T, X=X_effect, W=W_controls)
+
+# Analyze heterogeneity
+cate_insurance = est_insurance.effect(X_effect)
+print(f"ATE: {cate_insurance.mean():.3f}")
+print(f"CATE range: [{cate_insurance.min():.3f}, {cate_insurance.max():.3f}]")
+
+# By product size quartile
+size_quartiles = np.percentile(X_effect[:, 0], [25, 50, 75])
+for q, (low, high) in enumerate(zip([0] + list(size_quartiles),
+                                     list(size_quartiles) + [np.inf])):
+    mask = (X_effect[:, 0] >= low) & (X_effect[:, 0] < high)
+    print(f"Size Q{q+1}: CATE = {cate_insurance[mask].mean():.3f}")
+\end{minted}
+
+
+% ============================================================================
+\section{Summary}\label{sec:ch09_summary}
+% ============================================================================
+
+This chapter extended DML from average effects to heterogeneous effects:
+
+\begin{enumerate}
+    \item \textbf{CATE}: $\tau(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]$ quantifies individual-level effects
+    \item \textbf{DML for CATE}: Orthogonal scores eliminate first-stage bias in CATE estimation
+    \item \textbf{CausalForestDML}: Non-parametric heterogeneity discovery with valid inference
+    \item \textbf{BLP}: Linear summary of heterogeneity for interpretation and testing
+    \item \textbf{Policy trees}: Actionable rules for treatment targeting
+\end{enumerate}
+
+\keyresult{
+\textbf{Key Takeaways}
+\begin{itemize}
+    \item Heterogeneity reveals who benefits from treatment---essential for targeting
+    \item CausalForestDML combines random forests with DML orthogonalization
+    \item EconML's X/W split distinguishes effect modifiers from controls
+    \item BLP tests whether heterogeneity is statistically significant
+    \item Policy trees translate CATE into actionable treatment rules
+\end{itemize}
+}
+
+
+% ============================================================================
+\section{Exercises}\label{sec:ch09_exercises}
+% ============================================================================
+
+\begin{enumerate}
+    \item \textbf{CATE Recovery}: Generate data with known heterogeneity $\tau(x) = 1 + 2x_1 - 0.5x_1^2$. Compare LinearDML and CausalForestDML recovery of this non-linear pattern.
+
+    \item \textbf{BLP Testing}: Using the 401(k) data from Chapter 3, test for heterogeneity by income and age. Is there statistically significant effect heterogeneity?
+
+    \item \textbf{Policy Optimization}: For the insurance pricing application, construct a policy tree that maximizes expected profit (CATE minus treatment cost). How does the optimal policy change with cost assumptions?
+
+    \item \textbf{Time-Varying Heterogeneity}: Extend the rolling window analysis from Chapter 6 to estimate time-varying CATE. Does heterogeneity structure change over time?
+
+    \item \textbf{Subgroup Stability}: Using bootstrap resampling, assess the stability of the top CATE quartile. What fraction of units are consistently in the highest-effect group?
+\end{enumerate}
