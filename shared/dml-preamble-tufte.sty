@@ -211,6 +211,8 @@
 % =============================================================================
 % CALLOUT BOXES (tcolorbox) - BOTH MARGIN AND MAIN TEXT
 % =============================================================================
+\RequirePackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, arrows.meta}
 \RequirePackage[breakable,skins]{tcolorbox}
 
 % Conditional backgrounds based on print mode
@@ -328,6 +330,14 @@
 
 % Insight box (purple) - for key insights
 \newtcolorbox{insightbox}[1][Insight]{
+  callout-compact,
+  colframe=InsightPurple,
+  colback=\ifprintmode white\else InsightPurple!3\fi,
+  title=#1
+}
+
+% Key Insight box (purple) - alias for production/advanced chapters
+\newtcolorbox{keyinsight}[1][Key Insight]{
   callout-compact,
   colframe=InsightPurple,
   colback=\ifprintmode white\else InsightPurple!3\fi,

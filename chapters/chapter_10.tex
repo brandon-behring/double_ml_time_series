@@ -85,7 +85,8 @@ A production DML model consists of:
     \item \textbf{Training metadata} (data snapshot, hyperparameters)
 \end{enumerate}
 
-\begin{lstlisting}[language=Python, caption={DML model version structure}]
+% DML model version structure
+\begin{minted}[fontsize=\small]{python}
 @dataclass
 class DMLModelVersion:
     """Versioned DML model with full serialization support."""
@@ -132,7 +133,7 @@ class DMLModelVersion:
         version_id = f"dml-{compute_hash(...)[:12]}"
 
         return cls(version_id=version_id, ...)
-\end{lstlisting}
+\end{minted}
 
 \subsection{Model Registry Operations}
 
@@ -146,7 +147,8 @@ A DML-aware model registry supports:
     \item \textbf{Lineage}: Track which data/config produced which model
 \end{itemize}
 
-\begin{lstlisting}[language=Python, caption={Model registry workflow}]
+% Model registry workflow
+\begin{minted}[fontsize=\small]{python}
 # Initialize registry
 registry = DMLModelRegistry("./models/dml_registry")
 
@@ -161,7 +163,7 @@ registry.promote_to_production()
 
 # If issues detected
 registry.rollback(to_version="dml-abc123")
-\end{lstlisting}
+\end{minted}
 
 \subsection{Persistence Format}
 
@@ -212,7 +214,8 @@ Streaming & Continuous effect monitoring & Sub-second \\
 
 A production CATE API should provide:
 
-\begin{lstlisting}[language=Python, caption={CATE estimation API}]
+% CATE estimation API
+\begin{minted}[fontsize=\small]{python}
 class CATEInferenceAPI:
     """Production API for treatment effect estimation."""
 
@@ -251,13 +254,14 @@ class CATEInferenceAPI:
             overlap_warning=overlap_warning,
             model_version=self._current_version,
         )
-\end{lstlisting}
+\end{minted}
 
 \subsection{Response Structure}
 
 A complete CATE response includes uncertainty and validity flags:
 
-\begin{lstlisting}[language=Python, caption={CATE response structure}]
+% CATE response structure
+\begin{minted}[fontsize=\small]{python}
 @dataclass
 class CATEResponse:
     cate: float           # Point estimate
@@ -267,7 +271,7 @@ class CATEResponse:
     overlap_warning: bool # True if propensity extreme
     model_version: str    # For reproducibility
     timestamp: str        # Inference timestamp
-\end{lstlisting}
+\end{minted}
 
 \begin{keyinsight}[Always Return Propensity with CATE]
 Including the propensity score in CATE responses enables downstream systems to filter or down-weight estimates with poor overlap. A CATE estimate with $\hat{e}(X) = 0.001$ is extrapolation, not estimation.
@@ -286,7 +290,8 @@ The positivity assumption requires $0 < P(T=1|X) < 1$ for all $X$. In practice, 
 \epsilon < \hat{e}(X) < 1 - \epsilon, \quad \text{typically } \epsilon = 0.01
 \end{equation}
 
-\begin{lstlisting}[language=Python, caption={Overlap monitoring}]
+% Overlap monitoring
+\begin{minted}[fontsize=\small]{python}
 def check_overlap_violations(
     propensity_scores: np.ndarray,
     clip_min: float = 0.01,
@@ -314,7 +319,7 @@ def check_overlap_violations(
         value=violation_rate,
         message=message,
     )
-\end{lstlisting}
+\end{minted}
 
 \subsection{Treatment Distribution Shift}
 
@@ -325,7 +330,8 @@ Unlike standard feature drift, treatment distribution shift indicates the \texti
     \item Causal inference: Treatment assignment changed $\rightarrow$ \textbf{identification may fail}
 \end{itemize}
 
-\begin{lstlisting}[language=Python, caption={Treatment shift monitoring}]
+% Treatment shift monitoring
+\begin{minted}[fontsize=\small]{python}
 def check_treatment_shift(
     treatment_current: np.ndarray,
     treatment_baseline: np.ndarray,
@@ -345,13 +351,14 @@ def check_treatment_shift(
         level = AlertLevel.CRITICAL
         message = "Treatment assignment mechanism may have changed"
     # ...
-\end{lstlisting}
+\end{minted}
 
 \subsection{Nuisance Model Degradation}
 
 DML validity requires well-fitting nuisance models. We monitor nuisance $R^2$, not treatment effect accuracy (which is unknowable):
 
-\begin{lstlisting}[language=Python, caption={Nuisance degradation monitoring}]
+% Nuisance degradation monitoring
+\begin{minted}[fontsize=\small]{python}
 def check_nuisance_degradation(
     r2_propensity: float,
     r2_outcome: float,
@@ -372,9 +379,9 @@ def check_nuisance_degradation(
         level = AlertLevel.OK
 
     return MonitoringResult(...)
-\end{lstlisting}
+\end{minted}
 
-\begin{keyinsight}[Why We Monitor Nuisance $R^2$, Not Effect Accuracy]
+\begin{keyinsight}[Why We Monitor Nuisance $R^2$ Instead of Effect Accuracy]
 The DML bias term depends on the product of nuisance errors:
 \[
 \text{Bias} \propto \|\hat{m} - m_0\| \cdot \|\hat{e} - e_0\|
@@ -386,7 +393,8 @@ Poor nuisance fit indicates potential bias. But we cannot directly measure treat
 
 Large changes in estimated treatment effects over time warrant investigation:
 
-\begin{lstlisting}[language=Python, caption={Effect stability monitoring}]
+% Effect stability monitoring
+\begin{minted}[fontsize=\small]{python}
 def check_effect_stability(
     current_effect: float,
     baseline_effect: float,
@@ -406,7 +414,7 @@ def check_effect_stability(
     elif relative_change >= 0.20:  # 20% change
         level = AlertLevel.WARNING
     # ...
-\end{lstlisting}
+\end{minted}
 
 Effect changes may indicate:
 \begin{itemize}
@@ -443,7 +451,8 @@ Scheduled & Scheduled & Preventive maintenance \\
 
 \subsection{Scheduler Design}
 
-\begin{lstlisting}[language=Python, caption={Retraining scheduler}]
+% Retraining scheduler
+\begin{minted}[fontsize=\small]{python}
 class RetrainScheduler:
     """Intelligent retraining scheduler for DML pipelines."""
 
@@ -477,11 +486,12 @@ class RetrainScheduler:
 
         # Check scheduled retraining
         return self.check_scheduled_retrain()
-\end{lstlisting}
+\end{minted}
 
 \subsection{Trigger Types}
 
-\begin{lstlisting}[language=Python, caption={Trigger type enumeration}]
+% Trigger type enumeration
+\begin{minted}[fontsize=\small]{python}
 class TriggerType(Enum):
     SCHEDULED = "scheduled"           # Time-based
     OVERLAP_VIOLATION = "overlap"     # Positivity breakdown
@@ -490,10 +500,10 @@ class TriggerType(Enum):
     EFFECT_INSTABILITY = "effect"     # Effect magnitude change
     COVARIATE_SHIFT = "covariate"     # Feature distribution
     MANUAL = "manual"                 # Human-initiated
-\end{lstlisting}
+\end{minted}
 
 
-\section{End-to-End Pipeline}\label{sec:complete_pipeline}
+\section{End-to-End Pipeline}\label{sec:production_pipeline}
 
 This section assembles all components into a production-ready pipeline.
 
@@ -532,7 +542,8 @@ This section assembles all components into a production-ready pipeline.
 
 \subsection{InsuranceDMLPipeline Implementation}
 
-\begin{lstlisting}[language=Python, caption={Complete production pipeline}]
+% Complete production pipeline
+\begin{minted}[fontsize=\small]{python}
 class InsuranceDMLPipeline:
     """Production DML pipeline for insurance pricing analysis."""
 
@@ -615,13 +626,14 @@ class InsuranceDMLPipeline:
             monitoring_results=monitoring_results,
             model_version=version_id,
         )
-\end{lstlisting}
+\end{minted}
 
 \subsection{Workflow Orchestration}
 
 For production, integrate with Airflow or Prefect:
 
-\begin{lstlisting}[language=Python, caption={Airflow DAG skeleton}]
+% Airflow DAG skeleton
+\begin{minted}[fontsize=\small]{python}
 # airflow_dags/dml_retrain.py
 
 from airflow import DAG
@@ -681,7 +693,7 @@ with DAG(
     load_data >> run_monitoring >> evaluate_retrain
     evaluate_retrain >> [retrain_model, skip_retrain]
     retrain_model >> validate_model >> promote_staging
-\end{lstlisting}
+\end{minted}
 
 
 \section{Insurance Pricing Case Study}\label{sec:insurance_case_study}
@@ -700,7 +712,8 @@ An insurance company wants to estimate how competitor pricing affects policy ret
 
 \subsection{Pipeline Configuration}
 
-\begin{lstlisting}[language=Python, caption={Insurance pipeline configuration}]
+% Insurance pipeline configuration
+\begin{minted}[fontsize=\small]{python}
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
 from src.production import InsuranceDMLPipeline, PipelineConfig
 
@@ -734,11 +747,12 @@ config = PipelineConfig(
 )
 
 pipeline = InsuranceDMLPipeline(config)
-\end{lstlisting}
+\end{minted}
 
 \subsection{Training and Monitoring}
 
-\begin{lstlisting}[language=Python, caption={Training with monitoring}]
+% Training with monitoring
+\begin{minted}[fontsize=\small]{python}
 # Load data
 X, T, Y = load_insurance_data()
 
@@ -757,11 +771,12 @@ for check in result.monitoring_results:
 
 # Promote to production
 pipeline.promote_to_production()
-\end{lstlisting}
+\end{minted}
 
 \subsection{Production Inference}
 
-\begin{lstlisting}[language=Python, caption={Production inference}]
+% Production inference
+\begin{minted}[fontsize=\small]{python}
 # Evaluate retraining need with new data
 X_new, T_new = load_new_quarter_data()
 
@@ -783,7 +798,7 @@ else:
     # Flag high-risk customers (extreme propensity)
     high_risk = (propensity < 0.05) | (propensity > 0.95)
     print(f"High-risk customers: {np.sum(high_risk)} ({np.mean(high_risk):.1%})")
-\end{lstlisting}
+\end{minted}
 
 
 \section{Exercises}\label{sec:ch10_exercises}

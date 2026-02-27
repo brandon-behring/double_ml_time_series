@@ -47,7 +47,8 @@ The Julia ecosystem for causal inference is maturing rapidly, though less extens
 
 MLJ.jl provides a unified interface for machine learning in Julia, analogous to scikit-learn:
 
-\begin{lstlisting}[language=Julia, caption={MLJ.jl basic usage}]
+% MLJ.jl basic usage
+\begin{minted}[fontsize=\small]{julia}
 using MLJ
 
 # Load a model
@@ -60,7 +61,7 @@ fit!(mach)
 
 # Predict
 yhat = predict(mach, X_new)
-\end{lstlisting}
+\end{minted}
 
 Key features:
 \begin{itemize}
@@ -75,7 +76,8 @@ Key features:
 
 CausalInference.jl focuses on causal discovery and Bayesian approaches:
 
-\begin{lstlisting}[language=Julia, caption={CausalInference.jl example}]
+% CausalInference.jl example
+\begin{minted}[fontsize=\small]{julia}
 using CausalInference
 
 # PC algorithm for causal discovery
@@ -86,7 +88,7 @@ plot(g)
 
 # Backdoor adjustment
 ate = backdoor_adjustment(g, :T, :Y, [:X1, :X2])
-\end{lstlisting}
+\end{minted}
 
 Current capabilities:
 \begin{itemize}
@@ -141,7 +143,8 @@ Julia's performance advantages matter most for:
 
 We compare performance on DML components:
 
-\begin{lstlisting}[language=Julia, caption={Benchmark setup (Julia)}]
+% Benchmark setup (Julia)
+\begin{minted}[fontsize=\small]{julia}
 using BenchmarkTools
 
 # Cross-sectional DML (n=100,000, p=50, K=5 folds)
@@ -152,7 +155,7 @@ Y = randn(n)
 
 # Benchmark nuisance estimation
 @benchmark fit_nuisance($X, $T, $Y, $K)
-\end{lstlisting}
+\end{minted}
 
 \subsection{Benchmark Results}
 
@@ -211,7 +214,8 @@ This section maps Python DML patterns to Julia idioms.
 
 \subsection{Cross-Fitting Translation}
 
-\begin{lstlisting}[language=Python, caption={Python cross-fitting}]
+% Python cross-fitting
+\begin{minted}[fontsize=\small]{python}
 # Python (scikit-learn)
 from sklearn.model_selection import KFold
 
@@ -219,20 +223,22 @@ kf = KFold(n_splits=5, shuffle=True, random_state=42)
 for train_idx, test_idx in kf.split(X):
     model.fit(X[train_idx], y[train_idx])
     preds[test_idx] = model.predict(X[test_idx])
-\end{lstlisting}
+\end{minted}
 
-\begin{lstlisting}[language=Julia, caption={Julia cross-fitting}]
+% Julia cross-fitting
+\begin{minted}[fontsize=\small]{julia}
 # Julia (MLJ.jl)
 using MLJ, Random
 
 resampling = CV(nfolds=5, shuffle=true, rng=MersenneTwister(42))
 mach = machine(model, X, y)
 preds = predict(mach, resampling=resampling)
-\end{lstlisting}
+\end{minted}
 
 \subsection{DML Estimator Translation}
 
-\begin{lstlisting}[language=Python, caption={Python DML estimator}]
+% Python DML estimator
+\begin{minted}[fontsize=\small]{python}
 # Python
 class DoubleML:
     def __init__(self, propensity_model, outcome_model, n_folds=5):
@@ -259,9 +265,10 @@ class DoubleML:
         self.ate_ = np.mean(psi)
         self.se_ = np.std(psi) / np.sqrt(len(T))
         return self
-\end{lstlisting}
+\end{minted}
 
-\begin{lstlisting}[language=Julia, caption={Julia DML estimator}]
+% Julia DML estimator
+\begin{minted}[fontsize=\small]{julia}
 # Julia
 using MLJ, Statistics
 
@@ -298,7 +305,7 @@ function fit!(dml::DoubleML, X, T, Y)
 
     return DMLResult(ate=ate, se=se)
 end
-\end{lstlisting}
+\end{minted}
 
 Key differences:
 \begin{itemize}
@@ -318,7 +325,8 @@ Three strategies for leveraging Julia with existing Python infrastructure:
 
 Use Python's EconML/scikit-learn from Julia:
 
-\begin{lstlisting}[language=Julia, caption={PyCall integration}]
+% PyCall integration
+\begin{minted}[fontsize=\small]{julia}
 using PyCall
 
 econml = pyimport("econml.dml")
@@ -338,7 +346,7 @@ Y_py = np.array(Y)
 
 dml.fit(X_py, T_py, Y_py)
 ate = dml.effect(X_py)
-\end{lstlisting}
+\end{minted}
 
 \textbf{Advantages:}
 \begin{itemize}
@@ -358,7 +366,8 @@ ate = dml.effect(X_py)
 
 Use Julia's performance from Python workflows:
 
-\begin{lstlisting}[language=Python, caption={PythonCall integration}]
+% PythonCall integration
+\begin{minted}[fontsize=\small]{python}
 # Python
 from juliacall import Main as jl
 
@@ -367,7 +376,7 @@ jl.include("dml_julia.jl")
 
 # Call Julia DML (fast!)
 ate, se = jl.fit_dml(X, T, Y)
-\end{lstlisting}
+\end{minted}
 
 \textbf{Advantages:}
 \begin{itemize}
@@ -386,7 +395,8 @@ ate, se = jl.fit_dml(X, T, Y)
 
 Full reimplementation in Julia:
 
-\begin{lstlisting}[language=Julia, caption={Native Julia package structure}]
+% Native Julia package structure
+\begin{minted}[fontsize=\small]{julia}
 module DoubleMachineLearningJulia
 
 using MLJ
@@ -403,7 +413,7 @@ include("cross_fitting.jl")
 include("hac.jl")
 
 end
-\end{lstlisting}
+\end{minted}
 
 \textbf{Advantages:}
 \begin{itemize}
@@ -510,7 +520,8 @@ Quick reference for translating this book's Python code to Julia.
 
 \subsection{Type Annotations}
 
-\begin{lstlisting}[language=Julia, caption={Julia type annotations}]
+% Julia type annotations
+\begin{minted}[fontsize=\small]{julia}
 # Function with type annotations
 function fit_dml(
     X::Matrix{Float64},
@@ -528,7 +539,7 @@ end
     ci_lower::Float64 = ate - 1.96 * se
     ci_upper::Float64 = ate + 1.96 * se
 end
-\end{lstlisting}
+\end{minted}
 
 
 \section{Exercises}\label{sec:app_exercises}
