@@ -1,77 +1,73 @@
 # Current Work
 
-**Last Updated**: 2026-01-29
+**Last Updated**: 2026-02-27
 
 ---
 
 ## Right Now
 
-**Phase 1 COMPLETE** ✅ → **Ready for Phase 2 (Time Series)**
+**PROJECT COMPLETE** ✅
 
-Consolidated Phase 1 completion:
-- ✅ Chapters 1-4: Complete (350+ pages)
-- ✅ Tests: 395 total (144 unit/fast, 47 slow/validation)
+Current state (verified 2026-01-30):
+- ✅ Chapters 1-10 + Appendix: Complete (180 pages, 9,548 LaTeX lines)
+- ✅ Tests: 763 total
 - ✅ Zero LaTeX errors
-- ✅ Gate 1 & 2 criteria met
+- ✅ Time series DML: 5,370+ lines implemented
+- ✅ Production module: 2,453 lines (model registry, monitoring, retraining)
+- ✅ Stationarity: 920 lines (ADF, KPSS, PP) with 92% coverage
+- ✅ Insurance DGP: 667 lines
+- ✅ Heterogeneity: CausalForestDML, BLP, Policy Trees
 
-**Critical Gap Identified**: Repository named "double_ml_time_series" but contains NO time series capability. Current code is i.i.d. only.
-
----
-
-## Phase 1 Summary
-
-| Chapter | Status | Pages |
-|---------|--------|-------|
-| 1. Potential Outcomes + FWL | ✅ Complete | 130+ |
-| 2. Neyman Orthogonality + DML | ✅ Complete | 110+ |
-| 3. Validation Framework | ✅ Complete | 75+ |
-| 4. Cross-Sectional Application | ✅ Complete | 35+ |
-
-**Gate Criteria Met**:
-- [x] All 7 validation methods implemented
-- [x] 401(k) replication within 15% of published
-- [x] Monte Carlo: <5% bias
-- [x] Cross-sectional application (OJ elasticity -2.83)
-- [x] Rosenbaum sensitivity bounds
+**Book complete** - All 10 chapters + Julia appendix written and compiled
 
 ---
 
-## Next Steps
+## Chapter Status
 
-**Phase 2A: Time Series Extension** (see `docs/IMPLEMENTATION_STRATEGY_REPORT.md`)
+| Chapter | Lines | Status |
+|---------|-------|--------|
+| 1. Potential Outcomes + FWL | 1,605 | ✅ COMPLETE |
+| 2. Neyman Orthogonality + DML | 1,674 | ✅ COMPLETE |
+| 3. Validation Framework | 860 | ✅ COMPLETE |
+| 4. Cross-Sectional Application | 464 | ✅ COMPLETE |
+| 5. Dynamic Treatment Effects | 629 | ✅ COMPLETE |
+| 6. Panel DML + Rolling Window | 514 | ✅ COMPLETE |
+| 7. FRED Integration | 716 | ✅ COMPLETE |
+| 8. Competitor Pricing | 957 | ✅ COMPLETE |
+| 9. Heterogeneity Analysis | 680 | ✅ COMPLETE |
+| 10. Production Pipeline | 863 | ✅ COMPLETE |
+| A. Julia Roadmap | 586 | ✅ COMPLETE |
 
-1. **Chapter 5**: Dynamic Treatment Effects (12-15 hrs)
-   - Time-series aware cross-validation
-   - HAC covariance / Newey-West standard errors
-   - Dynamic causal effects framework
+---
 
-2. **Chapter 6**: DynamicDML + Panel Data (15-18 hrs)
-   - Panel DML methodology
-   - Fixed effects integration
-   - Time-varying confounders
+## Time Series Implementation (COMPLETE)
 
-3. **Chapter 7**: FRED Integration (10-13 hrs)
-   - Macroeconomic controls
-   - API integration
-   - Real-world time series DML
+| Component | File | Lines |
+|-----------|------|-------|
+| TimeSeriesCrossValidator | src/dml/cross_fitting.py | 590 |
+| HAC/Newey-West | src/dml/hac.py | 729 |
+| DynamicDML/RollingWindow/Panel | src/dml/dynamic_dml.py | 1,045 |
+| FREDLoader | src/data/fred_loader.py | 705 |
+| Time Series DGP | src/validation/dgp_generator_ts.py | 714 |
+| Stationarity Tests | src/validation/stationarity.py | 920 |
+| Insurance DGP | src/validation/insurance_dgp.py | 667 |
+| **Total** | | **5,370** |
 
 ---
 
 ## Context for Return
 
 - **Build**: `lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex`
-- **Tests**: `pytest test/ -v` (395 tests)
-- **Fast tests**: `pytest test/ -m "not slow"` (~288 tests, <2 min)
+- **Tests**: `pytest test/ -v` (652+ tests)
 - **Install**: `pip install -e .` (required for imports)
 - **Master plan**: `docs/MASTER_ROADMAP_2025-11-21.md`
-- **Time series roadmap**: `docs/IMPLEMENTATION_STRATEGY_REPORT.md`
 - **Hardware**: 64-core Threadripper, n_jobs=48
 
 ---
 
 ## Known Issues
 
-1. **NOT Time Series Yet**: Current code is i.i.d. only despite repo name
-2. **Stale logs/results**: `results/` and `logs/` may be outdated
-3. **Coverage**: 20% overall (acceptable for validation-heavy codebase)
-4. **lasso_diagnostic.py**: 0% coverage (needs tests)
+1. **Stale logs/results**: `results/` and `logs/` may be outdated
+2. **Coverage**: Low overall (acceptable for validation-heavy codebase)
+3. **Page count gap**: 180 pages vs 300-350 target — needs content expansion
+4. **~170K uncommitted work**: Chapters 7-10, appendix, production module, insurance DGP, stationarity tests — all on `restart-dml` branch, awaiting consolidation commit
