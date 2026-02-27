@@ -26,27 +26,30 @@ See: `~/Claude/lever_of_archimedes/patterns/` for:
 
 **Double Machine Learning for Time Series** - Academic reference book on DML methodology with focus on time series causal inference for insurance/annuity competitor pricing with macroeconomic controls.
 
-**Current Status** (2026-01-23):
-- Phase 1A: Complete - Chapters 1-2 content restructured
-- Book infrastructure: Rebuilt with amsbook + natbib
-- Code: Static DML implementations verified (FWL, Robinson, DML)
-- Time Series: NOT YET IMPLEMENTED (planned Phase 2)
+**Current Status** (2026-01-30):
+- PROJECT COMPLETE - All 10 chapters + Julia appendix
+- Book: 180 pages, 10 chapters + 1 appendix, zero LaTeX errors
+- Code: 14,068 lines Python (incl. 2,453 production module)
+- Tests: 763 total
 
-**Build System**: Native LaTeX (amsbook class) with zero-error compilation requirement.
+**Build System**: LuaLaTeX (scrbook + Tufte-style) with zero-error compilation requirement.
 
 ---
 
 ## Quick Reference Commands
 
 ```bash
-# Build complete book
-pdflatex -shell-escape main.tex && bibtex main && pdflatex -shell-escape main.tex
+# Build complete book (NOTE: lualatex, NOT pdflatex)
+lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex
 
 # Run tests (from repo root)
-pytest test/validation/ -v
+pytest test/ -v
 
-# Quick DML verification
-python -c "from src.dml import double_ml, fwl_estimate, robinson_estimator; print('OK')"
+# Quick DML verification (includes time series)
+python -c "from src.dml import double_ml, DynamicDML, RollingWindowDML; print('OK')"
+
+# Verify FRED loader
+python -c "from src.data import FREDLoader; print('OK')"
 
 # Install in development mode (required for imports)
 pip install -e .
@@ -61,18 +64,34 @@ src/
 ├── dml/
 │   ├── fwl.py           # Frisch-Waugh-Lovell theorem
 │   ├── robinson.py      # Robinson estimator
-│   └── double_ml.py     # DML with cross-fitting
+│   ├── double_ml.py     # DML with cross-fitting
+│   ├── cross_fitting.py # TimeSeriesCrossValidator (590 lines)
+│   ├── hac.py           # HAC/Newey-West standard errors (729 lines)
+│   └── dynamic_dml.py   # DynamicDML, RollingWindow, Panel (1,045 lines)
+├── data/
+│   └── fred_loader.py   # FRED macroeconomic data (705 lines)
 └── validation/
-    ├── dgp_generator.py # Synthetic data generation
-    └── ...              # Baseline comparisons
+    ├── dgp_generator.py    # Cross-sectional DGP
+    ├── dgp_generator_ts.py # Time series DGP (714 lines)
+    ├── stationarity.py     # ADF, KPSS, PP tests (920 lines)
+    ├── insurance_dgp.py    # Insurance DGP (667 lines)
+    └── ...                 # Baseline comparisons
 
 test/
-└── validation/          # 27+ tests pass
+└── validation/          # 652 tests
 
 chapters/
 ├── chapter_01.tex       # Potential Outcomes + FWL
 ├── chapter_02.tex       # Neyman Orthogonality + DML
-└── chapter_03.tex       # Validation (skeleton)
+├── chapter_03.tex       # Validation Framework
+├── chapter_04.tex       # Cross-Sectional Application
+├── chapter_05.tex       # Dynamic Treatment Effects
+├── chapter_06.tex       # Panel DML + Rolling Window
+├── chapter_07.tex       # FRED Integration
+├── chapter_08.tex       # Competitor Pricing (957 lines)
+├── chapter_09.tex       # Heterogeneity Analysis (680 lines)
+├── chapter_10.tex       # Production Pipeline (863 lines)
+└── appendix_a.tex       # Julia Roadmap (586 lines)
 ```
 
 ---
@@ -81,8 +100,8 @@ chapters/
 
 ### LaTeX Compilation
 - **Zero errors, zero warnings** - compilation must be clean
-- 3-pass build: pdflatex → bibtex → pdflatex → pdflatex
-- Use `-shell-escape` for minted code blocks
+- Build: `lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex`
+- Uses biber (not bibtex) for bibliography
 
 ### Validation (7-Method Suite)
 1. Published results replication
@@ -108,11 +127,29 @@ chapters/
 
 ---
 
-## Known Limitations (Document as you work)
+## Current Gaps (Document as you work)
 
-1. **Not Time Series Yet**: Despite repo name, current code is i.i.d. only
-2. **Chapter 3 Incomplete**: Only outline exists, needs full implementation
-3. **No Dynamic DML**: Sequential g-estimation planned for Phase 2
+**None** - All chapters complete (2026-01-30)
+
+---
+
+## Time Series Capabilities (IMPLEMENTED)
+
+| Component | Description | Location |
+|-----------|-------------|----------|
+| TimeSeriesCrossValidator | Temporal blocking, proper train/test splits | `src/dml/cross_fitting.py` |
+| HAC Standard Errors | Newey-West, Bartlett kernel | `src/dml/hac.py` |
+| DynamicDML | Time-varying treatment effects | `src/dml/dynamic_dml.py` |
+| RollingWindowDML | Adaptive window estimation | `src/dml/dynamic_dml.py` |
+| PanelDML | Fixed effects, entity-time structure | `src/dml/dynamic_dml.py` |
+| FREDLoader | Macroeconomic controls from FRED | `src/data/fred_loader.py` |
+| Time Series DGP | Autocorrelated confounders | `src/validation/dgp_generator_ts.py` |
+| Stationarity Tests | ADF, KPSS, Phillips-Perron | `src/validation/stationarity.py` |
+| Insurance DGP | Parameterized complexity DGP | `src/validation/insurance_dgp.py` |
+| DMLModelRegistry | Model versioning and promotion | `src/production/model_registry.py` |
+| CausalMonitor | Overlap/treatment/nuisance monitoring | `src/production/causal_monitor.py` |
+| RetrainScheduler | Causal-specific retraining triggers | `src/production/retrain_pipeline.py` |
+| InsuranceDMLPipeline | End-to-end production pipeline | `src/production/dml_pipeline.py` |
 
 ---
 

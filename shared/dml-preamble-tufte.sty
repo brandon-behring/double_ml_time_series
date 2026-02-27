@@ -1,0 +1,652 @@
+% dml-preamble-tufte.sty
+% Tufte-style dense layout for Double Machine Learning book
+% Adapted from interview-preamble-tufte.sty
+%
+% Usage: \usepackage{shared/dml-preamble-tufte}
+% Requires: LuaLaTeX with -shell-escape flag
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{shared/dml-preamble-tufte}[2026/01/23 Tufte-style DML Book Preamble v1.0]
+
+% =============================================================================
+% ENGINE DETECTION
+% =============================================================================
+\RequirePackage{iftex}
+\RequireLuaTeX  % Fail with clear error if not LuaLaTeX
+
+% =============================================================================
+% PRINT/DIGITAL TOGGLE
+% =============================================================================
+\@ifundefined{ifprintmode}{%
+  \newif\ifprintmode
+  \printmodefalse  % Default to digital
+}{}
+
+% =============================================================================
+% TUFTE-STYLE GEOMETRY
+% =============================================================================
+\RequirePackage{geometry}
+\geometry{
+    paperwidth=8.5in,
+    paperheight=11in,
+    left=1in,              % Inner margin
+    top=1in,
+    textwidth=4.5in,       % Main text (narrow for density)
+    marginparsep=0.3in,    % Gap between text and margin
+    marginparwidth=1.9in,  % Wide margin for notes/figures
+    textheight=9in,
+    footskip=0.5in,
+    headheight=23pt
+}
+
+% =============================================================================
+% FONTS (must come early)
+% =============================================================================
+\RequirePackage{fontspec}
+
+% Define fallback font for symbols not in Roboto
+\directlua{
+  luaotfload.add_fallback("symbolfallback", {
+    "DejaVu Sans:mode=harf;",
+  })
+}
+
+% Main font: Roboto (modern sans-serif)
+\setmainfont{Roboto}[
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-Italic,
+  BoldItalicFont = *-BoldItalic,
+  Scale = 1.0,
+  RawFeature={fallback=symbolfallback}
+]
+
+% Monospace font: Source Code Pro - 9pt effective (0.82 scale of 11pt)
+\setmonofont{Source Code Pro}[
+  Scale = 0.82,
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-It,
+  BoldItalicFont = *-BoldIt
+]
+
+% Sans font (for headings): already Roboto as main
+\setsansfont{Roboto}[
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-Italic,
+  BoldItalicFont = *-BoldItalic
+]
+
+% Margin note font size (~8pt)
+\newcommand{\marginfontsize}{\footnotesize}
+
+% =============================================================================
+% TYPOGRAPHY
+% =============================================================================
+\RequirePackage[
+  protrusion=true,
+  expansion=true,
+  tracking=small,
+  final
+]{microtype}
+
+% Allow punctuation to extend into margins
+\SetProtrusion{encoding=*,family=*}{
+  1={-100,-100},
+  .={0,500},
+  ,={0,500}
+}
+
+\RequirePackage[english]{babel}
+\RequirePackage{csquotes}
+
+% Line spacing
+\RequirePackage{setspace}
+\setstretch{1.15}
+
+% Paragraph formatting - TRUE TUFTE STYLE: indent instead of parskip
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0pt}
+
+% =============================================================================
+% COLORS (Manning-inspired palette)
+% =============================================================================
+\RequirePackage[dvipsnames,svgnames,x11names]{xcolor}
+
+% Primary colors
+\definecolor{PrimaryBlue}{HTML}{0066CC}      % Headings, accents
+\definecolor{NoteBlue}{HTML}{3498DB}         % Note callouts
+\definecolor{WarningOrange}{HTML}{E67E22}    % Warning callouts
+\definecolor{TipGreen}{HTML}{27AE60}         % Tip callouts
+\definecolor{CodeBg}{HTML}{F5F5F5}           % Code background (digital only)
+\definecolor{CodeFrame}{HTML}{CCCCCC}        % Code frame
+\definecolor{DarkText}{HTML}{222222}         % Body text
+
+% DML-specific colors
+\definecolor{AssumptionRed}{HTML}{C0392B}    % Assumption boxes
+\definecolor{InsightPurple}{HTML}{8E44AD}    % Insight boxes
+
+% =============================================================================
+% CODE LISTINGS (minted - Pygments backend)
+% =============================================================================
+\RequirePackage{minted}
+
+\ifprintmode
+  \setminted{
+    frame=leftline,
+    framesep=1.5mm,
+    bgcolor=white,
+    rulecolor=CodeFrame,
+    fontsize=\footnotesize,
+    breaklines=true,
+    breakanywhere=false,
+    linenos=true,
+    numbersep=4pt,
+    xleftmargin=0pt,
+    baselinestretch=1.15,
+    autogobble=true
+  }
+\else
+  \setminted{
+    frame=lines,
+    framesep=1mm,
+    bgcolor=CodeBg,
+    rulecolor=CodeFrame,
+    fontsize=\footnotesize,
+    breaklines=true,
+    breakanywhere=false,
+    linenos=false,
+    xleftmargin=0pt,
+    baselinestretch=1.05,
+    autogobble=true
+  }
+\fi
+
+\usemintedstyle{friendly}
+
+% Inline code
+\newcommand{\code}[1]{\texttt{#1}}
+
+% Code block caption/title styling
+\newcommand{\codecaption}[1]{%
+  \par\vspace{-0.3\baselineskip}%
+  {\footnotesize\color{PrimaryBlue!80!black}\textbf{#1}}%
+  \par\vspace{-0.2\baselineskip}%
+}
+
+% Spacing after code blocks
+\newcommand{\postcode}{\vspace{-0.3\baselineskip}}
+
+% =============================================================================
+% MARGIN NOTE COMMANDS (Tufte-style)
+% =============================================================================
+\RequirePackage{changepage}
+
+% Basic sidenote
+\newcommand{\sidenote}[1]{%
+  \marginpar{%
+    \footnotesize\raggedright%
+    \color{PrimaryBlue!70!black}%
+    #1%
+    \color{DarkText}%
+  }%
+}
+
+% Margin figure
+\newcommand{\marginfigure}[2][width=\marginparwidth]{%
+  \marginpar{\centering\includegraphics[#1]{#2}}%
+}
+
+% Margin table environment
+\newenvironment{margintable}
+  {\marginpar\bgroup\marginfontsize\centering}
+  {\egroup}
+
+% Full-width environment (for large figures/tables spanning text + margin)
+\newenvironment{fullwidth}
+  {\begin{adjustwidth}{}{-\marginparwidth-\marginparsep}}
+  {\end{adjustwidth}}
+
+% =============================================================================
+% CALLOUT BOXES (tcolorbox) - BOTH MARGIN AND MAIN TEXT
+% =============================================================================
+\RequirePackage[breakable,skins]{tcolorbox}
+
+% Conditional backgrounds based on print mode
+\ifprintmode
+  \newcommand{\notebg}{white}
+  \newcommand{\warnbg}{white}
+  \newcommand{\tipbg}{white}
+\else
+  \colorlet{notebg}{NoteBlue!5}
+  \colorlet{warnbg}{WarningOrange!5}
+  \colorlet{tipbg}{TipGreen!5}
+\fi
+
+% --- MARGIN CALLOUT BOXES (compact, for margins) ---
+
+\newtcolorbox{marginbox}[2][Note]{
+  breakable=true,
+  enhanced,
+  colframe=#2,
+  colback=\ifprintmode white\else #2!3\fi,
+  coltitle=DarkText,
+  fonttitle=\bfseries\small,
+  title=#1,
+  leftrule=2pt,
+  rightrule=0pt,
+  toprule=0pt,
+  bottomrule=0pt,
+  arc=0pt,
+  left=1pt,
+  right=1pt,
+  top=0.5pt,
+  bottom=0.5pt,
+  boxsep=0pt,
+  width=\marginparwidth,
+  fontupper=\marginfontsize,
+  titlerule=0mm
+}
+
+% Convenience commands for margin callouts
+\newcommand{\marginnote}[2][Note]{%
+  \marginpar{\begin{marginbox}[#1]{NoteBlue}#2\end{marginbox}}%
+}
+
+\newcommand{\marginwarning}[2][Warning]{%
+  \marginpar{\begin{marginbox}[#1]{WarningOrange}#2\end{marginbox}}%
+}
+
+\newcommand{\margintip}[2][Tip]{%
+  \marginpar{\begin{marginbox}[#1]{TipGreen}#2\end{marginbox}}%
+}
+
+% --- MAIN TEXT CALLOUT BOXES (compact, for important content) ---
+
+\tcbset{
+  callout-compact/.style={
+    breakable,
+    enhanced,
+    arc=0pt,
+    leftrule=3pt,
+    rightrule=0pt,
+    toprule=0pt,
+    bottomrule=0pt,
+    left=2pt,
+    right=2pt,
+    top=1pt,
+    bottom=1pt,
+    boxsep=0pt,
+    toptitle=0.5pt,
+    coltitle=DarkText,
+    fonttitle=\bfseries
+  }
+}
+
+% Note box (blue)
+\newtcolorbox{notebox}[1][Note]{
+  callout-compact,
+  colframe=NoteBlue,
+  colback=\ifprintmode white\else NoteBlue!3\fi,
+  title=#1
+}
+
+% Warning box (orange)
+\newtcolorbox{warnbox}[1][Warning]{
+  callout-compact,
+  colframe=WarningOrange,
+  colback=\ifprintmode white\else WarningOrange!3\fi,
+  title=#1
+}
+
+% Tip box (green)
+\newtcolorbox{tipbox}[1][Tip]{
+  callout-compact,
+  colframe=TipGreen,
+  colback=\ifprintmode white\else TipGreen!3\fi,
+  title=#1
+}
+
+% Example box (primary blue)
+\newtcolorbox{examplebox}[1][Example]{
+  callout-compact,
+  colframe=PrimaryBlue,
+  colback=\ifprintmode white\else PrimaryBlue!3\fi,
+  title=#1
+}
+
+% --- DML-SPECIFIC CALLOUT BOXES ---
+
+% Assumption box (red) - for causal assumptions
+\newtcolorbox{assumptionbox}[1][Assumption]{
+  callout-compact,
+  colframe=AssumptionRed,
+  colback=\ifprintmode white\else AssumptionRed!3\fi,
+  title=#1
+}
+
+% Insight box (purple) - for key insights
+\newtcolorbox{insightbox}[1][Insight]{
+  callout-compact,
+  colframe=InsightPurple,
+  colback=\ifprintmode white\else InsightPurple!3\fi,
+  title=#1
+}
+
+% Key Result box (green) - for main findings
+\newtcolorbox{resultbox}[1][Key Result]{
+  callout-compact,
+  colframe=TipGreen,
+  colback=\ifprintmode white\else TipGreen!3\fi,
+  title=#1
+}
+
+% DML convenience commands (main text)
+\newcommand{\keyresult}[1]{\begin{resultbox}[Key Result]#1\end{resultbox}}
+\newcommand{\assumption}[1]{\begin{assumptionbox}[Assumption]#1\end{assumptionbox}}
+\newcommand{\insight}[1]{\begin{insightbox}[Insight]#1\end{insightbox}}
+
+% =============================================================================
+% TABLES
+% =============================================================================
+\RequirePackage{booktabs}
+\RequirePackage{tabularx}
+\RequirePackage{longtable}
+\RequirePackage{array}
+
+\renewcommand{\arraystretch}{1.2}
+
+% =============================================================================
+% MATH
+% =============================================================================
+\RequirePackage{amsmath,amssymb,amsthm}
+\RequirePackage{mathtools}
+
+% Reduce space around display equations
+\AtBeginDocument{
+  \setlength\abovedisplayskip{6pt plus 1pt minus 2pt}
+  \setlength\belowdisplayskip{6pt plus 1pt minus 2pt}
+  \setlength\abovedisplayshortskip{3pt plus 1pt minus 1pt}
+  \setlength\belowdisplayshortskip{3pt plus 1pt minus 1pt}
+  \setlength{\jot}{1.5pt}
+}
+
+% Theorem environments
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{example}{Example}[chapter]
+\newtheorem{exercise}{Exercise}[chapter]
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+% Note: 'assumption' conflicts with command, use assumptionthm
+\newtheorem{assumptionthm}{Assumption}[chapter]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[chapter]
+\newtheorem{note}{Note}[chapter]
+
+% --- DML-SPECIFIC MATH COMMANDS ---
+
+% Probability and statistics
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Prob}{\mathbb{P}}
+
+% Common sets
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+
+% Indicators and norms
+\newcommand{\indicator}[1]{\mathbb{1}\{#1\}}
+\newcommand{\norm}[1]{\|#1\|}
+
+% Convergence
+\newcommand{\convd}{\xrightarrow{d}}
+\newcommand{\convp}{\xrightarrow{p}}
+\newcommand{\convas}{\xrightarrow{a.s.}}
+
+% Operators
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\plim}{plim}
+
+% Causal inference specific
+\newcommand{\ate}{\tau}
+\newcommand{\att}{\tau_{\text{ATT}}}
+\newcommand{\atc}{\tau_{\text{ATC}}}
+\newcommand{\cate}{\tau(x)}
+\newcommand{\poty}[1]{Y^{(#1)}}
+\newcommand{\propensity}{e(X)}
+\newcommand{\independent}{\perp\!\!\!\perp}
+\newcommand{\indep}{\perp\!\!\!\perp}
+
+% DML-specific commands
+\newcommand{\nuisance}{\eta}
+\newcommand{\score}{\psi}
+\newcommand{\residual}[1]{\tilde{#1}}
+
+% =============================================================================
+% ALGORITHMS
+% =============================================================================
+\RequirePackage{algorithm}
+\RequirePackage{algorithmic}
+
+% =============================================================================
+% BIBLIOGRAPHY (biblatex + biber)
+% =============================================================================
+\RequirePackage[
+  backend=biber,
+  style=authoryear,
+  sorting=nyt,
+  maxbibnames=99,
+  giveninits=true,
+  uniquename=false,
+  uniquelist=false
+]{biblatex}
+
+% =============================================================================
+% GLOSSARY
+% =============================================================================
+\RequirePackage[
+  toc,
+  acronym,
+  nonumberlist,
+  nogroupskip
+]{glossaries}
+\makeglossaries
+
+% =============================================================================
+% INDEX
+% =============================================================================
+\RequirePackage{makeidx}
+\makeindex
+
+% =============================================================================
+% FIGURES AND GRAPHICS
+% =============================================================================
+\RequirePackage{graphicx}
+\RequirePackage{float}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+
+% Caption styling
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  format=hang,
+  margin=6pt,
+  skip=4pt,
+  singlelinecheck=false
+}
+
+% =============================================================================
+% LISTS
+% =============================================================================
+\RequirePackage[shortlabels]{enumitem}
+
+\setlist{
+  topsep=0.5pt,
+  itemsep=1.5pt,
+  parsep=0pt,
+  partopsep=0pt,
+  leftmargin=*,
+  listparindent=0pt
+}
+
+% Fix for description lists with long labels
+\setlist[description]{style=nextline}
+
+% =============================================================================
+% CROSS-REFERENCES
+% =============================================================================
+\RequirePackage{varioref}
+
+% =============================================================================
+% HYPERLINKS (must be loaded late)
+% =============================================================================
+\RequirePackage[
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=PrimaryBlue,
+  citecolor=TipGreen!80!black,
+  pdfusetitle,
+  bookmarks=true,
+  bookmarksnumbered=true,
+  pdfstartview=FitH,
+  pdfdisplaydoctitle=true,
+  pdfencoding=unicode
+]{hyperref}
+
+% Print mode: disable colored links
+\ifprintmode
+  \hypersetup{
+    colorlinks=false,
+    linkbordercolor=white,
+    urlbordercolor=white,
+    citebordercolor=white,
+    pdfborder={0 0 0}
+  }
+\fi
+
+\RequirePackage[capitalise,noabbrev]{cleveref}
+
+% =============================================================================
+% KOMA-SCRIPT PAGE LAYOUT ADJUSTMENTS
+% =============================================================================
+\newcommand{\setprintlayout}{%
+  \KOMAoptions{
+    twoside=semi,
+    BCOR=10mm
+  }%
+}
+
+\newcommand{\setdigitallayout}{%
+  \KOMAoptions{
+    twoside=false,
+    BCOR=0mm
+  }%
+}
+
+% =============================================================================
+% HEADING STYLES (KOMA-Script) - TUFTE-STYLE ITALIC
+% =============================================================================
+\addtokomafont{chapter}{\color{PrimaryBlue}\itshape}
+\addtokomafont{section}{\color{PrimaryBlue!90!black}\itshape}
+\addtokomafont{subsection}{\color{PrimaryBlue!80!black}\itshape}
+
+% Reduce spacing around headings for density
+\RedeclareSectionCommand[
+  beforeskip=1.0\baselineskip,
+  afterskip=0.3\baselineskip
+]{chapter}
+
+\RedeclareSectionCommand[
+  beforeskip=0.6\baselineskip,
+  afterskip=0.2\baselineskip
+]{section}
+
+\RedeclareSectionCommand[
+  beforeskip=0.6\baselineskip,
+  afterskip=0.15\baselineskip
+]{subsection}
+
+% =============================================================================
+% HEADERS (scrlayer-scrpage)
+% =============================================================================
+\RequirePackage[headsepline]{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\automark[chapter]{chapter}
+
+\providecommand{\volumeshort}{}
+
+\ihead{\ifx\volumeshort\empty\else\footnotesize\volumeshort\fi}
+\chead{}
+\ohead{\footnotesize\textit{\thechapter~\textperiodcentered~\leftmark}}
+\ifoot{} \cfoot{\pagemark} \ofoot{}
+
+% =============================================================================
+% DOCUMENT METADATA COMMANDS
+% =============================================================================
+\providecommand{\guidetitle}{Guide Title}
+\providecommand{\guidesubtitle}{Subtitle}
+\providecommand{\guideauthor}{Author}
+\providecommand{\guideversion}{1.0}
+\providecommand{\guidedate}{\today}
+\providecommand{\guideedition}{Digital}
+
+% =============================================================================
+% PROFESSIONAL COVER PAGE
+% =============================================================================
+\newcommand{\makeguidecover}{%
+  \begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\Huge\bfseries\color{PrimaryBlue}\guidetitle\par}
+
+    \vspace{0.5cm}
+    {\Large\guidesubtitle\par}
+
+    \vspace{1cm}
+    {\large Double Machine Learning Series\par}
+
+    \vspace{2cm}
+    {\large\guideauthor\par}
+
+    \vfill
+
+    {\normalsize Version \guideversion\par}
+    {\normalsize\guidedate\par}
+
+    \vspace{1cm}
+
+    \ifprintmode
+      {\small\textit{Print Edition}\par}
+    \else
+      {\small\textit{\guideedition\ Edition}\par}
+    \fi
+  \end{titlepage}
+}
+
+% =============================================================================
+% CROSS-CHAPTER REFERENCES
+% =============================================================================
+\newcommand{\chapterref}[2]{%
+  \textit{$\rightarrow$~Chapter~#1: #2}%
+}
+
+\newcommand{\chapterreflink}[3]{%
+  \hyperref[#3]{\textit{$\rightarrow$~Chapter~#1: #2}}%
+}
+
+% =============================================================================
+% END OF PREAMBLE
+% =============================================================================
+\endinput

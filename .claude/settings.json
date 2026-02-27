@@ -1,38 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Read",
-      "Grep",
-      "Glob",
-      "Bash(git status)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git branch:*)",
-      "Bash(git show:*)",
-      "Bash(make:*)",
-      "Bash(pdflatex:*)",
-      "Bash(bibtex:*)",
-      "Bash(pytest:*)",
-      "Bash(python:*)",
-      "Bash(python3:*)",
-      "Bash(ls:*)",
-      "Bash(cat:*)",
-      "Bash(head:*)",
-      "Bash(tail:*)",
-      "Bash(wc:*)",
-      "Bash(which:*)",
-      "Bash(echo:*)"
-    ],
-    "ask": [
       "Write(**)",
       "Edit(**)",
+      "Bash(bibtex:*)"
+    ],
+    "ask": [
       "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git add:*)",
-      "Bash(rm:*)",
-      "Bash(mv:*)",
-      "Bash(cp:*)",
-      "Bash(mkdir:*)"
+      "Bash(git push:*)"
     ],
     "deny": [
       "Read(./.env*)",
@@ -45,9 +20,9 @@
       "Bash(rm -rf ~)",
       "Bash(sudo:*)",
       "Bash(su:*)"
-    ]
+    ],
+    "defaultMode": "bypassPermissions"
   },
-          "defaultMode": "bypassPermissions",
   "hooks": {
     "SessionStart": [
       {

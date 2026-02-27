@@ -96,3 +96,8 @@ credentials.json
 
 # But keep validation registry
 !notebooks/validation/VALIDATION_REGISTRY.md
+
+# Security - secrets and credentials
+*.pem
+*credentials*
+*.secret
