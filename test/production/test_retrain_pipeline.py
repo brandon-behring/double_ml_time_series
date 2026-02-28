@@ -23,6 +23,8 @@ from src.production.retrain_pipeline import (
     create_prefect_flow_config,
 )
 
+pytestmark = pytest.mark.tier2
+
 
 class TestRetrainTrigger:
     """Tests for RetrainTrigger dataclass."""

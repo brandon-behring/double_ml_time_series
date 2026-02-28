@@ -12,7 +12,7 @@ import numpy as np
 from src.validation.enhanced_dgp import EnhancedDGPGenerator, EnhancedDGPResult
 
 # Mark all tests in this module as unit tests
-pytestmark = pytest.mark.unit
+pytestmark = pytest.mark.tier1
 
 
 class TestEnhancedDGPBasicFunctionality:

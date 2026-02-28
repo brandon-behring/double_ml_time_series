@@ -16,10 +16,11 @@ from src.validation.ipw_baseline import IPWEstimator, AugmentedIPW
 from src.validation.validation_result import ValidationResult
 
 
+@pytest.mark.tier3
 class TestIPWEstimator:
     """Test suite for IPWEstimator."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = IPWEstimator(n_simulations=10, alpha=0.05, random_state=42)
@@ -27,7 +28,7 @@ class TestIPWEstimator:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
-    @pytest.mark.slow
+    @pytest.mark.tier1
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = IPWEstimator(n_simulations=50, alpha=0.01, random_state=123)
@@ -130,10 +131,11 @@ class TestIPWEstimator:
         assert hasattr(result, "bias_p_value")
 
 
+@pytest.mark.tier3
 class TestAugmentedIPW:
     """Test suite for AugmentedIPW estimator."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = AugmentedIPW(n_simulations=10, alpha=0.05, random_state=42)
@@ -141,7 +143,7 @@ class TestAugmentedIPW:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
-    @pytest.mark.slow
+    @pytest.mark.tier1
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = AugmentedIPW(n_simulations=50, alpha=0.01, random_state=123)
@@ -265,6 +267,7 @@ class TestAugmentedIPW:
         assert hasattr(result, "bias_p_value")
 
 
+@pytest.mark.tier3
 class TestIPWComparison:
     """Test suite for comparing IPW and AugmentedIPW."""
 

@@ -103,6 +103,7 @@ def panel_data():
 # ============================================================================
 
 
+@pytest.mark.tier1
 class TestHelperFunctions:
     """Tests for helper functions."""
 
@@ -183,6 +184,7 @@ class TestHelperFunctions:
 # ============================================================================
 
 
+@pytest.mark.tier1
 class TestDynamicDMLResult:
     """Tests for DynamicDMLResult dataclass."""
 
@@ -241,6 +243,7 @@ class TestDynamicDMLResult:
 # ============================================================================
 
 
+@pytest.mark.tier1
 class TestDynamicDMLInit:
     """Tests for DynamicDML initialization."""
 
@@ -278,6 +281,7 @@ class TestDynamicDMLInit:
         assert model.random_state == 123
 
 
+@pytest.mark.tier2
 class TestDynamicDMLFit:
     """Tests for DynamicDML fit method."""
 
@@ -404,6 +408,7 @@ class TestDynamicDMLFit:
             model.fit(Y, T, X)
 
 
+@pytest.mark.tier2
 class TestDynamicDMLEffect:
     """Tests for DynamicDML effect methods."""
 
@@ -475,6 +480,7 @@ class TestDynamicDMLEffect:
 # ============================================================================
 
 
+@pytest.mark.tier2
 class TestRollingWindowDML:
     """Tests for RollingWindowDML."""
 
@@ -490,7 +496,7 @@ class TestRollingWindowDML:
         assert model.step_size == 5
         assert not model._is_fitted
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_fit_returns_self(self, autocorrelated_time_series):
         """Test fit returns self."""
         Y, T, X, time, _ = autocorrelated_time_series
@@ -506,14 +512,14 @@ class TestRollingWindowDML:
         assert result is model
         assert model._is_fitted
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_get_effects_before_fit(self):
         """Test get_effects raises error before fit."""
         model = RollingWindowDML()
         with pytest.raises(ValueError, match="fitted first"):
             model.get_effects()
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_get_effects_after_fit(self, autocorrelated_time_series):
         """Test get_effects returns arrays after fit."""
         Y, T, X, time, _ = autocorrelated_time_series
@@ -538,6 +544,7 @@ class TestRollingWindowDML:
 # ============================================================================
 
 
+@pytest.mark.tier2
 class TestPanelDML:
     """Tests for PanelDML."""
 
@@ -551,7 +558,7 @@ class TestPanelDML:
         assert model.fixed_effects == "twoway"
         assert model.cluster_se is True
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_fit_individual_fe(self, panel_data):
         """Test fit with individual fixed effects."""
         Y, T, X, individual_id, time_id, true_theta = panel_data
@@ -568,7 +575,7 @@ class TestPanelDML:
         # With proper FE, should get close to true effect
         assert abs(result.theta - true_theta) < 1.5
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_fit_time_fe(self, panel_data):
         """Test fit with time fixed effects."""
         Y, T, X, individual_id, time_id, _ = panel_data
@@ -582,7 +589,7 @@ class TestPanelDML:
 
         assert isinstance(result, DynamicDMLResult)
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_fit_twoway_fe(self, panel_data):
         """Test fit with two-way fixed effects."""
         Y, T, X, individual_id, time_id, _ = panel_data
@@ -596,7 +603,7 @@ class TestPanelDML:
 
         assert isinstance(result, DynamicDMLResult)
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_cluster_se(self, panel_data):
         """Test cluster-robust standard errors."""
         Y, T, X, individual_id, time_id, _ = panel_data
@@ -630,6 +637,7 @@ class TestPanelDML:
 # ============================================================================
 
 
+@pytest.mark.tier2
 class TestDynamicDMLIntegration:
     """Integration tests for DynamicDML with other components."""
 
@@ -665,6 +673,7 @@ class TestDynamicDMLIntegration:
         assert 0 <= result.outcome_r2_cv <= 1
         assert 0 <= result.treatment_r2_cv <= 1
 
+    @pytest.mark.tier3
     def test_confidence_interval_coverage(self):
         """Test that confidence intervals provide reasonable coverage.
 
@@ -716,6 +725,7 @@ class TestDynamicDMLIntegration:
 # ============================================================================
 
 
+@pytest.mark.tier2
 class TestEdgeCases:
     """Tests for edge cases and boundary conditions."""
 
@@ -799,7 +809,7 @@ class TestEdgeCases:
 # ============================================================================
 
 
-@pytest.mark.slow
+@pytest.mark.tier3
 class TestBenchmarks:
     """Benchmark tests for larger datasets."""
 

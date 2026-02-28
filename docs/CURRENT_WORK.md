@@ -1,6 +1,6 @@
 # Current Work
 
-**Last Updated**: 2026-02-27
+**Last Updated**: 2026-02-28
 
 ---
 
@@ -10,7 +10,7 @@
 
 Current state (verified 2026-01-30):
 - ✅ Chapters 1-10 + Appendix: Complete (180 pages, 9,548 LaTeX lines)
-- ✅ Tests: 763 total
+- ✅ Tests: 763 total (4-tier system: 285/316/161/40 by tier)
 - ✅ Zero LaTeX errors
 - ✅ Time series DML: 5,370+ lines implemented
 - ✅ Production module: 2,453 lines (model registry, monitoring, retraining)
@@ -58,16 +58,18 @@ Current state (verified 2026-01-30):
 ## Context for Return
 
 - **Build**: `lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex`
-- **Tests**: `pytest test/ -v` (652+ tests)
+- **Tests**: `pytest -m tier1` (285, ~12s), `pytest -m "tier1 or tier2"` (601, ~2min)
 - **Install**: `pip install -e .` (required for imports)
 - **Master plan**: `docs/MASTER_ROADMAP_2025-11-21.md`
 - **Hardware**: 64-core Threadripper, n_jobs=48
 
 ---
 
+## Recent Completions
+
+- **2026-02-28**: Test infrastructure overhaul — 4-tier system (tier1-tier4), all 727 tiers 1-3 passing, zero unmarked tests, BootstrapConfig factories, pytest-timeout enforcement, cached 401(k) fixture
+
 ## Known Issues
 
-1. **Stale logs/results**: `results/` and `logs/` may be outdated
-2. **Coverage**: Low overall (acceptable for validation-heavy codebase)
-3. **Page count gap**: 180 pages vs 300-350 target — needs content expansion
-4. **~170K uncommitted work**: Chapters 7-10, appendix, production module, insurance DGP, stationarity tests — all on `restart-dml` branch, awaiting consolidation commit
+1. **Coverage**: Low overall (acceptable for validation-heavy codebase)
+2. **Page count gap**: 180 pages vs 300-350 target — needs content expansion

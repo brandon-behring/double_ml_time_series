@@ -21,6 +21,8 @@ from src.data.fred_loader import (
     create_synthetic_fred_data,
 )
 
+pytestmark = pytest.mark.tier2
+
 
 # ============================================================================
 # Synthetic Data Tests (No API Required)

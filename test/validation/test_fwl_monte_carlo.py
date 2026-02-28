@@ -20,12 +20,14 @@ from src.dml.fwl import fwl_estimate, fwl_vs_ols_comparison
 from src.dml.robinson import robinson_estimator, compare_fwl_vs_robinson
 
 
+@pytest.mark.tier2
 class TestFWLBasic:
     """Basic functionality tests for FWL estimator."""
 
     def test_fwl_imports(self):
         """Verify FWL module imports correctly."""
         from src.dml import fwl_estimate, fwl_residualize, fwl_vs_ols_comparison
+
         assert callable(fwl_estimate)
         assert callable(fwl_residualize)
         assert callable(fwl_vs_ols_comparison)
@@ -40,10 +42,10 @@ class TestFWLBasic:
 
         result = fwl_estimate(Y, T, X)
 
-        assert hasattr(result, 'theta')
-        assert hasattr(result, 'se')
-        assert hasattr(result, 't_stat')
-        assert hasattr(result, 'p_value')
+        assert hasattr(result, "theta")
+        assert hasattr(result, "se")
+        assert hasattr(result, "t_stat")
+        assert hasattr(result, "p_value")
         assert abs(result.theta - 2.0) < 0.3  # Within 0.3 of true effect
 
     def test_fwl_equals_ols(self):
@@ -62,6 +64,7 @@ class TestFWLBasic:
         )
 
 
+@pytest.mark.tier3
 class TestFWLMonteCarlo:
     """Monte Carlo validation for FWL estimator."""
 
@@ -112,9 +115,7 @@ class TestFWLMonteCarlo:
 
         # Stronger test: bias should not be statistically significant
         t_stat = bias / bias_se
-        assert abs(t_stat) < 2.5, (
-            f"FWL bias statistically significant: t={t_stat:.2f}"
-        )
+        assert abs(t_stat) < 2.5, f"FWL bias statistically significant: t={t_stat:.2f}"
 
     def test_fwl_coverage_linear_confounding(self, monte_carlo_results):
         """FWL achieves nominal coverage under homoskedasticity."""
@@ -122,17 +123,17 @@ class TestFWLMonteCarlo:
         coverage_rate = np.mean(coverages)
 
         # Coverage should be 93-97% (allowing for simulation variance)
-        assert 0.90 <= coverage_rate <= 0.98, (
-            f"FWL coverage = {coverage_rate:.2%}, expected 93-97%"
-        )
+        assert 0.90 <= coverage_rate <= 0.98, f"FWL coverage = {coverage_rate:.2%}, expected 93-97%"
 
 
+@pytest.mark.tier2
 class TestRobinsonBasic:
     """Basic functionality tests for Robinson estimator."""
 
     def test_robinson_imports(self):
         """Verify Robinson module imports correctly."""
         from src.dml import robinson_estimator
+
         assert callable(robinson_estimator)
 
     def test_robinson_single_run(self):
@@ -145,12 +146,13 @@ class TestRobinsonBasic:
 
         result = robinson_estimator(Y, T, X, model="random_forest")
 
-        assert hasattr(result, 'theta')
-        assert hasattr(result, 'se')
-        assert hasattr(result, 'outcome_r2')
+        assert hasattr(result, "theta")
+        assert hasattr(result, "se")
+        assert hasattr(result, "outcome_r2")
         assert abs(result.theta - 2.0) < 0.3
 
 
+@pytest.mark.tier3
 class TestRobinsonVsFWL:
     """Tests comparing Robinson vs FWL on different DGPs."""
 
@@ -199,6 +201,7 @@ class TestRobinsonVsFWL:
         )
 
 
+@pytest.mark.tier1
 class TestEdgeCases:
     """Test edge cases and error handling."""
 

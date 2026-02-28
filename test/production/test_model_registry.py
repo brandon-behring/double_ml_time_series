@@ -18,6 +18,8 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 
 from src.production.model_registry import DMLModelVersion, DMLModelRegistry
 
+pytestmark = pytest.mark.tier2
+
 
 class TestDMLModelVersion:
     """Tests for DMLModelVersion dataclass."""

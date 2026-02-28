@@ -21,7 +21,7 @@ from src.validation.parallel import (
 )
 
 
-@pytest.mark.unit
+@pytest.mark.tier1
 class TestOptimalJobCalculation:
     """Test automatic n_jobs optimization based on workload."""
 
@@ -54,7 +54,7 @@ class TestOptimalJobCalculation:
         assert n_jobs <= 8
 
 
-@pytest.mark.unit
+@pytest.mark.tier1
 class TestParallelMap:
     """Test basic parallel_map functionality."""
 
@@ -116,10 +116,10 @@ class TestParallelMap:
         assert result == [1, 4, 9]
 
 
+@pytest.mark.tier2
 class TestParallelMonteCarlo:
     """Test Monte Carlo simulation utilities."""
 
-    @pytest.mark.slow
     def test_monte_carlo_runs_correct_count(self):
         """Should execute exact number of simulations."""
 
@@ -129,7 +129,6 @@ class TestParallelMonteCarlo:
         results = parallel_monte_carlo(sim, n_simulations=100, n_jobs=4, show_progress=False)
         assert len(results) == 100
 
-    @pytest.mark.slow
     def test_monte_carlo_reproducibility_with_seed(self):
         """Same seed should produce identical results."""
 
@@ -146,7 +145,6 @@ class TestParallelMonteCarlo:
 
         assert np.allclose(results1, results2)
 
-    @pytest.mark.slow
     def test_monte_carlo_different_seeds_differ(self):
         """Different seeds should produce different results."""
 
@@ -163,7 +161,6 @@ class TestParallelMonteCarlo:
 
         assert not np.allclose(results1, results2)
 
-    @pytest.mark.slow
     def test_monte_carlo_passes_kwargs(self):
         """Should pass additional kwargs to simulation function."""
 
@@ -183,7 +180,6 @@ class TestParallelMonteCarlo:
         # Check mean is approximately 5.0
         assert abs(np.mean(results) - 5.0) < 0.5
 
-    @pytest.mark.slow
     def test_monte_carlo_statistical_properties(self):
         """Monte Carlo should produce correct statistical properties."""
 
@@ -206,6 +202,7 @@ class TestParallelMonteCarlo:
         assert abs(np.std(results) - 1.0) < 0.1
 
 
+@pytest.mark.tier1
 class TestParallelizeDecorator:
     """Test @parallelize decorator."""
 
@@ -251,6 +248,7 @@ class TestParallelizeDecorator:
         assert "My docstring" in (my_function.__doc__ or "")
 
 
+@pytest.mark.tier1
 class TestParallelExecutor:
     """Test ParallelExecutor context manager."""
 
@@ -288,7 +286,7 @@ class TestParallelExecutor:
         assert results2 == [2, 4, 6]
 
 
-@pytest.mark.unit
+@pytest.mark.tier1
 class TestChunkWorkload:
     """Test workload chunking utilities."""
 
@@ -356,10 +354,10 @@ class TestChunkWorkload:
             assert chunks[i][1] == chunks[i + 1][0]
 
 
+@pytest.mark.tier3
 class TestPerformance:
     """Performance and integration tests."""
 
-    @pytest.mark.slow
     def test_parallel_speedup(self):
         """Parallel execution correctness (speedup depends on overhead)."""
 
@@ -381,7 +379,6 @@ class TestPerformance:
         # Verify results match (speedup is hardware/load dependent)
         assert par_results == seq_results
 
-    @pytest.mark.slow
     def test_large_workload_integration(self):
         """Integration test with realistic workload."""
 

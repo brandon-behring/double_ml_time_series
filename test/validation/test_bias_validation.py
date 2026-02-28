@@ -25,10 +25,11 @@ from src.validation.validation_result import ValidationResult
 # =============================================================================
 
 
+@pytest.mark.tier1
 class TestBiasValidationBasicFunctionality:
     """Test basic functionality of BiasValidation validation method."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_instantiation(self):
         """Test that BiasValidation can be instantiated with default parameters."""
         validator = BiasValidation()
@@ -36,7 +37,7 @@ class TestBiasValidationBasicFunctionality:
         assert validator.alpha == 0.05
         assert validator.random_state is None
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         validator = BiasValidation(n_simulations=500, alpha=0.01, random_state=42)
@@ -44,6 +45,7 @@ class TestBiasValidationBasicFunctionality:
         assert validator.alpha == 0.01
         assert validator.random_state == 42
 
+    @pytest.mark.tier3
     def test_validate_returns_validation_result(self):
         """Test that validate() returns ValidationResult."""
         validator = BiasValidation(n_simulations=10, random_state=42)
@@ -62,10 +64,11 @@ class TestBiasValidationBasicFunctionality:
 # =============================================================================
 
 
+@pytest.mark.tier3
 class TestBiasValidationValidationLogic:
     """Test validation logic and correctness."""
 
-    @pytest.mark.slow
+    @pytest.mark.tier4
     def test_detects_no_bias_with_correct_estimator(self):
         """Test that validator detects no bias when estimator is unbiased."""
         # DGP with low confounding - DML should be nearly unbiased
@@ -77,7 +80,7 @@ class TestBiasValidationValidationLogic:
         assert abs(result.bias) < 0.15, f"Expected low bias, got {result.bias}"
         assert result.status in ["PASS", "WARNING"], f"Expected PASS/WARNING, got {result.status}"
 
-    @pytest.mark.slow
+    @pytest.mark.tier4
     def test_pass_status_with_good_estimator(self):
         """Test PASS status with properly specified estimator."""
         # Simple DGP with moderate sample size - should get PASS
@@ -95,6 +98,7 @@ class TestBiasValidationValidationLogic:
 # =============================================================================
 
 
+@pytest.mark.tier3
 class TestBiasValidationReproducibility:
     """Test reproducibility with random seeds."""
 
@@ -145,6 +149,7 @@ class TestBiasValidationReproducibility:
 # =============================================================================
 
 
+@pytest.mark.tier3
 class TestBiasValidationEdgeCases:
     """Test edge cases and boundary conditions."""
 
@@ -161,7 +166,7 @@ class TestBiasValidationEdgeCases:
         assert np.isfinite(result.bias)
         assert np.isfinite(result.mse)
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_large_sample_size(self):
         """Test validation with large sample size (n=10000)."""
         dgp = DGPGenerator(n=5000, p=5, true_effect=2.0, confounding_strength=0.5, random_state=42)
@@ -234,10 +239,11 @@ class TestBiasValidationEdgeCases:
 # =============================================================================
 
 
+@pytest.mark.tier1
 class TestBiasValidationParameterValidation:
     """Test parameter validation and error handling."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_negative_n_simulations_raises_error(self):
         """Test that negative n_simulations raises ValueError."""
         # TODO: Implement
@@ -245,13 +251,13 @@ class TestBiasValidationParameterValidation:
         #     BiasValidationValidation(n_simulations=-100)
         pass
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_zero_n_simulations_raises_error(self):
         """Test that zero n_simulations raises ValueError."""
         # TODO: Implement
         pass
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_invalid_alpha_raises_error(self):
         """Test that invalid alpha (not in [0,1]) raises ValueError."""
         # TODO: Implement
@@ -266,6 +272,7 @@ class TestBiasValidationParameterValidation:
 # =============================================================================
 
 
+@pytest.mark.tier3
 class TestBiasValidationStatisticalProperties:
     """Test statistical properties of validation method."""
 
@@ -301,7 +308,7 @@ class TestBiasValidationStatisticalProperties:
         assert np.isfinite(result.ci_lower), "CI lower must be finite"
         assert np.isfinite(result.ci_upper), "CI upper must be finite"
 
-    @pytest.mark.slow
+    @pytest.mark.tier4
     def test_coverage_approximately_nominal(self):
         """Test that coverage rate is approximately at nominal level (95%).
 
@@ -350,6 +357,7 @@ class TestBiasValidationStatisticalProperties:
 # =============================================================================
 
 
+@pytest.mark.tier3
 class TestBiasValidationIntegration:
     """Integration tests with other components."""
 
@@ -402,6 +410,7 @@ class TestBiasValidationIntegration:
 # =============================================================================
 
 
+@pytest.mark.tier3
 class TestBiasValidationMultipleTestingCorrection:
     """Test multiple testing correction functionality (critical fix 2025-11-14)."""
 
@@ -424,7 +433,7 @@ class TestBiasValidationMultipleTestingCorrection:
         assert 0 <= result.bias_p_value <= 1
         assert 0 <= result.coverage_p_value <= 1
 
-    @pytest.mark.slow
+    @pytest.mark.tier4
     def test_bonferroni_reduces_false_positives(self):
         """Test that Bonferroni correction reduces false positive rate."""
         # With 2 tests at α=0.05, uncorrected familywise error rate ≈ 9.75%
@@ -610,9 +619,9 @@ class TestBiasValidationMultipleTestingCorrection:
 # =============================================================================
 
 
-@pytest.mark.slow
+@pytest.mark.tier4
 class TestBiasValidationPerformance:
-    """Performance and timing tests (marked as slow)."""
+    """Performance and timing tests."""
 
     def test_completes_in_reasonable_time(self):
         """Test that validation completes within reasonable time."""

@@ -27,7 +27,7 @@ from src.dml.cross_fitting import (
 class TestTimeSeriesCrossValidatorBasic:
     """Test basic TimeSeriesCrossValidator functionality."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_default(self) -> None:
         """Test default initialization."""
         cv = TimeSeriesCrossValidator()
@@ -37,7 +37,7 @@ class TestTimeSeriesCrossValidatorBasic:
         assert cv.test_size is None
         assert cv.expanding is True
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_custom(self) -> None:
         """Test initialization with custom parameters."""
         cv = TimeSeriesCrossValidator(
@@ -53,32 +53,32 @@ class TestTimeSeriesCrossValidatorBasic:
         assert cv.test_size == 50
         assert cv.expanding is False
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_invalid_n_splits(self) -> None:
         """Test that invalid n_splits raises ValueError."""
         with pytest.raises(ValueError, match="n_splits must be >= 1"):
             TimeSeriesCrossValidator(n_splits=0)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_invalid_gap(self) -> None:
         """Test that negative gap raises ValueError."""
         with pytest.raises(ValueError, match="gap must be >= 0"):
             TimeSeriesCrossValidator(gap=-1)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_invalid_purge(self) -> None:
         """Test that negative purge_length raises ValueError."""
         with pytest.raises(ValueError, match="purge_length must be >= 0"):
             TimeSeriesCrossValidator(purge_length=-1)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_n_splits(self) -> None:
         """Test get_n_splits returns correct value."""
         cv = TimeSeriesCrossValidator(n_splits=7)
         assert cv.get_n_splits() == 7
         assert cv.get_n_splits(np.zeros(100)) == 7  # Args ignored
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_basic_split(self) -> None:
         """Test basic split produces correct number of folds."""
         cv = TimeSeriesCrossValidator(n_splits=3)
@@ -97,7 +97,7 @@ class TestTimeSeriesCrossValidatorBasic:
 class TestTimeSeriesCrossValidatorTemporalOrder:
     """Test temporal ordering is respected."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_train_before_test(self) -> None:
         """Test that all train indices are before all test indices."""
         cv = TimeSeriesCrossValidator(n_splits=5)
@@ -108,7 +108,7 @@ class TestTimeSeriesCrossValidatorTemporalOrder:
                 train_idx.max() < test_idx.min()
             ), f"Train max ({train_idx.max()}) >= Test min ({test_idx.min()})"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_no_overlap(self) -> None:
         """Test train and test indices don't overlap."""
         cv = TimeSeriesCrossValidator(n_splits=5, gap=0)
@@ -118,7 +118,7 @@ class TestTimeSeriesCrossValidatorTemporalOrder:
             overlap = np.intersect1d(train_idx, test_idx)
             assert len(overlap) == 0, f"Found overlapping indices: {overlap}"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_expanding_window(self) -> None:
         """Test expanding window grows with each fold."""
         cv = TimeSeriesCrossValidator(n_splits=3, expanding=True)
@@ -135,7 +135,7 @@ class TestTimeSeriesCrossValidatorTemporalOrder:
                 f"fold {i-1} ({train_sizes[i-1]})"
             )
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_test_sets_sequential(self) -> None:
         """Test that test sets are sequential (later folds test later data)."""
         cv = TimeSeriesCrossValidator(n_splits=4)
@@ -155,7 +155,7 @@ class TestTimeSeriesCrossValidatorTemporalOrder:
 class TestTimeSeriesCrossValidatorGapAndPurge:
     """Test gap and purge functionality."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_gap_creates_separation(self) -> None:
         """Test that gap creates separation between train and test."""
         gap = 10
@@ -166,7 +166,7 @@ class TestTimeSeriesCrossValidatorGapAndPurge:
             actual_gap = test_idx[0] - train_idx[-1] - 1
             assert actual_gap >= gap, f"Actual gap ({actual_gap}) less than requested ({gap})"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_purge_removes_from_train(self) -> None:
         """Test that purge removes observations from train end."""
         purge_length = 5
@@ -180,7 +180,7 @@ class TestTimeSeriesCrossValidatorGapAndPurge:
                 size_diff == purge_length
             ), f"Purge removed {size_diff} samples, expected {purge_length}"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_combined_gap_and_purge(self) -> None:
         """Test gap and purge work together."""
         gap = 10
@@ -199,7 +199,7 @@ class TestTimeSeriesCrossValidatorGapAndPurge:
 class TestTimeSeriesCrossValidatorSlidingWindow:
     """Test sliding window functionality."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_sliding_window_constant_train_growth(self) -> None:
         """Test sliding window doesn't grow as fast as expanding."""
         cv_expanding = TimeSeriesCrossValidator(n_splits=3, expanding=True)
@@ -220,7 +220,7 @@ class TestTimeSeriesCrossValidatorSlidingWindow:
 class TestTimeSeriesCrossValidatorComparison:
     """Compare with sklearn's TimeSeriesSplit."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_matches_sklearn_basic(self) -> None:
         """Test basic behavior matches sklearn TimeSeriesSplit."""
         n_splits = 5
@@ -243,7 +243,7 @@ class TestTimeSeriesCrossValidatorComparison:
 class TestTimeSeriesCrossValidatorEdgeCases:
     """Test edge cases and error handling."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_small_dataset(self) -> None:
         """Test with small dataset."""
         cv = TimeSeriesCrossValidator(n_splits=2)
@@ -252,7 +252,7 @@ class TestTimeSeriesCrossValidatorEdgeCases:
         folds = list(cv.split(X))
         assert len(folds) == 2
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_dataset_too_small_raises(self) -> None:
         """Test that too-small dataset raises ValueError."""
         cv = TimeSeriesCrossValidator(n_splits=5, gap=50)
@@ -261,7 +261,7 @@ class TestTimeSeriesCrossValidatorEdgeCases:
         with pytest.raises(ValueError, match="Not enough samples"):
             list(cv.split(X))
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_1d_array(self) -> None:
         """Test with 1D array input."""
         cv = TimeSeriesCrossValidator(n_splits=3)
@@ -270,7 +270,7 @@ class TestTimeSeriesCrossValidatorEdgeCases:
         folds = list(cv.split(X))
         assert len(folds) == 3
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_custom_test_size(self) -> None:
         """Test with custom test_size."""
         test_size = 20
@@ -280,7 +280,7 @@ class TestTimeSeriesCrossValidatorEdgeCases:
         for _, test_idx in cv.split(X):
             assert len(test_idx) == test_size
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_fold_info(self) -> None:
         """Test get_fold_info returns correct CVFold objects."""
         cv = TimeSeriesCrossValidator(n_splits=3)
@@ -300,7 +300,7 @@ class TestTimeSeriesCrossValidatorEdgeCases:
 class TestBlockedTimeSeriesCV:
     """Test BlockedTimeSeriesCV functionality."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_default(self) -> None:
         """Test default initialization."""
         cv = BlockedTimeSeriesCV()
@@ -308,7 +308,7 @@ class TestBlockedTimeSeriesCV:
         assert cv.block_size is None
         assert cv.gap_blocks == 1
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_invalid(self) -> None:
         """Test invalid parameters raise ValueError."""
         with pytest.raises(ValueError):
@@ -316,7 +316,7 @@ class TestBlockedTimeSeriesCV:
         with pytest.raises(ValueError):
             BlockedTimeSeriesCV(gap_blocks=-1)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_basic_split(self) -> None:
         """Test basic blocked split."""
         cv = BlockedTimeSeriesCV(n_splits=3, block_size=20, gap_blocks=1)
@@ -331,7 +331,7 @@ class TestBlockedTimeSeriesCV:
             # Train indices should be multiples of block_size
             assert len(train_idx) % 20 == 0 or train_idx[-1] == len(train_idx) - 1
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_blocks_not_split(self) -> None:
         """Test that individual blocks are not split between train/test."""
         block_size = 10
@@ -349,7 +349,7 @@ class TestBlockedTimeSeriesCV:
             if len(test_idx) > 0:
                 assert test_idx[0] % block_size == 0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_gap_blocks(self) -> None:
         """Test gap_blocks creates block-level separation."""
         block_size = 10
@@ -370,7 +370,7 @@ class TestBlockedTimeSeriesCV:
 class TestPurgedGroupTimeSeriesCV:
     """Test PurgedGroupTimeSeriesCV functionality."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_default(self) -> None:
         """Test default initialization."""
         cv = PurgedGroupTimeSeriesCV()
@@ -378,7 +378,7 @@ class TestPurgedGroupTimeSeriesCV:
         assert cv.embargo_pct == 0.01
         assert cv.purge_pct == 0.0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_invalid(self) -> None:
         """Test invalid parameters raise ValueError."""
         with pytest.raises(ValueError):
@@ -390,7 +390,7 @@ class TestPurgedGroupTimeSeriesCV:
         with pytest.raises(ValueError):
             PurgedGroupTimeSeriesCV(purge_pct=-0.1)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_basic_split(self) -> None:
         """Test basic purged split."""
         cv = PurgedGroupTimeSeriesCV(n_splits=3, embargo_pct=0.05, purge_pct=0.02)
@@ -403,7 +403,7 @@ class TestPurgedGroupTimeSeriesCV:
             assert len(train_idx) > 0
             assert len(test_idx) > 0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_embargo_excludes_post_test(self) -> None:
         """Test embargo excludes samples after test set."""
         embargo_pct = 0.1
@@ -419,7 +419,7 @@ class TestPurgedGroupTimeSeriesCV:
             for idx in embargo_range:
                 assert idx not in train_idx, f"Index {idx} in embargo range found in train"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_purge_excludes_pre_test(self) -> None:
         """Test purge excludes samples before test set."""
         purge_pct = 0.1
@@ -439,48 +439,48 @@ class TestPurgedGroupTimeSeriesCV:
 class TestCreateTimeSeriesCV:
     """Test factory function."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_expanding(self) -> None:
         """Test creating expanding window CV."""
         cv = create_time_series_cv("expanding", n_splits=3)
         assert isinstance(cv, TimeSeriesCrossValidator)
         assert cv.expanding is True
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_time_series_split(self) -> None:
         """Test 'time_series_split' alias."""
         cv = create_time_series_cv("time_series_split", n_splits=3)
         assert isinstance(cv, TimeSeriesCrossValidator)
         assert cv.expanding is True
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_sliding(self) -> None:
         """Test creating sliding window CV."""
         cv = create_time_series_cv("sliding", n_splits=3)
         assert isinstance(cv, TimeSeriesCrossValidator)
         assert cv.expanding is False
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_blocked(self) -> None:
         """Test creating blocked CV."""
         cv = create_time_series_cv("blocked", n_splits=3, block_size=10)
         assert isinstance(cv, BlockedTimeSeriesCV)
         assert cv.block_size == 10
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_purged(self) -> None:
         """Test creating purged CV."""
         cv = create_time_series_cv("purged", n_splits=3, embargo_pct=0.05)
         assert isinstance(cv, PurgedGroupTimeSeriesCV)
         assert cv.embargo_pct == 0.05
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_invalid_strategy(self) -> None:
         """Test invalid strategy raises ValueError."""
         with pytest.raises(ValueError, match="Unknown strategy"):
             create_time_series_cv("invalid_strategy")
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_kwargs_passed(self) -> None:
         """Test kwargs are passed to CV class."""
         cv = create_time_series_cv("expanding", n_splits=5, gap=10, purge_length=5)
@@ -491,7 +491,7 @@ class TestCreateTimeSeriesCV:
 class TestIntegration:
     """Integration tests with realistic scenarios."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_with_actual_model_training(self) -> None:
         """Test CV can be used for actual model training."""
         from sklearn.linear_model import Ridge
@@ -514,7 +514,7 @@ class TestIntegration:
         # All scores should be reasonable
         assert all(s > 0.5 for s in scores), f"Scores too low: {scores}"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_sklearn_cross_val_score_compatible(self) -> None:
         """Test CV is compatible with sklearn cross_val_score."""
         from sklearn.model_selection import cross_val_score

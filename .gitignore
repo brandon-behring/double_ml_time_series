@@ -75,12 +75,16 @@ output/
 _minted/
 _minted-*/
 
-# PDF (keep main.pdf for sharing)
+# PDF
 *.pdf
-!main.pdf
 
 # But keep generated PDFs in specific output directory for milestones
 !docs/output/*.pdf
+
+# Test results and logs
+test_results*.txt
+results/
+logs/
 
 # Sensitive
 .env

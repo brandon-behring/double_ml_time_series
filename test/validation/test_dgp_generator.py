@@ -14,7 +14,7 @@ from dataclasses import asdict
 from src.validation.dgp_generator import DGPGenerator, DGPResult
 
 # Mark all tests in this module as unit tests
-pytestmark = pytest.mark.unit
+pytestmark = pytest.mark.tier1
 
 
 class TestDGPResult:

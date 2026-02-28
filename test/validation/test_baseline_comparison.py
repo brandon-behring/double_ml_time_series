@@ -19,7 +19,7 @@ from src.validation.baseline_comparison import BaselineComparison
 class TestBaselineComparisonBasic:
     """Test basic functionality of BaselineComparison."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_instantiation_without_dml(self):
         """Test instantiation without DML method."""
         comp = BaselineComparison(n_simulations=10, include_dml=False)
@@ -27,7 +27,7 @@ class TestBaselineComparisonBasic:
         assert not comp.include_dml
         assert len(comp.methods) == 4  # OLS + IPW methods only
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_instantiation_with_dml(self):
         """Test instantiation with DML method included."""
         comp = BaselineComparison(n_simulations=10, include_dml=True)
@@ -35,6 +35,7 @@ class TestBaselineComparisonBasic:
         assert comp.include_dml
         assert len(comp.methods) == 5  # OLS + IPW + DML
 
+    @pytest.mark.tier2
     def test_compare_returns_all_methods(self):
         """Test that compare() returns results for all configured methods."""
         comp = BaselineComparison(n_simulations=5, include_dml=False, random_state=42)
@@ -50,6 +51,7 @@ class TestBaselineComparisonBasic:
         assert "AugmentedIPW" in results
 
 
+@pytest.mark.tier2
 class TestBaselineComparisonTables:
     """Test table generation functionality."""
 
@@ -101,6 +103,7 @@ class TestBaselineComparisonTables:
         assert pd.api.types.is_numeric_dtype(table["MSE"])
 
 
+@pytest.mark.tier2
 class TestBaselineComparisonAcrossDGPs:
     """Test comparison across multiple DGP configurations."""
 
@@ -145,6 +148,7 @@ class TestBaselineComparisonAcrossDGPs:
         assert "confounding_strength=1.0" in config_str
 
 
+@pytest.mark.tier2
 class TestBaselineComparisonSummaryStats:
     """Test summary statistics generation."""
 
@@ -210,6 +214,7 @@ class TestBaselineComparisonSummaryStats:
         assert 0 <= summary["mean_coverage"] <= 1
 
 
+@pytest.mark.tier2
 class TestBaselineComparisonWithDML:
     """Test comparison framework with DML included."""
 
@@ -235,6 +240,7 @@ class TestBaselineComparisonWithDML:
         assert "DML" in table["Method"].values
 
 
+@pytest.mark.tier2
 class TestBaselineComparisonReproducibility:
     """Test reproducibility of comparison results."""
 

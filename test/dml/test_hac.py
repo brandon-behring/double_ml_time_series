@@ -32,14 +32,14 @@ from src.dml.hac import (
 class TestKernelFunctions:
     """Test kernel weight functions."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_bartlett_at_zero(self) -> None:
         """Bartlett kernel should be 1 at lag 0."""
         assert bartlett_kernel(0, 10) == 1.0
         assert bartlett_kernel(0, 0) == 1.0
         assert bartlett_kernel(0, 100) == 1.0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_bartlett_decreasing(self) -> None:
         """Bartlett kernel should decrease with lag."""
         bandwidth = 10
@@ -52,26 +52,26 @@ class TestKernelFunctions:
         # Should be 0 beyond bandwidth
         assert weights[bandwidth + 1] == 0.0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_bartlett_symmetric(self) -> None:
         """Bartlett kernel should be symmetric."""
         bandwidth = 10
         for j in range(-15, 16):
             assert bartlett_kernel(j, bandwidth) == bartlett_kernel(-j, bandwidth)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_parzen_at_zero(self) -> None:
         """Parzen kernel should be 1 at lag 0."""
         assert parzen_kernel(0, 10) == 1.0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_parzen_non_negative(self) -> None:
         """Parzen kernel should be non-negative."""
         bandwidth = 10
         for j in range(20):
             assert parzen_kernel(j, bandwidth) >= 0.0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_parzen_decreasing(self) -> None:
         """Parzen kernel should generally decrease with lag."""
         bandwidth = 10
@@ -79,19 +79,19 @@ class TestKernelFunctions:
         for j in range(bandwidth // 2):
             assert parzen_kernel(j, bandwidth) >= parzen_kernel(j + 1, bandwidth)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_quadratic_spectral_at_zero(self) -> None:
         """QS kernel should be 1 at lag 0."""
         assert quadratic_spectral_kernel(0, 10) == 1.0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_quadratic_spectral_decays(self) -> None:
         """QS kernel should decay to near zero."""
         bandwidth = 10
         # At large lags should be small
         assert abs(quadratic_spectral_kernel(100, bandwidth)) < 0.1
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_kernel_function(self) -> None:
         """Test kernel function lookup."""
         bartlett = get_kernel_function("bartlett")
@@ -102,7 +102,7 @@ class TestKernelFunctions:
         assert parzen(0, 10) == 1.0
         assert qs(0, 10) == 1.0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_kernel_function_invalid(self) -> None:
         """Test invalid kernel raises error."""
         with pytest.raises(ValueError, match="Unknown kernel"):
@@ -112,7 +112,7 @@ class TestKernelFunctions:
 class TestOptimalBandwidth:
     """Test automatic bandwidth selection."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_newey_west_rule(self) -> None:
         """Test Newey-West T^(1/3) rule."""
         residuals = np.random.randn(100)
@@ -121,7 +121,7 @@ class TestOptimalBandwidth:
         # Should be approximately 100^(1/3) ≈ 4.6 -> 4
         assert 3 <= bw <= 6
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_bandwidth_scales_with_n(self) -> None:
         """Bandwidth should increase with sample size."""
         bw_small = optimal_bandwidth(np.random.randn(50), method="newey_west")
@@ -129,7 +129,7 @@ class TestOptimalBandwidth:
 
         assert bw_large > bw_small
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_auto_uses_newey_west(self) -> None:
         """'auto' should use newey_west method."""
         np.random.seed(42)
@@ -139,7 +139,7 @@ class TestOptimalBandwidth:
 
         assert bw_auto == bw_nw
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_andrews_method(self) -> None:
         """Test Andrews data-driven bandwidth."""
         np.random.seed(42)
@@ -156,7 +156,7 @@ class TestOptimalBandwidth:
         # Should be reasonable
         assert bw < n // 2
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_small_sample(self) -> None:
         """Test bandwidth with small sample."""
         residuals = np.random.randn(5)
@@ -165,7 +165,7 @@ class TestOptimalBandwidth:
         # Should be small but non-negative
         assert 0 <= bw <= 2
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_invalid_method(self) -> None:
         """Test invalid method raises error."""
         with pytest.raises(ValueError, match="Unknown bandwidth method"):
@@ -175,7 +175,7 @@ class TestOptimalBandwidth:
 class TestNeweyWestSE:
     """Test Newey-West standard error computation."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_basic_se(self) -> None:
         """Test basic SE computation."""
         np.random.seed(42)
@@ -185,7 +185,7 @@ class TestNeweyWestSE:
         assert se > 0
         assert np.isfinite(se)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_se_with_autocorrelation(self) -> None:
         """HAC SE should be larger with positive autocorrelation."""
         np.random.seed(42)
@@ -206,7 +206,7 @@ class TestNeweyWestSE:
         # (positive autocorr -> understated naive SE)
         assert se_ar > se_iid * 0.8  # Allow some noise
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_se_with_negative_autocorrelation(self) -> None:
         """HAC SE should be smaller with negative autocorrelation."""
         np.random.seed(42)
@@ -226,7 +226,7 @@ class TestNeweyWestSE:
         # HAC SE should be smaller for negative AR process
         assert se_ar < se_iid * 1.5
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_auto_bandwidth(self) -> None:
         """Test SE with automatic bandwidth."""
         np.random.seed(42)
@@ -239,7 +239,7 @@ class TestNeweyWestSE:
         assert se_auto > 0
         assert se_fixed > 0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_different_kernels(self) -> None:
         """Test SE with different kernels."""
         np.random.seed(42)
@@ -254,7 +254,7 @@ class TestNeweyWestSE:
             assert se > 0
             assert 0.01 < se < 1.0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_small_sample_error(self) -> None:
         """Test error with too few observations."""
         with pytest.raises(ValueError, match="at least 2 observations"):
@@ -264,7 +264,7 @@ class TestNeweyWestSE:
 class TestNeweyWestCovariance:
     """Test Newey-West covariance matrix computation."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_basic_covariance(self) -> None:
         """Test basic covariance computation."""
         np.random.seed(42)
@@ -281,7 +281,7 @@ class TestNeweyWestCovariance:
         # Diagonal should be positive
         assert all(cov[i, i] > 0 for i in range(k))
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_positive_semidefinite(self) -> None:
         """HAC covariance should be positive semi-definite."""
         np.random.seed(42)
@@ -295,7 +295,7 @@ class TestNeweyWestCovariance:
         eigenvalues = np.linalg.eigvalsh(cov)
         assert all(ev >= -1e-10 for ev in eigenvalues)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_1d_x(self) -> None:
         """Test with 1D X array."""
         np.random.seed(42)
@@ -308,7 +308,7 @@ class TestNeweyWestCovariance:
         assert cov.shape == (1, 1)
         assert cov[0, 0] > 0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_dimension_mismatch(self) -> None:
         """Test error when dimensions don't match."""
         X = np.random.randn(100, 3)
@@ -321,7 +321,7 @@ class TestNeweyWestCovariance:
 class TestHACEstimator:
     """Test HACEstimator class."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_default(self) -> None:
         """Test default initialization."""
         hac = HACEstimator()
@@ -329,13 +329,13 @@ class TestHACEstimator:
         assert hac.bandwidth == "auto"
         assert hac.prewhiten is False
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_invalid_kernel(self) -> None:
         """Test invalid kernel raises error."""
         with pytest.raises(ValueError, match="kernel must be one of"):
             HACEstimator(kernel="invalid")
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_fit_simple(self) -> None:
         """Test fit with simple residuals."""
         np.random.seed(42)
@@ -348,7 +348,7 @@ class TestHACEstimator:
         assert hac._variance > 0
         assert hac._bandwidth_used >= 0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_fit_with_x(self) -> None:
         """Test fit with design matrix."""
         np.random.seed(42)
@@ -362,14 +362,14 @@ class TestHACEstimator:
         assert hac._covariance is not None
         assert hac._covariance.shape == (k, k)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_se_not_fitted(self) -> None:
         """Test error when getting SE before fit."""
         hac = HACEstimator()
         with pytest.raises(RuntimeError, match="not fitted"):
             hac.get_se()
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_se(self) -> None:
         """Test get_se after fit."""
         np.random.seed(42)
@@ -382,7 +382,7 @@ class TestHACEstimator:
         assert se > 0
         assert np.isfinite(se)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_variance(self) -> None:
         """Test get_variance."""
         np.random.seed(42)
@@ -396,7 +396,7 @@ class TestHACEstimator:
 
         assert np.isclose(var, se**2)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_covariance_without_x(self) -> None:
         """Test error getting covariance without X."""
         np.random.seed(42)
@@ -408,7 +408,7 @@ class TestHACEstimator:
         with pytest.raises(RuntimeError, match="No covariance matrix"):
             hac.get_covariance()
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_covariance_with_x(self) -> None:
         """Test get_covariance with X."""
         np.random.seed(42)
@@ -422,7 +422,7 @@ class TestHACEstimator:
         cov = hac.get_covariance()
         assert cov.shape == (k, k)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_result(self) -> None:
         """Test get_result returns HACResult."""
         np.random.seed(42)
@@ -440,7 +440,7 @@ class TestHACEstimator:
         assert result.kernel == "bartlett"
         assert result.n_samples == 100
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_bandwidth_used_property(self) -> None:
         """Test bandwidth_used property."""
         np.random.seed(42)
@@ -453,7 +453,7 @@ class TestHACEstimator:
         assert isinstance(bw, int)
         assert bw >= 0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_prewhiten(self) -> None:
         """Test prewhitening option."""
         np.random.seed(42)
@@ -474,7 +474,7 @@ class TestHACEstimator:
         assert hac_no_pw.get_se() > 0
         assert hac_pw.get_se() > 0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_method_chaining(self) -> None:
         """Test fit returns self for chaining."""
         np.random.seed(42)
@@ -487,7 +487,7 @@ class TestHACEstimator:
 class TestHACInference:
     """Test inference helper function."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_basic_inference(self) -> None:
         """Test basic inference computation."""
         result = hac_inference(theta=2.0, se_hac=0.5, alpha=0.05)
@@ -498,7 +498,7 @@ class TestHACInference:
         assert result["t_stat"] == 4.0
         assert result["p_value"] < 0.001  # Highly significant
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_ci_coverage(self) -> None:
         """Test CI has correct width."""
         result = hac_inference(theta=1.0, se_hac=1.0, alpha=0.05)
@@ -507,7 +507,7 @@ class TestHACInference:
         ci_width = result["ci_upper"] - result["ci_lower"]
         assert 3.8 < ci_width < 4.0  # ≈ 2 * 1.96
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_different_alpha(self) -> None:
         """Test different significance levels."""
         result_95 = hac_inference(theta=1.0, se_hac=0.5, alpha=0.05)
@@ -518,7 +518,7 @@ class TestHACInference:
         width_99 = result_99["ci_upper"] - result_99["ci_lower"]
         assert width_99 > width_95
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_nonsignificant(self) -> None:
         """Test non-significant result."""
         result = hac_inference(theta=0.1, se_hac=1.0, alpha=0.05)
@@ -532,7 +532,7 @@ class TestHACInference:
 class TestIntegration:
     """Integration tests with realistic scenarios."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_regression_with_hac(self) -> None:
         """Test HAC with actual regression residuals."""
         np.random.seed(42)
@@ -569,7 +569,7 @@ class TestIntegration:
         # (exact relationship depends on autocorrelation realization)
         assert 0.1 < se_hac[1] / se_ols[1] < 10
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_consistency_functions_vs_class(self) -> None:
         """Test that functions and class give same results."""
         np.random.seed(42)

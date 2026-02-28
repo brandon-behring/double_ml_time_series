@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 from comprehensive_coverage_test import create_test_scenarios, run_coverage_stress_test
 
 
+@pytest.mark.tier1
 class TestScenarioCreation:
     """Test scenario creation logic."""
 
@@ -100,6 +101,7 @@ class TestScenarioCreation:
         assert has_large, "Should include very large sample scenario"
 
 
+@pytest.mark.tier4
 class TestCoverageStressTest:
     """Test the main coverage stress test functionality."""
 
@@ -217,6 +219,7 @@ class TestCoverageStressTest:
         ).all(), f"All scenarios should use n_simulations={n_sims}"
 
 
+@pytest.mark.tier4
 class TestCoverageCategorization:
     """Test coverage quality categorization logic."""
 
@@ -227,8 +230,6 @@ class TestCoverageCategorization:
         yield temp_dir
         shutil.rmtree(temp_dir, ignore_errors=True)
 
-    @pytest.mark.slow
-    @pytest.mark.timeout(300)
     def test_categorization_thresholds(self, temp_output_dir):
         """Test that coverage values are properly stored and categorizable.
 
@@ -258,6 +259,7 @@ class TestCoverageCategorization:
                 assert coverage < 0.98, "Undercoverage implies below overconservative"
 
 
+@pytest.mark.tier1
 class TestExitCodes:
     """Test exit code logic for automated validation."""
 
@@ -278,6 +280,7 @@ class TestExitCodes:
         assert "sys.exit(3)" in script_content, "Should have undercoverage exit code (3)"
 
 
+@pytest.mark.tier4
 class TestErrorHandling:
     """Test error handling in stress test."""
 

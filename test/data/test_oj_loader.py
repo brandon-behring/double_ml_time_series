@@ -12,6 +12,7 @@ import tempfile
 from src.data.oj_loader import OJDataset, OJDataLoader
 
 
+@pytest.mark.tier2
 class TestOJDataLoader:
     """Test suite for OJDataLoader."""
 
@@ -25,12 +26,12 @@ class TestOJDataLoader:
         """Load dataset once for all tests in class."""
         return loader.load()
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_load_returns_oj_dataset(self, dataset: OJDataset) -> None:
         """Test that load() returns an OJDataset instance."""
         assert isinstance(dataset, OJDataset)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_dataset_shapes_consistent(self, dataset: OJDataset) -> None:
         """Test that Y, T, X arrays have consistent shapes."""
         n = dataset.n_samples
@@ -44,34 +45,34 @@ class TestOJDataLoader:
         assert dataset.X.shape[1] == len(dataset.feature_names)
         assert dataset.n_features == len(dataset.feature_names)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_default_feature_names(self, dataset: OJDataset) -> None:
         """Test that default features are feat, INCOME, AGE60."""
         expected = ["feat", "INCOME", "AGE60"]
         assert dataset.feature_names == expected
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_no_missing_values(self, dataset: OJDataset) -> None:
         """Test that dataset has no NaN values after preprocessing."""
         assert not np.any(np.isnan(dataset.Y)), "Y contains NaN"
         assert not np.any(np.isnan(dataset.T)), "T contains NaN"
         assert not np.any(np.isnan(dataset.X)), "X contains NaN"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_reasonable_sample_size(self, dataset: OJDataset) -> None:
         """Test that dataset has expected ~28k observations."""
         # The full OJ dataset has ~28,947 observations
         assert dataset.n_samples > 20_000, f"Too few samples: {dataset.n_samples}"
         assert dataset.n_samples < 50_000, f"Too many samples: {dataset.n_samples}"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_treatment_is_log_price(self, dataset: OJDataset) -> None:
         """Test that treatment T is log(price), not raw price."""
         # Log prices should typically be in range (0, 3) for dollar amounts
         assert dataset.T.min() > -1.0, f"T min {dataset.T.min()} too low for log price"
         assert dataset.T.max() < 3.0, f"T max {dataset.T.max()} too high for log price"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_custom_features(self) -> None:
         """Test loading with custom feature set."""
         features = ["feat", "INCOME", "AGE60", "EDUC"]
@@ -81,7 +82,7 @@ class TestOJDataLoader:
         assert data.n_features == 4
         assert data.feature_names == features
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_brand_filter(self) -> None:
         """Test filtering to single brand."""
         loader = OJDataLoader(brand="tropicana")
@@ -94,7 +95,7 @@ class TestOJDataLoader:
         assert data.raw_df is not None
         assert all(data.raw_df["brand"] == "tropicana")
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_invalid_feature_raises(self) -> None:
         """Test that invalid feature names raise ValueError."""
         loader = OJDataLoader(features=["nonexistent_feature"])
@@ -102,7 +103,7 @@ class TestOJDataLoader:
         with pytest.raises(ValueError, match="Features not in dataset"):
             loader.load()
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_dataset_summary(self, dataset: OJDataset) -> None:
         """Test that summary() returns formatted string."""
         summary = dataset.summary()
@@ -112,7 +113,7 @@ class TestOJDataLoader:
         assert f"{dataset.n_samples:,}" in summary
         assert "INCOME" in summary
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_dataset_repr(self, dataset: OJDataset) -> None:
         """Test __repr__ method."""
         repr_str = repr(dataset)
@@ -121,7 +122,7 @@ class TestOJDataLoader:
         assert "n_samples" in repr_str
         assert "n_features" in repr_str
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_caching(self) -> None:
         """Test that caching works correctly."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -144,7 +145,7 @@ class TestOJDataLoader:
             np.testing.assert_array_equal(data1.T, data2.T)
             np.testing.assert_array_equal(data1.X, data2.X)
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_available_features(self, loader: OJDataLoader) -> None:
         """Test getting list of available features."""
         features = loader.get_available_features()
@@ -155,7 +156,7 @@ class TestOJDataLoader:
         assert "INCOME" in features
         assert "brand" in features
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_get_brand_options(self, loader: OJDataLoader) -> None:
         """Test getting list of brand options."""
         brands = loader.get_brand_options()

@@ -7,7 +7,7 @@ Full integration tests are expensive (bootstrap takes hours), so these tests foc
 2. Data loading/preprocessing
 3. Result dataclasses
 
-Note: Full bootstrap/sensitivity tests are marked @pytest.mark.slow.
+Note: Full bootstrap/sensitivity tests are marked @pytest.mark.tier2.
 """
 
 import numpy as np
@@ -26,7 +26,7 @@ from src.validation.lasso_diagnostic import (
 class TestLassoDiagnosticInit:
     """Test LassoDiagnostic initialization."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_default(self) -> None:
         """Test default initialization."""
         diag = LassoDiagnostic()
@@ -35,7 +35,7 @@ class TestLassoDiagnosticInit:
         assert diag.verbose is False
         assert diag._data is None
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_init_with_params(self) -> None:
         """Test initialization with parameters."""
         diag = LassoDiagnostic(
@@ -47,7 +47,7 @@ class TestLassoDiagnosticInit:
         assert diag.random_state == 42
         assert diag.verbose is True
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_log_verbose(self, capsys) -> None:
         """Test verbose logging."""
         diag = LassoDiagnostic(verbose=True)
@@ -55,7 +55,7 @@ class TestLassoDiagnosticInit:
         captured = capsys.readouterr()
         assert "test message" in captured.out
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_log_silent(self, capsys) -> None:
         """Test silent mode doesn't log."""
         diag = LassoDiagnostic(verbose=False)
@@ -67,7 +67,7 @@ class TestLassoDiagnosticInit:
 class TestDataLoading:
     """Test data loading and preprocessing."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_load_data_requires_doubleml(self) -> None:
         """Test load_data raises ImportError if doubleml unavailable."""
         diag = LassoDiagnostic()
@@ -80,7 +80,7 @@ class TestDataLoading:
             # In actual environment with doubleml, this should work
             pass  # Skip actual test since doubleml is installed
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_load_data_success(self) -> None:
         """Test actual data loading (requires doubleml)."""
         diag = LassoDiagnostic()
@@ -91,7 +91,7 @@ class TestDataLoading:
         assert "e401" in df.columns
         assert len(df) > 0
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_preprocess_data(self) -> None:
         """Test data preprocessing returns correct shapes."""
         diag = LassoDiagnostic()
@@ -109,7 +109,7 @@ class TestDataLoading:
 class TestResultDataclasses:
     """Test result dataclasses."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_bootstrap_diagnostic_result(self) -> None:
         """Test BootstrapDiagnosticResult dataclass."""
         result = BootstrapDiagnosticResult(
@@ -134,7 +134,7 @@ class TestResultDataclasses:
         assert len(result.ate_estimates) == 3
         assert result.metadata["test"] == "value"
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_hyperparameter_sensitivity_result(self) -> None:
         """Test HyperparameterSensitivityResult dataclass."""
         result = HyperparameterSensitivityResult(
@@ -153,7 +153,7 @@ class TestResultDataclasses:
         assert result.is_sensitive is False
         assert result.recommended_value == 5
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_seed_sensitivity_result(self) -> None:
         """Test SeedSensitivityResult dataclass."""
         result = SeedSensitivityResult(
@@ -178,7 +178,7 @@ class TestResultDataclasses:
 class TestRootCauseAnalysis:
     """Test root cause analysis logic."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_analyze_root_cause_no_issues(self) -> None:
         """Test root cause analysis with no issues found."""
         diag = LassoDiagnostic()
@@ -231,7 +231,7 @@ class TestRootCauseAnalysis:
         assert "No obvious diagnostic issues" in root_cause
         assert len(recommendations) > 0
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_analyze_root_cause_with_issues(self) -> None:
         """Test root cause analysis identifies issues."""
         diag = LassoDiagnostic()
@@ -289,8 +289,7 @@ class TestRootCauseAnalysis:
 class TestComprehensiveDiagnostic:
     """Test comprehensive diagnostic (integration test)."""
 
-    @pytest.mark.slow
-    @pytest.mark.timeout(120)  # 2 minute timeout for mini diagnostic
+    @pytest.mark.tier4
     def test_mini_comprehensive_diagnostic(self) -> None:
         """Test comprehensive diagnostic with minimal settings.
 
@@ -317,7 +316,7 @@ class TestComprehensiveDiagnostic:
 class TestHyperparameterSensitivityAnalysis:
     """Test hyperparameter sensitivity analysis."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_invalid_parameter_raises(self) -> None:
         """Test that invalid parameter name raises ValueError."""
         diag = LassoDiagnostic()

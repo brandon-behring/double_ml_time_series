@@ -82,10 +82,11 @@ class MisspecifiedDGPGenerator:
         return X, T, Y
 
 
+@pytest.mark.tier3
 class TestNonlinearEffects:
     """Test methods under non-linear treatment effects."""
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_linear_methods_biased_under_nonlinearity(self):
         """Linear methods should show bias with non-linear effects."""
         dgp = MisspecifiedDGPGenerator(
@@ -106,7 +107,7 @@ class TestNonlinearEffects:
         # Note: exact value depends on X distribution
         assert isinstance(ate_linear, (int, float))
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_ml_methods_more_flexible_nonlinearity(self):
         """ML methods should handle non-linearity better than linear."""
         dgp = MisspecifiedDGPGenerator(
@@ -142,10 +143,11 @@ class TestNonlinearEffects:
             assert np.isfinite(ate_rf)
 
 
+@pytest.mark.tier3
 class TestInteractionEffects:
     """Test methods under treatment-covariate interaction effects."""
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_ols_biased_with_interactions(self):
         """OLS without interaction terms should be biased."""
         dgp = MisspecifiedDGPGenerator(
@@ -163,7 +165,7 @@ class TestInteractionEffects:
         # Should have non-zero bias due to omitted interactions
         assert isinstance(model.coef_[0], (int, float))
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_aipw_more_robust_interactions(self):
         """AIPW uses both propensity and outcome models, potentially more robust."""
         dgp = MisspecifiedDGPGenerator(
@@ -184,10 +186,11 @@ class TestInteractionEffects:
         assert 0 <= result.coverage <= 1
 
 
+@pytest.mark.tier3
 class TestPoorOverlap:
     """Test methods under poor overlap (extreme propensity scores)."""
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_ipw_weights_explosion_poor_overlap(self):
         """IPW can have extreme weights with poor overlap."""
         dgp = MisspecifiedDGPGenerator(
@@ -213,7 +216,7 @@ class TestPoorOverlap:
         # (This is expected behavior, not a failure)
         assert isinstance(extreme_weights, (int, np.integer))
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_ml_methods_avoid_weights(self):
         """ML methods don't use propensity weights, more stable with poor overlap."""
         dgp = MisspecifiedDGPGenerator(
@@ -223,9 +226,9 @@ class TestPoorOverlap:
         # Run RF and XGB (which don't depend on propensity weighting)
         from src.validation.dgp_generator import DGPGenerator
 
-        dml_dgp = DGPGenerator(n=500, p=5, true_effect=2.0, random_state=42)
+        dml_dgp = DGPGenerator(n=300, p=5, true_effect=2.0, random_state=42)
 
-        rf = RandomForestEstimator(n_simulations=5, random_state=42)
+        rf = RandomForestEstimator(n_simulations=3, random_state=42, n_estimators=50)
         result_rf = rf.validate(dml_dgp)
 
         # Should produce stable results
@@ -233,10 +236,11 @@ class TestPoorOverlap:
         assert np.isfinite(result_rf.bias)
 
 
+@pytest.mark.tier3
 class TestHighDimensional:
     """Test methods with high-dimensional sparse effects."""
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_sparse_features_linear_struggle(self):
         """Linear methods may struggle with high-dimensional sparse data."""
         # Generate sparse high-dimensional data
@@ -258,7 +262,7 @@ class TestHighDimensional:
         # ATE might be biased or unstable due to high dimensionality
         assert np.isfinite(ate_ols)
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_ml_methods_handle_sparsity(self):
         """ML methods with regularization handle sparse high-dimensional data."""
         np.random.seed(42)
@@ -290,10 +294,11 @@ class TestHighDimensional:
             assert np.isfinite(ate_rf)
 
 
+@pytest.mark.tier3
 class TestUnobservedConfounding:
     """Test robustness to unobserved confounding (which no method can fully solve)."""
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_all_methods_fail_with_hidden_confounder(self):
         """
         No method can perfectly handle unobserved confounding.
@@ -331,10 +336,11 @@ class TestUnobservedConfounding:
         # Note: We don't assert bias direction because it depends on correlation structure
 
 
+@pytest.mark.tier3
 class TestCombinedMisspecifications:
     """Test methods under multiple simultaneous misspecifications."""
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_dml_vs_baselines_combined_issues(self):
         """Compare DML with baselines under multiple misspecifications."""
         # DML should be more robust to combined issues

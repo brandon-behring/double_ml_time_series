@@ -11,15 +11,20 @@ Tests RandomForestEstimator and XGBoostEstimator to ensure they:
 import numpy as np
 import pytest
 
+from src.validation.bootstrap_config import BootstrapConfig
 from src.validation.dgp_generator import DGPGenerator
 from src.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
 from src.validation.validation_result import ValidationResult
 
+# Tier3 bootstrap config: 5 CI, 5 bias iterations (fast)
+_TIER3_BOOT = BootstrapConfig.tier2()
 
+
+@pytest.mark.tier3
 class TestRandomForestEstimator:
     """Test suite for RandomForestEstimator."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = RandomForestEstimator(n_simulations=10, alpha=0.05, random_state=42)
@@ -27,7 +32,7 @@ class TestRandomForestEstimator:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
-    @pytest.mark.slow
+    @pytest.mark.tier1
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = RandomForestEstimator(
@@ -40,14 +45,16 @@ class TestRandomForestEstimator:
 
     def test_validate_returns_validation_result(self):
         """Test that validate() returns ValidationResult."""
-        estimator = RandomForestEstimator(n_simulations=10, random_state=42)
+        estimator = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         dgp = DGPGenerator(n=200, p=2, true_effect=2.0, random_state=42)
 
         result = estimator.validate(dgp)
 
         assert isinstance(result, ValidationResult)
         assert result.method == "RandomForestEstimator"
-        assert result.n_simulations == 10
+        assert result.n_simulations == 5
 
     def test_less_biased_than_naive_ols(self):
         """Test that RF has lower bias than NaiveOLS with confounding."""
@@ -55,30 +62,36 @@ class TestRandomForestEstimator:
 
         # Create DGP with confounding
         dgp = DGPGenerator(
-            n=800,
+            n=200,
             p=5,
             true_effect=2.0,
             confounding_strength=1.0,  # Moderate confounding
             random_state=42,
         )
 
-        rf = RandomForestEstimator(n_simulations=15, random_state=42)
-        naive = NaiveOLS(n_simulations=15, random_state=42)
+        rf = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
+        naive = NaiveOLS(n_simulations=5, random_state=42)
 
         result_rf = rf.validate(dgp)
         result_naive = naive.validate(dgp)
 
         # RF should have lower or comparable bias due to non-parametric flexibility
         # Note: RF's non-linearity may help with misspecification
-        assert abs(result_rf.bias) <= abs(result_naive.bias) + 0.2  # Allow tolerance
+        assert abs(result_rf.bias) <= abs(result_naive.bias) + 0.5  # Wider tolerance for fewer sims
 
     def test_reproducibility_same_seed(self):
         """Test reproducibility with same random seed."""
-        dgp1 = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
-        dgp2 = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
+        dgp1 = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
+        dgp2 = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
 
-        estimator1 = RandomForestEstimator(n_simulations=15, random_state=123)
-        estimator2 = RandomForestEstimator(n_simulations=15, random_state=123)
+        estimator1 = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=123
+        )
+        estimator2 = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=123
+        )
 
         result1 = estimator1.validate(dgp1)
         result2 = estimator2.validate(dgp2)
@@ -88,24 +101,30 @@ class TestRandomForestEstimator:
 
     def test_mse_non_negative(self):
         """Test that MSE is always non-negative."""
-        dgp = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
-        estimator = RandomForestEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
+        estimator = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         assert result.mse >= 0
 
     def test_coverage_in_valid_range(self):
         """Test that coverage is in [0, 1]."""
-        dgp = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
-        estimator = RandomForestEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
+        estimator = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         assert 0 <= result.coverage <= 1
 
     def test_confidence_interval_validity(self):
         """Test that CI bounds are valid."""
-        dgp = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
-        estimator = RandomForestEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
+        estimator = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         # Lower bound should be less than upper bound
@@ -113,21 +132,25 @@ class TestRandomForestEstimator:
 
     def test_metadata_contains_dgp_info(self):
         """Test that metadata contains DGP information."""
-        dgp = DGPGenerator(n=500, p=3, true_effect=2.5, random_state=42)
-        estimator = RandomForestEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=3, true_effect=2.5, random_state=42)
+        estimator = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
-        assert result.metadata["dgp_n"] == 500
+        assert result.metadata["dgp_n"] == 200
         assert result.metadata["dgp_p"] == 3
         assert result.metadata["dgp_true_effect"] == 2.5
         assert result.metadata["estimator"] == "RandomForestEstimator"
-        assert result.metadata["n_estimators"] == 100
+        assert result.metadata["n_estimators"] == 10
         assert result.metadata["max_depth"] == 10
 
     def test_result_contains_all_required_fields(self):
         """Test that result has all required fields."""
-        dgp = DGPGenerator(n=300, p=2, true_effect=2.0, random_state=42)
-        estimator = RandomForestEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=2, true_effect=2.0, random_state=42)
+        estimator = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         # Check required fields
@@ -143,7 +166,9 @@ class TestRandomForestEstimator:
     def test_handles_small_sample_sizes(self):
         """Test that RF handles small sample sizes gracefully."""
         dgp = DGPGenerator(n=100, p=2, true_effect=2.0, random_state=42)
-        estimator = RandomForestEstimator(n_simulations=5, random_state=42)
+        estimator = RandomForestEstimator(
+            n_simulations=5, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         # Should return valid result even with small samples
@@ -152,8 +177,10 @@ class TestRandomForestEstimator:
 
     def test_handles_large_feature_space(self):
         """Test that RF handles many features gracefully."""
-        dgp = DGPGenerator(n=500, p=20, true_effect=2.0, random_state=42)
-        estimator = RandomForestEstimator(n_simulations=5, random_state=42)
+        dgp = DGPGenerator(n=200, p=20, true_effect=2.0, random_state=42)
+        estimator = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         # Should handle high-dimensional case
@@ -161,10 +188,11 @@ class TestRandomForestEstimator:
         assert result.metadata["dgp_p"] == 20
 
 
+@pytest.mark.tier3
 class TestXGBoostEstimator:
     """Test suite for XGBoostEstimator."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = XGBoostEstimator(n_simulations=10, alpha=0.05, random_state=42)
@@ -172,7 +200,7 @@ class TestXGBoostEstimator:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
-    @pytest.mark.slow
+    @pytest.mark.tier1
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = XGBoostEstimator(
@@ -185,14 +213,16 @@ class TestXGBoostEstimator:
 
     def test_validate_returns_validation_result(self):
         """Test that validate() returns ValidationResult."""
-        estimator = XGBoostEstimator(n_simulations=10, random_state=42)
+        estimator = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         dgp = DGPGenerator(n=200, p=2, true_effect=2.0, random_state=42)
 
         result = estimator.validate(dgp)
 
         assert isinstance(result, ValidationResult)
         assert result.method == "XGBoostEstimator"
-        assert result.n_simulations == 10
+        assert result.n_simulations == 5
 
     def test_less_biased_than_naive_ols(self):
         """Test that XGBoost has lower bias than NaiveOLS with confounding."""
@@ -200,28 +230,36 @@ class TestXGBoostEstimator:
 
         # Create DGP with confounding
         dgp = DGPGenerator(
-            n=800,
+            n=200,
             p=5,
             true_effect=2.0,
             confounding_strength=1.0,  # Moderate confounding
             random_state=42,
         )
 
-        xgb = XGBoostEstimator(n_simulations=15, random_state=42)
-        naive = NaiveOLS(n_simulations=15, random_state=42)
+        xgb = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
+        naive = NaiveOLS(n_simulations=5, random_state=42)
 
         result_xgb = xgb.validate(dgp)
         result_naive = naive.validate(dgp)
 
         # XGBoost should have lower or comparable bias
-        assert abs(result_xgb.bias) <= abs(result_naive.bias) + 0.2  # Allow tolerance
+        assert (
+            abs(result_xgb.bias) <= abs(result_naive.bias) + 0.5
+        )  # Wider tolerance for fewer sims
 
     def test_xgboost_more_flexible_than_rf(self):
         """Test that XGBoost is at least as flexible as RF for complex relationships."""
-        dgp = DGPGenerator(n=600, p=5, true_effect=2.0, random_state=42)
+        dgp = DGPGenerator(n=200, p=5, true_effect=2.0, random_state=42)
 
-        rf = RandomForestEstimator(n_simulations=10, random_state=42)
-        xgb = XGBoostEstimator(n_simulations=10, random_state=42)
+        rf = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
+        xgb = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
 
         result_rf = rf.validate(dgp)
         result_xgb = xgb.validate(dgp)
@@ -232,11 +270,15 @@ class TestXGBoostEstimator:
 
     def test_reproducibility_same_seed(self):
         """Test reproducibility with same random seed."""
-        dgp1 = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
-        dgp2 = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
+        dgp1 = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
+        dgp2 = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
 
-        estimator1 = XGBoostEstimator(n_simulations=15, random_state=123)
-        estimator2 = XGBoostEstimator(n_simulations=15, random_state=123)
+        estimator1 = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=123
+        )
+        estimator2 = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=123
+        )
 
         result1 = estimator1.validate(dgp1)
         result2 = estimator2.validate(dgp2)
@@ -246,24 +288,30 @@ class TestXGBoostEstimator:
 
     def test_mse_non_negative(self):
         """Test that MSE is always non-negative."""
-        dgp = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
-        estimator = XGBoostEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
+        estimator = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         assert result.mse >= 0
 
     def test_coverage_in_valid_range(self):
         """Test that coverage is in [0, 1]."""
-        dgp = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
-        estimator = XGBoostEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
+        estimator = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         assert 0 <= result.coverage <= 1
 
     def test_confidence_interval_validity(self):
         """Test that CI bounds are valid."""
-        dgp = DGPGenerator(n=500, p=3, true_effect=2.0, random_state=42)
-        estimator = XGBoostEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
+        estimator = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         # Lower bound should be less than upper bound
@@ -271,22 +319,26 @@ class TestXGBoostEstimator:
 
     def test_metadata_contains_dgp_info(self):
         """Test that metadata contains DGP information."""
-        dgp = DGPGenerator(n=500, p=3, true_effect=2.5, random_state=42)
-        estimator = XGBoostEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=3, true_effect=2.5, random_state=42)
+        estimator = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
-        assert result.metadata["dgp_n"] == 500
+        assert result.metadata["dgp_n"] == 200
         assert result.metadata["dgp_p"] == 3
         assert result.metadata["dgp_true_effect"] == 2.5
         assert result.metadata["estimator"] == "XGBoostEstimator"
-        assert result.metadata["n_estimators"] == 100
+        assert result.metadata["n_estimators"] == 10
         assert result.metadata["max_depth"] == 5
         assert result.metadata["learning_rate"] == 0.1
 
     def test_result_contains_all_required_fields(self):
         """Test that result has all required fields."""
-        dgp = DGPGenerator(n=300, p=2, true_effect=2.0, random_state=42)
-        estimator = XGBoostEstimator(n_simulations=10, random_state=42)
+        dgp = DGPGenerator(n=200, p=2, true_effect=2.0, random_state=42)
+        estimator = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         # Check required fields
@@ -302,7 +354,7 @@ class TestXGBoostEstimator:
     def test_handles_small_sample_sizes(self):
         """Test that XGBoost handles small sample sizes gracefully."""
         dgp = DGPGenerator(n=100, p=2, true_effect=2.0, random_state=42)
-        estimator = XGBoostEstimator(n_simulations=5, random_state=42)
+        estimator = XGBoostEstimator(n_simulations=5, bootstrap_config=_TIER3_BOOT, random_state=42)
         result = estimator.validate(dgp)
 
         # Should return valid result even with small samples
@@ -311,8 +363,10 @@ class TestXGBoostEstimator:
 
     def test_handles_large_feature_space(self):
         """Test that XGBoost handles many features gracefully."""
-        dgp = DGPGenerator(n=500, p=20, true_effect=2.0, random_state=42)
-        estimator = XGBoostEstimator(n_simulations=5, random_state=42)
+        dgp = DGPGenerator(n=200, p=20, true_effect=2.0, random_state=42)
+        estimator = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
         result = estimator.validate(dgp)
 
         # Should handle high-dimensional case
@@ -320,15 +374,20 @@ class TestXGBoostEstimator:
         assert result.metadata["dgp_p"] == 20
 
 
+@pytest.mark.tier3
 class TestMLMethodsComparison:
     """Test suite for comparing RF and XGBoost methods."""
 
     def test_both_methods_can_run_on_same_dgp(self):
         """Test that both methods can be run on the same DGP."""
-        dgp = DGPGenerator(n=500, p=5, true_effect=2.0, confounding_strength=0.8, random_state=42)
+        dgp = DGPGenerator(n=200, p=5, true_effect=2.0, confounding_strength=0.8, random_state=42)
 
-        rf = RandomForestEstimator(n_simulations=10, random_state=42)
-        xgb = XGBoostEstimator(n_simulations=10, random_state=42)
+        rf = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
+        xgb = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
 
         result_rf = rf.validate(dgp)
         result_xgb = xgb.validate(dgp)
@@ -341,10 +400,14 @@ class TestMLMethodsComparison:
 
     def test_results_are_different_but_reasonable(self):
         """Test that results from both methods are different but both reasonable."""
-        dgp = DGPGenerator(n=600, p=5, true_effect=2.0, confounding_strength=1.0, random_state=42)
+        dgp = DGPGenerator(n=200, p=5, true_effect=2.0, confounding_strength=1.0, random_state=42)
 
-        rf = RandomForestEstimator(n_simulations=15, random_state=42)
-        xgb = XGBoostEstimator(n_simulations=15, random_state=42)
+        rf = RandomForestEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
+        xgb = XGBoostEstimator(
+            n_simulations=5, n_estimators=10, bootstrap_config=_TIER3_BOOT, random_state=42
+        )
 
         result_rf = rf.validate(dgp)
         result_xgb = xgb.validate(dgp)

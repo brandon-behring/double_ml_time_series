@@ -42,8 +42,11 @@ See: `~/Claude/lever_of_archimedes/patterns/` for:
 # Build complete book (NOTE: lualatex, NOT pdflatex)
 lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex
 
-# Run tests (from repo root)
-pytest test/ -v
+# Run tests by tier (from repo root)
+pytest -m tier1                      # ~12s smoke test (285 tests)
+pytest -m "tier1 or tier2"           # ~2min pre-push (588 tests)
+pytest -m "tier1 or tier2 or tier3"  # ~30min nightly (750 tests)
+pytest                               # Full suite including tier4 (~2h)
 
 # Quick DML verification (includes time series)
 python -c "from src.dml import double_ml, DynamicDML, RollingWindowDML; print('OK')"
@@ -111,6 +114,20 @@ chapters/
 5. Real-world known outcomes
 6. Public dataset benchmarks
 7. Synthetic DGP generator
+
+### Test Tiers (4-tier system)
+
+| Tier | Purpose | Speed | Tests | Command |
+|------|---------|-------|-------|---------|
+| tier1 | Unit — no estimation, pure logic | ~12s | 285 | `pytest -m tier1` |
+| tier2 | Integration — light estimation | ~2min | 316 | `pytest -m "tier1 or tier2"` |
+| tier3 | Validation — moderate MC/bootstrap | ~30min | 161 | `pytest -m "tier1 or tier2 or tier3"` |
+| tier4 | Full replication + stress | ~2h | 40 | `pytest` |
+
+- Timeouts: 10s / 60s / 300s / 1800s per tier (enforced by pytest-timeout via `test/conftest.py`)
+- Tiered bootstrap: `BootstrapConfig.tier2()` / `.tier3()` factory methods
+- Cached 401(k) data: `test/fixtures/401k_data.csv` (offline testing)
+- Zero unmarked tests — every test has a `@pytest.mark.tierN` marker
 
 ### Code Style
 - **Formatter**: Black with 100-character lines

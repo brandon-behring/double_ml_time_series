@@ -22,7 +22,7 @@ class TestChapter4Workflow:
         loader = OJDataLoader()
         return loader.load()
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_oj_dml_pipeline(self, oj_data: OJDataset) -> None:
         """Test complete OJ → DML pipeline produces reasonable results.
 
@@ -58,7 +58,7 @@ class TestChapter4Workflow:
         # First-stage R² should be reasonable (confounders predict outcome/treatment)
         assert result.outcome_r2_cv > 0.1, f"Low outcome R²: {result.outcome_r2_cv}"
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_baseline_comparison_oj(self, oj_data: OJDataset) -> None:
         """Test that DML outperforms naive OLS on OJ data.
 
@@ -104,7 +104,7 @@ class TestChapter4Workflow:
         ci_width = dml_result.ci_upper - dml_result.ci_lower
         assert 0.01 < ci_width < 2.0, f"CI width {ci_width} seems unreasonable"
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_sensitivity_with_dml_results(self, oj_data: OJDataset) -> None:
         """Test sensitivity analysis on DML price elasticity estimate."""
         # Run DML
@@ -151,7 +151,7 @@ class TestChapter4Workflow:
             sensitivity.gamma_critical > 1.0
         ), f"Expected gamma_critical > 1 for significant effect, got {sensitivity.gamma_critical}"
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_full_chapter4_pipeline_reproducible(self) -> None:
         """Test that full pipeline is reproducible with same random state."""
         loader = OJDataLoader()
@@ -196,7 +196,7 @@ class TestChapter4Workflow:
         assert np.isclose(result1.se, result2.se)
         assert np.isclose(sens1.gamma_critical, sens2.gamma_critical)
 
-    @pytest.mark.slow
+    @pytest.mark.tier2
     def test_brand_specific_analysis(self) -> None:
         """Test DML analysis on single brand (Tropicana)."""
         loader = OJDataLoader(brand="tropicana")
@@ -225,7 +225,7 @@ class TestChapter4Workflow:
 class TestEdgeCases:
     """Edge case tests for Chapter 4 workflow."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_dml_with_extended_features(self) -> None:
         """Test DML with more confounders."""
         loader = OJDataLoader(features=["feat", "INCOME", "AGE60", "EDUC", "ETHNIC", "HHLARGE"])
@@ -243,7 +243,7 @@ class TestEdgeCases:
         assert not np.isnan(result.theta)
         assert result.theta < 0  # Still expect negative elasticity
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_sensitivity_plot_integration(self) -> None:
         """Test that sensitivity plot works with real DML results."""
         import matplotlib

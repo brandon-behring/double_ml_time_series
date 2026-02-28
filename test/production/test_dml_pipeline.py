@@ -24,6 +24,8 @@ from src.production.dml_pipeline import (
     PipelineResult,
 )
 
+pytestmark = pytest.mark.tier2
+
 
 class TestPipelineConfig:
     """Tests for PipelineConfig dataclass."""

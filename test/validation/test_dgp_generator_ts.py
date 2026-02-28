@@ -13,6 +13,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+pytestmark = pytest.mark.tier2
+
 from src.validation.dgp_generator_ts import (
     TimeSeriesDGPGenerator,
     TimeSeriesDGPResult,
@@ -629,6 +631,7 @@ class TestConvenienceFunctions:
 # ============================================================================
 
 
+@pytest.mark.tier3
 class TestDMLIntegration:
     """Tests for integration with DML estimators."""
 

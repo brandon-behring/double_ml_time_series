@@ -55,6 +55,28 @@ class BootstrapConfig:
         return cls(n_bootstrap_bias=100, n_bootstrap_ci=100)
 
     @classmethod
+    def tier2(cls) -> "BootstrapConfig":
+        """Light config for integration tests (tier2).
+
+        Minimal bootstrap iterations for quick multi-component testing.
+
+        Returns:
+            BootstrapConfig with n_bootstrap_bias=5, n_bootstrap_ci=5
+        """
+        return cls(n_bootstrap_bias=5, n_bootstrap_ci=5)
+
+    @classmethod
+    def tier3(cls) -> "BootstrapConfig":
+        """Moderate config for validation tests (tier3).
+
+        Enough iterations for statistical property verification.
+
+        Returns:
+            BootstrapConfig with n_bootstrap_bias=100, n_bootstrap_ci=50
+        """
+        return cls(n_bootstrap_bias=100, n_bootstrap_ci=50)
+
+    @classmethod
     def precise(cls) -> "BootstrapConfig":
         """High-precision configuration for final validation.
 

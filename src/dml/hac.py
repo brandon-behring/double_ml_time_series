@@ -340,8 +340,9 @@ def newey_west_se(
         raise ValueError(f"Need at least 2 observations, got {n}")
 
     # Determine bandwidth
-    if isinstance(bandwidth, str):
-        bw = optimal_bandwidth(residuals, method=cast(BandwidthMethod, bandwidth), kernel=kernel)
+    if bandwidth is None or isinstance(bandwidth, str):
+        method = cast(BandwidthMethod, bandwidth) if isinstance(bandwidth, str) else "andrews"
+        bw = optimal_bandwidth(residuals, method=method, kernel=kernel)
     else:
         bw = int(bandwidth)
 
@@ -412,8 +413,9 @@ def newey_west_covariance(
         raise ValueError(f"Need n >= k, got n={n}, k={k}")
 
     # Determine bandwidth
-    if isinstance(bandwidth, str):
-        bw = optimal_bandwidth(residuals, method=cast(BandwidthMethod, bandwidth), kernel=kernel)
+    if bandwidth is None or isinstance(bandwidth, str):
+        method = cast(BandwidthMethod, bandwidth) if isinstance(bandwidth, str) else "andrews"
+        bw = optimal_bandwidth(residuals, method=method, kernel=kernel)
     else:
         bw = int(bandwidth)
 
@@ -536,10 +538,15 @@ class HACEstimator:
             raise ValueError(f"Need at least 2 observations, got {self._n_samples}")
 
         # Determine bandwidth
-        if isinstance(self.bandwidth, str):
+        if self.bandwidth is None or isinstance(self.bandwidth, str):
+            method = (
+                cast(BandwidthMethod, self.bandwidth)
+                if isinstance(self.bandwidth, str)
+                else "andrews"
+            )
             self._bandwidth_used = optimal_bandwidth(
                 residuals,
-                method=cast(BandwidthMethod, self.bandwidth),
+                method=method,
                 kernel=cast(KernelType, self.kernel),
             )
         else:

@@ -19,6 +19,8 @@ from src.production.causal_monitor import (
     MonitoringResult,
 )
 
+pytestmark = pytest.mark.tier2
+
 
 class TestMonitoringResult:
     """Tests for MonitoringResult dataclass."""

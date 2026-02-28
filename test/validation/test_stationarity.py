@@ -14,6 +14,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+pytestmark = pytest.mark.tier2
+
 from src.validation.stationarity import (
     StationarityDiagnostic,
     StationarityResult,
@@ -431,7 +433,7 @@ class TestStatsmodelsComparison:
 class TestMonteCarlo:
     """Monte Carlo tests for statistical properties."""
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_adf_size_under_null(self):
         """Test ADF rejection rate under null (unit root)."""
         np.random.seed(42)
@@ -449,7 +451,7 @@ class TestMonteCarlo:
         rejection_rate = rejections / n_sims
         assert 0.02 < rejection_rate < 0.12  # Allow some variation
 
-    @pytest.mark.slow
+    @pytest.mark.tier3
     def test_adf_power(self):
         """Test ADF power for stationary series."""
         np.random.seed(42)

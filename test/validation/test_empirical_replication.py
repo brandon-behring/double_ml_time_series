@@ -2,6 +2,11 @@
 Tests for empirical replication module (401(k) analysis).
 
 Test coverage for Chernozhukov et al. (2018) 401(k) DML replication.
+
+Tier assignments:
+    tier1: Init, constants, dataclass tests (no estimation)
+    tier2: Data loading, preprocessing (network → cached)
+    tier4: Full PLR replication (RF/Lasso), integration workflows
 """
 
 import pytest
@@ -13,6 +18,7 @@ from src.validation.empirical_replication import (
 )
 
 
+@pytest.mark.tier1
 class TestFourZeroOneKReplicationBasicFunctionality:
     """Test basic functionality and interface."""
 
@@ -43,6 +49,7 @@ class TestFourZeroOneKReplicationBasicFunctionality:
         assert FourZeroOneKReplication.PUBLISHED_ATES["IRM_RF"] == 8202.0
 
 
+@pytest.mark.tier2
 class TestFourZeroOneKReplicationDataLoading:
     """Test data loading functionality."""
 
@@ -74,6 +81,7 @@ class TestFourZeroOneKReplicationDataLoading:
         assert df1 is df2  # Same object reference
 
 
+@pytest.mark.tier2
 class TestFourZeroOneKReplicationPreprocessing:
     """Test data preprocessing functionality."""
 
@@ -120,6 +128,7 @@ class TestFourZeroOneKReplicationPreprocessing:
         assert np.array_equal(X1, X2)
 
 
+@pytest.mark.tier4
 class TestFourZeroOneKReplicationPLRRandomForest:
     """Test PLR Random Forest replication."""
 
@@ -185,6 +194,7 @@ class TestFourZeroOneKReplicationPLRRandomForest:
         assert result.metadata["n_controls"] == 11  # 11 controls (C5 fix: includes all covariates)
 
 
+@pytest.mark.tier4
 class TestFourZeroOneKReplicationPLRLasso:
     """Test PLR Lasso replication."""
 
@@ -215,6 +225,7 @@ class TestFourZeroOneKReplicationPLRLasso:
         assert result.ci_lower <= result.ate_estimate <= result.ci_upper
 
 
+@pytest.mark.tier4
 class TestFourZeroOneKReplicationComparison:
     """Test comparison with published results."""
 
@@ -263,6 +274,7 @@ class TestFourZeroOneKReplicationComparison:
         assert 0 <= result.p_value <= 1
 
 
+@pytest.mark.tier4
 class TestFourZeroOneKReplicationResultDataclass:
     """Test ReplicationResult dataclass."""
 
@@ -297,6 +309,7 @@ class TestFourZeroOneKReplicationResultDataclass:
         assert isinstance(result.timestamp, datetime)
 
 
+@pytest.mark.tier4
 class TestFourZeroOneKReplicationEdgeCases:
     """Test edge cases and robustness."""
 
@@ -333,6 +346,7 @@ class TestFourZeroOneKReplicationEdgeCases:
         assert 4000 <= result2.ate_estimate <= 15000
 
 
+@pytest.mark.tier4
 class TestFourZeroOneKReplicationIntegration:
     """Integration tests with realistic scenarios."""
 

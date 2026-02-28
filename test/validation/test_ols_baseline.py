@@ -15,10 +15,11 @@ from src.validation.ols_baseline import NaiveOLS, OLSWithControls
 from src.validation.validation_result import ValidationResult
 
 
+@pytest.mark.tier3
 class TestNaiveOLS:
     """Test suite for NaiveOLS estimator."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = NaiveOLS(n_simulations=10, alpha=0.05, random_state=42)
@@ -26,7 +27,7 @@ class TestNaiveOLS:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
-    @pytest.mark.slow
+    @pytest.mark.tier1
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = NaiveOLS(n_simulations=50, alpha=0.01, random_state=123)
@@ -162,10 +163,11 @@ class TestNaiveOLS:
         assert hasattr(result, "bias_p_value")
 
 
+@pytest.mark.tier3
 class TestOLSWithControls:
     """Test suite for OLSWithControls estimator."""
 
-    @pytest.mark.unit
+    @pytest.mark.tier1
     def test_instantiation(self):
         """Test basic instantiation."""
         estimator = OLSWithControls(n_simulations=10, alpha=0.05, random_state=42)
@@ -173,7 +175,7 @@ class TestOLSWithControls:
         assert estimator.alpha == 0.05
         assert estimator.random_state == 42
 
-    @pytest.mark.slow
+    @pytest.mark.tier1
     def test_instantiation_with_custom_params(self):
         """Test instantiation with custom parameters."""
         estimator = OLSWithControls(n_simulations=50, alpha=0.01, random_state=123)
