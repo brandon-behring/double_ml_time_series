@@ -20,7 +20,7 @@ import hashlib
 import json
 import pickle
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -117,7 +117,7 @@ class DMLModelVersion:
             serialized_transformer = pickle.dumps(feature_transformer)
 
         # Generate version ID from content hash
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(UTC).isoformat()
         content_hash = cls._compute_hash(
             model_type, serialized_nuisance, feature_names, hyperparameters, timestamp
         )

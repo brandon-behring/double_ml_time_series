@@ -8,7 +8,7 @@ Tests cover:
 - Trigger evaluation and recording
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import numpy as np
 import pytest
@@ -33,7 +33,7 @@ class TestRetrainTrigger:
         """Test basic trigger creation."""
         trigger = RetrainTrigger(
             trigger_type=TriggerType.OVERLAP_VIOLATION,
-            triggered_at=datetime.utcnow().isoformat(),
+            triggered_at=datetime.now(UTC).isoformat(),
             severity=AlertLevel.CRITICAL,
             reason="15% overlap violations detected",
             metrics={"violation_rate": 0.15},
@@ -111,7 +111,7 @@ class TestRetrainScheduler:
 
         trigger = RetrainTrigger(
             trigger_type=TriggerType.MANUAL,
-            triggered_at=datetime.utcnow().isoformat(),
+            triggered_at=datetime.now(UTC).isoformat(),
             severity=AlertLevel.OK,
             reason="Manual trigger",
         )
@@ -133,7 +133,7 @@ class TestRetrainScheduler:
         scheduler = RetrainScheduler()
         trigger = RetrainTrigger(
             trigger_type=TriggerType.MANUAL,
-            triggered_at=datetime.utcnow().isoformat(),
+            triggered_at=datetime.now(UTC).isoformat(),
             severity=AlertLevel.OK,
             reason="Test",
         )
@@ -154,7 +154,7 @@ class TestRetrainScheduler:
     def test_check_scheduled_retrain_recent(self):
         """Test scheduled check when retrain was recent."""
         scheduler = RetrainScheduler()
-        scheduler._last_retrain = datetime.utcnow()
+        scheduler._last_retrain = datetime.now(UTC)
 
         trigger = scheduler.check_scheduled_retrain()
 
@@ -167,7 +167,7 @@ class TestRetrainScheduler:
         scheduler = RetrainScheduler(config)
 
         # Set last retrain to 10 days ago
-        scheduler._last_retrain = datetime.utcnow() - timedelta(days=10)
+        scheduler._last_retrain = datetime.now(UTC) - timedelta(days=10)
 
         trigger = scheduler.check_scheduled_retrain()
 
@@ -191,7 +191,7 @@ class TestEvaluateMonitoringResults:
     def test_no_trigger_on_ok_results(self):
         """Test no trigger when all results OK."""
         scheduler = RetrainScheduler()
-        scheduler._last_retrain = datetime.utcnow()  # Avoid scheduled trigger
+        scheduler._last_retrain = datetime.now(UTC)  # Avoid scheduled trigger
 
         results = [
             MonitoringResult(
@@ -253,7 +253,7 @@ class TestEvaluateMonitoringResults:
     def test_no_trigger_on_warning_by_default(self):
         """Test no trigger on WARNING when trigger_on_warning is False."""
         scheduler = RetrainScheduler()
-        scheduler._last_retrain = datetime.utcnow()
+        scheduler._last_retrain = datetime.now(UTC)
 
         results = [
             MonitoringResult(
@@ -290,7 +290,7 @@ class TestEvaluateMonitoringResults:
     def test_no_trigger_during_cooldown(self):
         """Test no trigger during cooldown period."""
         scheduler = RetrainScheduler()
-        scheduler._last_retrain = datetime.utcnow()
+        scheduler._last_retrain = datetime.now(UTC)
 
         results = [
             MonitoringResult(

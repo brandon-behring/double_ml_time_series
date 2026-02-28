@@ -19,7 +19,7 @@ as DML requires different handling than standard ML prediction.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -108,7 +108,7 @@ class PipelineResult:
     nuisance_metrics: Dict[str, float] = field(default_factory=dict)
     monitoring_results: List[MonitoringResult] = field(default_factory=list)
     model_version: Optional[str] = None
-    fit_timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    fit_timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:

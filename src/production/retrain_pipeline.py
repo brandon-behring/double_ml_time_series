@@ -22,7 +22,7 @@ counterfactual outcomes are never observed. We can only monitor proxies.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -157,7 +157,7 @@ class RetrainScheduler:
             trigger: The trigger that caused retraining
             new_version_id: Version ID of newly trained model
         """
-        self._last_retrain = datetime.utcnow()
+        self._last_retrain = datetime.now(UTC)
         self._trigger_history.append(trigger)
         self._current_model_version = new_version_id
 
@@ -165,7 +165,7 @@ class RetrainScheduler:
         """Check if scheduler is in cooldown period."""
         if self._last_retrain is None:
             return False
-        elapsed = datetime.utcnow() - self._last_retrain
+        elapsed = datetime.now(UTC) - self._last_retrain
         return elapsed < timedelta(hours=self.config.cooldown_hours)
 
     def check_scheduled_retrain(self) -> Optional[RetrainTrigger]:
@@ -186,17 +186,17 @@ class RetrainScheduler:
             # No previous retrain - schedule one
             return RetrainTrigger(
                 trigger_type=TriggerType.SCHEDULED,
-                triggered_at=datetime.utcnow().isoformat(),
+                triggered_at=datetime.now(UTC).isoformat(),
                 severity=AlertLevel.OK,
                 reason="Initial scheduled retraining (no previous retrain recorded)",
                 model_version=self._current_model_version,
             )
 
-        elapsed_days = (datetime.utcnow() - self._last_retrain).days
+        elapsed_days = (datetime.now(UTC) - self._last_retrain).days
         if elapsed_days >= self.config.scheduled_interval_days:
             return RetrainTrigger(
                 trigger_type=TriggerType.SCHEDULED,
-                triggered_at=datetime.utcnow().isoformat(),
+                triggered_at=datetime.now(UTC).isoformat(),
                 severity=AlertLevel.OK,
                 reason=(
                     f"Scheduled retraining: {elapsed_days} days since last retrain "
@@ -258,7 +258,7 @@ class RetrainScheduler:
             if should_trigger:
                 return RetrainTrigger(
                     trigger_type=trigger_type,
-                    triggered_at=datetime.utcnow().isoformat(),
+                    triggered_at=datetime.now(UTC).isoformat(),
                     severity=result.level,
                     reason=result.message,
                     metrics={"value": result.value, "threshold": result.threshold or 0},
@@ -345,7 +345,7 @@ class RetrainScheduler:
         """
         return RetrainTrigger(
             trigger_type=TriggerType.MANUAL,
-            triggered_at=datetime.utcnow().isoformat(),
+            triggered_at=datetime.now(UTC).isoformat(),
             severity=AlertLevel.OK,
             reason=f"Manual trigger: {reason}",
             model_version=self._current_model_version,
@@ -370,7 +370,7 @@ class RetrainScheduler:
                 max(
                     0,
                     self.config.cooldown_hours
-                    - (datetime.utcnow() - self._last_retrain).total_seconds() / 3600,
+                    - (datetime.now(UTC) - self._last_retrain).total_seconds() / 3600,
                 )
                 if self._last_retrain
                 else 0

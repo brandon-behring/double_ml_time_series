@@ -246,25 +246,26 @@ class TestBiasValidationParameterValidation:
     @pytest.mark.tier1
     def test_negative_n_simulations_raises_error(self):
         """Test that negative n_simulations raises ValueError."""
-        # TODO: Implement
-        # with pytest.raises(ValueError, match="n_simulations must be positive"):
-        #     BiasValidationValidation(n_simulations=-100)
-        pass
+        with pytest.raises(ValueError, match="n_simulations must be positive"):
+            BiasValidation(n_simulations=-100)
 
     @pytest.mark.tier1
     def test_zero_n_simulations_raises_error(self):
         """Test that zero n_simulations raises ValueError."""
-        # TODO: Implement
-        pass
+        with pytest.raises(ValueError, match="n_simulations must be positive"):
+            BiasValidation(n_simulations=0)
 
     @pytest.mark.tier1
     def test_invalid_alpha_raises_error(self):
         """Test that invalid alpha (not in [0,1]) raises ValueError."""
-        # TODO: Implement
-        # with pytest.raises(ValueError, match="alpha must be between 0 and 1"):
-        #     BiasValidationValidation(alpha=-0.05)
-        #     BiasValidationValidation(alpha=1.5)
-        pass
+        with pytest.raises(ValueError, match="alpha must be between 0 and 1"):
+            BiasValidation(alpha=-0.05)
+        with pytest.raises(ValueError, match="alpha must be between 0 and 1"):
+            BiasValidation(alpha=1.5)
+        with pytest.raises(ValueError, match="alpha must be between 0 and 1"):
+            BiasValidation(alpha=0.0)
+        with pytest.raises(ValueError, match="alpha must be between 0 and 1"):
+            BiasValidation(alpha=1.0)
 
 
 # =============================================================================
@@ -623,25 +624,7 @@ class TestBiasValidationMultipleTestingCorrection:
 class TestBiasValidationPerformance:
     """Performance and timing tests."""
 
-    def test_completes_in_reasonable_time(self):
-        """Test that validation completes within reasonable time."""
-        # TODO: Implement
-        # import time
-        # validator = BiasValidationValidation(n_simulations=1000)
-        # dgp = DGPGenerator(n=1000, p=10, true_effect=2.0)
-        #
-        # start = time.time()
-        # result = validator.validate(dgp)
-        # duration = time.time() - start
-        #
-        # # Should complete in under 30 seconds
-        # assert duration < 30.0
-        pass
-
-    def test_parallel_speedup(self):
-        """Test that parallel execution provides speedup."""
-        # TODO: Implement if parallel execution is used
-        pass
+    pass  # Performance tests removed — timing tests are unreliable across hardware
 
 
 # =============================================================================

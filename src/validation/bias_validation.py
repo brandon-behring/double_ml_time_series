@@ -54,6 +54,10 @@ class BiasValidation:
             alpha: Significance level (default: 0.05 for 95% CI)
             random_state: Random seed for reproducibility
         """
+        if n_simulations <= 0:
+            raise ValueError(f"n_simulations must be positive, got {n_simulations}")
+        if not (0 < alpha < 1):
+            raise ValueError(f"alpha must be between 0 and 1 (exclusive), got {alpha}")
         self.n_simulations = n_simulations
         self.alpha = alpha
         self.random_state = random_state
