@@ -1,0 +1,33 @@
+/* Custom styles for Double ML Time Series documentation */
+
+/* Math block sizing — ensure display equations don't overflow */
+.math {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* Dataclass/NamedTuple attribute styling */
+dl.field-list > dt {
+    font-weight: 600;
+}
+
+/* Improve code block readability */
+div.highlight pre {
+    font-size: 0.85em;
+    line-height: 1.5;
+}
+
+/* Chapter map table styling */
+table.chapter-map th {
+    background-color: var(--color-table-header-bg, #f0f0f0);
+    font-weight: 600;
+}
+
+/* Admonition styling for insight boxes */
+.admonition.tip {
+    border-left-color: #1976d2;
+}
+
+.admonition.important {
+    border-left-color: #d32f2f;
+}

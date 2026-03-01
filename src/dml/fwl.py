@@ -118,9 +118,9 @@ def fwl_residualize(
 
     Notes
     -----
-    The QR method computes residuals via:
-        Ỹ = Y - Q(Q'Y)
-    where X = QR. This avoids explicitly forming (X'X)⁻¹.
+    The QR method computes residuals via
+    Ỹ = Y - Q(Q'Y) where X = QR.
+    This avoids explicitly forming (X'X)⁻¹.
 
     Examples
     --------
@@ -148,7 +148,7 @@ def fwl_residualize(
 
     # Compute R²
     ss_tot = np.sum((Y - Y.mean()) ** 2)
-    ss_res = np.sum(residuals ** 2)
+    ss_res = np.sum(residuals**2)
     r_squared = 1 - ss_res / ss_tot if ss_tot > 1e-10 else 0.0
 
     return residuals, r_squared
@@ -192,8 +192,7 @@ def fwl_estimate(
     as running the full regression Y ~ T + X. This is not an approximation.
 
     The standard error is computed assuming homoskedasticity:
-        SE(θ̂) = σ̂ / √(Σ T̃ᵢ²)
-    where σ̂² = Σ(Ỹᵢ - θ̂T̃ᵢ)² / (n - k - 1).
+    SE(θ̂) = σ̂ / √(Σ T̃ᵢ²) where σ̂² = Σ(Ỹᵢ - θ̂T̃ᵢ)² / (n - k - 1).
 
     For heteroskedasticity-robust SEs, use HC0/HC1/HC3 variants (not implemented
     here; see DML module for HAC inference).
@@ -234,7 +233,7 @@ def fwl_estimate(
 
     # Step 3: Regress Ỹ on T̃
     # θ̂ = (T̃'T̃)⁻¹T̃'Ỹ = Cov(T̃,Ỹ) / Var(T̃) since both have mean 0
-    T_tilde_sq_sum = np.sum(T_tilde ** 2)
+    T_tilde_sq_sum = np.sum(T_tilde**2)
 
     if T_tilde_sq_sum < 1e-10:
         raise ValueError(
@@ -252,13 +251,10 @@ def fwl_estimate(
     df = n - p - 1
 
     if df <= 0:
-        raise ValueError(
-            f"Not enough degrees of freedom: n={n}, p={p}. "
-            "Need n > p + 1."
-        )
+        raise ValueError(f"Not enough degrees of freedom: n={n}, p={p}. " "Need n > p + 1.")
 
     # σ̂² = RSS / df
-    sigma_sq = np.sum(final_residuals ** 2) / df
+    sigma_sq = np.sum(final_residuals**2) / df
 
     # SE(θ̂) = σ̂ / √(Σ T̃ᵢ²)
     se = np.sqrt(sigma_sq / T_tilde_sq_sum)
@@ -268,6 +264,7 @@ def fwl_estimate(
 
     # Two-sided p-value from t-distribution
     from scipy import stats
+
     p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df))
 
     return FWLResult(

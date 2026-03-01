@@ -5,6 +5,7 @@ Implements sequential g-estimation for time series causal inference with
 time-varying treatments and confounders.
 
 References:
+
 - Lewis, R. and Syrgkanis, V. (2021). Double/Debiased Machine Learning for
   Dynamic Treatment Effects. NeurIPS.
 - Chernozhukov et al. (2018). Double Machine Learning for Treatment and
@@ -661,12 +662,10 @@ class RollingWindowDML:
     Estimates local treatment effects using a moving window approach,
     useful when treatment effects vary over time.
 
-    The algorithm:
-    1. For each window position t:
-       a. Select observations in [t - window_size/2, t + window_size/2]
-       b. Run DML on window data
-       c. Store local treatment effect estimate
-    2. Return time series of local effects with HAC standard errors
+    The algorithm works as follows: for each window position t,
+    select observations in [t - window_size/2, t + window_size/2],
+    run DML on window data, and store the local treatment effect estimate.
+    Returns a time series of local effects with HAC standard errors.
 
     Args:
         window_size: Size of rolling window

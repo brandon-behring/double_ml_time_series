@@ -10,6 +10,7 @@ These are essential for valid inference in time series DML where
 standard K-Fold would violate the temporal structure.
 
 References:
+
 - Bergmeir, C., Hyndman, R. J., & Koo, B. (2018). A note on the validity
   of cross-validation for evaluating autoregressive time series prediction.
 - de Prado, M. L. (2018). Advances in Financial Machine Learning. Chapter 7.

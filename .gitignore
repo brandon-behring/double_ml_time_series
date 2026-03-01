@@ -105,3 +105,6 @@ credentials.json
 *.pem
 *credentials*
 *.secret
+
+# Sphinx documentation build
+docs/sphinx/_build/

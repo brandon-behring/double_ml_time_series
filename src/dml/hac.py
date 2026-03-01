@@ -10,6 +10,7 @@ HAC estimators provide consistent variance estimates by accounting for
 the serial correlation structure.
 
 References:
+
 - Newey, W. K., & West, K. D. (1987). A simple, positive semi-definite,
   heteroskedasticity and autocorrelation consistent covariance matrix.
   Econometrica, 55(3), 703-708.
@@ -70,7 +71,7 @@ def bartlett_kernel(lag: int, bandwidth: int) -> float:
     It's simple, always produces positive semi-definite matrices,
     and has good finite-sample properties.
 
-    K(x) = 1 - |x| for |x| <= 1, else 0
+    K(x) = 1 - abs(x) for abs(x) <= 1, else 0
 
     Args:
         lag: Lag index (can be negative)
@@ -359,7 +360,7 @@ def newey_west_se(
     else:
         # Regression case: use sandwich estimator
         # V = (X'X)^{-1} * Ω * (X'X)^{-1}
-        # where Ω = Σᵢ Σⱼ w(|i-j|/m) * eᵢ * eⱼ * xᵢ * xⱼ'
+        # where Ω = Σᵢ Σⱼ w(abs(i-j)/m) * eᵢ * eⱼ * xᵢ * xⱼ'
         cov = newey_west_covariance(residuals, X, bandwidth=bw, kernel=kernel)
         # Return SE for first coefficient (or only coefficient)
         return float(np.sqrt(cov[0, 0]))
@@ -377,7 +378,7 @@ def newey_west_covariance(
     V = (X'X)⁻¹ * Ω * (X'X)⁻¹
 
     where Ω is the HAC "meat":
-    Ω = Σᵢ Σⱼ w(|i-j|/m) * eᵢ * eⱼ * xᵢ * xⱼ'
+    Ω = Σᵢ Σⱼ w(abs(i-j)/m) * eᵢ * eⱼ * xᵢ * xⱼ'
 
     Args:
         residuals: Regression residuals (n_samples,)

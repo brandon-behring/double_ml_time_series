@@ -30,6 +30,7 @@ Phillips-Perron Test:
     for serial correlation in errors.
 
 References:
+
 - Dickey, D. A., & Fuller, W. A. (1979). Distribution of the estimators for
   autoregressive time series with a unit root.
 - Kwiatkowski, D., et al. (1992). Testing the null hypothesis of stationarity
