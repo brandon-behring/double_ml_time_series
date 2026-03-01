@@ -117,7 +117,7 @@ class FourZeroOneKReplication:
         self.random_state = random_state
         self.tolerance = tolerance
         self._rng = np.random.RandomState(random_state)
-        self._data = None
+        self._data: Optional[pd.DataFrame] = None
         self._Y = None
         self._T = None
         self._X = None
@@ -154,6 +154,7 @@ class FourZeroOneKReplication:
                     "Install with: pip install doubleml"
                 )
 
+        assert self._data is not None
         return self._data
 
     def preprocess_data(self, treatment: str = "e401") -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -387,7 +388,9 @@ class FourZeroOneKReplication:
         p_value = 2 * (1 - stats.norm.cdf(abs(z_stat)))  # Two-sided p-value
 
         # Determine status based on tolerance
-        status = "MATCH" if abs(rel_difference) <= self.tolerance else "MISMATCH"
+        status: Literal["MATCH", "MISMATCH"] = (
+            "MATCH" if abs(rel_difference) <= self.tolerance else "MISMATCH"
+        )
 
         return ReplicationResult(
             method=method,

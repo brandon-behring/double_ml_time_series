@@ -274,7 +274,7 @@ def plot_coverage_rates(
     ax.set_xlabel(x_var.upper(), fontweight="bold")
     ax.set_ylabel("Coverage Rate", fontweight="bold")
     ax.set_title(title, fontweight="bold", pad=20)
-    ax.set_ylim([0.88, 1.0])  # Focus on relevant range
+    ax.set_ylim((0.88, 1.0))  # Focus on relevant range
     ax.grid(True, alpha=0.3)
     ax.legend(frameon=True, fancybox=True, shadow=True)
 
@@ -354,7 +354,7 @@ def plot_power_curves(
     ax.set_xlabel("Effect Size (Cohen's d)", fontweight="bold")
     ax.set_ylabel("Statistical Power", fontweight="bold")
     ax.set_title(title, fontweight="bold", pad=20)
-    ax.set_ylim([0, 1.05])
+    ax.set_ylim((0, 1.05))
     ax.grid(True, alpha=0.3)
     ax.legend(frameon=True, fancybox=True, shadow=True)
 

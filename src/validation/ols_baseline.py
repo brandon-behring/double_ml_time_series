@@ -161,6 +161,7 @@ class NaiveOLS:
         else:
             bias_p_value = 0.0 if mean_bias != 0 else 1.0
 
+        status: Literal["PASS", "FAIL", "WARNING"]
         if bias_p_value < 0.01:
             status = "FAIL"
         elif bias_p_value < alpha_test:
@@ -319,6 +320,7 @@ class OLSWithControls:
         else:
             bias_p_value = 0.0 if mean_bias != 0 else 1.0
 
+        status: Literal["PASS", "FAIL", "WARNING"]
         if bias_p_value < 0.01:
             status = "FAIL"
         elif bias_p_value < alpha_test:

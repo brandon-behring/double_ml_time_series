@@ -176,7 +176,7 @@ class LassoDiagnostic:
         self.random_state = random_state
         self.verbose = verbose
         self._rng = np.random.RandomState(random_state)
-        self._data = None
+        self._data: Optional[pd.DataFrame] = None
         self._Y = None
         self._T = None
         self._X = None
@@ -205,6 +205,7 @@ class LassoDiagnostic:
             except ImportError:
                 raise ImportError("doubleml package required. Install with: pip install doubleml")
 
+        assert self._data is not None
         return self._data
 
     def preprocess_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:

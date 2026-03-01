@@ -26,8 +26,6 @@ jobs:
         run: black --check src/ test/ examples/
 
       - name: Type check (mypy)
-        # 19 pre-existing errors with these flags; report but don't block until resolved
-        continue-on-error: true
         run: mypy src/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
 
   tier1:

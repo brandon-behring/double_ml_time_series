@@ -452,7 +452,7 @@ def newey_west_covariance(
     cov = XtX_inv @ omega @ XtX_inv
 
     # Ensure symmetric (numerical precision)
-    cov = (cov + cov.T) / 2
+    cov = np.asarray((cov + cov.T) / 2, dtype=np.float64)
 
     return cov
 
@@ -548,7 +548,7 @@ class HACEstimator:
             self._bandwidth_used = optimal_bandwidth(
                 residuals,
                 method=method,
-                kernel=cast(KernelType, self.kernel),
+                kernel=self.kernel,
             )
         else:
             self._bandwidth_used = int(self.bandwidth)

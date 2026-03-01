@@ -240,7 +240,7 @@ def _compute_adf_statistic(
 
         # Trend
         if regression == "ct":
-            X_list.append(np.arange(p + 1, n)[:T_eff])
+            X_list.append(np.arange(p + 1, n, dtype=np.float64)[:T_eff])
 
         # Lagged level Y_{t-1}
         X_list.append(y[p : n - 1])
@@ -276,7 +276,7 @@ def _compute_adf_statistic(
     if regression in ("c", "ct"):
         X_list.append(np.ones(T_eff))
     if regression == "ct":
-        X_list.append(np.arange(p + 1, n)[:T_eff])
+        X_list.append(np.arange(p + 1, n, dtype=np.float64)[:T_eff])
     X_list.append(y[p : n - 1])
     for i in range(1, p + 1):
         X_list.append(dy[p - i : n - 1 - i])
@@ -460,7 +460,7 @@ def _compute_pp_statistic(
     if regression in ("c", "ct"):
         X_list.append(np.ones(T_eff))
     if regression == "ct":
-        X_list.append(np.arange(1, n))
+        X_list.append(np.arange(1, n, dtype=np.float64))
     X_list.append(y[:-1])
 
     X = np.column_stack(X_list) if len(X_list) > 1 else X_list[0].reshape(-1, 1)
@@ -501,9 +501,10 @@ def _compute_pp_statistic(
     # Correction factor
     correction = (lrv - gamma_0) * T_eff / (2 * np.sqrt(lrv) * np.sqrt(sse))
 
-    Z_t = np.sqrt(gamma_0 / lrv) * t_stat_uncorrected - correction
+    Z_t: float = float(np.sqrt(gamma_0 / lrv) * t_stat_uncorrected - correction)
+    lrv_float: float = float(lrv)
 
-    return Z_t, n_lags, lrv, resid
+    return Z_t, n_lags, lrv_float, resid
 
 
 # =============================================================================

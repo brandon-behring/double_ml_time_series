@@ -13,7 +13,7 @@ Provides side-by-side comparison of multiple causal inference estimators:
 Enables systematic evaluation of method performance across different DGP configurations.
 """
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Protocol
 from datetime import datetime
 import numpy as np
 import pandas as pd
@@ -24,6 +24,13 @@ from src.validation.ols_baseline import NaiveOLS, OLSWithControls
 from src.validation.ipw_baseline import IPWEstimator, AugmentedIPW
 from src.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
 from src.validation.validation_result import ValidationResult
+
+
+class _Validatable(Protocol):
+    """Protocol for objects that support validate(dgp) -> ValidationResult."""
+
+    def validate(self, dgp: DGPGenerator) -> ValidationResult:
+        ...
 
 
 class BaselineComparison:
@@ -64,7 +71,7 @@ class BaselineComparison:
         self.include_ml = include_ml
 
         # Initialize all baseline methods
-        self.methods = {
+        self.methods: Dict[str, _Validatable] = {
             "NaiveOLS": NaiveOLS(n_simulations=n_simulations, random_state=random_state),
             "OLSWithControls": OLSWithControls(
                 n_simulations=n_simulations, random_state=random_state

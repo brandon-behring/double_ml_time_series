@@ -229,14 +229,15 @@ class RosenbaumBounds:
         p_values_by_gamma: dict[float, float] = {}
 
         for gamma in gamma_values:
+            gamma_f = float(gamma)
             p_value = self._compute_upper_p_value(
                 theta=theta,
                 se=se,
-                gamma=gamma,
+                gamma=gamma_f,
                 n_treated=n_treated,
                 n_control=n_control,
             )
-            p_values_by_gamma[round(gamma, 2)] = p_value
+            p_values_by_gamma[round(gamma_f, 2)] = p_value
 
         # Find critical gamma (smallest where p > alpha)
         gamma_critical = self._find_critical_gamma(p_values_by_gamma)
@@ -251,7 +252,7 @@ class RosenbaumBounds:
             theta=theta,
             se=se,
             alpha=self.alpha,
-            gamma_values=gamma_values,
+            gamma_values=np.asarray(gamma_values, dtype=np.float64),
         )
 
     def _compute_upper_p_value(
