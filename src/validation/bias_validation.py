@@ -187,16 +187,16 @@ class BiasValidation:
             random_state=self.random_state,
         )
 
-        # Fit and estimate ATE
+        # Fit and estimate ATE with proper marginal CI (delta method SE)
         dml.fit(Y=data.Y, T=data.T, X=data.X)
-        ate = dml.effect(X=data.X).mean()
+        ate = float(dml.ate(X=data.X))
 
-        # Get DML's confidence interval (uses its own SE estimate)
-        ci_lower, ci_upper = dml.effect_interval(X=data.X, alpha=self.alpha)
-        ci_lower = ci_lower.mean()
-        ci_upper = ci_upper.mean()
+        # Use ate_interval() for correct marginal ATE CI construction.
+        # Note: effect_interval().mean() averages CATE intervals — methodologically
+        # incorrect for marginal inference. ate_interval() uses delta method SE.
+        ci_lower, ci_upper = dml.ate_interval(X=data.X, alpha=self.alpha)
 
-        return float(ate), float(ci_lower), float(ci_upper)
+        return ate, float(ci_lower), float(ci_upper)
 
     def _calculate_bias(self, estimates: np.ndarray, true_effect: float) -> float:
         """

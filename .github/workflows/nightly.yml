@@ -3,10 +3,12 @@ name: Nightly Tests
 on:
   schedule:
     - cron: '0 6 * * *'  # 6am UTC daily
+    - cron: '0 8 * * 0'  # 8am UTC Sunday (weekly tier4)
   workflow_dispatch:
 
 jobs:
   tier3:
+    if: github.event.schedule != '0 8 * * 0'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -23,5 +25,42 @@ jobs:
         run: |
           pip install -e ".[dev,full]"
 
-      - name: Run tier1 + tier2 + tier3 tests
-        run: pytest -m "tier1 or tier2 or tier3" --timeout=300 -v
+      - name: Run tier1 + tier2 + tier3 tests with coverage
+        run: pytest -m "tier1 or tier2 or tier3" --timeout=300 --cov=src --cov-report=xml --cov-fail-under=30 -v
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-coverage-report
+          path: coverage.xml
+          retention-days: 30
+
+  tier4-weekly:
+    if: github.event.schedule == '0 8 * * 0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev,full]"
+
+      - name: Run full test suite (tier1-tier4)
+        run: pytest --timeout=1800 --cov=src --cov-report=xml --cov-fail-under=30 -v
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-full-coverage-report
+          path: coverage.xml
+          retention-days: 90

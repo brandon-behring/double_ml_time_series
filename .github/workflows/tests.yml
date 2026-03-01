@@ -63,7 +63,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run tier1 + tier2 tests with coverage
-        run: pytest -m "tier1 or tier2" --timeout=60 --cov=src --cov-report=xml -v
+        run: pytest -m "tier1 or tier2" --timeout=60 --cov=src --cov-report=xml --cov-fail-under=30 -v
 
       - name: Upload coverage artifact
         if: always()

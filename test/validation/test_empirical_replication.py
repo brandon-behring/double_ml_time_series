@@ -46,7 +46,8 @@ class TestFourZeroOneKReplicationBasicFunctionality:
         """Test that published ATE constants are defined correctly."""
         assert FourZeroOneKReplication.PUBLISHED_ATES["PLR_RF"] == 9127.0
         assert FourZeroOneKReplication.PUBLISHED_ATES["PLR_Lasso"] == 9580.0
-        assert FourZeroOneKReplication.PUBLISHED_ATES["IRM_RF"] == 8202.0
+        # IRM_RF removed — IRM replication deferred (see Appendix A)
+        assert "IRM_RF" not in FourZeroOneKReplication.PUBLISHED_ATES
 
 
 @pytest.mark.tier2

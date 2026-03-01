@@ -12,7 +12,6 @@ Key Reference:
 Published ATE Estimates (Table 1):
     - PLR Random Forest: $9,127 (95% CI: $7,723 - $10,531)
     - PLR Lasso: $9,580
-    - IRM Random Forest: $8,202
 
 Dataset:
     - Source: 1991 Survey of Income and Program Participation (SIPP)
@@ -43,7 +42,7 @@ class ReplicationResult:
     """Results from 401(k) replication analysis.
 
     Attributes:
-        method: Estimation method used ("PLR_RF", "PLR_Lasso", "IRM_RF")
+        method: Estimation method used ("PLR_RF", "PLR_Lasso")
         ate_estimate: Estimated average treatment effect
         std_error: Standard error of ATE estimate
         ci_lower: Lower bound of 95% confidence interval
@@ -94,10 +93,10 @@ class FourZeroOneKReplication:
     """
 
     # Published ATE estimates from Chernozhukov et al. (2018) Table 1
+    # Note: IRM_RF ($8,202) excluded — IRM replication deferred (see Appendix A)
     PUBLISHED_ATES = {
         "PLR_RF": 9127.0,  # Partially Linear Regression with Random Forest
         "PLR_Lasso": 9580.0,  # Partially Linear Regression with Lasso
-        "IRM_RF": 8202.0,  # Interactive Regression Model with Random Forest
     }
 
     def __init__(
@@ -361,7 +360,7 @@ class FourZeroOneKReplication:
         """Compare estimated ATE with published results.
 
         Args:
-            method: Estimation method ("PLR_RF", "PLR_Lasso", "IRM_RF")
+            method: Estimation method ("PLR_RF", "PLR_Lasso")
             ate_estimate: Estimated ATE
             std_error: Standard error of estimate
             ci_lower: Lower CI bound

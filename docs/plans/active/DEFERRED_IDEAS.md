@@ -47,25 +47,22 @@
 Identified from pre-completion analysis reports. All actionable findings either resolved or logged here.
 
 ### BiasValidation ATE Interval Logic
-- **Item**: `src/validation/bias_validation.py:194-197` uses `effect_interval(X)` (CATE interval) averaged as ATE confidence interval. Methodologically incorrect — averaging conditional intervals does not yield a valid marginal CI.
+- **Item**: `src/validation/bias_validation.py:194-197` used `effect_interval(X)` (CATE interval) averaged as ATE confidence interval. Methodologically incorrect.
 - **Severity**: MEDIUM-HIGH
-- **Why deferred**: Does not affect core DML estimation. BiasValidation is a diagnostic utility, not used in production pipeline.
-- **Future action**: Replace with proper bootstrap or analytic ATE CI construction.
-- **Status**: DEFERRED
+- **Resolution**: Replaced with `dml.ate()` + `dml.ate_interval()` which uses delta method SE for correct marginal ATE CI construction.
+- **Status**: RESOLVED (2026-03-01)
 
 ### IRM_RF Replication Incomplete
-- **Item**: `src/validation/empirical_replication.py:100` defines `IRM_RF: 8202.0` in `PUBLISHED_ATES` but no `replicate_irm_rf()` method exists. Dead constant.
+- **Item**: `src/validation/empirical_replication.py` defined `IRM_RF: 8202.0` in `PUBLISHED_ATES` but no `replicate_irm_rf()` method existed. Dead constant.
 - **Severity**: LOW-MEDIUM
-- **Why deferred**: Does not affect existing replications (PLR_Lasso, PLR_RF work correctly). IRM is a separate estimator class.
-- **Future action**: Either implement `replicate_irm_rf()` or remove the constant.
-- **Status**: DEFERRED
+- **Resolution**: Removed dead constant. IRM replication is out of scope for PLR-focused validation; deferred to Appendix A Julia roadmap.
+- **Status**: RESOLVED (2026-03-01)
 
 ### pyproject.toml Missing Runtime Dependencies
-- **Item**: No `[project.dependencies]` section in `pyproject.toml`. `requirements.txt` is complete, but `pip install -e .` installs no dependencies.
+- **Item**: No `[project.dependencies]` section in `pyproject.toml`.
 - **Severity**: MEDIUM
-- **Why deferred**: Workaround exists (`pip install -r requirements.txt`). Not blocking any workflow.
-- **Future action**: Add `dependencies = [...]` to `[project]` section mirroring `requirements.txt`.
-- **Status**: DEFERRED
+- **Resolution**: Already resolved — `pyproject.toml` has `[project.dependencies]` with all 8 runtime packages.
+- **Status**: RESOLVED (pre-existing)
 
 ---
 
