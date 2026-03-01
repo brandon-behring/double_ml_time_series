@@ -23,7 +23,7 @@ Production-grade Double Machine Learning reference book for time series causal i
 | LaTeX lines | 9,548 |
 | Python code | 14,068 lines |
 | Production code | 2,453 lines |
-| Tests | 763 |
+| Tests | 796 |
 | Completion | 100% |
 
 ### Key Deliverables

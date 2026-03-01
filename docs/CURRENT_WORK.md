@@ -10,7 +10,7 @@
 
 Current state (verified 2026-01-30):
 - ✅ Chapters 1-10 + Appendix: Complete (180 pages, 9,548 LaTeX lines)
-- ✅ Tests: 763 total (4-tier system: 285/316/161/40 by tier)
+- ✅ Tests: 796 total (4-tier system: 285/316/161/34 by tier)
 - ✅ Zero LaTeX errors
 - ✅ Time series DML: 5,370+ lines implemented
 - ✅ Production module: 2,453 lines (model registry, monitoring, retraining)
@@ -58,7 +58,7 @@ Current state (verified 2026-01-30):
 ## Context for Return
 
 - **Build**: `lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex`
-- **Tests**: `pytest -m tier1` (285, ~12s), `pytest -m "tier1 or tier2"` (601, ~2min)
+- **Tests**: `pytest -m tier1` (285, ~12s), `pytest -m "tier1 or tier2"` (601, ~2min), `pytest` (796 total)
 - **Install**: `pip install -e .` (required for imports)
 - **Master plan**: `docs/MASTER_ROADMAP_2025-11-21.md`
 - **Hardware**: 64-core Threadripper, n_jobs=48
@@ -67,7 +67,8 @@ Current state (verified 2026-01-30):
 
 ## Recent Completions
 
-- **2026-02-28**: Test infrastructure overhaul — 4-tier system (tier1-tier4), all 727 tiers 1-3 passing, zero unmarked tests, BootstrapConfig factories, pytest-timeout enforcement, cached 401(k) fixture
+- **2026-02-28**: Repository consolidation — README rewrite, doc updates, archive stale plans, clean untracked files
+- **2026-02-28**: Test infrastructure overhaul — 4-tier system (tier1-tier4), 796 tests passing, zero unmarked tests, BootstrapConfig factories, pytest-timeout enforcement, cached 401(k) fixture
 
 ## Known Issues
 
