@@ -1,0 +1,27 @@
+name: Nightly Tests
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # 6am UTC daily
+  workflow_dispatch:
+
+jobs:
+  tier3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev,full]"
+
+      - name: Run tier1 + tier2 + tier3 tests
+        run: pytest -m "tier1 or tier2 or tier3" --timeout=300 -v

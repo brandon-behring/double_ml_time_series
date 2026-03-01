@@ -8,6 +8,36 @@ version = "0.1.0"
 description = "Volume 2: Double Machine Learning for Time Series Causal Inference"
 authors = [{name = "Brandon Behring"}]
 requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+keywords = ["causal-inference", "double-machine-learning", "time-series", "econometrics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.11",
+    "pandas>=2.0",
+    "scikit-learn>=1.3",
+    "statsmodels>=0.14",
+    "joblib>=1.3",
+    "tqdm>=4.65",
+    "matplotlib>=3.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "pytest-cov>=4.1", "pytest-timeout>=2.2", "black>=23.11", "mypy>=1.7", "pre-commit>=3.5"]
+fred = ["fredapi>=0.5"]
+full = ["econml>=0.15", "doubleml>=0.7", "xgboost>=2.0", "lightgbm>=4.0", "linearmodels>=5.0"]
+
+[project.urls]
+Repository = "https://github.com/brandon-behring/double_ml_time_series"
+Documentation = "https://brandon-behring.github.io/double_ml_time_series/"
 
 [tool.setuptools.packages.find]
 where = ["."]

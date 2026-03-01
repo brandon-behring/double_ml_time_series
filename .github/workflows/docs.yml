@@ -8,6 +8,7 @@ on:
       - 'src/**'
       - 'examples/**'
       - 'requirements-docs.txt'
+      - 'pyproject.toml'
   pull_request:
     branches: [main]
     paths:
@@ -15,6 +16,7 @@ on:
       - 'src/**'
       - 'examples/**'
       - 'requirements-docs.txt'
+      - 'pyproject.toml'
 
 permissions:
   contents: write
