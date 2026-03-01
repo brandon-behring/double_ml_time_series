@@ -527,6 +527,13 @@ def create_insurance_dgp(
         >>> print(f"True effect: {dgp.true_params.tau}")
         >>> print(f"Observations: {len(dgp.Y)}")
     """
+    if realism not in ("simple", "moderate", "full"):
+        raise ValueError(f"realism must be 'simple', 'moderate', or 'full', got '{realism}'")
+    if n_periods < 1:
+        raise ValueError(f"n_periods must be >= 1, got {n_periods}")
+    if n_products < 1:
+        raise ValueError(f"n_products must be >= 1, got {n_products}")
+
     rng = np.random.default_rng(seed)
     n_total = n_periods * n_products
 
