@@ -1,0 +1,955 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.production.retrain_pipeline &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/production/retrain_pipeline';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Time Series DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Production Causal Inference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/production/retrain_pipeline.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for src.production.retrain_pipeline</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Retraining triggers and scheduling for DML pipelines.</span>
+
+<span class="sd">This module provides causal-specific retraining logic that differs from</span>
+<span class="sd">standard ML in critical ways:</span>
+
+<span class="sd">Standard ML Retraining Triggers:</span>
+<span class="sd">- Prediction accuracy degradation</span>
+<span class="sd">- Feature drift</span>
+<span class="sd">- Scheduled intervals</span>
+
+<span class="sd">Causal-Specific Retraining Triggers:</span>
+<span class="sd">- Overlap violation threshold exceeded (positivity breakdown)</span>
+<span class="sd">- Treatment distribution shift (assignment mechanism change)</span>
+<span class="sd">- Nuisance model R² degradation (NOT causal accuracy - unknowable!)</span>
+<span class="sd">- Effect stability change beyond acceptable bounds</span>
+
+<span class="sd">Key insight: We CANNOT retrain based on &quot;treatment effect accuracy&quot; because</span>
+<span class="sd">counterfactual outcomes are never observed. We can only monitor proxies.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.production.causal_monitor</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlertLevel</span><span class="p">,</span> <span class="n">CausalMonitor</span><span class="p">,</span> <span class="n">MonitoringResult</span>
+
+
+<div class="viewcode-block" id="TriggerType">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.TriggerType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TriggerType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Types of retraining triggers.&quot;&quot;&quot;</span>
+
+    <span class="n">SCHEDULED</span> <span class="o">=</span> <span class="s2">&quot;scheduled&quot;</span>
+    <span class="n">OVERLAP_VIOLATION</span> <span class="o">=</span> <span class="s2">&quot;overlap_violation&quot;</span>
+    <span class="n">TREATMENT_SHIFT</span> <span class="o">=</span> <span class="s2">&quot;treatment_shift&quot;</span>
+    <span class="n">NUISANCE_DEGRADATION</span> <span class="o">=</span> <span class="s2">&quot;nuisance_degradation&quot;</span>
+    <span class="n">EFFECT_INSTABILITY</span> <span class="o">=</span> <span class="s2">&quot;effect_instability&quot;</span>
+    <span class="n">COVARIATE_SHIFT</span> <span class="o">=</span> <span class="s2">&quot;covariate_shift&quot;</span>
+    <span class="n">MANUAL</span> <span class="o">=</span> <span class="s2">&quot;manual&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="RetrainTrigger">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainTrigger">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RetrainTrigger</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A single retraining trigger event.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        trigger_type: Type of trigger</span>
+<span class="sd">        triggered_at: When the trigger fired</span>
+<span class="sd">        severity: Alert level that triggered retraining</span>
+<span class="sd">        reason: Human-readable explanation</span>
+<span class="sd">        metrics: Relevant metrics at trigger time</span>
+<span class="sd">        model_version: Version of model that triggered</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">trigger_type</span><span class="p">:</span> <span class="n">TriggerType</span>
+    <span class="n">triggered_at</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">severity</span><span class="p">:</span> <span class="n">AlertLevel</span>
+    <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">model_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="RetrainTrigger.to_dict">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainTrigger.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to dictionary for serialization.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;trigger_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigger_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;triggered_at&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">triggered_at</span><span class="p">,</span>
+            <span class="s2">&quot;severity&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">reason</span><span class="p">,</span>
+            <span class="s2">&quot;metrics&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span>
+            <span class="s2">&quot;model_version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_version</span><span class="p">,</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RetrainSchedulerConfig">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainSchedulerConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RetrainSchedulerConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Configuration for retraining scheduler.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        scheduled_interval_days: Days between scheduled retrains (0 = disabled)</span>
+<span class="sd">        trigger_on_critical: Trigger retrain on CRITICAL alerts</span>
+<span class="sd">        trigger_on_warning: Trigger retrain on WARNING alerts (use cautiously)</span>
+<span class="sd">        min_samples_for_trigger: Minimum samples before triggering</span>
+<span class="sd">        cooldown_hours: Minimum hours between retrains</span>
+<span class="sd">        enabled_triggers: Which trigger types are active</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">scheduled_interval_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="n">trigger_on_critical</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">trigger_on_warning</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">min_samples_for_trigger</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">cooldown_hours</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24</span>
+    <span class="n">enabled_triggers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">TriggerType</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span>
+            <span class="n">TriggerType</span><span class="o">.</span><span class="n">SCHEDULED</span><span class="p">,</span>
+            <span class="n">TriggerType</span><span class="o">.</span><span class="n">OVERLAP_VIOLATION</span><span class="p">,</span>
+            <span class="n">TriggerType</span><span class="o">.</span><span class="n">TREATMENT_SHIFT</span><span class="p">,</span>
+            <span class="n">TriggerType</span><span class="o">.</span><span class="n">NUISANCE_DEGRADATION</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="RetrainScheduler">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RetrainScheduler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Intelligent retraining scheduler for DML pipelines.</span>
+
+<span class="sd">    Combines scheduled and triggered retraining with causal-specific</span>
+<span class="sd">    monitoring integration.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; scheduler = RetrainScheduler()</span>
+<span class="sd">        &gt;&gt;&gt; monitor = CausalMonitor()</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Check if retraining needed</span>
+<span class="sd">        &gt;&gt;&gt; results = monitor.run_all_checks(...)</span>
+<span class="sd">        &gt;&gt;&gt; trigger = scheduler.evaluate_monitoring_results(results)</span>
+<span class="sd">        &gt;&gt;&gt; if trigger is not None:</span>
+<span class="sd">        ...     print(f&quot;Retrain triggered: {trigger.reason}&quot;)</span>
+<span class="sd">        ...     # Execute retraining pipeline</span>
+<span class="sd">        ...     scheduler.record_retrain(trigger, new_version_id)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RetrainScheduler.__init__">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RetrainSchedulerConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CausalMonitor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize retrain scheduler.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config: Scheduler configuration (uses defaults if None)</span>
+<span class="sd">            monitor: CausalMonitor instance (creates new if None)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">RetrainSchedulerConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="n">monitor</span> <span class="ow">or</span> <span class="n">CausalMonitor</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_scheduled_check</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_history</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RetrainTrigger</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="RetrainScheduler.set_current_model">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.set_current_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_current_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the current production model version.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span> <span class="o">=</span> <span class="n">version_id</span></div>
+
+
+<div class="viewcode-block" id="RetrainScheduler.record_retrain">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.record_retrain">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">record_retrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger</span><span class="p">:</span> <span class="n">RetrainTrigger</span><span class="p">,</span> <span class="n">new_version_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Record that retraining occurred.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trigger: The trigger that caused retraining</span>
+<span class="sd">            new_version_id: Version ID of newly trained model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trigger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span> <span class="o">=</span> <span class="n">new_version_id</span></div>
+
+
+<div class="viewcode-block" id="RetrainScheduler.is_in_cooldown">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.is_in_cooldown">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_in_cooldown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if scheduler is in cooldown period.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">elapsed</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span>
+        <span class="k">return</span> <span class="n">elapsed</span> <span class="o">&lt;</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cooldown_hours</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RetrainScheduler.check_scheduled_retrain">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.check_scheduled_retrain">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_scheduled_retrain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RetrainTrigger</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if scheduled retraining is due.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RetrainTrigger if scheduled retrain due, None otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scheduled_interval_days</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">TriggerType</span><span class="o">.</span><span class="n">SCHEDULED</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">enabled_triggers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Check time since last retrain</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># No previous retrain - schedule one</span>
+            <span class="k">return</span> <span class="n">RetrainTrigger</span><span class="p">(</span>
+                <span class="n">trigger_type</span><span class="o">=</span><span class="n">TriggerType</span><span class="o">.</span><span class="n">SCHEDULED</span><span class="p">,</span>
+                <span class="n">triggered_at</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                <span class="n">severity</span><span class="o">=</span><span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span>
+                <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Initial scheduled retraining (no previous retrain recorded)&quot;</span><span class="p">,</span>
+                <span class="n">model_version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">elapsed_days</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span><span class="p">)</span><span class="o">.</span><span class="n">days</span>
+        <span class="k">if</span> <span class="n">elapsed_days</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scheduled_interval_days</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">RetrainTrigger</span><span class="p">(</span>
+                <span class="n">trigger_type</span><span class="o">=</span><span class="n">TriggerType</span><span class="o">.</span><span class="n">SCHEDULED</span><span class="p">,</span>
+                <span class="n">triggered_at</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                <span class="n">severity</span><span class="o">=</span><span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span>
+                <span class="n">reason</span><span class="o">=</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Scheduled retraining: </span><span class="si">{</span><span class="n">elapsed_days</span><span class="si">}</span><span class="s2"> days since last retrain &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;(threshold: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scheduled_interval_days</span><span class="si">}</span><span class="s2"> days)&quot;</span>
+                <span class="p">),</span>
+                <span class="n">metrics</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;days_since_retrain&quot;</span><span class="p">:</span> <span class="n">elapsed_days</span><span class="p">},</span>
+                <span class="n">model_version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="RetrainScheduler.evaluate_monitoring_results">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.evaluate_monitoring_results">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_monitoring_results</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MonitoringResult</span><span class="p">],</span>
+        <span class="n">n_samples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RetrainTrigger</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate monitoring results and determine if retraining needed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            results: List of MonitoringResult from CausalMonitor</span>
+<span class="sd">            n_samples: Number of samples in evaluation (for min threshold)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RetrainTrigger if retraining needed, None otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check cooldown</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_in_cooldown</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Check minimum samples</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_samples</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">min_samples_for_trigger</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Map check names to trigger types</span>
+        <span class="n">check_to_trigger</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;overlap_violations&quot;</span><span class="p">:</span> <span class="n">TriggerType</span><span class="o">.</span><span class="n">OVERLAP_VIOLATION</span><span class="p">,</span>
+            <span class="s2">&quot;treatment_shift&quot;</span><span class="p">:</span> <span class="n">TriggerType</span><span class="o">.</span><span class="n">TREATMENT_SHIFT</span><span class="p">,</span>
+            <span class="s2">&quot;nuisance_degradation&quot;</span><span class="p">:</span> <span class="n">TriggerType</span><span class="o">.</span><span class="n">NUISANCE_DEGRADATION</span><span class="p">,</span>
+            <span class="s2">&quot;effect_stability&quot;</span><span class="p">:</span> <span class="n">TriggerType</span><span class="o">.</span><span class="n">EFFECT_INSTABILITY</span><span class="p">,</span>
+            <span class="s2">&quot;covariate_shift&quot;</span><span class="p">:</span> <span class="n">TriggerType</span><span class="o">.</span><span class="n">COVARIATE_SHIFT</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Find triggering results</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">trigger_type</span> <span class="o">=</span> <span class="n">check_to_trigger</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">check_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">trigger_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">trigger_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">enabled_triggers</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">should_trigger</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">CRITICAL</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">trigger_on_critical</span><span class="p">:</span>
+                <span class="n">should_trigger</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="n">result</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">trigger_on_warning</span><span class="p">:</span>
+                <span class="n">should_trigger</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="n">should_trigger</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">RetrainTrigger</span><span class="p">(</span>
+                    <span class="n">trigger_type</span><span class="o">=</span><span class="n">trigger_type</span><span class="p">,</span>
+                    <span class="n">triggered_at</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+                    <span class="n">severity</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">level</span><span class="p">,</span>
+                    <span class="n">reason</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+                    <span class="n">metrics</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">threshold</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">},</span>
+                    <span class="n">model_version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Check scheduled retraining</span>
+        <span class="n">scheduled_trigger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_scheduled_retrain</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">scheduled_trigger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">scheduled_trigger</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="RetrainScheduler.evaluate_and_monitor">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.evaluate_and_monitor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_and_monitor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">propensity_scores</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">treatment_current</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">treatment_baseline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">r2_propensity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">r2_outcome</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">current_effect</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">baseline_effect</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">X_current</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">X_baseline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">MonitoringResult</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RetrainTrigger</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run monitoring and evaluate for retraining in one call.</span>
+
+<span class="sd">        Convenience method combining CausalMonitor.run_all_checks with</span>
+<span class="sd">        evaluate_monitoring_results.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            propensity_scores: Estimated propensity scores</span>
+<span class="sd">            treatment_current: Current treatment values</span>
+<span class="sd">            treatment_baseline: Baseline treatment values</span>
+<span class="sd">            r2_propensity: Propensity model R²</span>
+<span class="sd">            r2_outcome: Outcome model R²</span>
+<span class="sd">            current_effect: Current ATE estimate</span>
+<span class="sd">            baseline_effect: Baseline ATE estimate</span>
+<span class="sd">            X_current: Current covariates</span>
+<span class="sd">            X_baseline: Baseline covariates</span>
+<span class="sd">            **kwargs: Additional args for monitor</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of (monitoring_results, retrain_trigger)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">propensity_scores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">treatment_current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">treatment_current</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">X_current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_current</span><span class="p">)</span>
+
+        <span class="c1"># Run monitoring</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="o">.</span><span class="n">run_all_checks</span><span class="p">(</span>
+            <span class="n">propensity_scores</span><span class="o">=</span><span class="n">propensity_scores</span><span class="p">,</span>
+            <span class="n">treatment_current</span><span class="o">=</span><span class="n">treatment_current</span><span class="p">,</span>
+            <span class="n">treatment_baseline</span><span class="o">=</span><span class="n">treatment_baseline</span><span class="p">,</span>
+            <span class="n">r2_propensity</span><span class="o">=</span><span class="n">r2_propensity</span><span class="p">,</span>
+            <span class="n">r2_outcome</span><span class="o">=</span><span class="n">r2_outcome</span><span class="p">,</span>
+            <span class="n">current_effect</span><span class="o">=</span><span class="n">current_effect</span><span class="p">,</span>
+            <span class="n">baseline_effect</span><span class="o">=</span><span class="n">baseline_effect</span><span class="p">,</span>
+            <span class="n">X_current</span><span class="o">=</span><span class="n">X_current</span><span class="p">,</span>
+            <span class="n">X_baseline</span><span class="o">=</span><span class="n">X_baseline</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Evaluate for retraining</span>
+        <span class="n">trigger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_monitoring_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span><span class="p">,</span> <span class="n">trigger</span></div>
+
+
+<div class="viewcode-block" id="RetrainScheduler.create_manual_trigger">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.create_manual_trigger">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_manual_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RetrainTrigger</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a manual retraining trigger.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reason: Explanation for manual trigger</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RetrainTrigger for manual retraining</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">RetrainTrigger</span><span class="p">(</span>
+            <span class="n">trigger_type</span><span class="o">=</span><span class="n">TriggerType</span><span class="o">.</span><span class="n">MANUAL</span><span class="p">,</span>
+            <span class="n">triggered_at</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+            <span class="n">severity</span><span class="o">=</span><span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span>
+            <span class="n">reason</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Manual trigger: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">model_version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RetrainScheduler.get_trigger_history">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.get_trigger_history">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_trigger_history</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return history of retraining triggers as dicts.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_history</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="RetrainScheduler.get_status">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.get_status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get current scheduler status.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict with scheduler state information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;current_model_version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span><span class="p">,</span>
+            <span class="s2">&quot;last_retrain&quot;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="s2">&quot;in_cooldown&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_in_cooldown</span><span class="p">(),</span>
+            <span class="s2">&quot;cooldown_remaining_hours&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="nb">max</span><span class="p">(</span>
+                    <span class="mi">0</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">cooldown_hours</span>
+                    <span class="o">-</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span>
+                <span class="k">else</span> <span class="mi">0</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;n_triggers_total&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_history</span><span class="p">),</span>
+            <span class="s2">&quot;scheduled_interval_days&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scheduled_interval_days</span><span class="p">,</span>
+            <span class="s2">&quot;enabled_triggers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">enabled_triggers</span><span class="p">],</span>
+        <span class="p">}</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;RetrainScheduler(&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;model=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;last_retrain=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;n_triggers=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_history</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_airflow_dag_config">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.create_airflow_dag_config">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_airflow_dag_config</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="p">:</span> <span class="n">RetrainScheduler</span><span class="p">,</span>
+    <span class="n">dag_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;dml_retrain_pipeline&quot;</span><span class="p">,</span>
+    <span class="n">schedule</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;@daily&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create Airflow DAG configuration for DML retraining.</span>
+
+<span class="sd">    This is a configuration template - actual DAG implementation</span>
+<span class="sd">    would be in your Airflow codebase.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        scheduler: RetrainScheduler instance</span>
+<span class="sd">        dag_id: Airflow DAG identifier</span>
+<span class="sd">        schedule: Airflow schedule interval</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict with DAG configuration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;dag_id&quot;</span><span class="p">:</span> <span class="n">dag_id</span><span class="p">,</span>
+        <span class="s2">&quot;schedule_interval&quot;</span><span class="p">:</span> <span class="n">schedule</span><span class="p">,</span>
+        <span class="s2">&quot;default_args&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="s2">&quot;causal-ml&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;depends_on_past&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;retries&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;retry_delay_minutes&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;tasks&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="s2">&quot;check_monitoring&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Run causal monitoring checks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;python_callable&quot;</span><span class="p">:</span> <span class="s2">&quot;run_causal_monitoring&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="s2">&quot;evaluate_retrain&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Evaluate if retraining needed&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;python_callable&quot;</span><span class="p">:</span> <span class="s2">&quot;evaluate_retrain_trigger&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;depends_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;check_monitoring&quot;</span><span class="p">],</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="s2">&quot;retrain_model&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Retrain DML model if triggered&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;python_callable&quot;</span><span class="p">:</span> <span class="s2">&quot;retrain_dml_pipeline&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;depends_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;evaluate_retrain&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;trigger_rule&quot;</span><span class="p">:</span> <span class="s2">&quot;none_failed&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="s2">&quot;validate_model&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Validate retrained model&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;python_callable&quot;</span><span class="p">:</span> <span class="s2">&quot;validate_new_model&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;depends_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;retrain_model&quot;</span><span class="p">],</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="s2">&quot;promote_staging&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Promote to staging if validation passes&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;python_callable&quot;</span><span class="p">:</span> <span class="s2">&quot;promote_to_staging&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;depends_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;validate_model&quot;</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;scheduler_config&quot;</span><span class="p">:</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="create_prefect_flow_config">
+<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.create_prefect_flow_config">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_prefect_flow_config</span><span class="p">(</span>
+    <span class="n">scheduler</span><span class="p">:</span> <span class="n">RetrainScheduler</span><span class="p">,</span>
+    <span class="n">flow_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;dml-retrain&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create Prefect flow configuration for DML retraining.</span>
+
+<span class="sd">    This is a configuration template - actual flow implementation</span>
+<span class="sd">    would be in your Prefect codebase.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        scheduler: RetrainScheduler instance</span>
+<span class="sd">        flow_name: Prefect flow name</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict with flow configuration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;flow_name&quot;</span><span class="p">:</span> <span class="n">flow_name</span><span class="p">,</span>
+        <span class="s2">&quot;schedule&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;cron&quot;</span><span class="p">:</span> <span class="s2">&quot;0 6 * * *&quot;</span><span class="p">,</span>  <span class="c1"># Daily at 6 AM</span>
+            <span class="s2">&quot;timezone&quot;</span><span class="p">:</span> <span class="s2">&quot;UTC&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;tasks&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;load_data&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Load inference data for monitoring&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;retries&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;run_monitoring&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Execute causal monitoring checks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;depends_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;load_data&quot;</span><span class="p">],</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;evaluate_trigger&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Determine if retraining needed&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;depends_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;run_monitoring&quot;</span><span class="p">],</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;retrain_conditionally&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Retrain model if trigger fired&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;depends_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;evaluate_trigger&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;conditional&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;validate_and_promote&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Validate and promote to staging&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;depends_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;retrain_conditionally&quot;</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;scheduler_config&quot;</span><span class="p">:</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

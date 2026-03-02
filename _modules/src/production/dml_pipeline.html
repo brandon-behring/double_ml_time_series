@@ -1,0 +1,1108 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.production.dml_pipeline &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/production/dml_pipeline';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Time Series DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Production Causal Inference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/production/dml_pipeline.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for src.production.dml_pipeline</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">End-to-end DML pipeline for production deployment.</span>
+
+<span class="sd">This module provides InsuranceDMLPipeline, a complete production pipeline</span>
+<span class="sd">for insurance/annuity competitor pricing analysis.</span>
+
+<span class="sd">Pipeline stages:</span>
+<span class="sd">1. Data ingestion (FRED macro + insurance pricing data)</span>
+<span class="sd">2. Feature engineering (transformers, interactions)</span>
+<span class="sd">3. DML estimation (with proper time series cross-fitting)</span>
+<span class="sd">4. Monitoring integration (causal-specific checks)</span>
+<span class="sd">5. Model versioning (registry integration)</span>
+<span class="sd">6. Inference serving (batch and online)</span>
+
+<span class="sd">Key design principle: Separate training and inference paths clearly,</span>
+<span class="sd">as DML requires different handling than standard ML prediction.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC</span><span class="p">,</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="c1"># Import our DML components</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">src.dml.double_ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>  <span class="c1"># noqa: F401</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">src.dml.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>  <span class="c1"># noqa: F401</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">src.dml.hac</span><span class="w"> </span><span class="kn">import</span> <span class="n">newey_west_se</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">src.dml.dynamic_dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicDML</span>  <span class="c1"># noqa: F401</span>
+
+    <span class="n">DML_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">DML_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="c1"># Import production components</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.production.model_registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">DMLModelVersion</span><span class="p">,</span> <span class="n">DMLModelRegistry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.production.causal_monitor</span><span class="w"> </span><span class="kn">import</span> <span class="n">CausalMonitor</span><span class="p">,</span> <span class="n">MonitoringResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.production.retrain_pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetrainScheduler</span><span class="p">,</span> <span class="n">RetrainTrigger</span>
+
+
+<div class="viewcode-block" id="PipelineConfig">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.PipelineConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PipelineConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Configuration for InsuranceDMLPipeline.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        n_folds: Number of cross-fitting folds</span>
+<span class="sd">        n_jobs: Parallel jobs for estimation</span>
+<span class="sd">        random_state: Random seed for reproducibility</span>
+<span class="sd">        model_registry_path: Path for model versioning</span>
+<span class="sd">        propensity_model: Model for treatment propensity</span>
+<span class="sd">        outcome_model: Model for outcome regression</span>
+<span class="sd">        use_hac: Use HAC standard errors for time series</span>
+<span class="sd">        hac_bandwidth: Bandwidth for HAC (None = auto)</span>
+<span class="sd">        monitoring_enabled: Enable production monitoring</span>
+<span class="sd">        feature_columns: List of feature/covariate column names</span>
+<span class="sd">        treatment_column: Treatment variable name</span>
+<span class="sd">        outcome_column: Outcome variable name</span>
+<span class="sd">        time_column: Time index column name (for time series)</span>
+<span class="sd">        entity_column: Entity/panel identifier (for panel data)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span>
+    <span class="n">model_registry_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;./models/dml_registry&quot;</span>
+    <span class="n">propensity_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">outcome_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">use_hac</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">hac_bandwidth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">monitoring_enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">feature_columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">treatment_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;treatment&quot;</span>
+    <span class="n">outcome_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;outcome&quot;</span>
+    <span class="n">time_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">entity_column</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="PipelineResult">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.PipelineResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PipelineResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Result from a pipeline fit or predict operation.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        ate: Average Treatment Effect estimate</span>
+<span class="sd">        ate_se: Standard error of ATE</span>
+<span class="sd">        ate_ci_lower: Lower bound of 95% CI</span>
+<span class="sd">        ate_ci_upper: Upper bound of 95% CI</span>
+<span class="sd">        cate: Conditional ATE (if computed)</span>
+<span class="sd">        nuisance_metrics: R² for propensity and outcome models</span>
+<span class="sd">        monitoring_results: Results from causal monitoring</span>
+<span class="sd">        model_version: Version ID of fitted model</span>
+<span class="sd">        fit_timestamp: When model was fitted</span>
+<span class="sd">        metadata: Additional metadata</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">ate_se</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">ate_ci_lower</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">ate_ci_upper</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">cate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">nuisance_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">monitoring_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MonitoringResult</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">model_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">fit_timestamp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PipelineResult.to_dict">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.PipelineResult.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to dictionary for serialization.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;ate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ate</span><span class="p">,</span>
+            <span class="s2">&quot;ate_se&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ate_se</span><span class="p">,</span>
+            <span class="s2">&quot;ate_ci_lower&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ate_ci_lower</span><span class="p">,</span>
+            <span class="s2">&quot;ate_ci_upper&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ate_ci_upper</span><span class="p">,</span>
+            <span class="s2">&quot;nuisance_metrics&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuisance_metrics</span><span class="p">,</span>
+            <span class="s2">&quot;monitoring_results&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitoring_results</span><span class="p">],</span>
+            <span class="s2">&quot;model_version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_version</span><span class="p">,</span>
+            <span class="s2">&quot;fit_timestamp&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_timestamp</span><span class="p">,</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="InsuranceDMLPipeline">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InsuranceDMLPipeline</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Production DML pipeline for insurance/annuity pricing analysis.</span>
+
+<span class="sd">    Integrates:</span>
+<span class="sd">    - Feature transformation (scaling, encoding)</span>
+<span class="sd">    - DML estimation with time series cross-validation</span>
+<span class="sd">    - HAC standard errors for autocorrelated data</span>
+<span class="sd">    - Model versioning and registry</span>
+<span class="sd">    - Causal-specific monitoring</span>
+<span class="sd">    - Retraining triggers</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; config = PipelineConfig(</span>
+<span class="sd">        ...     feature_columns=[&quot;age&quot;, &quot;income&quot;, &quot;tenure&quot;, &quot;macro_gdp&quot;],</span>
+<span class="sd">        ...     treatment_column=&quot;competitor_price&quot;,</span>
+<span class="sd">        ...     outcome_column=&quot;retention&quot;,</span>
+<span class="sd">        ...     time_column=&quot;quarter&quot;,</span>
+<span class="sd">        ...     propensity_model=RandomForestClassifier(n_estimators=100),</span>
+<span class="sd">        ...     outcome_model=RandomForestRegressor(n_estimators=100),</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; pipeline = InsuranceDMLPipeline(config)</span>
+<span class="sd">        &gt;&gt;&gt; result = pipeline.fit(X, T, Y)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;ATE: {result.ate:.3f} ({result.ate_ci_lower:.3f}, {result.ate_ci_upper:.3f})&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.__init__">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PipelineConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize insurance DML pipeline.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config: Pipeline configuration (uses defaults if None)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">PipelineConfig</span><span class="p">()</span>
+
+        <span class="c1"># Initialize components</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StandardScaler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_propensity_scores</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ate_se</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DMLModelVersion</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Initialize model registry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span> <span class="o">=</span> <span class="n">DMLModelRegistry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model_registry_path</span><span class="p">)</span>
+
+        <span class="c1"># Initialize monitoring</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">monitoring_enabled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span> <span class="o">=</span> <span class="n">CausalMonitor</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span> <span class="o">=</span> <span class="n">RetrainScheduler</span><span class="p">(</span><span class="n">monitor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Set default models if not provided</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegressionCV</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span> <span class="o">=</span> <span class="n">LogisticRegressionCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">RidgeCV</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepare data for DML estimation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X: Covariate matrix (n_samples, n_features)</span>
+<span class="sd">            T: Treatment vector (n_samples,)</span>
+<span class="sd">            Y: Outcome vector (n_samples,)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of (X_scaled, T, Y) arrays</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Fit or transform with scaler</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+            <span class="n">X_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">X_scaled</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Y</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_cross_validator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;TimeSeriesCrossValidator&quot;</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create appropriate cross-validator.</span>
+
+<span class="sd">        Uses TimeSeriesCrossValidator if time_column is specified,</span>
+<span class="sd">        otherwise uses standard KFold.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_samples: Number of samples</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Cross-validator instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">time_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">(</span>
+                <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
+                <span class="n">gap</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
+
+            <span class="k">return</span> <span class="n">KFold</span><span class="p">(</span>
+                <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
+                <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.fit">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">baseline_ate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">baseline_ate_se</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PipelineResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit DML pipeline to data.</span>
+
+<span class="sd">        Performs:</span>
+<span class="sd">        1. Data preparation (scaling)</span>
+<span class="sd">        2. Cross-fitted nuisance model estimation</span>
+<span class="sd">        3. ATE estimation with orthogonalization</span>
+<span class="sd">        4. HAC standard errors (if enabled)</span>
+<span class="sd">        5. Monitoring checks</span>
+<span class="sd">        6. Model versioning</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X: Covariate matrix (n_samples, n_features)</span>
+<span class="sd">            T: Treatment vector (n_samples,)</span>
+<span class="sd">            Y: Outcome vector (n_samples,)</span>
+<span class="sd">            baseline_ate: Optional baseline ATE for effect stability check</span>
+<span class="sd">            baseline_ate_se: Optional baseline SE for effect stability check</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PipelineResult with estimates and diagnostics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Prepare data</span>
+        <span class="n">X_scaled</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="c1"># Create cross-validator</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cross_validator</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+        <span class="c1"># Fit nuisance models and compute orthogonalized residuals</span>
+        <span class="n">propensity_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="n">outcome_predictions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">propensity_r2_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">outcome_r2_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">fold_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">)):</span>
+            <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span> <span class="o">=</span> <span class="n">X_scaled</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X_scaled</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+            <span class="n">T_train</span><span class="p">,</span> <span class="n">T_test</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">T</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+            <span class="n">Y_train</span><span class="p">,</span> <span class="n">Y_test</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+
+            <span class="c1"># Clone and fit propensity model</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">clone</span>
+
+            <span class="n">prop_model</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span><span class="p">)</span>
+            <span class="n">out_model</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span><span class="p">)</span>
+
+            <span class="c1"># Fit propensity (treatment) model</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
+                <span class="n">prop_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">T_train</span><span class="p">)</span>
+                <span class="n">propensity_scores</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="c1"># Pseudo-R² for classification</span>
+                <span class="n">prop_r2</span> <span class="o">=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">T_test</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Continuous treatment</span>
+                <span class="n">prop_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">T_train</span><span class="p">)</span>
+                <span class="n">propensity_scores</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+                <span class="n">prop_r2</span> <span class="o">=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">T_test</span><span class="p">)</span>
+
+            <span class="c1"># Fit outcome model (on control or full sample depending on setup)</span>
+            <span class="n">out_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">)</span>
+            <span class="n">outcome_predictions</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+            <span class="n">out_r2</span> <span class="o">=</span> <span class="n">out_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">Y_test</span><span class="p">)</span>
+
+            <span class="n">propensity_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop_r2</span><span class="p">)</span>
+            <span class="n">outcome_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_r2</span><span class="p">)</span>
+
+            <span class="c1"># Store fitted models</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">[</span><span class="n">fold_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="n">out_model</span><span class="p">)</span>
+
+        <span class="c1"># Compute DML estimate</span>
+        <span class="c1"># Using simplified doubly-robust estimator</span>
+        <span class="c1"># theta = E[(Y - m(X)) / e(X) * T] + E[m(X)]</span>
+        <span class="c1"># For binary treatment:</span>
+        <span class="c1"># theta = mean((Y - Y_hat) * T / e_hat - (Y - Y_hat) * (1-T) / (1-e_hat))</span>
+
+        <span class="c1"># Clip propensity scores for stability</span>
+        <span class="n">e_clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">)</span>
+
+        <span class="c1"># Residualized outcome</span>
+        <span class="n">Y_residual</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="n">outcome_predictions</span>
+
+        <span class="c1"># AIPW estimator for binary treatment</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># Binary treatment</span>
+            <span class="n">treated_term</span> <span class="o">=</span> <span class="n">Y_residual</span> <span class="o">*</span> <span class="n">T</span> <span class="o">/</span> <span class="n">e_clipped</span>
+            <span class="n">control_term</span> <span class="o">=</span> <span class="n">Y_residual</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e_clipped</span><span class="p">)</span>
+            <span class="n">psi</span> <span class="o">=</span> <span class="n">treated_term</span> <span class="o">-</span> <span class="n">control_term</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Continuous treatment - use partially linear model approach</span>
+            <span class="n">T_residual</span> <span class="o">=</span> <span class="n">T</span> <span class="o">-</span> <span class="n">propensity_scores</span>
+            <span class="c1"># Estimate coefficient via regression of Y_residual on T_residual</span>
+            <span class="n">ate_coefficient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y_residual</span> <span class="o">*</span> <span class="n">T_residual</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_residual</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">psi</span> <span class="o">=</span> <span class="n">Y_residual</span> <span class="o">-</span> <span class="n">ate_coefficient</span> <span class="o">*</span> <span class="n">T_residual</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span> <span class="o">=</span> <span class="n">ate_coefficient</span>
+
+        <span class="c1"># Compute ATE</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span>
+        <span class="n">ate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span>
+
+        <span class="c1"># Compute standard error</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span> <span class="ow">and</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
+            <span class="n">se</span> <span class="o">=</span> <span class="n">newey_west_se</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hac_bandwidth</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ate_se</span> <span class="o">=</span> <span class="n">se</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_propensity_scores</span> <span class="o">=</span> <span class="n">propensity_scores</span>
+
+        <span class="c1"># Compute confidence interval</span>
+        <span class="n">ci_lower</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">-</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">se</span>
+        <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">+</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">se</span>
+
+        <span class="c1"># Aggregate nuisance metrics</span>
+        <span class="n">nuisance_metrics</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;r2_propensity&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">propensity_r2_list</span><span class="p">)),</span>
+            <span class="s2">&quot;r2_outcome&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outcome_r2_list</span><span class="p">)),</span>
+            <span class="s2">&quot;r2_propensity_min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">propensity_r2_list</span><span class="p">)),</span>
+            <span class="s2">&quot;r2_outcome_min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">outcome_r2_list</span><span class="p">)),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Run monitoring</span>
+        <span class="n">monitoring_results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">monitoring_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span><span class="o">.</span><span class="n">run_all_checks</span><span class="p">(</span>
+                <span class="n">propensity_scores</span><span class="o">=</span><span class="n">propensity_scores</span><span class="p">,</span>
+                <span class="n">r2_propensity</span><span class="o">=</span><span class="n">nuisance_metrics</span><span class="p">[</span><span class="s2">&quot;r2_propensity&quot;</span><span class="p">],</span>
+                <span class="n">r2_outcome</span><span class="o">=</span><span class="n">nuisance_metrics</span><span class="p">[</span><span class="s2">&quot;r2_outcome&quot;</span><span class="p">],</span>
+                <span class="n">current_effect</span><span class="o">=</span><span class="n">ate</span><span class="p">,</span>
+                <span class="n">baseline_effect</span><span class="o">=</span><span class="n">baseline_ate</span><span class="p">,</span>
+                <span class="n">current_se</span><span class="o">=</span><span class="n">se</span><span class="p">,</span>
+                <span class="n">baseline_se</span><span class="o">=</span><span class="n">baseline_ate_se</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Create model version</span>
+        <span class="n">hyperparameters</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;n_folds&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
+            <span class="s2">&quot;use_hac&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span><span class="p">,</span>
+            <span class="s2">&quot;hac_bandwidth&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hac_bandwidth</span><span class="p">,</span>
+            <span class="s2">&quot;propensity_model&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+            <span class="s2">&quot;outcome_model&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">feature_columns</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">feature_columns</span>
+            <span class="k">else</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;X_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span> <span class="o">=</span> <span class="n">DMLModelVersion</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;double_ml&quot;</span><span class="p">,</span>
+            <span class="n">nuisance_models</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">,</span>
+            <span class="n">feature_names</span><span class="o">=</span><span class="n">feature_names</span><span class="p">,</span>
+            <span class="n">treatment_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">treatment_column</span><span class="p">,</span>
+            <span class="n">outcome_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_column</span><span class="p">,</span>
+            <span class="n">hyperparameters</span><span class="o">=</span><span class="n">hyperparameters</span><span class="p">,</span>
+            <span class="n">metrics</span><span class="o">=</span><span class="n">nuisance_metrics</span><span class="p">,</span>
+            <span class="n">feature_transformer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Register model</span>
+        <span class="n">version_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="n">PipelineResult</span><span class="p">(</span>
+            <span class="n">ate</span><span class="o">=</span><span class="n">ate</span><span class="p">,</span>
+            <span class="n">ate_se</span><span class="o">=</span><span class="n">se</span><span class="p">,</span>
+            <span class="n">ate_ci_lower</span><span class="o">=</span><span class="n">ci_lower</span><span class="p">,</span>
+            <span class="n">ate_ci_upper</span><span class="o">=</span><span class="n">ci_upper</span><span class="p">,</span>
+            <span class="n">nuisance_metrics</span><span class="o">=</span><span class="n">nuisance_metrics</span><span class="p">,</span>
+            <span class="n">monitoring_results</span><span class="o">=</span><span class="n">monitoring_results</span><span class="p">,</span>
+            <span class="n">model_version</span><span class="o">=</span><span class="n">version_id</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;n_samples&quot;</span><span class="p">:</span> <span class="n">n_samples</span><span class="p">,</span>
+                <span class="s2">&quot;n_features&quot;</span><span class="p">:</span> <span class="n">X_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;n_folds&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.predict_propensity">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.predict_propensity">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_propensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict treatment propensity for new data.</span>
+
+<span class="sd">        Uses averaged predictions across all cross-fitting folds.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X: Covariate matrix (n_samples, n_features)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Propensity score predictions (n_samples,)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If pipeline not fitted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pipeline must be fitted before prediction&quot;</span><span class="p">)</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">X_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Average across folds</span>
+        <span class="n">propensity_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">fold_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
+                <span class="n">propensity_sum</span> <span class="o">+=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">propensity_sum</span> <span class="o">+=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">propensity_sum</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.evaluate_retrain_need">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.evaluate_retrain_need">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_retrain_need</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X_new</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">T_new</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X_baseline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">T_baseline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">MonitoringResult</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RetrainTrigger</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate if retraining is needed based on new data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X_new: New covariate data</span>
+<span class="sd">            T_new: New treatment data</span>
+<span class="sd">            X_baseline: Optional baseline covariates for comparison</span>
+<span class="sd">            T_baseline: Optional baseline treatment for comparison</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of (monitoring_results, retrain_trigger_or_none)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If monitoring not enabled</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Monitoring must be enabled for retrain evaluation&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pipeline must be fitted before evaluation&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Predict propensity on new data</span>
+        <span class="n">propensity_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_propensity</span><span class="p">(</span><span class="n">X_new</span><span class="p">)</span>
+
+        <span class="c1"># Get nuisance metrics</span>
+        <span class="n">r2_prop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;r2_propensity&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">r2_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;r2_outcome&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span><span class="o">.</span><span class="n">evaluate_and_monitor</span><span class="p">(</span>
+            <span class="n">propensity_scores</span><span class="o">=</span><span class="n">propensity_new</span><span class="p">,</span>
+            <span class="n">treatment_current</span><span class="o">=</span><span class="n">T_new</span><span class="p">,</span>
+            <span class="n">treatment_baseline</span><span class="o">=</span><span class="n">T_baseline</span><span class="p">,</span>
+            <span class="n">r2_propensity</span><span class="o">=</span><span class="n">r2_prop</span><span class="p">,</span>
+            <span class="n">r2_outcome</span><span class="o">=</span><span class="n">r2_out</span><span class="p">,</span>
+            <span class="n">X_current</span><span class="o">=</span><span class="n">X_new</span><span class="p">,</span>
+            <span class="n">X_baseline</span><span class="o">=</span><span class="n">X_baseline</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.promote_to_production">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.promote_to_production">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">promote_to_production</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Promote current model to production.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Version ID promoted to production</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No model fitted to promote&quot;</span><span class="p">)</span>
+
+        <span class="c1"># First promote to staging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">promote_to_staging</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="o">.</span><span class="n">version_id</span><span class="p">)</span>
+
+        <span class="c1"># Then to production</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">promote_to_production</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.rollback">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.rollback">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rollback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">to_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rollback to previous production version.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            to_version: Specific version to rollback to (None = previous)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Version ID rolled back to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">rollback</span><span class="p">(</span><span class="n">to_version</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.get_production_model">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.get_production_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_production_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DMLModelVersion</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return current production model, or None if not set.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">get_production</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.list_versions">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.list_versions">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_versions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all registered model versions.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">list_versions</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.save">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.save">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save pipeline state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Directory to save to</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Path to saved pipeline</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Save configuration</span>
+        <span class="n">config_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;n_folds&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
+            <span class="s2">&quot;n_jobs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span>
+            <span class="s2">&quot;random_state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+            <span class="s2">&quot;use_hac&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span><span class="p">,</span>
+            <span class="s2">&quot;hac_bandwidth&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hac_bandwidth</span><span class="p">,</span>
+            <span class="s2">&quot;monitoring_enabled&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">monitoring_enabled</span><span class="p">,</span>
+            <span class="s2">&quot;feature_columns&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">feature_columns</span><span class="p">,</span>
+            <span class="s2">&quot;treatment_column&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">treatment_column</span><span class="p">,</span>
+            <span class="s2">&quot;outcome_column&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_column</span><span class="p">,</span>
+            <span class="s2">&quot;time_column&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">time_column</span><span class="p">,</span>
+            <span class="s2">&quot;entity_column&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">entity_column</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">config_data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Save scaler</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;scaler.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+        <span class="c1"># Save fitted state</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;fitted&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span><span class="p">,</span>
+            <span class="s2">&quot;ate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span><span class="p">,</span>
+            <span class="s2">&quot;ate_se&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ate_se</span><span class="p">,</span>
+            <span class="s2">&quot;current_version_id&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="o">.</span><span class="n">version_id</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;state.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">path</span></div>
+
+
+<div class="viewcode-block" id="InsuranceDMLPipeline.load">
+<a class="viewcode-back" href="../../../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.load">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;InsuranceDMLPipeline&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load pipeline from saved state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Directory containing saved pipeline</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Loaded InsuranceDMLPipeline instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># Load configuration</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">config_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span><span class="o">**</span><span class="n">config_data</span><span class="p">)</span>
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># Load scaler</span>
+        <span class="n">scaler_path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;scaler.pkl&quot;</span>
+        <span class="k">if</span> <span class="n">scaler_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">scaler_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">pipeline</span><span class="o">.</span><span class="n">_scaler</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="c1"># Load state</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;state.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="n">pipeline</span><span class="o">.</span><span class="n">_fitted</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;fitted&quot;</span><span class="p">]</span>
+        <span class="n">pipeline</span><span class="o">.</span><span class="n">_ate</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;ate&quot;</span><span class="p">]</span>
+        <span class="n">pipeline</span><span class="o">.</span><span class="n">_ate_se</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;ate_se&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Load current version if available</span>
+        <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_version_id&quot;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pipeline</span><span class="o">.</span><span class="n">_current_version</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_version_id&quot;</span><span class="p">])</span>
+                <span class="c1"># Restore nuisance models</span>
+                <span class="n">models</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_current_version</span><span class="o">.</span><span class="n">get_nuisance_models</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">pipeline</span><span class="o">.</span><span class="n">_nuisance_models</span> <span class="o">=</span> <span class="n">models</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">pass</span>  <span class="c1"># Version not in registry</span>
+
+        <span class="k">return</span> <span class="n">pipeline</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;fitted&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span> <span class="k">else</span> <span class="s2">&quot;not fitted&quot;</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="o">.</span><span class="n">version_id</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;InsuranceDMLPipeline(status=</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">, version=</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

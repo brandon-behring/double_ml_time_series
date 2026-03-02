@@ -1,0 +1,1021 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Time Series DML &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=b07499cc" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"tex": {"macros": {"E": ["\\mathbb{E}\\left[#1\\right]", 1], "Var": ["\\text{Var}\\left(#1\\right)", 1], "Cov": ["\\text{Cov}\\left(#1, #2\\right)", 2], "Prob": ["\\mathbb{P}\\left(#1\\right)", 1], "R": "\\mathbb{R}", "N": "\\mathcal{N}", "indep": "\\perp\\!\\!\\!\\perp", "plim": "\\overset{p}{\\to}", "dto": "\\overset{d}{\\to}", "iid": "\\overset{\\text{iid}}{\\sim}", "ols": "\\hat{\\beta}_{\\text{OLS}}"}}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/time_series_dml';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Production Causal Inference" href="production_pipeline.html" />
+    <link rel="prev" title="From FWL to Double Machine Learning" href="fwl_to_dml.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Time Series DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="production_pipeline.html">Production Causal Inference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2Fuser_guide/time_series_dml.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Time Series DML</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-standard-cross-fitting-fails">1. Why Standard Cross-Fitting Fails</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-temporal-leakage-problem">1.1 The Temporal Leakage Problem</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bias-under-temporal-leakage">1.2 Bias Under Temporal Leakage</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#temporal-cross-validation">2. Temporal Cross-Validation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeseriescrossvalidator">2.1 TimeSeriesCrossValidator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#blockedtimeseriescv">2.2 BlockedTimeSeriesCV</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#purgedgrouptimeseriescv">2.3 PurgedGroupTimeSeriesCV</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hac-standard-errors">3. HAC Standard Errors</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-naive-se-fails">3.1 Why Naive SE Fails</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#newey-west-hac-estimator">3.2 Newey-West HAC Estimator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bandwidth-selection">3.3 Bandwidth Selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#naive-vs-hac-comparison">3.4 Naive vs HAC Comparison</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamicdml">4. DynamicDML</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time-varying-treatment-effects">4.1 Time-Varying Treatment Effects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sequential-g-estimation">4.2 Sequential G-Estimation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rollingwindowdml">5. RollingWindowDML</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#local-estimation-for-non-stationarity">5.1 Local Estimation for Non-Stationarity</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#window-size-tradeoff">5.2 Window Size Tradeoff</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paneldml">6. PanelDML</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed-effects-temporal-blocking">6.1 Fixed Effects + Temporal Blocking</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stationarity-diagnostics">7. Stationarity Diagnostics</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-suite">7.1 Test Suite</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example-full-time-series-dml-pipeline">8. Worked Example: Full Time Series DML Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-also">See Also</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="time-series-dml">
+<h1>Time Series DML<a class="headerlink" href="#time-series-dml" title="Link to this heading">#</a></h1>
+<p>Standard cross-fitting assumes i.i.d. data. Time series introduces autocorrelation,
+non-stationarity, and temporal confounding — each requiring methodological adaptations.
+This tutorial covers the full suite of time series extensions.</p>
+<nav class="contents local" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#why-standard-cross-fitting-fails" id="id1">1. Why Standard Cross-Fitting Fails</a></p>
+<ul>
+<li><p><a class="reference internal" href="#the-temporal-leakage-problem" id="id2">1.1 The Temporal Leakage Problem</a></p></li>
+<li><p><a class="reference internal" href="#bias-under-temporal-leakage" id="id3">1.2 Bias Under Temporal Leakage</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#temporal-cross-validation" id="id4">2. Temporal Cross-Validation</a></p>
+<ul>
+<li><p><a class="reference internal" href="#timeseriescrossvalidator" id="id5">2.1 TimeSeriesCrossValidator</a></p></li>
+<li><p><a class="reference internal" href="#blockedtimeseriescv" id="id6">2.2 BlockedTimeSeriesCV</a></p></li>
+<li><p><a class="reference internal" href="#purgedgrouptimeseriescv" id="id7">2.3 PurgedGroupTimeSeriesCV</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#hac-standard-errors" id="id8">3. HAC Standard Errors</a></p>
+<ul>
+<li><p><a class="reference internal" href="#why-naive-se-fails" id="id9">3.1 Why Naive SE Fails</a></p></li>
+<li><p><a class="reference internal" href="#newey-west-hac-estimator" id="id10">3.2 Newey-West HAC Estimator</a></p></li>
+<li><p><a class="reference internal" href="#bandwidth-selection" id="id11">3.3 Bandwidth Selection</a></p></li>
+<li><p><a class="reference internal" href="#naive-vs-hac-comparison" id="id12">3.4 Naive vs HAC Comparison</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#dynamicdml" id="id13">4. DynamicDML</a></p>
+<ul>
+<li><p><a class="reference internal" href="#time-varying-treatment-effects" id="id14">4.1 Time-Varying Treatment Effects</a></p></li>
+<li><p><a class="reference internal" href="#sequential-g-estimation" id="id15">4.2 Sequential G-Estimation</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#rollingwindowdml" id="id16">5. RollingWindowDML</a></p>
+<ul>
+<li><p><a class="reference internal" href="#local-estimation-for-non-stationarity" id="id17">5.1 Local Estimation for Non-Stationarity</a></p></li>
+<li><p><a class="reference internal" href="#window-size-tradeoff" id="id18">5.2 Window Size Tradeoff</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#paneldml" id="id19">6. PanelDML</a></p>
+<ul>
+<li><p><a class="reference internal" href="#fixed-effects-temporal-blocking" id="id20">6.1 Fixed Effects + Temporal Blocking</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#stationarity-diagnostics" id="id21">7. Stationarity Diagnostics</a></p>
+<ul>
+<li><p><a class="reference internal" href="#test-suite" id="id22">7.1 Test Suite</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#worked-example-full-time-series-dml-pipeline" id="id23">8. Worked Example: Full Time Series DML Pipeline</a></p></li>
+<li><p><a class="reference internal" href="#see-also" id="id24">See Also</a></p></li>
+</ul>
+</nav>
+<hr class="docutils" />
+<section id="why-standard-cross-fitting-fails">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">1. Why Standard Cross-Fitting Fails</a><a class="headerlink" href="#why-standard-cross-fitting-fails" title="Link to this heading">#</a></h2>
+<section id="the-temporal-leakage-problem">
+<h3><a class="toc-backref" href="#id2" role="doc-backlink">1.1 The Temporal Leakage Problem</a><a class="headerlink" href="#the-temporal-leakage-problem" title="Link to this heading">#</a></h3>
+<p>Standard K-fold cross-validation randomly assigns observations to folds.
+With autocorrelated data, this creates <strong>information leakage</strong>: training folds
+contain observations temporally adjacent to test observations, allowing the
+model to “peek” at near-future information.</p>
+<p>Consider an AR(1) process <span class="math notranslate nohighlight">\(X_t = \rho X_{t-1} + \epsilon_t\)</span> with
+<span class="math notranslate nohighlight">\(\rho = 0.8\)</span>. Under random K-fold:</p>
+<div class="math notranslate nohighlight">
+\[\text{Train fold contains } X_{t-1}, X_{t+1} \text{ when predicting } X_t\]</div>
+<p>Since <span class="math notranslate nohighlight">\(\text{Corr}(X_t, X_{t+1}) = \rho = 0.8\)</span>, the model can exploit
+temporal neighbors in the training set, producing overly optimistic in-sample
+nuisance estimates. This inflates first-stage <span class="math notranslate nohighlight">\(R^2\)</span> and biases
+<span class="math notranslate nohighlight">\(\hat\theta\)</span>.</p>
+</section>
+<section id="bias-under-temporal-leakage">
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">1.2 Bias Under Temporal Leakage</a><a class="headerlink" href="#bias-under-temporal-leakage" title="Link to this heading">#</a></h3>
+<p>The DML estimator under temporal leakage:</p>
+<div class="math notranslate nohighlight">
+\[\hat\theta_{\text{leaked}} - \theta_0 \approx
+\frac{\sum_t \tilde{T}_t [g_0(X_t) - \hat{g}_{\text{leaked}}(X_t)]}
+{\sum_t \tilde{T}_t^2}\]</div>
+<p>With leakage, <span class="math notranslate nohighlight">\(\hat{g}_{\text{leaked}}(X_t)\)</span> is too accurate — it captures
+autocorrelation structure rather than the true conditional expectation. The
+nuisance estimation error is correlated with the score, reintroducing the
+regularization bias that cross-fitting was designed to eliminate.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><strong>Key insight</strong>: Cross-fitting eliminates regularization bias only when
+<span class="math notranslate nohighlight">\(\hat{g}^{(-k)}(X_i)\)</span> is independent of <span class="math notranslate nohighlight">\(\epsilon_i\)</span> for
+<span class="math notranslate nohighlight">\(i \in I_k\)</span>. Temporal leakage violates this independence because
+autocorrelated <span class="math notranslate nohighlight">\(\epsilon_t\)</span> makes <span class="math notranslate nohighlight">\(\epsilon_{t-1}\)</span> (in the
+training set) informative about <span class="math notranslate nohighlight">\(\epsilon_t\)</span> (in the test set).</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="temporal-cross-validation">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">2. Temporal Cross-Validation</a><a class="headerlink" href="#temporal-cross-validation" title="Link to this heading">#</a></h2>
+<section id="timeseriescrossvalidator">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">2.1 TimeSeriesCrossValidator</a><a class="headerlink" href="#timeseriescrossvalidator" title="Link to this heading">#</a></h3>
+<p>The <a class="reference internal" href="../api/dml.html#src.dml.cross_fitting.TimeSeriesCrossValidator" title="src.dml.cross_fitting.TimeSeriesCrossValidator"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeSeriesCrossValidator</span></code></a> enforces temporal
+ordering with three safeguards:</p>
+<p><strong>Blocking</strong>: Folds respect temporal order — all training observations precede
+all test observations. No future information leaks backward.</p>
+<p><strong>Purging</strong>: Remove <span class="math notranslate nohighlight">\(p\)</span> observations at the train-test boundary:</p>
+<div class="math notranslate nohighlight">
+\[\text{Train: } \{1, \ldots, t_{\text{split}} - p\}, \quad
+\text{Test: } \{t_{\text{split}}, \ldots, t_{\text{split}} + h\}\]</div>
+<p>This eliminates contamination from observations where <span class="math notranslate nohighlight">\(X_t\)</span> and
+<span class="math notranslate nohighlight">\(X_{t+k}\)</span> (for small <span class="math notranslate nohighlight">\(k\)</span>) share autocorrelation.</p>
+<p><strong>Gap</strong>: An additional gap <span class="math notranslate nohighlight">\(g\)</span> between purged training data and test data,
+useful when the autocorrelation horizon exceeds the purge window.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
+
+<span class="n">cv</span> <span class="o">=</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">(</span>
+    <span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">test_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">gap</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>       <span class="c1"># 10-period gap</span>
+    <span class="n">purge</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>      <span class="c1"># purge 5 boundary observations</span>
+<span class="p">)</span>
+
+<span class="c1"># Fold structure (expanding window):</span>
+<span class="c1"># Fold 0: Train [0, ..., 140] | Gap [141-150] | Purge [146-150] | Test [151-200]</span>
+<span class="c1"># Fold 1: Train [0, ..., 190] | Gap [191-200] | Purge [196-200] | Test [201-250]</span>
+<span class="c1"># ...</span>
+</pre></div>
+</div>
+</section>
+<section id="blockedtimeseriescv">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">2.2 BlockedTimeSeriesCV</a><a class="headerlink" href="#blockedtimeseriescv" title="Link to this heading">#</a></h3>
+<p>For settings where you want non-overlapping, fixed-size blocks rather than
+an expanding window:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlockedTimeSeriesCV</span>
+
+<span class="n">cv_blocked</span> <span class="o">=</span> <span class="n">BlockedTimeSeriesCV</span><span class="p">(</span>
+    <span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">gap</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Each fold uses a fixed-size training block rather than all prior data</span>
+</pre></div>
+</div>
+</section>
+<section id="purgedgrouptimeseriescv">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">2.3 PurgedGroupTimeSeriesCV</a><a class="headerlink" href="#purgedgrouptimeseriescv" title="Link to this heading">#</a></h3>
+<p>For grouped/panel data where observations within the same group (entity)
+must not be split across train and test:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">PurgedGroupTimeSeriesCV</span>
+
+<span class="n">cv_panel</span> <span class="o">=</span> <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">(</span>
+    <span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">group_gap</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>   <span class="c1"># purge 2 group-periods at boundary</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="hac-standard-errors">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">3. HAC Standard Errors</a><a class="headerlink" href="#hac-standard-errors" title="Link to this heading">#</a></h2>
+<section id="why-naive-se-fails">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">3.1 Why Naive SE Fails</a><a class="headerlink" href="#why-naive-se-fails" title="Link to this heading">#</a></h3>
+<p>The standard DML variance estimator assumes i.i.d. scores:</p>
+<div class="math notranslate nohighlight">
+\[\hat\sigma^2_{\text{naive}} = \frac{1}{n} \sum_{t=1}^n \hat\psi_t^2\]</div>
+<p>Under autocorrelation, <span class="math notranslate nohighlight">\(\text{Cov}(\hat\psi_t, \hat\psi_{t-j}) \neq 0\)</span>
+for <span class="math notranslate nohighlight">\(j &gt; 0\)</span>. The naive estimator ignores these cross-terms, understating
+the true variance and producing anti-conservative confidence intervals.</p>
+</section>
+<section id="newey-west-hac-estimator">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">3.2 Newey-West HAC Estimator</a><a class="headerlink" href="#newey-west-hac-estimator" title="Link to this heading">#</a></h3>
+<p>The HAC (Heteroskedasticity and Autocorrelation Consistent) estimator includes
+autocovariance terms:</p>
+<div class="math notranslate nohighlight">
+\[\hat\Sigma_{\text{HAC}} = \hat\Gamma_0
++ \sum_{j=1}^{b_n} w\!\left(\frac{j}{b_n}\right)
+(\hat\Gamma_j + \hat\Gamma_j')\]</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\hat\Gamma_j = \frac{1}{n}\sum_{t=j+1}^n \hat\psi_t \hat\psi_{t-j}'\)</span>
+is the <span class="math notranslate nohighlight">\(j\)</span>-th autocovariance</p></li>
+<li><p><span class="math notranslate nohighlight">\(w(x) = 1 - |x|\)</span> is the <strong>Bartlett kernel</strong> (ensures positive
+semi-definiteness)</p></li>
+<li><p><span class="math notranslate nohighlight">\(b_n\)</span> is the <strong>bandwidth</strong> (truncation lag)</p></li>
+</ul>
+</section>
+<section id="bandwidth-selection">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">3.3 Bandwidth Selection</a><a class="headerlink" href="#bandwidth-selection" title="Link to this heading">#</a></h3>
+<p>The bandwidth <span class="math notranslate nohighlight">\(b_n\)</span> controls the bias-variance tradeoff:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 25.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Formula</p></th>
+<th class="head"><p>When to Use</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Fixed rule</p></td>
+<td><p><span class="math notranslate nohighlight">\(b_n = \lfloor n^{1/3} \rfloor\)</span></p></td>
+<td><p>Quick default</p></td>
+</tr>
+<tr class="row-odd"><td><p>Andrews (1991)</p></td>
+<td><p><span class="math notranslate nohighlight">\(b_n = 1.1447 (\hat\alpha n)^{1/3}\)</span></p></td>
+<td><p>Automatic, data-driven (recommended)</p></td>
+</tr>
+<tr class="row-even"><td><p>Newey-West (1994)</p></td>
+<td><p>Lag selection via information criteria</p></td>
+<td><p>Short panels</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">newey_west_se</span><span class="p">,</span> <span class="n">HACEstimator</span>
+
+<span class="c1"># Automatic bandwidth</span>
+<span class="n">se_hac</span> <span class="o">=</span> <span class="n">newey_west_se</span><span class="p">(</span><span class="n">residuals</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+
+<span class="c1"># Fixed bandwidth</span>
+<span class="n">se_fixed</span> <span class="o">=</span> <span class="n">newey_west_se</span><span class="p">(</span><span class="n">residuals</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Full HAC estimator with diagnostics</span>
+<span class="n">hac</span> <span class="o">=</span> <span class="n">HACEstimator</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;bartlett&quot;</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">hac</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HAC SE: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Selected bandwidth: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">bandwidth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Effective df: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">effective_df</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="naive-vs-hac-comparison">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">3.4 Naive vs HAC Comparison</a><a class="headerlink" href="#naive-vs-hac-comparison" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">newey_west_se</span>
+
+<span class="c1"># AR(1) residuals with rho = 0.7</span>
+<span class="n">rho</span> <span class="o">=</span> <span class="mf">0.7</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="n">residuals</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">residuals</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">eps</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+
+<span class="n">se_naive</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="n">se_hac</span> <span class="o">=</span> <span class="n">newey_west_se</span><span class="p">(</span><span class="n">residuals</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Naive SE:  </span><span class="si">{</span><span class="n">se_naive</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HAC SE:    </span><span class="si">{</span><span class="n">se_hac</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ratio:     </span><span class="si">{</span><span class="n">se_hac</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">se_naive</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+<span class="c1"># HAC SE is typically 1.5-3x larger — naive SE is anti-conservative</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="dynamicdml">
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">4. DynamicDML</a><a class="headerlink" href="#dynamicdml" title="Link to this heading">#</a></h2>
+<section id="time-varying-treatment-effects">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">4.1 Time-Varying Treatment Effects</a><a class="headerlink" href="#time-varying-treatment-effects" title="Link to this heading">#</a></h3>
+<p>When treatment effects change over time, a single <span class="math notranslate nohighlight">\(\hat\theta\)</span> is
+misleading. <strong>DynamicDML</strong> estimates period-specific effects:</p>
+<div class="math notranslate nohighlight">
+\[Y_t = \theta_t T_t + g(X_t, T_{t-1}, T_{t-2}, \ldots) + \epsilon_t\]</div>
+<p>where <span class="math notranslate nohighlight">\(\theta_t\)</span> varies with <span class="math notranslate nohighlight">\(t\)</span> or with observable characteristics.
+The key challenge is distinguishing time-varying effects from time-varying
+confounding.</p>
+</section>
+<section id="sequential-g-estimation">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">4.2 Sequential G-Estimation</a><a class="headerlink" href="#sequential-g-estimation" title="Link to this heading">#</a></h3>
+<p>DynamicDML uses sequential g-estimation:</p>
+<ol class="arabic simple">
+<li><p>Start from the final period <span class="math notranslate nohighlight">\(T\)</span></p></li>
+<li><p>Estimate <span class="math notranslate nohighlight">\(\hat\theta_T\)</span> via DML</p></li>
+<li><p>Subtract <span class="math notranslate nohighlight">\(\hat\theta_T T_T\)</span> from <span class="math notranslate nohighlight">\(Y_T\)</span></p></li>
+<li><p>Move backward: estimate <span class="math notranslate nohighlight">\(\hat\theta_{T-1}\)</span> on adjusted outcomes</p></li>
+<li><p>Continue until all periods estimated</p></li>
+</ol>
+<p>This backward induction avoids the curse of dimensionality in the history
+<span class="math notranslate nohighlight">\((T_{t-1}, T_{t-2}, \ldots)\)</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicDML</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span>
+
+<span class="n">dynamic</span> <span class="o">=</span> <span class="n">DynamicDML</span><span class="p">(</span>
+    <span class="n">model_y</span><span class="o">=</span><span class="n">GradientBoostingRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">model_t</span><span class="o">=</span><span class="n">GradientBoostingRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">n_folds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">cv_type</span><span class="o">=</span><span class="s2">&quot;temporal&quot;</span><span class="p">,</span>   <span class="c1"># use TimeSeriesCrossValidator</span>
+<span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">dynamic</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time-varying effects: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">theta_t</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HAC-robust SE: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">se_t</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="rollingwindowdml">
+<h2><a class="toc-backref" href="#id16" role="doc-backlink">5. RollingWindowDML</a><a class="headerlink" href="#rollingwindowdml" title="Link to this heading">#</a></h2>
+<section id="local-estimation-for-non-stationarity">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">5.1 Local Estimation for Non-Stationarity</a><a class="headerlink" href="#local-estimation-for-non-stationarity" title="Link to this heading">#</a></h3>
+<p>When the DGP itself is non-stationary (structural breaks, regime changes),
+global estimation averages across regimes. <strong>RollingWindowDML</strong> estimates
+<span class="math notranslate nohighlight">\(\hat\theta\)</span> locally within a sliding window:</p>
+<div class="math notranslate nohighlight">
+\[\hat\theta_t = \text{DML}(\{Y_s, T_s, X_s : s \in [t - w, t]\})\]</div>
+<p>where <span class="math notranslate nohighlight">\(w\)</span> is the window size.</p>
+</section>
+<section id="window-size-tradeoff">
+<h3><a class="toc-backref" href="#id18" role="doc-backlink">5.2 Window Size Tradeoff</a><a class="headerlink" href="#window-size-tradeoff" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 40.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Window</p></th>
+<th class="head"><p>Advantage</p></th>
+<th class="head"><p>Disadvantage</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Small (<span class="math notranslate nohighlight">\(w &lt; 100\)</span>)</p></td>
+<td><p>Adapts quickly to regime changes</p></td>
+<td><p>High variance, unstable estimates</p></td>
+</tr>
+<tr class="row-odd"><td><p>Large (<span class="math notranslate nohighlight">\(w &gt; 500\)</span>)</p></td>
+<td><p>Low variance, stable</p></td>
+<td><p>Slow adaptation, averages across regimes</p></td>
+</tr>
+<tr class="row-even"><td><p>Moderate (<span class="math notranslate nohighlight">\(w \approx 200\)</span>)</p></td>
+<td><p>Balanced bias-variance</p></td>
+<td><p>May miss sharp breaks</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">RollingWindowDML</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+
+<span class="n">rolling</span> <span class="o">=</span> <span class="n">RollingWindowDML</span><span class="p">(</span>
+    <span class="n">model_y</span><span class="o">=</span><span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">model_t</span><span class="o">=</span><span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">window_size</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">step_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>     <span class="c1"># evaluate every 50 periods</span>
+    <span class="n">n_folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">rolling</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Window centers: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">window_centers</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rolling estimates: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">theta_windows</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="paneldml">
+<h2><a class="toc-backref" href="#id19" role="doc-backlink">6. PanelDML</a><a class="headerlink" href="#paneldml" title="Link to this heading">#</a></h2>
+<section id="fixed-effects-temporal-blocking">
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">6.1 Fixed Effects + Temporal Blocking</a><a class="headerlink" href="#fixed-effects-temporal-blocking" title="Link to this heading">#</a></h3>
+<p>Panel data with entity <span class="math notranslate nohighlight">\(i\)</span> and time <span class="math notranslate nohighlight">\(t\)</span> introduces fixed effects:</p>
+<div class="math notranslate nohighlight">
+\[Y_{it} = \theta T_{it} + g(X_{it}) + \alpha_i + \epsilon_{it}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\alpha_i\)</span> captures time-invariant entity heterogeneity. PanelDML
+combines within-entity demeaning with temporal cross-validation:</p>
+<ol class="arabic simple">
+<li><p><strong>Demean</strong>: <span class="math notranslate nohighlight">\(\ddot{Y}_{it} = Y_{it} - \bar{Y}_i\)</span>,
+<span class="math notranslate nohighlight">\(\ddot{T}_{it} = T_{it} - \bar{T}_i\)</span></p></li>
+<li><p><strong>Temporal CV</strong>: Split time periods (not observations) into folds</p></li>
+<li><p><strong>DML</strong>: Cross-fitted estimation on demeaned data</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">PanelDML</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+
+<span class="n">panel</span> <span class="o">=</span> <span class="n">PanelDML</span><span class="p">(</span>
+    <span class="n">model_y</span><span class="o">=</span><span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">model_t</span><span class="o">=</span><span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">n_folds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span>
+    <span class="n">entity_index</span><span class="o">=</span><span class="n">entities</span><span class="p">,</span>
+    <span class="n">time_index</span><span class="o">=</span><span class="n">times</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Panel DML estimate: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Entity fixed effects absorbed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">n_entities</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="stationarity-diagnostics">
+<h2><a class="toc-backref" href="#id21" role="doc-backlink">7. Stationarity Diagnostics</a><a class="headerlink" href="#stationarity-diagnostics" title="Link to this heading">#</a></h2>
+<p>Before applying time series DML, verify stationarity of key variables.
+Non-stationary series require differencing or detrending.</p>
+<section id="test-suite">
+<h3><a class="toc-backref" href="#id22" role="doc-backlink">7.1 Test Suite</a><a class="headerlink" href="#test-suite" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 30.0%" />
+<col style="width: 30.0%" />
+<col style="width: 25.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Test</p></th>
+<th class="head"><p>Null Hypothesis</p></th>
+<th class="head"><p>Alternative</p></th>
+<th class="head"><p>Interpretation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ADF</p></td>
+<td><p>Unit root (<span class="math notranslate nohighlight">\(\rho = 1\)</span>)</p></td>
+<td><p>Stationary</p></td>
+<td><p>Reject → stationary</p></td>
+</tr>
+<tr class="row-odd"><td><p>KPSS</p></td>
+<td><p>Trend-stationary</p></td>
+<td><p>Unit root</p></td>
+<td><p>Reject → non-stationary</p></td>
+</tr>
+<tr class="row-even"><td><p>PP</p></td>
+<td><p>Unit root (HAC-corrected)</p></td>
+<td><p>Stationary</p></td>
+<td><p>Reject → stationary</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Recommended practice</strong>: Run ADF and KPSS jointly. If both agree, conclusion
+is clear. If they disagree, the series may be near-integrated — consider
+first-differencing to be safe.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">StationarityDiagnostic</span>
+
+<span class="n">diag</span> <span class="o">=</span> <span class="n">StationarityDiagnostic</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">diag</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ADF p-value: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">adf_pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;KPSS p-value: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">kpss_pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PP p-value: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">pp_pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conclusion: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">conclusion</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="worked-example-full-time-series-dml-pipeline">
+<h2><a class="toc-backref" href="#id23" role="doc-backlink">8. Worked Example: Full Time Series DML Pipeline</a><a class="headerlink" href="#worked-example-full-time-series-dml-pipeline" title="Link to this heading">#</a></h2>
+<p>End-to-end example: generate autocorrelated data, validate stationarity,
+estimate with temporal CV and HAC standard errors, compare to naive approach.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesDGPGenerator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span><span class="p">,</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">,</span> <span class="n">newey_west_se</span>
+
+<span class="c1"># 1. Generate AR(1) DGP with known treatment effect</span>
+<span class="n">dgp</span> <span class="o">=</span> <span class="n">TimeSeriesDGPGenerator</span><span class="p">(</span>
+    <span class="n">n_obs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">n_features</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">ar_coef</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>          <span class="c1"># autocorrelation coefficient</span>
+    <span class="n">true_theta</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+    <span class="n">noise_std</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+<span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">X</span>
+
+<span class="c1"># 2. Verify stationarity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">StationarityDiagnostic</span>
+<span class="n">diag</span> <span class="o">=</span> <span class="n">StationarityDiagnostic</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">diag</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">j</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">adf_pvalue</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Feature </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2"> is non-stationary&quot;</span>
+
+<span class="c1"># 3. DML with temporal cross-validation</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">gap</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">rf</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">double_ml</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">model_y</span><span class="o">=</span><span class="n">rf</span><span class="p">(),</span> <span class="n">model_t</span><span class="o">=</span><span class="n">rf</span><span class="p">(),</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+
+<span class="c1"># 4. HAC standard errors</span>
+<span class="n">se_hac</span> <span class="o">=</span> <span class="n">newey_west_se</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">residuals</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DML estimate: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (true: 1.5)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Naive SE: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HAC SE:   </span><span class="si">{</span><span class="n">se_hac</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ratio:    </span><span class="si">{</span><span class="n">se_hac</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="see-also">
+<h2><a class="toc-backref" href="#id24" role="doc-backlink">See Also</a><a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="fwl_to_dml.html"><span class="doc">From FWL to Double Machine Learning</span></a> — Foundation: FWL → Robinson → DML</p></li>
+<li><p><a class="reference internal" href="production_pipeline.html"><span class="doc">Production Causal Inference</span></a> — Deploying time series DML in production</p></li>
+<li><p><a class="reference internal" href="../api/dml.html"><span class="doc">DML Estimators</span></a> — Full API reference</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="fwl_to_dml.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">From FWL to Double Machine Learning</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="production_pipeline.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Production Causal Inference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-standard-cross-fitting-fails">1. Why Standard Cross-Fitting Fails</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-temporal-leakage-problem">1.1 The Temporal Leakage Problem</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bias-under-temporal-leakage">1.2 Bias Under Temporal Leakage</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#temporal-cross-validation">2. Temporal Cross-Validation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeseriescrossvalidator">2.1 TimeSeriesCrossValidator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#blockedtimeseriescv">2.2 BlockedTimeSeriesCV</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#purgedgrouptimeseriescv">2.3 PurgedGroupTimeSeriesCV</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hac-standard-errors">3. HAC Standard Errors</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-naive-se-fails">3.1 Why Naive SE Fails</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#newey-west-hac-estimator">3.2 Newey-West HAC Estimator</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bandwidth-selection">3.3 Bandwidth Selection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#naive-vs-hac-comparison">3.4 Naive vs HAC Comparison</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamicdml">4. DynamicDML</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#time-varying-treatment-effects">4.1 Time-Varying Treatment Effects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sequential-g-estimation">4.2 Sequential G-Estimation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rollingwindowdml">5. RollingWindowDML</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#local-estimation-for-non-stationarity">5.1 Local Estimation for Non-Stationarity</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#window-size-tradeoff">5.2 Window Size Tradeoff</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#paneldml">6. PanelDML</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed-effects-temporal-blocking">6.1 Fixed Effects + Temporal Blocking</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stationarity-diagnostics">7. Stationarity Diagnostics</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#test-suite">7.1 Test Suite</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example-full-time-series-dml-pipeline">8. Worked Example: Full Time Series DML Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-also">See Also</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

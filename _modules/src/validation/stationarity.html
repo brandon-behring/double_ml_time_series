@@ -1,0 +1,1343 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.validation.stationarity &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/validation/stationarity';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Time Series DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Production Causal Inference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/validation/stationarity.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for src.validation.stationarity</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Stationarity Tests for Time Series DML Validation.</span>
+
+<span class="sd">Implements diagnostic tests to verify stationarity assumptions</span>
+<span class="sd">required for valid time series DML inference.</span>
+
+<span class="sd">Implementations are from mathematical primitives (NumPy/SciPy) with</span>
+<span class="sd">verification against statsmodels for accuracy.</span>
+
+<span class="sd">Tests included:</span>
+<span class="sd">1. ADF (Augmented Dickey-Fuller) - Unit root test</span>
+<span class="sd">2. KPSS - Stationarity test (null is stationarity)</span>
+<span class="sd">3. Phillips-Perron - Robust unit root test</span>
+
+<span class="sd">Mathematical Foundations:</span>
+
+<span class="sd">ADF Test:</span>
+<span class="sd">    ΔY_t = α + β*t + γ*Y_{t-1} + Σ_{i=1}^{p} δ_i*ΔY_{t-i} + ε_t</span>
+<span class="sd">    H0: γ = 0 (unit root, non-stationary)</span>
+<span class="sd">    H1: γ &lt; 0 (stationary)</span>
+
+<span class="sd">KPSS Test:</span>
+<span class="sd">    Y_t = ξ*t + r_t + ε_t, where r_t is a random walk</span>
+<span class="sd">    LM = Σ S_t² / (T² * σ²)</span>
+<span class="sd">    H0: σ²_η = 0 (stationary)</span>
+<span class="sd">    H1: σ²_η &gt; 0 (unit root)</span>
+
+<span class="sd">Phillips-Perron Test:</span>
+<span class="sd">    Same as ADF regression but uses Newey-West HAC correction</span>
+<span class="sd">    for serial correlation in errors.</span>
+
+<span class="sd">References:</span>
+
+<span class="sd">- Dickey, D. A., &amp; Fuller, W. A. (1979). Distribution of the estimators for</span>
+<span class="sd">  autoregressive time series with a unit root.</span>
+<span class="sd">- Kwiatkowski, D., et al. (1992). Testing the null hypothesis of stationarity</span>
+<span class="sd">  against the alternative of a unit root.</span>
+<span class="sd">- Phillips, P.C.B. &amp; Perron, P. (1988). Testing for a unit root in time series</span>
+<span class="sd">  regression. Biometrika 75, 335-346.</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    &gt;&gt;&gt; from src.validation.stationarity import StationarityDiagnostic</span>
+<span class="sd">    &gt;&gt;&gt; diag = StationarityDiagnostic()</span>
+<span class="sd">    &gt;&gt;&gt; result = diag.test(Y, method=&quot;adf&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Stationary: {result.is_stationary}&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
+
+
+<span class="n">TestMethod</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;adf&quot;</span><span class="p">,</span> <span class="s2">&quot;kpss&quot;</span><span class="p">,</span> <span class="s2">&quot;pp&quot;</span><span class="p">]</span>
+
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># Critical Value Tables</span>
+<span class="c1"># =============================================================================</span>
+
+<span class="c1"># ADF critical values from MacKinnon (1996)</span>
+<span class="c1"># Interpolated for different sample sizes</span>
+<span class="c1"># Keys: (regression_type, significance_level)</span>
+<span class="c1"># Format: (tau_nc, tau_c, tau_ct) for n=[25, 50, 100, 250, 500, inf]</span>
+<span class="n">ADF_CRITICAL_VALUES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># No constant, no trend (&quot;n&quot;)</span>
+    <span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mf">2.66</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.62</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.60</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.58</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.58</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.58</span><span class="p">],</span>
+    <span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.95</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.95</span><span class="p">],</span>
+    <span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.60</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.61</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.61</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.62</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.62</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.62</span><span class="p">],</span>
+    <span class="c1"># Constant only (&quot;c&quot;)</span>
+    <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mf">3.75</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.58</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.51</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.46</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.44</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.43</span><span class="p">],</span>
+    <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mf">2.99</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.93</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.89</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.88</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.87</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.86</span><span class="p">],</span>
+    <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mf">2.64</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.60</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.58</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.57</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.57</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.57</span><span class="p">],</span>
+    <span class="c1"># Constant and trend (&quot;ct&quot;)</span>
+    <span class="p">(</span><span class="s2">&quot;ct&quot;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mf">4.38</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.04</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.99</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.98</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.96</span><span class="p">],</span>
+    <span class="p">(</span><span class="s2">&quot;ct&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mf">3.60</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.50</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.45</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.43</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.42</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.41</span><span class="p">],</span>
+    <span class="p">(</span><span class="s2">&quot;ct&quot;</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mf">3.24</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.18</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.15</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.13</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.13</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.12</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="c1"># KPSS critical values from Kwiatkowski et al. (1992)</span>
+<span class="c1"># For LM statistic (asymptotic)</span>
+<span class="n">KPSS_CRITICAL_VALUES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Level stationarity (&quot;c&quot;)</span>
+    <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">):</span> <span class="mf">0.347</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">):</span> <span class="mf">0.463</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">):</span> <span class="mf">0.574</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">):</span> <span class="mf">0.739</span><span class="p">,</span>
+    <span class="c1"># Trend stationarity (&quot;ct&quot;)</span>
+    <span class="p">(</span><span class="s2">&quot;ct&quot;</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">):</span> <span class="mf">0.119</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;ct&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">):</span> <span class="mf">0.146</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;ct&quot;</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">):</span> <span class="mf">0.176</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;ct&quot;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">):</span> <span class="mf">0.216</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Sample sizes for critical value interpolation</span>
+<span class="n">SAMPLE_SIZES</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">25</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">10000</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolate ADF critical value for given sample size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        regression: &quot;n&quot;, &quot;c&quot;, or &quot;ct&quot;</span>
+<span class="sd">        alpha: Significance level (0.01, 0.05, or 0.10)</span>
+<span class="sd">        n: Sample size</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Interpolated critical value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ADF_CRITICAL_VALUES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid regression/alpha combination: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">cvs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ADF_CRITICAL_VALUES</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+    <span class="c1"># Log-linear interpolation</span>
+    <span class="n">interp_func</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">SAMPLE_SIZES</span><span class="p">),</span> <span class="n">cvs</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">interp_func</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span>
+
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># Result Data Classes</span>
+<span class="c1"># =============================================================================</span>
+
+
+<div class="viewcode-block" id="StationarityResult">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StationarityResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for stationarity tests.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        test_name: Name of the test performed</span>
+<span class="sd">        statistic: Test statistic value</span>
+<span class="sd">        p_value: P-value for the test</span>
+<span class="sd">        critical_values: Dict of critical values at different significance levels</span>
+<span class="sd">        is_stationary: Boolean indicating stationarity conclusion</span>
+<span class="sd">        n_lags: Number of lags used in the test</span>
+<span class="sd">        regression_type: Regression type (constant, trend, etc.)</span>
+<span class="sd">        interpretation: Human-readable interpretation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">test_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">statistic</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">p_value</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">critical_values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+    <span class="n">is_stationary</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">n_lags</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">regression_type</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">interpretation</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;StationarityResult(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">test_name</span><span class="si">}</span><span class="s2">: stat=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;p=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, stationary=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">is_stationary</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ComprehensiveStationarityResult">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.ComprehensiveStationarityResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ComprehensiveStationarityResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for comprehensive stationarity analysis.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        adf_result: ADF test result</span>
+<span class="sd">        kpss_result: KPSS test result (optional)</span>
+<span class="sd">        pp_result: Phillips-Perron test result (optional)</span>
+<span class="sd">        overall_conclusion: Summary conclusion</span>
+<span class="sd">        recommendation: Recommended action</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">adf_result</span><span class="p">:</span> <span class="n">StationarityResult</span>
+    <span class="n">kpss_result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StationarityResult</span><span class="p">]</span>
+    <span class="n">pp_result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StationarityResult</span><span class="p">]</span>
+    <span class="n">overall_conclusion</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">recommendation</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ComprehensiveStationarityResult(conclusion=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">overall_conclusion</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
+
+
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># Core Test Implementations</span>
+<span class="c1"># =============================================================================</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_adf_statistic</span><span class="p">(</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">max_lags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">regression</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute ADF test statistic from regression.</span>
+
+<span class="sd">    Implements:</span>
+<span class="sd">        ΔY_t = α + β*t + γ*Y_{t-1} + Σ_{i=1}^{p} δ_i*ΔY_{t-i} + ε_t</span>
+
+<span class="sd">    The test statistic is t = γ̂ / SE(γ̂).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        y: Time series data</span>
+<span class="sd">        max_lags: Maximum lags (None for automatic AIC selection)</span>
+<span class="sd">        regression: &quot;n&quot; (none), &quot;c&quot; (constant), &quot;ct&quot; (constant + trend)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple of (t_statistic, n_lags, residual_variance, residuals)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># Determine max lags if not specified (Schwert 1989 rule)</span>
+    <span class="k">if</span> <span class="n">max_lags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">max_lags</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">12</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">max_lags</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_lags</span><span class="p">,</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">3</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Ensure enough observations</span>
+
+    <span class="c1"># First differences</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># Select optimal lag using AIC</span>
+    <span class="n">best_aic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="n">best_lags</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_lags</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># Build regression matrix</span>
+        <span class="c1"># Dependent: ΔY_t for t = p+1, ..., T-1</span>
+        <span class="c1"># Regressors: constant, trend (optional), Y_{t-1}, ΔY_{t-1}, ..., ΔY_{t-p}</span>
+
+        <span class="n">T_eff</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">p</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Effective sample size</span>
+        <span class="k">if</span> <span class="n">T_eff</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Dependent variable</span>
+        <span class="n">Y_dep</span> <span class="o">=</span> <span class="n">dy</span><span class="p">[</span><span class="n">p</span><span class="p">:]</span>
+
+        <span class="c1"># Build design matrix</span>
+        <span class="n">X_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Constant</span>
+        <span class="k">if</span> <span class="n">regression</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;ct&quot;</span><span class="p">):</span>
+            <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">T_eff</span><span class="p">))</span>
+
+        <span class="c1"># Trend</span>
+        <span class="k">if</span> <span class="n">regression</span> <span class="o">==</span> <span class="s2">&quot;ct&quot;</span><span class="p">:</span>
+            <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)[:</span><span class="n">T_eff</span><span class="p">])</span>
+
+        <span class="c1"># Lagged level Y_{t-1}</span>
+        <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">p</span> <span class="p">:</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Lagged differences ΔY_{t-i} for i = 1, ..., p</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dy</span><span class="p">[</span><span class="n">p</span> <span class="o">-</span> <span class="n">i</span> <span class="p">:</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">])</span>
+
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">X_list</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">X_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># OLS estimation</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">beta</span><span class="p">,</span> <span class="n">residuals</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y_dep</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Compute AIC</span>
+        <span class="n">resid</span> <span class="o">=</span> <span class="n">Y_dep</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span>
+        <span class="n">sse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">resid</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">aic</span> <span class="o">=</span> <span class="n">T_eff</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sse</span> <span class="o">/</span> <span class="n">T_eff</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span>
+
+        <span class="k">if</span> <span class="n">aic</span> <span class="o">&lt;</span> <span class="n">best_aic</span><span class="p">:</span>
+            <span class="n">best_aic</span> <span class="o">=</span> <span class="n">aic</span>
+            <span class="n">best_lags</span> <span class="o">=</span> <span class="n">p</span>
+
+    <span class="c1"># Final estimation with optimal lags</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">best_lags</span>
+    <span class="n">T_eff</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">p</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">Y_dep</span> <span class="o">=</span> <span class="n">dy</span><span class="p">[</span><span class="n">p</span><span class="p">:]</span>
+
+    <span class="n">X_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">regression</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;ct&quot;</span><span class="p">):</span>
+        <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">T_eff</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">regression</span> <span class="o">==</span> <span class="s2">&quot;ct&quot;</span><span class="p">:</span>
+        <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)[:</span><span class="n">T_eff</span><span class="p">])</span>
+    <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">p</span> <span class="p">:</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dy</span><span class="p">[</span><span class="n">p</span> <span class="o">-</span> <span class="n">i</span> <span class="p">:</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">])</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">X_list</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">X_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># OLS</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y_dep</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">resid</span> <span class="o">=</span> <span class="n">Y_dep</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span>
+    <span class="n">sse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">resid</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">sigma2</span> <span class="o">=</span> <span class="n">sse</span> <span class="o">/</span> <span class="p">(</span><span class="n">T_eff</span> <span class="o">-</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Coefficient index for γ (lagged level)</span>
+    <span class="n">gamma_idx</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">regression</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">regression</span> <span class="o">==</span> <span class="s2">&quot;c&quot;</span> <span class="k">else</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Standard error of γ</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">XtX_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">X</span><span class="p">)</span>
+        <span class="n">se_gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigma2</span> <span class="o">*</span> <span class="n">XtX_inv</span><span class="p">[</span><span class="n">gamma_idx</span><span class="p">,</span> <span class="n">gamma_idx</span><span class="p">])</span>
+    <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+        <span class="n">se_gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigma2</span> <span class="o">/</span> <span class="n">T_eff</span><span class="p">)</span>  <span class="c1"># Fallback</span>
+
+    <span class="n">gamma_hat</span> <span class="o">=</span> <span class="n">beta</span><span class="p">[</span><span class="n">gamma_idx</span><span class="p">]</span>
+    <span class="n">t_stat</span> <span class="o">=</span> <span class="n">gamma_hat</span> <span class="o">/</span> <span class="n">se_gamma</span>
+
+    <span class="k">return</span> <span class="n">t_stat</span><span class="p">,</span> <span class="n">best_lags</span><span class="p">,</span> <span class="n">sigma2</span><span class="p">,</span> <span class="n">resid</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_adf_pvalue</span><span class="p">(</span><span class="n">t_stat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">regression</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute approximate p-value for ADF test using MacKinnon (1996).</span>
+
+<span class="sd">    Uses interpolation between tabulated critical values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        t_stat: ADF t-statistic</span>
+<span class="sd">        n: Sample size</span>
+<span class="sd">        regression: Regression type</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Approximate p-value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get critical values for this regression and sample size</span>
+    <span class="n">cv_01</span> <span class="o">=</span> <span class="n">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">cv_05</span> <span class="o">=</span> <span class="n">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">cv_10</span> <span class="o">=</span> <span class="n">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="c1"># Linear interpolation for p-value</span>
+    <span class="n">cvs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cv_01</span><span class="p">,</span> <span class="n">cv_05</span><span class="p">,</span> <span class="n">cv_10</span><span class="p">])</span>
+    <span class="n">pvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">t_stat</span> <span class="o">&lt;=</span> <span class="n">cv_01</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.001</span>  <span class="c1"># Very small</span>
+    <span class="k">elif</span> <span class="n">t_stat</span> <span class="o">&gt;=</span> <span class="n">cv_10</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.20</span> <span class="o">+</span> <span class="mf">0.10</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_stat</span> <span class="o">-</span> <span class="n">cv_10</span><span class="p">)</span>  <span class="c1"># Extrapolate</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Interpolate</span>
+        <span class="n">interp_func</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">cvs</span><span class="p">,</span> <span class="n">pvals</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">interp_func</span><span class="p">(</span><span class="n">t_stat</span><span class="p">),</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_kpss_statistic</span><span class="p">(</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">regression</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span>
+    <span class="n">n_lags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute KPSS stationarity test statistic.</span>
+
+<span class="sd">    Implements:</span>
+<span class="sd">        LM = (1/T²) * Σ_{t=1}^{T} S_t² / σ̂²</span>
+
+<span class="sd">    where S_t = Σ_{s=1}^{t} e_s is the partial sum of residuals from the</span>
+<span class="sd">    level or trend regression.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        y: Time series data</span>
+<span class="sd">        regression: &quot;c&quot; for level stationarity, &quot;ct&quot; for trend stationarity</span>
+<span class="sd">        n_lags: Number of lags for HAC estimation (None for automatic)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple of (LM_statistic, n_lags_used, long_run_variance)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># Automatic lag selection (Schwert rule)</span>
+    <span class="k">if</span> <span class="n">n_lags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n_lags</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.25</span><span class="p">)</span>
+
+    <span class="c1"># Detrend the series</span>
+    <span class="k">if</span> <span class="n">regression</span> <span class="o">==</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span>
+        <span class="c1"># Demean only</span>
+        <span class="n">resid</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># &quot;ct&quot;</span>
+        <span class="c1"># Remove linear trend</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">t</span><span class="p">])</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">resid</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span>
+
+    <span class="c1"># Compute partial sums</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">resid</span><span class="p">)</span>
+
+    <span class="c1"># Long-run variance estimation using Bartlett kernel</span>
+    <span class="c1"># σ̂² = γ_0 + 2 * Σ_{k=1}^{L} (1 - k/(L+1)) * γ_k</span>
+    <span class="n">gamma_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">resid</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">lrv</span> <span class="o">=</span> <span class="n">gamma_0</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_lags</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">gamma_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">resid</span><span class="p">[</span><span class="n">k</span><span class="p">:]</span> <span class="o">*</span> <span class="n">resid</span><span class="p">[:</span><span class="o">-</span><span class="n">k</span><span class="p">])</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">k</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_lags</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Bartlett weight</span>
+        <span class="n">lrv</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">gamma_k</span>
+
+    <span class="c1"># KPSS statistic</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">S</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">lrv</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">eta</span><span class="p">,</span> <span class="n">n_lags</span><span class="p">,</span> <span class="n">lrv</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_kpss_pvalue</span><span class="p">(</span><span class="n">eta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">regression</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute approximate p-value for KPSS test.</span>
+
+<span class="sd">    Uses interpolation between tabulated critical values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        eta: KPSS LM statistic</span>
+<span class="sd">        regression: &quot;c&quot; or &quot;ct&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Approximate p-value (lower bound)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get critical values</span>
+    <span class="n">cv_10</span> <span class="o">=</span> <span class="n">KPSS_CRITICAL_VALUES</span><span class="p">[(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">)]</span>
+    <span class="n">cv_05</span> <span class="o">=</span> <span class="n">KPSS_CRITICAL_VALUES</span><span class="p">[(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)]</span>
+    <span class="n">cv_025</span> <span class="o">=</span> <span class="n">KPSS_CRITICAL_VALUES</span><span class="p">[(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">)]</span>
+    <span class="n">cv_01</span> <span class="o">=</span> <span class="n">KPSS_CRITICAL_VALUES</span><span class="p">[(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)]</span>
+
+    <span class="n">cvs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cv_10</span><span class="p">,</span> <span class="n">cv_05</span><span class="p">,</span> <span class="n">cv_025</span><span class="p">,</span> <span class="n">cv_01</span><span class="p">])</span>
+    <span class="n">pvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">eta</span> <span class="o">&lt;=</span> <span class="n">cv_10</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.15</span>  <span class="c1"># Greater than 10%</span>
+    <span class="k">elif</span> <span class="n">eta</span> <span class="o">&gt;=</span> <span class="n">cv_01</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.005</span>  <span class="c1"># Less than 1%</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">interp_func</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">cvs</span><span class="p">,</span> <span class="n">pvals</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">interp_func</span><span class="p">(</span><span class="n">eta</span><span class="p">),</span> <span class="mf">0.005</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_pp_statistic</span><span class="p">(</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">regression</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span>
+    <span class="n">n_lags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute Phillips-Perron test statistic.</span>
+
+<span class="sd">    Uses Newey-West HAC correction to the standard ADF regression.</span>
+
+<span class="sd">    The PP statistic adjusts the ADF t-statistic:</span>
+<span class="sd">        Z_α = T(α̂ - 1) - (1/2)(λ̂² - γ̂₀)/σ̂²</span>
+
+<span class="sd">    where λ̂² is the long-run variance and γ̂₀ is the contemporaneous variance.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        y: Time series data</span>
+<span class="sd">        regression: &quot;n&quot;, &quot;c&quot;, or &quot;ct&quot;</span>
+<span class="sd">        n_lags: Lags for HAC estimation (None for automatic)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple of (Z_t statistic, n_lags, long_run_variance, residuals)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># Automatic lag selection</span>
+    <span class="k">if</span> <span class="n">n_lags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n_lags</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.25</span><span class="p">)</span>
+
+    <span class="c1"># Build regression: Y_t = α + β*t + ρ*Y_{t-1} + u_t</span>
+    <span class="n">Y_dep</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">T_eff</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="n">X_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">regression</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;ct&quot;</span><span class="p">):</span>
+        <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">T_eff</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">regression</span> <span class="o">==</span> <span class="s2">&quot;ct&quot;</span><span class="p">:</span>
+        <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+    <span class="n">X_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">X_list</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">X_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># OLS</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y_dep</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">resid</span> <span class="o">=</span> <span class="n">Y_dep</span> <span class="o">-</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span>
+    <span class="n">sse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">resid</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">sse</span> <span class="o">/</span> <span class="n">T_eff</span>  <span class="c1"># Residual variance (biased)</span>
+
+    <span class="c1"># Coefficient index for ρ</span>
+    <span class="n">rho_idx</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">regression</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">regression</span> <span class="o">==</span> <span class="s2">&quot;c&quot;</span> <span class="k">else</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">rho_hat</span> <span class="o">=</span> <span class="n">beta</span><span class="p">[</span><span class="n">rho_idx</span><span class="p">]</span>
+
+    <span class="c1"># Compute contemporaneous variance γ₀</span>
+    <span class="n">gamma_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">resid</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Compute long-run variance using Bartlett kernel (Newey-West)</span>
+    <span class="n">lrv</span> <span class="o">=</span> <span class="n">gamma_0</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_lags</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">gamma_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">resid</span><span class="p">[</span><span class="n">k</span><span class="p">:]</span> <span class="o">*</span> <span class="n">resid</span><span class="p">[:</span><span class="o">-</span><span class="n">k</span><span class="p">])</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">k</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_lags</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">lrv</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">gamma_k</span>
+
+    <span class="c1"># Standard error from OLS</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">XtX_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">X</span><span class="p">)</span>
+        <span class="n">se_rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s2</span> <span class="o">*</span> <span class="n">XtX_inv</span><span class="p">[</span><span class="n">rho_idx</span><span class="p">,</span> <span class="n">rho_idx</span><span class="p">])</span>
+    <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+        <span class="n">se_rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s2</span> <span class="o">/</span> <span class="n">T_eff</span><span class="p">)</span>
+
+    <span class="c1"># Phillips-Perron correction</span>
+    <span class="c1"># Z_t = sqrt(γ₀/λ²) * t - (λ² - γ₀) / (2*λ*σ̂*sqrt(T))</span>
+    <span class="c1"># where t = (ρ̂ - 1) / SE(ρ̂)</span>
+
+    <span class="n">t_stat_uncorrected</span> <span class="o">=</span> <span class="p">(</span><span class="n">rho_hat</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">se_rho</span>
+
+    <span class="c1"># Correction factor</span>
+    <span class="n">correction</span> <span class="o">=</span> <span class="p">(</span><span class="n">lrv</span> <span class="o">-</span> <span class="n">gamma_0</span><span class="p">)</span> <span class="o">*</span> <span class="n">T_eff</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lrv</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sse</span><span class="p">))</span>
+
+    <span class="n">Z_t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gamma_0</span> <span class="o">/</span> <span class="n">lrv</span><span class="p">)</span> <span class="o">*</span> <span class="n">t_stat_uncorrected</span> <span class="o">-</span> <span class="n">correction</span><span class="p">)</span>
+    <span class="n">lrv_float</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lrv</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Z_t</span><span class="p">,</span> <span class="n">n_lags</span><span class="p">,</span> <span class="n">lrv_float</span><span class="p">,</span> <span class="n">resid</span>
+
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># Main Class</span>
+<span class="c1"># =============================================================================</span>
+
+
+<div class="viewcode-block" id="StationarityDiagnostic">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StationarityDiagnostic</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stationarity diagnostic tool for time series DML.</span>
+
+<span class="sd">    Performs stationarity tests to validate assumptions for time series DML.</span>
+<span class="sd">    Non-stationary data requires differencing or detrending before DML.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        significance_level: Significance level for hypothesis tests</span>
+<span class="sd">        max_lags: Maximum lags for ADF test (None for automatic)</span>
+<span class="sd">        regression: Regression type for tests (&quot;n&quot;, &quot;c&quot;, &quot;ct&quot;)</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; diag = StationarityDiagnostic(significance_level=0.05)</span>
+<span class="sd">        &gt;&gt;&gt; result = diag.test(Y, method=&quot;adf&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; if not result.is_stationary:</span>
+<span class="sd">        ...     Y_diff = np.diff(Y)  # Take first difference</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StationarityDiagnostic.__init__">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">significance_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">max_lags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">regression</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize StationarityDiagnostic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            significance_level: Significance level (default 0.05)</span>
+<span class="sd">            max_lags: Maximum lags for ADF (None for AIC-based selection)</span>
+<span class="sd">            regression: Regression type (&quot;c&quot;, &quot;ct&quot;, &quot;n&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">significance_level</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">significance_level</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;significance_level must be in (0, 1)&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">regression</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;ct&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;regression must be &#39;n&#39;, &#39;c&#39;, or &#39;ct&#39;&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span> <span class="o">=</span> <span class="n">significance_level</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_lags</span> <span class="o">=</span> <span class="n">max_lags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regression</span> <span class="o">=</span> <span class="n">regression</span></div>
+
+
+<div class="viewcode-block" id="StationarityDiagnostic.test_adf">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.test_adf">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_adf</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">max_lags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">regression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StationarityResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform Augmented Dickey-Fuller test.</span>
+
+<span class="sd">        H0: Series has a unit root (non-stationary)</span>
+<span class="sd">        H1: Series is stationary</span>
+
+<span class="sd">        Reject H0 if t-statistic &lt; critical value (test is one-sided).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series: Time series data</span>
+<span class="sd">            max_lags: Maximum lags (None for automatic)</span>
+<span class="sd">            regression: Regression type (None uses instance default)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            StationarityResult with test outcome</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Series too short for ADF test (need &gt;= 20 observations)&quot;</span><span class="p">)</span>
+
+        <span class="n">max_lags</span> <span class="o">=</span> <span class="n">max_lags</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_lags</span>
+        <span class="n">regression</span> <span class="o">=</span> <span class="n">regression</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">regression</span>
+
+        <span class="n">t_stat</span><span class="p">,</span> <span class="n">n_lags</span><span class="p">,</span> <span class="n">sigma2</span><span class="p">,</span> <span class="n">resid</span> <span class="o">=</span> <span class="n">_compute_adf_statistic</span><span class="p">(</span>
+            <span class="n">series</span><span class="p">,</span> <span class="n">max_lags</span><span class="o">=</span><span class="n">max_lags</span><span class="p">,</span> <span class="n">regression</span><span class="o">=</span><span class="n">regression</span>
+        <span class="p">)</span>
+        <span class="n">p_value</span> <span class="o">=</span> <span class="n">_compute_adf_pvalue</span><span class="p">(</span><span class="n">t_stat</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">),</span> <span class="n">regression</span><span class="p">)</span>
+
+        <span class="c1"># Critical values</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+        <span class="n">critical_values</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;1%&quot;</span><span class="p">:</span> <span class="n">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span>
+            <span class="s2">&quot;5%&quot;</span><span class="p">:</span> <span class="n">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span>
+            <span class="s2">&quot;10%&quot;</span><span class="p">:</span> <span class="n">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Conclusion: reject H0 (unit root) if t_stat &lt; critical value</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="n">critical_values</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">]</span>
+        <span class="n">is_stationary</span> <span class="o">=</span> <span class="n">t_stat</span> <span class="o">&lt;</span> <span class="n">cv</span>
+
+        <span class="c1"># Interpretation</span>
+        <span class="k">if</span> <span class="n">is_stationary</span><span class="p">:</span>
+            <span class="n">interpretation</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Reject H0 (unit root) at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> level. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Evidence suggests series is stationary.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">interpretation</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot reject H0 (unit root) at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> level. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Series may be non-stationary; consider differencing.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">StationarityResult</span><span class="p">(</span>
+            <span class="n">test_name</span><span class="o">=</span><span class="s2">&quot;ADF&quot;</span><span class="p">,</span>
+            <span class="n">statistic</span><span class="o">=</span><span class="n">t_stat</span><span class="p">,</span>
+            <span class="n">p_value</span><span class="o">=</span><span class="n">p_value</span><span class="p">,</span>
+            <span class="n">critical_values</span><span class="o">=</span><span class="n">critical_values</span><span class="p">,</span>
+            <span class="n">is_stationary</span><span class="o">=</span><span class="n">is_stationary</span><span class="p">,</span>
+            <span class="n">n_lags</span><span class="o">=</span><span class="n">n_lags</span><span class="p">,</span>
+            <span class="n">regression_type</span><span class="o">=</span><span class="n">regression</span><span class="p">,</span>
+            <span class="n">interpretation</span><span class="o">=</span><span class="n">interpretation</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StationarityDiagnostic.test_kpss">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.test_kpss">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_kpss</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">regression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_lags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StationarityResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform KPSS stationarity test.</span>
+
+<span class="sd">        H0: Series is stationary</span>
+<span class="sd">        H1: Series has a unit root</span>
+
+<span class="sd">        Note: KPSS has opposite null hypothesis to ADF. Use both for</span>
+<span class="sd">        robust stationarity conclusions.</span>
+
+<span class="sd">        Reject H0 if LM statistic &gt; critical value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series: Time series data</span>
+<span class="sd">            regression: &quot;c&quot; for level, &quot;ct&quot; for trend stationarity</span>
+<span class="sd">            n_lags: Number of lags (None for automatic)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            StationarityResult with test outcome</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Series too short for KPSS test (need &gt;= 20 observations)&quot;</span><span class="p">)</span>
+
+        <span class="n">regression</span> <span class="o">=</span> <span class="n">regression</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">regression</span>
+        <span class="k">if</span> <span class="n">regression</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
+            <span class="n">regression</span> <span class="o">=</span> <span class="s2">&quot;c&quot;</span>  <span class="c1"># KPSS requires at least constant</span>
+        <span class="k">if</span> <span class="n">regression</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;ct&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;KPSS regression must be &#39;c&#39; or &#39;ct&#39;&quot;</span><span class="p">)</span>
+
+        <span class="n">eta</span><span class="p">,</span> <span class="n">n_lags_used</span><span class="p">,</span> <span class="n">lrv</span> <span class="o">=</span> <span class="n">_compute_kpss_statistic</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">regression</span><span class="p">,</span> <span class="n">n_lags</span><span class="p">)</span>
+        <span class="n">p_value</span> <span class="o">=</span> <span class="n">_compute_kpss_pvalue</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">regression</span><span class="p">)</span>
+
+        <span class="c1"># Critical values</span>
+        <span class="n">critical_values</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;10%&quot;</span><span class="p">:</span> <span class="n">KPSS_CRITICAL_VALUES</span><span class="p">[(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">)],</span>
+            <span class="s2">&quot;5%&quot;</span><span class="p">:</span> <span class="n">KPSS_CRITICAL_VALUES</span><span class="p">[(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)],</span>
+            <span class="s2">&quot;2.5%&quot;</span><span class="p">:</span> <span class="n">KPSS_CRITICAL_VALUES</span><span class="p">[(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">)],</span>
+            <span class="s2">&quot;1%&quot;</span><span class="p">:</span> <span class="n">KPSS_CRITICAL_VALUES</span><span class="p">[(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)],</span>
+        <span class="p">}</span>
+
+        <span class="c1"># For KPSS, H0 is stationarity; reject if stat &gt; cv</span>
+        <span class="c1"># is_stationary = True if we DON&#39;T reject H0</span>
+        <span class="n">cv_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">}</span><span class="s2">%&quot;</span>
+        <span class="k">if</span> <span class="n">cv_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">critical_values</span><span class="p">:</span>
+            <span class="n">cv_key</span> <span class="o">=</span> <span class="s2">&quot;5%&quot;</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="n">critical_values</span><span class="p">[</span><span class="n">cv_key</span><span class="p">]</span>
+        <span class="n">is_stationary</span> <span class="o">=</span> <span class="n">eta</span> <span class="o">&lt;</span> <span class="n">cv</span>
+
+        <span class="k">if</span> <span class="n">is_stationary</span><span class="p">:</span>
+            <span class="n">interpretation</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot reject H0 (stationarity) at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> level. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Evidence suggests series is stationary.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">interpretation</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Reject H0 (stationarity) at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> level. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Series may be non-stationary; consider differencing.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">StationarityResult</span><span class="p">(</span>
+            <span class="n">test_name</span><span class="o">=</span><span class="s2">&quot;KPSS&quot;</span><span class="p">,</span>
+            <span class="n">statistic</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span>
+            <span class="n">p_value</span><span class="o">=</span><span class="n">p_value</span><span class="p">,</span>
+            <span class="n">critical_values</span><span class="o">=</span><span class="n">critical_values</span><span class="p">,</span>
+            <span class="n">is_stationary</span><span class="o">=</span><span class="n">is_stationary</span><span class="p">,</span>
+            <span class="n">n_lags</span><span class="o">=</span><span class="n">n_lags_used</span><span class="p">,</span>
+            <span class="n">regression_type</span><span class="o">=</span><span class="n">regression</span><span class="p">,</span>
+            <span class="n">interpretation</span><span class="o">=</span><span class="n">interpretation</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StationarityDiagnostic.test_phillips_perron">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.test_phillips_perron">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_phillips_perron</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">regression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_lags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StationarityResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform Phillips-Perron unit root test.</span>
+
+<span class="sd">        H0: Series has a unit root (non-stationary)</span>
+<span class="sd">        H1: Series is stationary</span>
+
+<span class="sd">        More robust to heteroskedasticity than ADF due to HAC correction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series: Time series data</span>
+<span class="sd">            regression: Regression type</span>
+<span class="sd">            n_lags: Number of lags for HAC estimation</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            StationarityResult with test outcome</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Series too short for PP test (need &gt;= 20 observations)&quot;</span><span class="p">)</span>
+
+        <span class="n">regression</span> <span class="o">=</span> <span class="n">regression</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">regression</span>
+
+        <span class="n">Z_t</span><span class="p">,</span> <span class="n">n_lags_used</span><span class="p">,</span> <span class="n">lrv</span><span class="p">,</span> <span class="n">resid</span> <span class="o">=</span> <span class="n">_compute_pp_statistic</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">regression</span><span class="p">,</span> <span class="n">n_lags</span><span class="p">)</span>
+
+        <span class="c1"># P-value uses same distribution as ADF</span>
+        <span class="n">p_value</span> <span class="o">=</span> <span class="n">_compute_adf_pvalue</span><span class="p">(</span><span class="n">Z_t</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">),</span> <span class="n">regression</span><span class="p">)</span>
+
+        <span class="c1"># Critical values (same as ADF)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+        <span class="n">critical_values</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;1%&quot;</span><span class="p">:</span> <span class="n">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span>
+            <span class="s2">&quot;5%&quot;</span><span class="p">:</span> <span class="n">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span>
+            <span class="s2">&quot;10%&quot;</span><span class="p">:</span> <span class="n">_interpolate_critical_value</span><span class="p">(</span><span class="n">regression</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="n">cv</span> <span class="o">=</span> <span class="n">critical_values</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">]</span>
+        <span class="n">is_stationary</span> <span class="o">=</span> <span class="n">Z_t</span> <span class="o">&lt;</span> <span class="n">cv</span>
+
+        <span class="k">if</span> <span class="n">is_stationary</span><span class="p">:</span>
+            <span class="n">interpretation</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Reject H0 (unit root) at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> level. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Evidence suggests series is stationary.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">interpretation</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot reject H0 (unit root) at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">significance_level</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> level. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Series may be non-stationary; consider differencing.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">StationarityResult</span><span class="p">(</span>
+            <span class="n">test_name</span><span class="o">=</span><span class="s2">&quot;Phillips-Perron&quot;</span><span class="p">,</span>
+            <span class="n">statistic</span><span class="o">=</span><span class="n">Z_t</span><span class="p">,</span>
+            <span class="n">p_value</span><span class="o">=</span><span class="n">p_value</span><span class="p">,</span>
+            <span class="n">critical_values</span><span class="o">=</span><span class="n">critical_values</span><span class="p">,</span>
+            <span class="n">is_stationary</span><span class="o">=</span><span class="n">is_stationary</span><span class="p">,</span>
+            <span class="n">n_lags</span><span class="o">=</span><span class="n">n_lags_used</span><span class="p">,</span>
+            <span class="n">regression_type</span><span class="o">=</span><span class="n">regression</span><span class="p">,</span>
+            <span class="n">interpretation</span><span class="o">=</span><span class="n">interpretation</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StationarityDiagnostic.test">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">method</span><span class="p">:</span> <span class="n">TestMethod</span> <span class="o">=</span> <span class="s2">&quot;adf&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StationarityResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform stationarity test with specified method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series: Time series data</span>
+<span class="sd">            method: Test method (&quot;adf&quot;, &quot;kpss&quot;, &quot;pp&quot;)</span>
+<span class="sd">            **kwargs: Additional arguments for the test</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            StationarityResult with test outcome</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;adf&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_adf</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;kpss&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_kpss</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;pp&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_phillips_perron</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StationarityDiagnostic.comprehensive_test">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.comprehensive_test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">comprehensive_test</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComprehensiveStationarityResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform comprehensive stationarity analysis.</span>
+
+<span class="sd">        Runs ADF, KPSS, and PP tests and synthesizes conclusions:</span>
+<span class="sd">        - If ADF rejects AND KPSS doesn&#39;t reject: Strong evidence of stationarity</span>
+<span class="sd">        - If ADF doesn&#39;t reject AND KPSS rejects: Strong evidence of unit root</span>
+<span class="sd">        - If both suggest stationary: Likely stationary</span>
+<span class="sd">        - If neither suggests stationary: Likely non-stationary</span>
+<span class="sd">        - Mixed results: Inconclusive</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series: Time series data</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ComprehensiveStationarityResult with combined analysis</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">adf_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_adf</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+        <span class="n">kpss_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_kpss</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+        <span class="n">pp_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_phillips_perron</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+
+        <span class="c1"># Synthesize conclusions</span>
+        <span class="c1"># ADF: is_stationary=True means rejected H0 (unit root) -&gt; stationary</span>
+        <span class="c1"># KPSS: is_stationary=True means didn&#39;t reject H0 (stationarity) -&gt; stationary</span>
+
+        <span class="n">adf_stationary</span> <span class="o">=</span> <span class="n">adf_result</span><span class="o">.</span><span class="n">is_stationary</span>
+        <span class="n">kpss_stationary</span> <span class="o">=</span> <span class="n">kpss_result</span><span class="o">.</span><span class="n">is_stationary</span>
+        <span class="n">pp_stationary</span> <span class="o">=</span> <span class="n">pp_result</span><span class="o">.</span><span class="n">is_stationary</span>
+
+        <span class="c1"># Count votes for stationarity</span>
+        <span class="n">n_stationary</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">adf_stationary</span><span class="p">,</span> <span class="n">kpss_stationary</span><span class="p">,</span> <span class="n">pp_stationary</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">n_stationary</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">n_stationary</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">overall_conclusion</span> <span class="o">=</span> <span class="s2">&quot;STATIONARY (strong evidence from all tests)&quot;</span>
+                <span class="n">recommendation</span> <span class="o">=</span> <span class="s2">&quot;No differencing needed. Proceed with analysis.&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">overall_conclusion</span> <span class="o">=</span> <span class="s2">&quot;LIKELY STATIONARY (majority of tests agree)&quot;</span>
+                <span class="n">recommendation</span> <span class="o">=</span> <span class="s2">&quot;Proceed with caution; monitor residual autocorrelation.&quot;</span>
+        <span class="k">elif</span> <span class="n">n_stationary</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">overall_conclusion</span> <span class="o">=</span> <span class="s2">&quot;INCONCLUSIVE (tests disagree)&quot;</span>
+            <span class="n">recommendation</span> <span class="o">=</span> <span class="s2">&quot;Consider visual inspection, longer sample, or try first difference.&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">overall_conclusion</span> <span class="o">=</span> <span class="s2">&quot;NON-STATIONARY (strong evidence from all tests)&quot;</span>
+            <span class="n">recommendation</span> <span class="o">=</span> <span class="s2">&quot;Apply first differencing before analysis.&quot;</span>
+
+        <span class="k">return</span> <span class="n">ComprehensiveStationarityResult</span><span class="p">(</span>
+            <span class="n">adf_result</span><span class="o">=</span><span class="n">adf_result</span><span class="p">,</span>
+            <span class="n">kpss_result</span><span class="o">=</span><span class="n">kpss_result</span><span class="p">,</span>
+            <span class="n">pp_result</span><span class="o">=</span><span class="n">pp_result</span><span class="p">,</span>
+            <span class="n">overall_conclusion</span><span class="o">=</span><span class="n">overall_conclusion</span><span class="p">,</span>
+            <span class="n">recommendation</span><span class="o">=</span><span class="n">recommendation</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># =============================================================================</span>
+<span class="c1"># Convenience Functions</span>
+<span class="c1"># =============================================================================</span>
+
+
+<div class="viewcode-block" id="run_stationarity_test">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.run_stationarity_test">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_stationarity_test</span><span class="p">(</span>
+    <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">TestMethod</span> <span class="o">=</span> <span class="s2">&quot;adf&quot;</span><span class="p">,</span>
+    <span class="n">significance_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">regression</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StationarityResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience function for stationarity testing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        series: Time series data</span>
+<span class="sd">        method: Test method (&quot;adf&quot;, &quot;kpss&quot;, &quot;pp&quot;)</span>
+<span class="sd">        significance_level: Significance level</span>
+<span class="sd">        regression: Regression type</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        StationarityResult</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; result = run_stationarity_test(Y, method=&quot;adf&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Stationary: {result.is_stationary}&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">diag</span> <span class="o">=</span> <span class="n">StationarityDiagnostic</span><span class="p">(</span><span class="n">significance_level</span><span class="o">=</span><span class="n">significance_level</span><span class="p">,</span> <span class="n">regression</span><span class="o">=</span><span class="n">regression</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">diag</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="suggest_differencing_order">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.suggest_differencing_order">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">suggest_differencing_order</span><span class="p">(</span>
+    <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">max_d</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">significance_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Suggest differencing order to achieve stationarity.</span>
+
+<span class="sd">    Tests differenced series until stationary or max_d reached.</span>
+<span class="sd">    Uses ADF test as primary criterion.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        series: Time series data</span>
+<span class="sd">        max_d: Maximum differencing order to try</span>
+<span class="sd">        significance_level: Significance level for tests</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Suggested differencing order (0, 1, or 2)</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; d = suggest_differencing_order(Y)</span>
+<span class="sd">        &gt;&gt;&gt; Y_stationary = np.diff(Y, n=d) if d &gt; 0 else Y</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">diag</span> <span class="o">=</span> <span class="n">StationarityDiagnostic</span><span class="p">(</span><span class="n">significance_level</span><span class="o">=</span><span class="n">significance_level</span><span class="p">)</span>
+
+    <span class="n">current</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="c1"># Not enough observations after differencing</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">diag</span><span class="o">.</span><span class="n">test_adf</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">is_stationary</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">d</span>
+
+        <span class="c1"># Difference for next iteration</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+
+    <span class="c1"># If still not stationary, return max_d</span>
+    <span class="k">return</span> <span class="n">max_d</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

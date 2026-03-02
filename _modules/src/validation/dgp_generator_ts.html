@@ -1,0 +1,1143 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.validation.dgp_generator_ts &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/validation/dgp_generator_ts';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Time Series DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Production Causal Inference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/validation/dgp_generator_ts.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for src.validation.dgp_generator_ts</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Time Series Data Generating Process (DGP) Generator.</span>
+
+<span class="sd">Generates synthetic time series data with known treatment effects and controllable</span>
+<span class="sd">temporal dependence for validating time series Double ML estimators.</span>
+
+<span class="sd">Key features:</span>
+<span class="sd">- AR(p) treatment dynamics</span>
+<span class="sd">- VAR confounders with cross-sectional dependencies</span>
+<span class="sd">- Panel DGP with fixed effects</span>
+<span class="sd">- Autocorrelated errors</span>
+<span class="sd">- Known dynamic and cumulative treatment effects</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+
+
+<div class="viewcode-block" id="TimeSeriesDGPResult">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.TimeSeriesDGPResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TimeSeriesDGPResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result from time series DGP generation.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        Y: Outcome variable (n_periods,) or (n_units, n_periods)</span>
+<span class="sd">        T: Treatment variable (n_periods,) or (n_units, n_periods)</span>
+<span class="sd">        X: Confounders (n_periods, p) or (n_units, n_periods, p)</span>
+<span class="sd">        true_effect: Contemporaneous treatment effect</span>
+<span class="sd">        true_cumulative_effect: Total effect including lags</span>
+<span class="sd">        n_periods: Number of time periods</span>
+<span class="sd">        n_units: Number of units (1 for single time series)</span>
+<span class="sd">        p: Number of confounders</span>
+<span class="sd">        time_index: Time index array</span>
+<span class="sd">        unit_ids: Unit identifier array (for panel)</span>
+<span class="sd">        ar_coefs: Treatment AR coefficients used</span>
+<span class="sd">        var_coefs: Confounder VAR coefficient matrix used</span>
+<span class="sd">        error_ar_coef: Error autocorrelation coefficient</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">true_cumulative_effect</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">n_units</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">p</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">time_index</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]</span>
+    <span class="n">unit_ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ar_coefs</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
+    <span class="n">var_coefs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">error_ar_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+
+
+
+<div class="viewcode-block" id="TimeSeriesDGPGenerator">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.TimeSeriesDGPGenerator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TimeSeriesDGPGenerator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate synthetic time series data with known temporal properties.</span>
+
+<span class="sd">    This generator creates data where:</span>
+<span class="sd">    - Treatment follows AR(p) dynamics with dependence on confounders</span>
+<span class="sd">    - Confounders follow VAR(1) process with controllable persistence</span>
+<span class="sd">    - Outcome has contemporaneous and lagged treatment effects</span>
+<span class="sd">    - Errors can be autocorrelated (AR(1))</span>
+<span class="sd">    - True effects are known by construction</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; # Simple AR(1) treatment DGP</span>
+<span class="sd">        &gt;&gt;&gt; dgp = TimeSeriesDGPGenerator(</span>
+<span class="sd">        ...     n_periods=200, p=3, true_effect=2.0,</span>
+<span class="sd">        ...     treatment_ar_order=1, random_state=42</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; result = dgp.generate()</span>
+<span class="sd">        &gt;&gt;&gt; result.Y.shape</span>
+<span class="sd">        (200,)</span>
+
+<span class="sd">        &gt;&gt;&gt; # Panel DGP with fixed effects</span>
+<span class="sd">        &gt;&gt;&gt; dgp = TimeSeriesDGPGenerator(</span>
+<span class="sd">        ...     n_periods=100, n_units=50, p=5, true_effect=1.5,</span>
+<span class="sd">        ...     panel_fixed_effects=True, random_state=42</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; result = dgp.generate()</span>
+<span class="sd">        &gt;&gt;&gt; result.Y.shape</span>
+<span class="sd">        (50, 100)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TimeSeriesDGPGenerator.__init__">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.TimeSeriesDGPGenerator.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">n_units</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">treatment_ar_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">treatment_ar_coefs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">confounder_var_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">confounding_strength</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">lagged_effect_coefs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">error_ar_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">noise_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">panel_fixed_effects</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">treatment_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="s2">&quot;binary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;continuous&quot;</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize time series DGP generator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_periods: Number of time periods (must be &gt; treatment_ar_order + 10)</span>
+<span class="sd">            p: Number of confounders (must be positive)</span>
+<span class="sd">            true_effect: Contemporaneous treatment effect</span>
+<span class="sd">            n_units: Number of units for panel (1 for single time series)</span>
+<span class="sd">            treatment_ar_order: AR order for treatment dynamics</span>
+<span class="sd">            treatment_ar_coefs: Custom AR coefficients (if None, generates random)</span>
+<span class="sd">            confounder_var_coef: Diagonal VAR(1) coefficient for confounders (0-1)</span>
+<span class="sd">            confounding_strength: Strength of confounding (0 = none, higher = more)</span>
+<span class="sd">            lagged_effect_coefs: Coefficients for lagged treatment effects</span>
+<span class="sd">            error_ar_coef: AR(1) coefficient for error autocorrelation (-1, 1)</span>
+<span class="sd">            noise_level: Standard deviation of noise terms</span>
+<span class="sd">            panel_fixed_effects: Whether to include unit fixed effects</span>
+<span class="sd">            treatment_type: &#39;continuous&#39; or &#39;binary&#39;</span>
+<span class="sd">            random_state: Random seed for reproducibility</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If parameters are invalid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate parameters</span>
+        <span class="k">if</span> <span class="n">n_periods</span> <span class="o">&lt;=</span> <span class="n">treatment_ar_order</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;n_periods (</span><span class="si">{</span><span class="n">n_periods</span><span class="si">}</span><span class="s2">) must be &gt; treatment_ar_order + 10 &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">treatment_ar_order</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">10</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">p</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;p must be positive, got </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_units</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_units must be positive, got </span><span class="si">{</span><span class="n">n_units</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="o">-</span><span class="mi">1</span> <span class="o">&lt;</span> <span class="n">confounder_var_coef</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;confounder_var_coef must be in (-1, 1), got </span><span class="si">{</span><span class="n">confounder_var_coef</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="o">-</span><span class="mi">1</span> <span class="o">&lt;</span> <span class="n">error_ar_coef</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;error_ar_coef must be in (-1, 1), got </span><span class="si">{</span><span class="n">error_ar_coef</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">treatment_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="s2">&quot;binary&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;treatment_type must be &#39;continuous&#39; or &#39;binary&#39;, got </span><span class="si">{</span><span class="n">treatment_type</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span> <span class="o">=</span> <span class="n">n_periods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">true_effect</span> <span class="o">=</span> <span class="n">true_effect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_units</span> <span class="o">=</span> <span class="n">n_units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_order</span> <span class="o">=</span> <span class="n">treatment_ar_order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confounder_var_coef</span> <span class="o">=</span> <span class="n">confounder_var_coef</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span> <span class="o">=</span> <span class="n">confounding_strength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_ar_coef</span> <span class="o">=</span> <span class="n">error_ar_coef</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_level</span> <span class="o">=</span> <span class="n">noise_level</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel_fixed_effects</span> <span class="o">=</span> <span class="n">panel_fixed_effects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">treatment_type</span> <span class="o">=</span> <span class="n">treatment_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+
+        <span class="c1"># Initialize random number generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="c1"># Set up AR coefficients for treatment</span>
+        <span class="k">if</span> <span class="n">treatment_ar_coefs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">treatment_ar_coefs</span><span class="p">)</span> <span class="o">!=</span> <span class="n">treatment_ar_order</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;treatment_ar_coefs length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">treatment_ar_coefs</span><span class="p">)</span><span class="si">}</span><span class="s2">) &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;must match treatment_ar_order (</span><span class="si">{</span><span class="n">treatment_ar_order</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">treatment_ar_coefs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Generate stable AR coefficients (sum &lt; 1 for stationarity)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_stable_ar_coefs</span><span class="p">(</span><span class="n">treatment_ar_order</span><span class="p">)</span>
+
+        <span class="c1"># Set up lagged effect coefficients</span>
+        <span class="k">if</span> <span class="n">lagged_effect_coefs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lagged_effect_coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lagged_effect_coefs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># No lagged effects by default</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lagged_effect_coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_stable_ar_coefs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate stable AR coefficients that ensure stationarity.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            order: AR order</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array of AR coefficients with |sum| &lt; 0.9</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+        <span class="c1"># Generate random coefficients</span>
+        <span class="n">coefs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
+
+        <span class="c1"># Scale to ensure stationarity</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">coefs</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mf">0.85</span><span class="p">:</span>
+            <span class="n">coefs</span> <span class="o">=</span> <span class="n">coefs</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.85</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">coefs</span>
+
+<div class="viewcode-block" id="TimeSeriesDGPGenerator.generate">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.TimeSeriesDGPGenerator.generate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeSeriesDGPResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a single dataset from the time series DGP.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TimeSeriesDGPResult with Y, T, X, and metadata</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_units</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_single_series</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_panel</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_single_series</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeSeriesDGPResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate single time series.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TimeSeriesDGPResult for single unit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span>
+
+        <span class="c1"># Generate confounders (VAR(1) process)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_var_confounders</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="c1"># Generate treatment (AR(p) + confounders)</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_treatment</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="c1"># Generate outcome</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_outcome</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+
+        <span class="c1"># Compute cumulative effect</span>
+        <span class="n">cumulative_effect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_effect</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lagged_effect_coefs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">TimeSeriesDGPResult</span><span class="p">(</span>
+            <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span>
+            <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
+            <span class="n">true_effect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
+            <span class="n">true_cumulative_effect</span><span class="o">=</span><span class="n">cumulative_effect</span><span class="p">,</span>
+            <span class="n">n_periods</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+            <span class="n">n_units</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+            <span class="n">time_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+            <span class="n">unit_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">ar_coefs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span><span class="p">,</span>
+            <span class="n">var_coefs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">error_ar_coef</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_ar_coef</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_panel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeSeriesDGPResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate panel data with optional fixed effects.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TimeSeriesDGPResult with panel structure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span>
+        <span class="n">n_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_units</span>
+
+        <span class="c1"># Generate unit fixed effects</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">panel_fixed_effects</span><span class="p">:</span>
+            <span class="n">unit_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n_i</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+            <span class="n">time_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n_t</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.3</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">unit_fe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_i</span><span class="p">)</span>
+            <span class="n">time_fe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_t</span><span class="p">)</span>
+
+        <span class="c1"># Initialize arrays</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_i</span><span class="p">,</span> <span class="n">n_t</span><span class="p">))</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_i</span><span class="p">,</span> <span class="n">n_t</span><span class="p">))</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_i</span><span class="p">,</span> <span class="n">n_t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_i</span><span class="p">):</span>
+            <span class="c1"># Generate unit-specific confounders</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_var_confounders</span><span class="p">(</span><span class="n">n_t</span><span class="p">)</span>
+
+            <span class="c1"># Generate treatment with unit heterogeneity</span>
+            <span class="n">T</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_treatment</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">unit_effect</span><span class="o">=</span><span class="n">unit_fe</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">)</span>
+
+            <span class="c1"># Generate outcome with fixed effects</span>
+            <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_outcome</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">unit_effect</span><span class="o">=</span><span class="n">unit_fe</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">time_effects</span><span class="o">=</span><span class="n">time_fe</span><span class="p">)</span>
+
+        <span class="c1"># Create unit IDs</span>
+        <span class="n">unit_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_i</span><span class="p">),</span> <span class="n">n_t</span><span class="p">)</span>
+
+        <span class="c1"># Compute cumulative effect</span>
+        <span class="n">cumulative_effect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_effect</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lagged_effect_coefs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">TimeSeriesDGPResult</span><span class="p">(</span>
+            <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span>
+            <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
+            <span class="n">true_effect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
+            <span class="n">true_cumulative_effect</span><span class="o">=</span><span class="n">cumulative_effect</span><span class="p">,</span>
+            <span class="n">n_periods</span><span class="o">=</span><span class="n">n_t</span><span class="p">,</span>
+            <span class="n">n_units</span><span class="o">=</span><span class="n">n_i</span><span class="p">,</span>
+            <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+            <span class="n">time_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_t</span><span class="p">),</span>
+            <span class="n">unit_ids</span><span class="o">=</span><span class="n">unit_ids</span><span class="p">,</span>
+            <span class="n">ar_coefs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span><span class="p">,</span>
+            <span class="n">var_coefs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">error_ar_coef</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_ar_coef</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_var_confounders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate VAR(1) confounders.</span>
+
+<span class="sd">        X_t = ρ * X_{t-1} + ε_t</span>
+
+<span class="sd">        where ρ is the diagonal VAR coefficient and ε_t ~ N(0, I).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n: Number of time periods</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Confounder array (n, p)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">))</span>
+
+        <span class="c1"># Initialize</span>
+        <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="c1"># Generate VAR(1) process (diagonal coefficient matrix)</span>
+        <span class="n">innovation_var</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounder_var_coef</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">innovation_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">innovation_var</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="n">innovation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">innovation_std</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounder_var_coef</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">innovation</span>
+
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_treatment</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">unit_effect</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate AR(p) treatment with confounder dependence.</span>
+
+<span class="sd">        T_t = Σ_{j=1}^{p} φ_j T_{t-j} + β&#39;X_t + unit_effect + ε_t</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X: Confounders (n, p)</span>
+<span class="sd">            unit_effect: Unit fixed effect on treatment (for panel)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Treatment array (n,)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ar_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_order</span>
+
+        <span class="c1"># Confounding effect</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span> <span class="o">*</span> <span class="mf">0.3</span>
+
+        <span class="c1"># Generate AR process for treatment</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="c1"># Burn-in period</span>
+        <span class="n">burn_in</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ar_order</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="n">T_extended</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="n">burn_in</span><span class="p">)</span>
+
+        <span class="c1"># Innovation variance (adjusted for stationarity)</span>
+        <span class="n">innovation_var</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="n">innovation_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">innovation_var</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">burn_in</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="n">burn_in</span><span class="p">):</span>
+            <span class="c1"># AR component</span>
+            <span class="n">ar_component</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ar_order</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">ar_component</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">T_extended</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Confounder component (use X at corresponding time)</span>
+            <span class="n">t_actual</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="n">burn_in</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">t_actual</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">conf_component</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">t_actual</span><span class="p">]</span> <span class="o">@</span> <span class="n">beta</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">conf_component</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+            <span class="c1"># Innovation</span>
+            <span class="n">innovation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">()</span> <span class="o">*</span> <span class="n">innovation_std</span>
+
+            <span class="c1"># Combine</span>
+            <span class="n">T_extended</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">ar_component</span> <span class="o">+</span> <span class="n">conf_component</span> <span class="o">+</span> <span class="n">unit_effect</span> <span class="o">+</span> <span class="n">innovation</span>
+
+        <span class="c1"># Extract non-burn-in portion</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">T_extended</span><span class="p">[</span><span class="n">burn_in</span><span class="p">:]</span>
+
+        <span class="c1"># Convert to binary if needed</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_type</span> <span class="o">==</span> <span class="s2">&quot;binary&quot;</span><span class="p">:</span>
+            <span class="n">propensity</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">T</span><span class="p">))</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">propensity</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">T</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_outcome</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">unit_effect</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">time_effects</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate outcome with treatment effects and autocorrelated errors.</span>
+
+<span class="sd">        Y_t = τ_0 T_t + Σ_{j=1}^{L} τ_j T_{t-j} + γ&#39;X_t + α_i + λ_t + ε_t</span>
+
+<span class="sd">        where ε_t = ρ ε_{t-1} + u_t is AR(1) error.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            T: Treatment (n,)</span>
+<span class="sd">            X: Confounders (n, p)</span>
+<span class="sd">            unit_effect: Unit fixed effect</span>
+<span class="sd">            time_effects: Time fixed effects (n,)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Outcome array (n,)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="c1"># Contemporaneous treatment effect</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_effect</span> <span class="o">*</span> <span class="n">T</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Lagged treatment effects</span>
+        <span class="n">n_lags</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lagged_effect_coefs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">lag</span><span class="p">,</span> <span class="n">coef</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lagged_effect_coefs</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">lag</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">Y</span><span class="p">[</span><span class="n">lag</span><span class="p">:]</span> <span class="o">+=</span> <span class="n">coef</span> <span class="o">*</span> <span class="n">T</span><span class="p">[:</span><span class="o">-</span><span class="n">lag</span><span class="p">]</span>
+
+        <span class="c1"># Confounder effect</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span>
+        <span class="n">Y</span> <span class="o">+=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">gamma</span>
+
+        <span class="c1"># Fixed effects</span>
+        <span class="n">Y</span> <span class="o">+=</span> <span class="n">unit_effect</span>
+        <span class="k">if</span> <span class="n">time_effects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Y</span> <span class="o">+=</span> <span class="n">time_effects</span>
+
+        <span class="c1"># AR(1) error</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_ar1_errors</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">+=</span> <span class="n">error</span>
+
+        <span class="k">return</span> <span class="n">Y</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_ar1_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate AR(1) errors.</span>
+
+<span class="sd">        ε_t = ρ ε_{t-1} + u_t, u_t ~ N(0, σ²)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n: Number of time periods</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Error array (n,)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="c1"># Innovation variance (unconditional variance = σ² / (1 - ρ²))</span>
+        <span class="n">innovation_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_level</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_ar_coef</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">innovation_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">innovation_var</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">))</span>
+
+        <span class="n">innovations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">innovation_std</span>
+
+        <span class="n">errors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">innovations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_ar_coef</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="n">errors</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_ar_coef</span> <span class="o">*</span> <span class="n">errors</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">innovations</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">errors</span></div>
+
+
+
+<div class="viewcode-block" id="BreakDGPGenerator">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.BreakDGPGenerator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BreakDGPGenerator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate time series with structural breaks in treatment effects.</span>
+
+<span class="sd">    Useful for testing rolling window estimators that should detect</span>
+<span class="sd">    time-varying effects.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; dgp = BreakDGPGenerator(</span>
+<span class="sd">        ...     n_periods=300, p=3,</span>
+<span class="sd">        ...     effects=[1.0, 3.0, 1.5],</span>
+<span class="sd">        ...     break_points=[100, 200],</span>
+<span class="sd">        ...     random_state=42</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; result = dgp.generate()</span>
+<span class="sd">        &gt;&gt;&gt; result.effect_periods  # [(0, 100), (100, 200), (200, 300)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BreakDGPGenerator.__init__">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.BreakDGPGenerator.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">effects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">break_points</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">confounding_strength</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">noise_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize break DGP generator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_periods: Total number of time periods</span>
+<span class="sd">            p: Number of confounders</span>
+<span class="sd">            effects: Treatment effect for each regime</span>
+<span class="sd">            break_points: Time indices where breaks occur</span>
+<span class="sd">            confounding_strength: Strength of confounding</span>
+<span class="sd">            noise_level: Standard deviation of noise</span>
+<span class="sd">            random_state: Random seed</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If effects and break_points are inconsistent</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">effects</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">break_points</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Number of effects (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">effects</span><span class="p">)</span><span class="si">}</span><span class="s2">) must equal &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;number of break_points + 1 (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">break_points</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">sorted_breaks</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">break_points</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sorted_breaks</span> <span class="o">!=</span> <span class="n">break_points</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;break_points must be in ascending order&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">break_points</span> <span class="ow">and</span> <span class="p">(</span><span class="n">break_points</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">break_points</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">n_periods</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;break_points must be within (0, n_periods)&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span> <span class="o">=</span> <span class="n">n_periods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">effects</span> <span class="o">=</span> <span class="n">effects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">break_points</span> <span class="o">=</span> <span class="n">break_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span> <span class="o">=</span> <span class="n">confounding_strength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_level</span> <span class="o">=</span> <span class="n">noise_level</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BreakDGPGenerator.generate">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.BreakDGPGenerator.generate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BreakDGPResult&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate data with structural breaks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            BreakDGPResult with Y, T, X, and regime information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span>
+
+        <span class="c1"># Generate confounders (simple AR(1))</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">))</span>
+        <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="n">X</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.87</span>
+
+        <span class="c1"># Generate treatment</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span> <span class="o">*</span> <span class="mf">0.3</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+        <span class="c1"># Generate outcome with time-varying effects</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span>
+
+        <span class="c1"># Determine regime for each time point</span>
+        <span class="n">regime_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_regime_indices</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">regime</span> <span class="o">=</span> <span class="n">regime_indices</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+            <span class="n">effect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">effects</span><span class="p">[</span><span class="n">regime</span><span class="p">]</span>
+            <span class="n">Y</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">effect</span> <span class="o">*</span> <span class="n">T</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="n">X</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">@</span> <span class="n">gamma</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_level</span>
+
+        <span class="c1"># Effect periods</span>
+        <span class="n">all_breaks</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">break_points</span> <span class="o">+</span> <span class="p">[</span><span class="n">n</span><span class="p">]</span>
+        <span class="n">effect_periods</span> <span class="o">=</span> <span class="p">[(</span><span class="n">all_breaks</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">all_breaks</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">effects</span><span class="p">))]</span>
+
+        <span class="k">return</span> <span class="n">BreakDGPResult</span><span class="p">(</span>
+            <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span>
+            <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
+            <span class="n">effects</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">effects</span><span class="p">,</span>
+            <span class="n">break_points</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">break_points</span><span class="p">,</span>
+            <span class="n">effect_periods</span><span class="o">=</span><span class="n">effect_periods</span><span class="p">,</span>
+            <span class="n">regime_indices</span><span class="o">=</span><span class="n">regime_indices</span><span class="p">,</span>
+            <span class="n">n_periods</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+            <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_regime_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get regime index for each time point.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array of regime indices (n,)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span>
+        <span class="n">regime_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="n">all_breaks</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">break_points</span> <span class="o">+</span> <span class="p">[</span><span class="n">n</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">regime</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">all_breaks</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">all_breaks</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
+            <span class="n">regime_indices</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span> <span class="o">=</span> <span class="n">regime</span>
+
+        <span class="k">return</span> <span class="n">regime_indices</span></div>
+
+
+
+<div class="viewcode-block" id="BreakDGPResult">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.BreakDGPResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BreakDGPResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result from break DGP generation.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        Y: Outcome variable (n,)</span>
+<span class="sd">        T: Treatment variable (n,)</span>
+<span class="sd">        X: Confounders (n, p)</span>
+<span class="sd">        effects: True effect for each regime</span>
+<span class="sd">        break_points: Time indices of breaks</span>
+<span class="sd">        effect_periods: (start, end) tuples for each regime</span>
+<span class="sd">        regime_indices: Regime index for each time point</span>
+<span class="sd">        n_periods: Number of time periods</span>
+<span class="sd">        p: Number of confounders</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">effects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">break_points</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">effect_periods</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>
+    <span class="n">regime_indices</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]</span>
+    <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">p</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+
+<div class="viewcode-block" id="create_ar_dgp">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.create_ar_dgp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_ar_dgp</span><span class="p">(</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="n">p</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">ar_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">confounding_strength</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeSeriesDGPResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience function for simple AR(1) treatment DGP.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n: Number of time periods</span>
+<span class="sd">        p: Number of confounders</span>
+<span class="sd">        true_effect: True treatment effect</span>
+<span class="sd">        ar_coef: AR(1) coefficient for treatment</span>
+<span class="sd">        confounding_strength: Strength of confounding</span>
+<span class="sd">        random_state: Random seed</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        TimeSeriesDGPResult</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dgp</span> <span class="o">=</span> <span class="n">TimeSeriesDGPGenerator</span><span class="p">(</span>
+        <span class="n">n_periods</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+        <span class="n">true_effect</span><span class="o">=</span><span class="n">true_effect</span><span class="p">,</span>
+        <span class="n">treatment_ar_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">treatment_ar_coefs</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ar_coef</span><span class="p">]),</span>
+        <span class="n">confounding_strength</span><span class="o">=</span><span class="n">confounding_strength</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="create_panel_dgp">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.create_panel_dgp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_panel_dgp</span><span class="p">(</span>
+    <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">n_units</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n">p</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">fixed_effects</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeSeriesDGPResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience function for panel DGP with fixed effects.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n_periods: Number of time periods per unit</span>
+<span class="sd">        n_units: Number of cross-sectional units</span>
+<span class="sd">        p: Number of confounders</span>
+<span class="sd">        true_effect: True treatment effect</span>
+<span class="sd">        fixed_effects: Whether to include unit/time fixed effects</span>
+<span class="sd">        random_state: Random seed</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        TimeSeriesDGPResult with panel structure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dgp</span> <span class="o">=</span> <span class="n">TimeSeriesDGPGenerator</span><span class="p">(</span>
+        <span class="n">n_periods</span><span class="o">=</span><span class="n">n_periods</span><span class="p">,</span>
+        <span class="n">n_units</span><span class="o">=</span><span class="n">n_units</span><span class="p">,</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+        <span class="n">true_effect</span><span class="o">=</span><span class="n">true_effect</span><span class="p">,</span>
+        <span class="n">panel_fixed_effects</span><span class="o">=</span><span class="n">fixed_effects</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="create_break_dgp">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.create_break_dgp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_break_dgp</span><span class="p">(</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="n">p</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">effects</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">break_points</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BreakDGPResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience function for structural break DGP.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n: Number of time periods</span>
+<span class="sd">        p: Number of confounders</span>
+<span class="sd">        effects: Treatment effects by regime (default: [1.0, 3.0, 1.0])</span>
+<span class="sd">        break_points: Break locations (default: [n//3, 2*n//3])</span>
+<span class="sd">        random_state: Random seed</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        BreakDGPResult</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">effects</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">effects</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">break_points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">break_points</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="o">//</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">3</span><span class="p">]</span>
+
+    <span class="n">dgp</span> <span class="o">=</span> <span class="n">BreakDGPGenerator</span><span class="p">(</span>
+        <span class="n">n_periods</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+        <span class="n">effects</span><span class="o">=</span><span class="n">effects</span><span class="p">,</span>
+        <span class="n">break_points</span><span class="o">=</span><span class="n">break_points</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

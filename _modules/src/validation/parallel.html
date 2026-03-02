@@ -1,0 +1,764 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.validation.parallel &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/validation/parallel';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Time Series DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Production Causal Inference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/validation/parallel.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for src.validation.parallel</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Parallel execution framework for Monte Carlo simulations.</span>
+
+<span class="sd">Optimized for 64-core AMD Threadripper 3990X with intelligent workload distribution.</span>
+<span class="sd">Provides decorators and utilities for parallelizing validation methods.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">ParamSpec</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="c1"># Type variables for generic function signatures</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">ParamSpec</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Hardware configuration (from archimedes_lever)</span>
+<span class="n">DEFAULT_N_JOBS</span> <span class="o">=</span> <span class="mi">48</span>  <span class="c1"># Leave 16 cores for system (64 total)</span>
+<span class="n">MIN_TASKS_PER_CORE</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># Minimum tasks per core for efficient parallelization</span>
+
+
+<div class="viewcode-block" id="get_optimal_n_jobs">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.parallel.get_optimal_n_jobs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_optimal_n_jobs</span><span class="p">(</span><span class="n">n_tasks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_N_JOBS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate optimal number of parallel jobs based on task count.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n_tasks: Total number of tasks to execute</span>
+<span class="sd">        n_jobs: Maximum number of parallel jobs (default: 48)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Optimal number of jobs (1 if sequential is better)</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; get_optimal_n_jobs(100, n_jobs=48)</span>
+<span class="sd">        48</span>
+<span class="sd">        &gt;&gt;&gt; get_optimal_n_jobs(10, n_jobs=48)</span>
+<span class="sd">        5</span>
+<span class="sd">        &gt;&gt;&gt; get_optimal_n_jobs(2, n_jobs=48)</span>
+<span class="sd">        1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_tasks</span> <span class="o">&lt;</span> <span class="n">MIN_TASKS_PER_CORE</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>  <span class="c1"># Sequential execution for tiny workloads</span>
+
+    <span class="c1"># Use at most n_tasks // MIN_TASKS_PER_CORE cores</span>
+    <span class="n">optimal</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">n_tasks</span> <span class="o">//</span> <span class="n">MIN_TASKS_PER_CORE</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">optimal</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="parallel_map">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.parallel.parallel_map">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parallel_map</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">T</span><span class="p">],</span>
+    <span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_N_JOBS</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">desc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Processing&quot;</span><span class="p">,</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;loky&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parallel map with automatic optimization and progress tracking.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        func: Function to apply to each item</span>
+<span class="sd">        items: List of items to process</span>
+<span class="sd">        n_jobs: Maximum number of parallel jobs (default: 48)</span>
+<span class="sd">        show_progress: Show tqdm progress bar (default: True)</span>
+<span class="sd">        desc: Progress bar description</span>
+<span class="sd">        backend: Joblib backend (&#39;loky&#39;, &#39;threading&#39;, &#39;multiprocessing&#39;)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of results in same order as input</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; def square(x): return x ** 2</span>
+<span class="sd">        &gt;&gt;&gt; results = parallel_map(square, [1, 2, 3, 4], n_jobs=2)</span>
+<span class="sd">        &gt;&gt;&gt; results</span>
+<span class="sd">        [1, 4, 9, 16]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_tasks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+    <span class="n">optimal_jobs</span> <span class="o">=</span> <span class="n">get_optimal_n_jobs</span><span class="p">(</span><span class="n">n_tasks</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">optimal_jobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Sequential execution</span>
+        <span class="k">if</span> <span class="n">show_progress</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">func</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="n">desc</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">func</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+
+    <span class="c1"># Parallel execution</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">show_progress</span><span class="p">:</span>
+            <span class="c1"># Use tqdm for progress tracking</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">optimal_jobs</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">)(</span>
+                <span class="n">delayed</span><span class="p">(</span><span class="n">func</span><span class="p">)(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="n">desc</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">optimal_jobs</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">)(</span>
+                <span class="n">delayed</span><span class="p">(</span><span class="n">func</span><span class="p">)(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">results</span>  <span class="c1"># type: ignore[no-any-return]</span></div>
+
+
+
+<div class="viewcode-block" id="parallel_monte_carlo">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.parallel.parallel_monte_carlo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parallel_monte_carlo</span><span class="p">(</span>
+    <span class="n">simulation_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span>
+    <span class="n">n_simulations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_N_JOBS</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Execute Monte Carlo simulations in parallel with reproducibility.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        simulation_func: Function to run for each simulation</span>
+<span class="sd">        n_simulations: Number of Monte Carlo runs</span>
+<span class="sd">        n_jobs: Maximum number of parallel jobs (default: 48)</span>
+<span class="sd">        show_progress: Show progress bar (default: True)</span>
+<span class="sd">        random_state: Random seed for reproducibility (default: None)</span>
+<span class="sd">        **kwargs: Additional arguments passed to simulation_func</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of simulation results</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; def simulate(sim_id, mean=0.0):</span>
+<span class="sd">        ...     rng = np.random.RandomState(sim_id)</span>
+<span class="sd">        ...     return rng.normal(mean, 1.0)</span>
+<span class="sd">        &gt;&gt;&gt; results = parallel_monte_carlo(simulate, 1000, mean=2.0, n_jobs=4)</span>
+<span class="sd">        &gt;&gt;&gt; len(results)</span>
+<span class="sd">        1000</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Generate simulation IDs with offsets for reproducibility</span>
+    <span class="k">if</span> <span class="n">random_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sim_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">random_state</span> <span class="o">+</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_simulations</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sim_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_simulations</span><span class="p">))</span>
+
+    <span class="c1"># Create partial function with kwargs</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_single</span><span class="p">(</span><span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">simulation_func</span><span class="p">(</span><span class="n">sim_id</span><span class="o">=</span><span class="n">sim_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># Execute in parallel</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">parallel_map</span><span class="p">(</span>
+        <span class="n">run_single</span><span class="p">,</span>
+        <span class="n">sim_ids</span><span class="p">,</span>
+        <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+        <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Monte Carlo&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<div class="viewcode-block" id="parallelize">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.parallel.parallelize">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parallelize</span><span class="p">(</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_N_JOBS</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">desc</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator to automatically parallelize a function over a list argument.</span>
+
+<span class="sd">    The decorated function should take an iterable as its first argument.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n_jobs: Maximum number of parallel jobs (default: 48)</span>
+<span class="sd">        show_progress: Show progress bar (default: True)</span>
+<span class="sd">        desc: Progress bar description (default: function name)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Decorated function that executes in parallel</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; @parallelize(n_jobs=4)</span>
+<span class="sd">        ... def process_batch(items):</span>
+<span class="sd">        ...     def process_single(item):</span>
+<span class="sd">        ...         return item ** 2</span>
+<span class="sd">        ...     return process_single</span>
+<span class="sd">        &gt;&gt;&gt; # Usage: results = process_batch([1, 2, 3, 4])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">T</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]]:</span>
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+            <span class="c1"># Get the processing function and items</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">args</span> <span class="k">else</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;items&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First argument must be iterable, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Get the single-item processing function</span>
+            <span class="n">process_func</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="c1"># Execute in parallel</span>
+            <span class="n">progress_desc</span> <span class="o">=</span> <span class="n">desc</span> <span class="ow">or</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">parallel_map</span><span class="p">(</span>
+                <span class="n">process_func</span><span class="p">,</span>
+                <span class="nb">list</span><span class="p">(</span><span class="n">items</span><span class="p">),</span>
+                <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+                <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+                <span class="n">desc</span><span class="o">=</span><span class="n">progress_desc</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">results</span>
+
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+    <span class="k">return</span> <span class="n">decorator</span>  <span class="c1"># type: ignore[return-value]</span></div>
+
+
+
+<div class="viewcode-block" id="ParallelExecutor">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.parallel.ParallelExecutor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ParallelExecutor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Context manager for parallel execution with resource cleanup.</span>
+
+<span class="sd">    Provides controlled parallel execution with automatic cleanup and</span>
+<span class="sd">    error handling for long-running validation workflows.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; with ParallelExecutor(n_jobs=4) as executor:</span>
+<span class="sd">        ...     results = executor.map(lambda x: x**2, [1, 2, 3, 4])</span>
+<span class="sd">        &gt;&gt;&gt; results</span>
+<span class="sd">        [1, 4, 9, 16]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ParallelExecutor.__init__">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.parallel.ParallelExecutor.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_N_JOBS</span><span class="p">,</span>
+        <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;loky&quot;</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize parallel executor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_jobs: Maximum number of parallel jobs (default: 48)</span>
+<span class="sd">            backend: Joblib backend (&#39;loky&#39;, &#39;threading&#39;, &#39;multiprocessing&#39;)</span>
+<span class="sd">            show_progress: Show progress bars (default: True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_progress</span> <span class="o">=</span> <span class="n">show_progress</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parallel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Parallel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ParallelExecutor&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enter context manager.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parallel</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Exit context manager and cleanup resources.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parallel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Force cleanup of worker pool</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parallel</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ParallelExecutor.map">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.parallel.ParallelExecutor.map">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">map</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">T</span><span class="p">],</span>
+        <span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">desc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Processing&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map function over items in parallel.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func: Function to apply</span>
+<span class="sd">            items: Items to process</span>
+<span class="sd">            desc: Progress bar description</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of results</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parallel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Executor not initialized (use &#39;with&#39; statement)&quot;</span><span class="p">)</span>
+
+        <span class="n">optimal_jobs</span> <span class="o">=</span> <span class="n">get_optimal_n_jobs</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">optimal_jobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Sequential</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_progress</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">func</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="n">desc</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">func</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+
+        <span class="c1"># Parallel</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_progress</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parallel</span><span class="p">(</span><span class="n">delayed</span><span class="p">(</span><span class="n">func</span><span class="p">)(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="n">desc</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parallel</span><span class="p">(</span><span class="n">delayed</span><span class="p">(</span><span class="n">func</span><span class="p">)(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span>  <span class="c1"># type: ignore[no-any-return]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="chunk_workload">
+<a class="viewcode-back" href="../../../api/validation.html#src.validation.parallel.chunk_workload">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">chunk_workload</span><span class="p">(</span><span class="n">n_tasks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_chunks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">balance</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split workload into chunks for parallel processing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n_tasks: Total number of tasks</span>
+<span class="sd">        n_chunks: Number of chunks to create</span>
+<span class="sd">        balance: Balance chunk sizes (default: True)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of (start, end) tuples for each chunk</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; chunk_workload(100, 4)</span>
+<span class="sd">        [(0, 25), (25, 50), (50, 75), (75, 100)]</span>
+<span class="sd">        &gt;&gt;&gt; chunk_workload(10, 3)</span>
+<span class="sd">        [(0, 4), (4, 7), (7, 10)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_tasks</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_tasks must be positive, got </span><span class="si">{</span><span class="n">n_tasks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_chunks</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_chunks must be positive, got </span><span class="si">{</span><span class="n">n_chunks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n_chunks</span> <span class="o">&gt;</span> <span class="n">n_tasks</span><span class="p">:</span>
+        <span class="n">n_chunks</span> <span class="o">=</span> <span class="n">n_tasks</span>  <span class="c1"># No point in more chunks than tasks</span>
+
+    <span class="k">if</span> <span class="n">balance</span><span class="p">:</span>
+        <span class="c1"># Balanced chunks (some may be 1 larger)</span>
+        <span class="n">base_size</span> <span class="o">=</span> <span class="n">n_tasks</span> <span class="o">//</span> <span class="n">n_chunks</span>
+        <span class="n">remainder</span> <span class="o">=</span> <span class="n">n_tasks</span> <span class="o">%</span> <span class="n">n_chunks</span>
+
+        <span class="n">chunks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_chunks</span><span class="p">):</span>
+            <span class="c1"># First &#39;remainder&#39; chunks get 1 extra task</span>
+            <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">base_size</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">remainder</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">chunk_size</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">end</span>
+
+        <span class="k">return</span> <span class="n">chunks</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Simple equal chunks (last may be larger)</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">n_tasks</span> <span class="o">//</span> <span class="n">n_chunks</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_chunks</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">n_chunks</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">n_tasks</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">chunks</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

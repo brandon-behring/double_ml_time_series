@@ -1,0 +1,1489 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.dml.dynamic_dml &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/dml/dynamic_dml';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Time Series DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Production Causal Inference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/dml/dynamic_dml.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for src.dml.dynamic_dml</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Dynamic Double Machine Learning for Time Series.</span>
+
+<span class="sd">Implements sequential g-estimation for time series causal inference with</span>
+<span class="sd">time-varying treatments and confounders.</span>
+
+<span class="sd">References:</span>
+
+<span class="sd">- Lewis, R. and Syrgkanis, V. (2021). Double/Debiased Machine Learning for</span>
+<span class="sd">  Dynamic Treatment Effects. NeurIPS.</span>
+<span class="sd">- Chernozhukov et al. (2018). Double Machine Learning for Treatment and</span>
+<span class="sd">  Structural Parameters.</span>
+
+<span class="sd">Phase 2A Implementation - Core DynamicDML Class</span>
+
+<span class="sd">Key components:</span>
+<span class="sd">1. DynamicDML - Sequential g-estimation with time-series cross-validation</span>
+<span class="sd">2. RollingWindowDML - Local estimation for non-stationary effects</span>
+<span class="sd">3. PanelDML - Fixed effects + DML for panel data structures</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    &gt;&gt;&gt; from src.dml import DynamicDML</span>
+<span class="sd">    &gt;&gt;&gt; model = DynamicDML(</span>
+<span class="sd">    ...     n_lags=5,</span>
+<span class="sd">    ...     model_y=&quot;random_forest&quot;,</span>
+<span class="sd">    ...     model_t=&quot;random_forest&quot;,</span>
+<span class="sd">    ...     cv_strategy=&quot;time_series_split&quot;,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; model.fit(Y=Y, T=T, X=X, time_index=time)</span>
+<span class="sd">    &gt;&gt;&gt; result = model.effect(X=X_test)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">clone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span><span class="p">,</span> <span class="n">RandomForestRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lasso</span><span class="p">,</span> <span class="n">Ridge</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BlockedTimeSeriesCV</span><span class="p">,</span>
+    <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">,</span>
+    <span class="n">TimeSeriesCrossValidator</span><span class="p">,</span>
+    <span class="n">create_time_series_cv</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.hac</span><span class="w"> </span><span class="kn">import</span> <span class="n">HACEstimator</span><span class="p">,</span> <span class="n">hac_inference</span><span class="p">,</span> <span class="n">newey_west_se</span><span class="p">,</span> <span class="n">optimal_bandwidth</span>
+
+<span class="c1"># Type aliases</span>
+<span class="n">ArrayLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="n">ModelType</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;lasso&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">]</span>
+<span class="n">CVStrategy</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;time_series_split&quot;</span><span class="p">,</span> <span class="s2">&quot;blocked_cv&quot;</span><span class="p">,</span> <span class="s2">&quot;purged_cv&quot;</span><span class="p">]</span>
+<span class="n">KernelType</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bartlett&quot;</span><span class="p">,</span> <span class="s2">&quot;parzen&quot;</span><span class="p">,</span> <span class="s2">&quot;quadratic_spectral&quot;</span><span class="p">]</span>
+
+<span class="c1"># Configurable parallelism: production uses -1 (all cores), tests use 1 (sequential).</span>
+<span class="n">_DEFAULT_N_JOBS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DML_N_JOBS&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="DynamicDMLResult">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.DynamicDMLResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DynamicDMLResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for DynamicDML estimation.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        theta: Treatment effect estimate (ATE or CATE)</span>
+<span class="sd">        se: Standard error (HAC-adjusted for time series)</span>
+<span class="sd">        t_stat: t-statistic = theta / se</span>
+<span class="sd">        ci_lower: Lower 95% confidence interval bound</span>
+<span class="sd">        ci_upper: Upper 95% confidence interval bound</span>
+<span class="sd">        p_value: Two-sided p-value for H0: theta = 0</span>
+<span class="sd">        n_samples: Number of observations</span>
+<span class="sd">        n_periods: Number of time periods (after lag adjustment)</span>
+<span class="sd">        outcome_r2_cv: Cross-validated R² for outcome model</span>
+<span class="sd">        treatment_r2_cv: Cross-validated R² for treatment model</span>
+<span class="sd">        hac_bandwidth: Bandwidth used for HAC covariance</span>
+<span class="sd">        cv_strategy: Cross-validation strategy used</span>
+<span class="sd">        Y_residual: Outcome residuals (Ỹ = Y - m̂(X))</span>
+<span class="sd">        T_residual: Treatment residuals (T̃ = T - ℓ̂(X))</span>
+<span class="sd">        influence_scores: Influence function values for each observation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">se</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">t_stat</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">ci_lower</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">ci_upper</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">p_value</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">outcome_r2_cv</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">treatment_r2_cv</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">hac_bandwidth</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">cv_strategy</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">Y_residual</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">T_residual</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">influence_scores</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;DynamicDMLResult(θ=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, SE=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;95% CI=[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ci_lower</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ci_upper</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">], &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;p=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="DynamicDMLResult.summary">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return formatted summary of DynamicDML results.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Dynamic Double Machine Learning Results</span>
+<span class="s2">=======================================</span>
+<span class="s2">Treatment Effect (θ):    </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span>
+<span class="s2">HAC Standard Error:      </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span>
+<span class="s2">t-statistic:             </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">t_stat</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span>
+<span class="s2">p-value:                 </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span>
+<span class="s2">95% Confidence Interval: [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ci_lower</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ci_upper</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">]</span>
+
+<span class="s2">Sample Information:</span>
+<span class="s2">  Observations:          </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_samples</span><span class="si">}</span>
+<span class="s2">  Time periods:          </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span><span class="si">}</span>
+
+<span class="s2">Nuisance Model Diagnostics:</span>
+<span class="s2">  Outcome R² (CV):       </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">outcome_r2_cv</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span>
+<span class="s2">  Treatment R² (CV):     </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">treatment_r2_cv</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span>
+
+<span class="s2">HAC Inference:</span>
+<span class="s2">  Bandwidth:             </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">hac_bandwidth</span><span class="si">}</span>
+<span class="s2">  CV Strategy:           </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span><span class="si">}</span>
+
+<span class="s2">Interpretation:</span>
+<span class="s2">  A one-unit increase in treatment is associated with a</span>
+<span class="s2">  </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> unit change in outcome (p=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">).</span>
+<span class="s2">  Standard errors are HAC-corrected for serial correlation.</span>
+<span class="s2">&quot;&quot;&quot;</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_nuisance_model</span><span class="p">(</span>
+    <span class="n">model_type</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseEstimator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a nuisance model for E[Y|X] or E[T|X] estimation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_type: Type of model to use</span>
+<span class="sd">        random_state: Random seed for reproducibility</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Sklearn estimator instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;ridge&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;lasso&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Lasso</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">RandomForestRegressor</span><span class="p">(</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+            <span class="n">max_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=</span><span class="n">_DEFAULT_N_JOBS</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+            <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown model type: </span><span class="si">{</span><span class="n">model_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_r2</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute R² (coefficient of determination).&quot;&quot;&quot;</span>
+    <span class="n">ss_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ss_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_true</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ss_res</span> <span class="o">/</span> <span class="n">ss_tot</span><span class="p">)</span> <span class="k">if</span> <span class="n">ss_tot</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_lagged_features</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">n_lags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create lagged features for dynamic treatment effects.</span>
+
+<span class="sd">    Constructs feature matrix with lagged treatment and covariates</span>
+<span class="sd">    to capture dynamic effects over time.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X: Covariates (n_samples, n_features)</span>
+<span class="sd">        T: Treatment (n_samples,)</span>
+<span class="sd">        n_lags: Number of lags to include</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple of (augmented feature matrix, number of rows lost to lags)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Effective sample size after accounting for lags</span>
+    <span class="n">n_effective</span> <span class="o">=</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="n">n_lags</span>
+
+    <span class="c1"># Build lagged features: [X_t, T_{t-1}, T_{t-2}, ..., T_{t-n_lags}]</span>
+    <span class="c1"># Also include lagged X if desired: [X_t, X_{t-1}, ..., T_{t-1}, ...]</span>
+    <span class="n">lagged_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Current X</span>
+    <span class="n">lagged_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">n_lags</span><span class="p">:])</span>
+
+    <span class="c1"># Lagged treatments</span>
+    <span class="k">for</span> <span class="n">lag</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_lags</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">T_lagged</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">n_lags</span> <span class="o">-</span> <span class="n">lag</span> <span class="p">:</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="n">lag</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">lagged_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">T_lagged</span><span class="p">)</span>
+
+    <span class="n">X_augmented</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">lagged_cols</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X_augmented</span><span class="p">,</span> <span class="n">n_lags</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cross_fit_nuisance_time_series</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">cv</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TimeSeriesCrossValidator</span><span class="p">,</span> <span class="n">BlockedTimeSeriesCV</span><span class="p">,</span> <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">],</span>
+    <span class="n">outcome_model</span><span class="p">:</span> <span class="n">BaseEstimator</span><span class="p">,</span>
+    <span class="n">treatment_model</span><span class="p">:</span> <span class="n">BaseEstimator</span><span class="p">,</span>
+    <span class="n">time_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate cross-fitted predictions for nuisance models using time series CV.</span>
+
+<span class="sd">    For each fold, trains models on out-of-fold data (respecting temporal order)</span>
+<span class="sd">    and predicts on in-fold data. This eliminates in-sample bias while</span>
+<span class="sd">    maintaining temporal structure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X: Covariates (n, p)</span>
+<span class="sd">        Y: Outcome (n,)</span>
+<span class="sd">        T: Treatment (n,)</span>
+<span class="sd">        cv: Time series cross-validator</span>
+<span class="sd">        outcome_model: Model for E[Y|X]</span>
+<span class="sd">        treatment_model: Model for E[T|X]</span>
+<span class="sd">        time_index: Optional time index for observations</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple of (Y_hat, T_hat) cross-fitted predictions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+    <span class="n">Y_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">T_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+    <span class="c1"># Track which indices have predictions</span>
+    <span class="n">predicted_indices</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="c1"># Get splits - different CV classes have different signatures</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">):</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="n">time_index</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># BlockedTimeSeriesCV and PurgedGroupTimeSeriesCV don&#39;t take time_index</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="ow">in</span> <span class="n">splits</span><span class="p">:</span>
+        <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+        <span class="n">Y_train</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span>
+        <span class="n">T_train</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span>
+
+        <span class="c1"># Train on training fold (temporally before test)</span>
+        <span class="n">outcome_mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">outcome_model</span><span class="p">)</span>
+        <span class="n">outcome_mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">)</span>
+        <span class="n">Y_hat</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">outcome_mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+        <span class="n">treatment_mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">treatment_model</span><span class="p">)</span>
+        <span class="n">treatment_mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">T_train</span><span class="p">)</span>
+        <span class="n">T_hat</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">treatment_mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+        <span class="n">predicted_indices</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">test_idx</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+    <span class="c1"># Handle any missing predictions (e.g., early observations)</span>
+    <span class="c1"># Use expanding window for initial observations if needed</span>
+    <span class="n">missing_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Y_hat</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">missing_mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="c1"># For missing early observations, use leave-future-out approach</span>
+        <span class="c1"># Train on all later data and predict backwards</span>
+        <span class="n">missing_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">missing_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">available_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">missing_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">available_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">outcome_mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">outcome_model</span><span class="p">)</span>
+            <span class="n">outcome_mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">available_idx</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="n">available_idx</span><span class="p">])</span>
+            <span class="n">Y_hat</span><span class="p">[</span><span class="n">missing_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">outcome_mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">missing_idx</span><span class="p">])</span>
+
+            <span class="n">treatment_mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">treatment_model</span><span class="p">)</span>
+            <span class="n">treatment_mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">available_idx</span><span class="p">],</span> <span class="n">T</span><span class="p">[</span><span class="n">available_idx</span><span class="p">])</span>
+            <span class="n">T_hat</span><span class="p">[</span><span class="n">missing_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">treatment_mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">missing_idx</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">Y_hat</span><span class="p">,</span> <span class="n">T_hat</span>
+
+
+<div class="viewcode-block" id="DynamicDML">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.DynamicDML">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DynamicDML</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dynamic Double Machine Learning for time series treatment effects.</span>
+
+<span class="sd">    Implements sequential g-estimation for time series data, handling:</span>
+<span class="sd">    - Time-varying treatments</span>
+<span class="sd">    - Time-varying confounders</span>
+<span class="sd">    - Autocorrelation in residuals (HAC standard errors)</span>
+<span class="sd">    - Temporal cross-validation (respects time ordering)</span>
+
+<span class="sd">    The algorithm:</span>
+<span class="sd">    1. Create lagged features to capture dynamic effects</span>
+<span class="sd">    2. Use time series cross-validation to generate out-of-sample predictions</span>
+<span class="sd">    3. Compute residuals: Ỹ = Y - m̂(X), T̃ = T - ℓ̂(X)</span>
+<span class="sd">    4. Estimate θ via FWL: θ̂ = Σ(Ỹ·T̃) / Σ(T̃²)</span>
+<span class="sd">    5. Compute HAC standard errors (Newey-West) for autocorrelation</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n_lags: Number of lags to include for treatment and confounders</span>
+<span class="sd">        model_y: ML model for outcome nuisance function</span>
+<span class="sd">        model_t: ML model for treatment nuisance function</span>
+<span class="sd">        cv_strategy: Cross-validation strategy for time series</span>
+<span class="sd">        n_splits: Number of CV splits</span>
+<span class="sd">        gap: Gap between train and test sets (to prevent leakage)</span>
+<span class="sd">        hac_bandwidth: Bandwidth for HAC covariance (None = auto)</span>
+<span class="sd">        hac_kernel: Kernel for HAC estimation</span>
+<span class="sd">        random_state: Random seed for reproducibility</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(42)</span>
+<span class="sd">        &gt;&gt;&gt; n = 500</span>
+<span class="sd">        &gt;&gt;&gt; time = np.arange(n)</span>
+<span class="sd">        &gt;&gt;&gt; X = np.random.randn(n, 3)</span>
+<span class="sd">        &gt;&gt;&gt; T = 0.5 * X[:, 0] + 0.3 * np.sin(time / 50) + np.random.randn(n)</span>
+<span class="sd">        &gt;&gt;&gt; Y = 2.0 * T + np.exp(X[:, 1] / 2) + np.random.randn(n)</span>
+<span class="sd">        &gt;&gt;&gt; model = DynamicDML(n_lags=3)</span>
+<span class="sd">        &gt;&gt;&gt; result = model.fit(Y, T, X, time_index=time)</span>
+<span class="sd">        &gt;&gt;&gt; print(result.theta)  # Should be close to 2.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DynamicDML.__init__">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.DynamicDML.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_lags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">model_y</span><span class="p">:</span> <span class="n">ModelType</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">model_t</span><span class="p">:</span> <span class="n">ModelType</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">cv_strategy</span><span class="p">:</span> <span class="n">CVStrategy</span> <span class="o">=</span> <span class="s2">&quot;time_series_split&quot;</span><span class="p">,</span>
+        <span class="n">n_splits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">gap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">hac_bandwidth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">hac_kernel</span><span class="p">:</span> <span class="n">KernelType</span> <span class="o">=</span> <span class="s2">&quot;bartlett&quot;</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize DynamicDML.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_lags: Number of lags for treatment and confounders</span>
+<span class="sd">            model_y: Model type for outcome regression</span>
+<span class="sd">            model_t: Model type for treatment propensity</span>
+<span class="sd">            cv_strategy: Time series CV strategy</span>
+<span class="sd">            n_splits: Number of cross-validation splits</span>
+<span class="sd">            gap: Gap between train and test (prevents leakage)</span>
+<span class="sd">            hac_bandwidth: HAC bandwidth (None for automatic)</span>
+<span class="sd">            hac_kernel: Kernel function for HAC estimation</span>
+<span class="sd">            random_state: Random seed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="o">=</span> <span class="n">n_lags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_y</span> <span class="o">=</span> <span class="n">model_y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_t</span> <span class="o">=</span> <span class="n">model_t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span> <span class="o">=</span> <span class="n">cv_strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span> <span class="o">=</span> <span class="n">n_splits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">=</span> <span class="n">gap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hac_bandwidth</span> <span class="o">=</span> <span class="n">hac_bandwidth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hac_kernel</span> <span class="o">=</span> <span class="n">hac_kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+
+        <span class="c1"># Fitted state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outcome_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseEstimator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_treatment_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseEstimator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DynamicDMLResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Data state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Y_residual</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_T_residual</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X_augmented</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_cv</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">TimeSeriesCrossValidator</span><span class="p">,</span> <span class="n">BlockedTimeSeriesCV</span><span class="p">,</span> <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the appropriate cross-validator based on strategy.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span> <span class="o">==</span> <span class="s2">&quot;time_series_split&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">(</span>
+                <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span><span class="p">,</span>
+                <span class="n">gap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gap</span><span class="p">,</span>
+                <span class="n">expanding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span> <span class="o">==</span> <span class="s2">&quot;blocked_cv&quot;</span><span class="p">:</span>
+            <span class="c1"># BlockedTimeSeriesCV uses gap_blocks instead of gap</span>
+            <span class="c1"># Convert gap (observations) to gap_blocks (number of blocks)</span>
+            <span class="k">return</span> <span class="n">BlockedTimeSeriesCV</span><span class="p">(</span>
+                <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span><span class="p">,</span>
+                <span class="n">gap_blocks</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span> <span class="o">==</span> <span class="s2">&quot;purged_cv&quot;</span><span class="p">:</span>
+            <span class="c1"># PurgedGroupTimeSeriesCV uses embargo_pct</span>
+            <span class="c1"># Convert gap to embargo percentage</span>
+            <span class="n">embargo_pct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">/</span> <span class="n">n_samples</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">n_samples</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.01</span>
+            <span class="k">return</span> <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">(</span>
+                <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span><span class="p">,</span>
+                <span class="n">embargo_pct</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">embargo_pct</span><span class="p">)),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown CV strategy: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DynamicDML.fit">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.DynamicDML.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">time_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicDMLResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the DynamicDML model.</span>
+
+<span class="sd">        Estimates the Average Treatment Effect (ATE) in the partially linear model:</span>
+<span class="sd">            Y_t = θ·T_t + g(X_t, T_{t-1}, ..., T_{t-L}) + ε_t</span>
+
+<span class="sd">        using Neyman-orthogonal moment conditions, time series cross-fitting,</span>
+<span class="sd">        and HAC standard errors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            Y: Outcome variable (n_samples,)</span>
+<span class="sd">            T: Treatment variable (n_samples,)</span>
+<span class="sd">            X: Confounders (n_samples, n_features)</span>
+<span class="sd">            time_index: Time index for each observation (optional, uses row order if None)</span>
+<span class="sd">            alpha: Significance level for confidence intervals (default 0.05)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DynamicDMLResult with treatment effect, HAC SE, and diagnostics</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If inputs have incompatible shapes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Convert to numpy arrays</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+
+        <span class="c1"># Validate inputs</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X rows (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Create time index if not provided</span>
+        <span class="k">if</span> <span class="n">time_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time_index_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">time_index_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="c1"># Create lagged features</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">X_augmented</span><span class="p">,</span> <span class="n">n_dropped</span> <span class="o">=</span> <span class="n">_create_lagged_features</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span><span class="p">)</span>
+            <span class="n">Y_eff</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="p">:]</span>
+            <span class="n">T_eff</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="p">:]</span>
+            <span class="n">time_eff</span> <span class="o">=</span> <span class="n">time_index_arr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X_augmented</span> <span class="o">=</span> <span class="n">X</span>
+            <span class="n">Y_eff</span> <span class="o">=</span> <span class="n">Y</span>
+            <span class="n">T_eff</span> <span class="o">=</span> <span class="n">T</span>
+            <span class="n">time_eff</span> <span class="o">=</span> <span class="n">time_index_arr</span>
+            <span class="n">n_dropped</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">n_effective</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y_eff</span><span class="p">)</span>
+
+        <span class="c1"># Set up nuisance models</span>
+        <span class="n">outcome_model</span> <span class="o">=</span> <span class="n">_get_nuisance_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="n">treatment_model</span> <span class="o">=</span> <span class="n">_get_nuisance_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="c1"># Create time series cross-validator</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cv</span><span class="p">(</span><span class="n">n_effective</span><span class="p">)</span>
+
+        <span class="c1"># Cross-fit nuisance models</span>
+        <span class="n">Y_hat</span><span class="p">,</span> <span class="n">T_hat</span> <span class="o">=</span> <span class="n">_cross_fit_nuisance_time_series</span><span class="p">(</span>
+            <span class="n">X</span><span class="o">=</span><span class="n">X_augmented</span><span class="p">,</span>
+            <span class="n">Y</span><span class="o">=</span><span class="n">Y_eff</span><span class="p">,</span>
+            <span class="n">T</span><span class="o">=</span><span class="n">T_eff</span><span class="p">,</span>
+            <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
+            <span class="n">outcome_model</span><span class="o">=</span><span class="n">outcome_model</span><span class="p">,</span>
+            <span class="n">treatment_model</span><span class="o">=</span><span class="n">treatment_model</span><span class="p">,</span>
+            <span class="n">time_index</span><span class="o">=</span><span class="n">time_eff</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Compute cross-validated R²</span>
+        <span class="n">outcome_r2_cv</span> <span class="o">=</span> <span class="n">_compute_r2</span><span class="p">(</span><span class="n">Y_eff</span><span class="p">,</span> <span class="n">Y_hat</span><span class="p">)</span>
+        <span class="n">treatment_r2_cv</span> <span class="o">=</span> <span class="n">_compute_r2</span><span class="p">(</span><span class="n">T_eff</span><span class="p">,</span> <span class="n">T_hat</span><span class="p">)</span>
+
+        <span class="c1"># Compute residuals</span>
+        <span class="n">Y_tilde</span> <span class="o">=</span> <span class="n">Y_eff</span> <span class="o">-</span> <span class="n">Y_hat</span>
+        <span class="n">T_tilde</span> <span class="o">=</span> <span class="n">T_eff</span> <span class="o">-</span> <span class="n">T_hat</span>
+
+        <span class="c1"># Store for later use</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Y_residual</span> <span class="o">=</span> <span class="n">Y_tilde</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_T_residual</span> <span class="o">=</span> <span class="n">T_tilde</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X_augmented</span> <span class="o">=</span> <span class="n">X_augmented</span>
+
+        <span class="c1"># Estimate theta via FWL</span>
+        <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">T_tilde_sq_sum</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Treatment has no variation after controlling for X and lags. &quot;</span>
+                <span class="s2">&quot;This may indicate perfect prediction of T by X.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">theta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y_tilde</span> <span class="o">*</span> <span class="n">T_tilde</span><span class="p">)</span> <span class="o">/</span> <span class="n">T_tilde_sq_sum</span><span class="p">)</span>
+
+        <span class="c1"># Compute influence scores</span>
+        <span class="n">T_tilde_sq_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">influence_scores</span> <span class="o">=</span> <span class="p">(</span><span class="n">Y_tilde</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">T_tilde</span><span class="p">)</span> <span class="o">*</span> <span class="n">T_tilde</span> <span class="o">/</span> <span class="n">T_tilde_sq_mean</span>
+
+        <span class="c1"># Compute HAC standard errors</span>
+        <span class="c1"># The &quot;residuals&quot; for HAC are the influence scores</span>
+        <span class="n">hac_estimator</span> <span class="o">=</span> <span class="n">HACEstimator</span><span class="p">(</span>
+            <span class="n">kernel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hac_kernel</span><span class="p">,</span>
+            <span class="n">bandwidth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hac_bandwidth</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hac_bandwidth</span> <span class="k">else</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+            <span class="n">prewhiten</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">hac_estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">influence_scores</span><span class="p">)</span>
+
+        <span class="c1"># Get variance and SE using get_variance() for 1D case</span>
+        <span class="n">hac_var</span> <span class="o">=</span> <span class="n">hac_estimator</span><span class="o">.</span><span class="n">get_variance</span><span class="p">()</span>
+        <span class="n">hac_se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">hac_var</span> <span class="o">/</span> <span class="n">n_effective</span><span class="p">))</span>
+
+        <span class="c1"># Get bandwidth used</span>
+        <span class="n">bandwidth_used</span> <span class="o">=</span> <span class="n">hac_estimator</span><span class="o">.</span><span class="n">bandwidth_used</span>
+
+        <span class="c1"># Compute inference statistics</span>
+        <span class="n">t_stat</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">hac_se</span> <span class="k">if</span> <span class="n">hac_se</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="n">p_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">t_stat</span><span class="p">))))</span>
+
+        <span class="c1"># Confidence interval</span>
+        <span class="n">z_crit</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">ci_lower</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">-</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="n">hac_se</span>
+        <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">+</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="n">hac_se</span>
+
+        <span class="c1"># Store fitted models</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outcome_model</span> <span class="o">=</span> <span class="n">outcome_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_treatment_model</span> <span class="o">=</span> <span class="n">treatment_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># Create result</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">DynamicDMLResult</span><span class="p">(</span>
+            <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>
+            <span class="n">se</span><span class="o">=</span><span class="n">hac_se</span><span class="p">,</span>
+            <span class="n">t_stat</span><span class="o">=</span><span class="n">t_stat</span><span class="p">,</span>
+            <span class="n">ci_lower</span><span class="o">=</span><span class="n">ci_lower</span><span class="p">,</span>
+            <span class="n">ci_upper</span><span class="o">=</span><span class="n">ci_upper</span><span class="p">,</span>
+            <span class="n">p_value</span><span class="o">=</span><span class="n">p_value</span><span class="p">,</span>
+            <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span>
+            <span class="n">n_periods</span><span class="o">=</span><span class="n">n_effective</span><span class="p">,</span>
+            <span class="n">outcome_r2_cv</span><span class="o">=</span><span class="n">outcome_r2_cv</span><span class="p">,</span>
+            <span class="n">treatment_r2_cv</span><span class="o">=</span><span class="n">treatment_r2_cv</span><span class="p">,</span>
+            <span class="n">hac_bandwidth</span><span class="o">=</span><span class="n">bandwidth_used</span><span class="p">,</span>
+            <span class="n">cv_strategy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span><span class="p">,</span>
+            <span class="n">Y_residual</span><span class="o">=</span><span class="n">Y_tilde</span><span class="p">,</span>
+            <span class="n">T_residual</span><span class="o">=</span><span class="n">T_tilde</span><span class="p">,</span>
+            <span class="n">influence_scores</span><span class="o">=</span><span class="n">influence_scores</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="DynamicDML.effect">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.DynamicDML.effect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">effect</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">T0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">T1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate treatment effect.</span>
+
+<span class="sd">        For the partially linear model, the treatment effect is constant</span>
+<span class="sd">        (homogeneous), so this returns the estimated θ for all observations.</span>
+
+<span class="sd">        For heterogeneous effects, use effect_interval or extend to CATE.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X: Covariate values for CATE estimation (currently unused for PLM)</span>
+<span class="sd">            T0: Baseline treatment value (default 0)</span>
+<span class="sd">            T1: Counterfactual treatment value (default 1)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array of treatment effects (θ × (T1 - T0) for each observation)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If model not fitted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Model must be fitted before calling effect(). Call fit() first.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># For partially linear model, effect is homogeneous</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">theta</span>
+        <span class="n">effect_size</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="p">(</span><span class="n">T1</span> <span class="o">-</span> <span class="n">T0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">effect_size</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_T_residual</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_T_residual</span><span class="p">),</span> <span class="n">effect_size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">effect_size</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="DynamicDML.effect_interval">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.DynamicDML.effect_interval">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">effect_interval</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">T0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">T1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute confidence interval for treatment effect.</span>
+
+<span class="sd">        Returns HAC-adjusted confidence intervals for the treatment effect.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X: Covariate values for CATE intervals (currently unused for PLM)</span>
+<span class="sd">            alpha: Significance level (default 0.05 for 95% CI)</span>
+<span class="sd">            T0: Baseline treatment value</span>
+<span class="sd">            T1: Counterfactual treatment value</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of (lower_bound, upper_bound) arrays</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If model not fitted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Model must be fitted before calling effect_interval(). Call fit() first.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">z_crit</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">T1</span> <span class="o">-</span> <span class="n">T0</span>
+
+        <span class="n">lower</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">theta</span> <span class="o">-</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">se</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">upper</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">theta</span> <span class="o">+</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">se</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
+
+        <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">lower</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_T_residual</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_T_residual</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">lower</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">lower</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">upper</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RollingWindowDML">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.RollingWindowDML">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RollingWindowDML</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rolling-window DML for non-stationary treatment effects.</span>
+
+<span class="sd">    Estimates local treatment effects using a moving window approach,</span>
+<span class="sd">    useful when treatment effects vary over time.</span>
+
+<span class="sd">    The algorithm works as follows: for each window position t,</span>
+<span class="sd">    select observations in [t - window_size/2, t + window_size/2],</span>
+<span class="sd">    run DML on window data, and store the local treatment effect estimate.</span>
+<span class="sd">    Returns a time series of local effects with HAC standard errors.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        window_size: Size of rolling window</span>
+<span class="sd">        step_size: Step between window centers</span>
+<span class="sd">        model_y: ML model for outcome nuisance function</span>
+<span class="sd">        model_t: ML model for treatment nuisance function</span>
+<span class="sd">        n_folds: Number of CV folds within each window</span>
+<span class="sd">        hac_bandwidth: HAC bandwidth (None = auto)</span>
+<span class="sd">        random_state: Random seed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RollingWindowDML.__init__">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.RollingWindowDML.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">step_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">model_y</span><span class="p">:</span> <span class="n">ModelType</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">model_t</span><span class="p">:</span> <span class="n">ModelType</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">hac_bandwidth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize RollingWindowDML.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="o">=</span> <span class="n">window_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span> <span class="o">=</span> <span class="n">step_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_y</span> <span class="o">=</span> <span class="n">model_y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_t</span> <span class="o">=</span> <span class="n">model_t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span> <span class="o">=</span> <span class="n">n_folds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hac_bandwidth</span> <span class="o">=</span> <span class="n">hac_bandwidth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_theta_series</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_se_series</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_centers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="RollingWindowDML.fit">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.RollingWindowDML.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">time_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RollingWindowDML&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit rolling-window DML model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            Y: Outcome variable (n_samples,)</span>
+<span class="sd">            T: Treatment variable (n_samples,)</span>
+<span class="sd">            X: Confounders (n_samples, n_features)</span>
+<span class="sd">            time_index: Time index for each observation</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            self: Fitted model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">time_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time_index_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">time_index_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="c1"># Compute window centers</span>
+        <span class="n">half_window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">centers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">half_window</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="n">half_window</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span><span class="p">))</span>
+
+        <span class="n">theta_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">se_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">center</span> <span class="ow">in</span> <span class="n">centers</span><span class="p">:</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">center</span> <span class="o">-</span> <span class="n">half_window</span><span class="p">)</span>
+            <span class="n">end_idx</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">center</span> <span class="o">+</span> <span class="n">half_window</span><span class="p">)</span>
+
+            <span class="n">Y_window</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
+            <span class="n">T_window</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
+            <span class="n">X_window</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
+
+            <span class="c1"># Skip if window too small</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y_window</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">30</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Fit DynamicDML on window</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dml</span> <span class="o">=</span> <span class="n">DynamicDML</span><span class="p">(</span>
+                    <span class="n">n_lags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># No lags for rolling window</span>
+                    <span class="n">model_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_y</span><span class="p">,</span>
+                    <span class="n">model_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_t</span><span class="p">,</span>
+                    <span class="n">cv_strategy</span><span class="o">=</span><span class="s2">&quot;time_series_split&quot;</span><span class="p">,</span>
+                    <span class="n">n_splits</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y_window</span><span class="p">)</span> <span class="o">//</span> <span class="mi">10</span><span class="p">),</span>
+                    <span class="n">hac_bandwidth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hac_bandwidth</span><span class="p">,</span>
+                    <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y_window</span><span class="p">,</span> <span class="n">T_window</span><span class="p">,</span> <span class="n">X_window</span><span class="p">)</span>
+                <span class="n">theta_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+                <span class="n">se_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="c1"># Skip windows where estimation fails</span>
+                <span class="k">continue</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_theta_series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_se_series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">se_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">centers</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">theta_list</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="RollingWindowDML.get_effects">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.RollingWindowDML.get_effects">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_effects</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get time series of local treatment effects.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of (time_centers, theta_series, se_series)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If model not fitted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Model must be fitted first. Call fit().&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_centers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta_series</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_se_series</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_centers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta_series</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_se_series</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PanelDML">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.PanelDML">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PanelDML</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Panel DML with fixed effects.</span>
+
+<span class="sd">    Implements DML for panel data with:</span>
+<span class="sd">    - Individual fixed effects (within transformation)</span>
+<span class="sd">    - Time fixed effects</span>
+<span class="sd">    - Two-way fixed effects</span>
+<span class="sd">    - Cluster-robust standard errors</span>
+
+<span class="sd">    The algorithm:</span>
+<span class="sd">    1. Demean data by individual/time (fixed effects transformation)</span>
+<span class="sd">    2. Run DML on transformed data</span>
+<span class="sd">    3. Compute cluster-robust standard errors</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fixed_effects: Type of fixed effects</span>
+<span class="sd">        cluster_se: Whether to use cluster-robust SE</span>
+<span class="sd">        model_y: ML model for outcome nuisance function</span>
+<span class="sd">        model_t: ML model for treatment nuisance function</span>
+<span class="sd">        n_folds: Number of CV folds</span>
+<span class="sd">        random_state: Random seed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PanelDML.__init__">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.PanelDML.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">fixed_effects</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;twoway&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;individual&quot;</span><span class="p">,</span>
+        <span class="n">cluster_se</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">model_y</span><span class="p">:</span> <span class="n">ModelType</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">model_t</span><span class="p">:</span> <span class="n">ModelType</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize PanelDML.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed_effects</span> <span class="o">=</span> <span class="n">fixed_effects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_se</span> <span class="o">=</span> <span class="n">cluster_se</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_y</span> <span class="o">=</span> <span class="n">model_y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_t</span> <span class="o">=</span> <span class="n">model_t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span> <span class="o">=</span> <span class="n">n_folds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DynamicDMLResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_demean_by_group</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+        <span class="n">groups</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Demean data by group (within transformation).&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">unique_groups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">unique_groups</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">groups</span> <span class="o">==</span> <span class="n">g</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="PanelDML.fit">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.PanelDML.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">individual_id</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">time_id</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicDMLResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit panel DML model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            Y: Outcome variable (n_samples,)</span>
+<span class="sd">            T: Treatment variable (n_samples,)</span>
+<span class="sd">            X: Confounders (n_samples, n_features)</span>
+<span class="sd">            individual_id: Individual identifiers</span>
+<span class="sd">            time_id: Time period identifiers</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DynamicDMLResult with treatment effect and cluster-robust SE</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">individual_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">individual_id</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="n">time_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_id</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Apply fixed effects transformation</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_effects</span> <span class="o">==</span> <span class="s2">&quot;individual&quot;</span><span class="p">:</span>
+            <span class="n">Y_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">individual_id</span><span class="p">)</span>
+            <span class="n">T_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">individual_id</span><span class="p">)</span>
+            <span class="n">X_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">individual_id</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_effects</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
+            <span class="n">Y_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">time_id</span><span class="p">)</span>
+            <span class="n">T_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">time_id</span><span class="p">)</span>
+            <span class="n">X_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">time_id</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_effects</span> <span class="o">==</span> <span class="s2">&quot;twoway&quot;</span><span class="p">:</span>
+            <span class="c1"># Two-way: demean by both individual and time</span>
+            <span class="n">Y_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">individual_id</span><span class="p">)</span>
+            <span class="n">Y_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">Y_fe</span><span class="p">,</span> <span class="n">time_id</span><span class="p">)</span>
+            <span class="n">T_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">individual_id</span><span class="p">)</span>
+            <span class="n">T_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">T_fe</span><span class="p">,</span> <span class="n">time_id</span><span class="p">)</span>
+            <span class="n">X_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">individual_id</span><span class="p">)</span>
+            <span class="n">X_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">X_fe</span><span class="p">,</span> <span class="n">time_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown fixed_effects: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed_effects</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Run DynamicDML on transformed data</span>
+        <span class="n">dml</span> <span class="o">=</span> <span class="n">DynamicDML</span><span class="p">(</span>
+            <span class="n">n_lags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">model_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_y</span><span class="p">,</span>
+            <span class="n">model_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_t</span><span class="p">,</span>
+            <span class="n">cv_strategy</span><span class="o">=</span><span class="s2">&quot;time_series_split&quot;</span><span class="p">,</span>
+            <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Use time_id as time index for proper CV</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y_fe</span><span class="p">,</span> <span class="n">T_fe</span><span class="p">,</span> <span class="n">X_fe</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="n">time_id</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+
+        <span class="c1"># If cluster SE requested, recompute with clustering</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_se</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">influence_scores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Cluster by individual for standard errors</span>
+            <span class="n">unique_individuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">individual_id</span><span class="p">)</span>
+            <span class="n">n_clusters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_individuals</span><span class="p">)</span>
+
+            <span class="c1"># Compute cluster-level influence sums</span>
+            <span class="n">cluster_psi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_clusters</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_individuals</span><span class="p">):</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">individual_id</span> <span class="o">==</span> <span class="n">ind</span>
+                <span class="c1"># Align mask with effective sample (after any lag adjustment)</span>
+                <span class="n">n_eff</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">influence_scores</span><span class="p">)</span>
+                <span class="n">n_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">n_eff</span> <span class="o">&lt;</span> <span class="n">n_total</span><span class="p">:</span>
+                    <span class="n">mask_eff</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="o">-</span><span class="n">n_eff</span><span class="p">:]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">mask_eff</span> <span class="o">=</span> <span class="n">mask</span>
+                <span class="n">cluster_psi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">influence_scores</span><span class="p">[</span><span class="n">mask_eff</span><span class="p">])</span>
+
+            <span class="c1"># Cluster-robust variance</span>
+            <span class="n">cluster_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">cluster_psi</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_clusters</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_clusters</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">cluster_se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cluster_var</span> <span class="o">/</span> <span class="n">n_clusters</span><span class="p">))</span>
+
+            <span class="c1"># Update result with cluster SE</span>
+            <span class="n">z_crit</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.975</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">DynamicDMLResult</span><span class="p">(</span>
+                <span class="n">theta</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span>
+                <span class="n">se</span><span class="o">=</span><span class="n">cluster_se</span><span class="p">,</span>
+                <span class="n">t_stat</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">/</span> <span class="n">cluster_se</span> <span class="k">if</span> <span class="n">cluster_se</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="n">ci_lower</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">-</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="n">cluster_se</span><span class="p">,</span>
+                <span class="n">ci_upper</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">+</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="n">cluster_se</span><span class="p">,</span>
+                <span class="n">p_value</span><span class="o">=</span><span class="p">(</span>
+                    <span class="nb">float</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">/</span> <span class="n">cluster_se</span><span class="p">))))</span>
+                    <span class="k">if</span> <span class="n">cluster_se</span> <span class="o">&gt;</span> <span class="mf">1e-10</span>
+                    <span class="k">else</span> <span class="mf">1.0</span>
+                <span class="p">),</span>
+                <span class="n">n_samples</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">n_samples</span><span class="p">,</span>
+                <span class="n">n_periods</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">n_periods</span><span class="p">,</span>
+                <span class="n">outcome_r2_cv</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">outcome_r2_cv</span><span class="p">,</span>
+                <span class="n">treatment_r2_cv</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">treatment_r2_cv</span><span class="p">,</span>
+                <span class="n">hac_bandwidth</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">hac_bandwidth</span><span class="p">,</span>
+                <span class="n">cv_strategy</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">cv_strategy</span><span class="si">}</span><span class="s2">_clustered&quot;</span><span class="p">,</span>
+                <span class="n">Y_residual</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">Y_residual</span><span class="p">,</span>
+                <span class="n">T_residual</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">T_residual</span><span class="p">,</span>
+                <span class="n">influence_scores</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">influence_scores</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_result</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="demonstrate_dynamic_dml">
+<a class="viewcode-back" href="../../../api/dml.html#src.dml.dynamic_dml.demonstrate_dynamic_dml">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">demonstrate_dynamic_dml</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Demonstrate DynamicDML on synthetic time series data.</span>
+
+<span class="sd">    Generates a DGP with:</span>
+<span class="sd">    - Autocorrelated treatment</span>
+<span class="sd">    - Time-varying confounders</span>
+<span class="sd">    - True treatment effect θ = 2.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DynamicDML: Time Series Double Machine Learning&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="c1"># Generate synthetic time series</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">500</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+    <span class="c1"># Confounders with time trends</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>  <span class="c1"># Random confounder</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">time</span> <span class="o">/</span> <span class="mi">100</span><span class="p">),</span>  <span class="c1"># Seasonal confounder</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span>  <span class="c1"># Random walk</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Treatment with confounding and autocorrelation</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">T</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">T</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span>
+
+    <span class="c1"># Outcome with true effect θ = 2.0</span>
+    <span class="n">true_theta</span> <span class="o">=</span> <span class="mf">2.0</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">true_theta</span> <span class="o">*</span> <span class="n">T</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DGP: Y = </span><span class="si">{</span><span class="n">true_theta</span><span class="si">}</span><span class="s2">·T + f(X) + ε&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;     T_t = 0.3·T_</span><span class="si">{</span><span class="s1">&#39;{t-1}&#39;</span><span class="si">}</span><span class="s2"> + g(X) + η  (autocorrelated)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;     n = </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> observations&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="c1"># Fit DynamicDML</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fitting DynamicDML with HAC standard errors...&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">DynamicDML</span><span class="p">(</span>
+        <span class="n">n_lags</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">model_y</span><span class="o">=</span><span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">model_t</span><span class="o">=</span><span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">cv_strategy</span><span class="o">=</span><span class="s2">&quot;time_series_split&quot;</span><span class="p">,</span>
+        <span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">gap</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">hac_kernel</span><span class="o">=</span><span class="s2">&quot;bartlett&quot;</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+
+    <span class="c1"># Compare with true effect</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Comparison with True Effect:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  True θ:       </span><span class="si">{</span><span class="n">true_theta</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Estimated θ:  </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Bias:         </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">true_theta</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Coverage:     </span><span class="si">{</span><span class="s1">&#39;✓&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">true_theta</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;✗&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">demonstrate_dynamic_dml</span><span class="p">()</span>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

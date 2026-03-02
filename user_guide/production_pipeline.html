@@ -1,0 +1,976 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Production Causal Inference &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=b07499cc" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"tex": {"macros": {"E": ["\\mathbb{E}\\left[#1\\right]", 1], "Var": ["\\text{Var}\\left(#1\\right)", 1], "Cov": ["\\text{Cov}\\left(#1, #2\\right)", 2], "Prob": ["\\mathbb{P}\\left(#1\\right)", 1], "R": "\\mathbb{R}", "N": "\\mathcal{N}", "indep": "\\perp\\!\\!\\!\\perp", "plim": "\\overset{p}{\\to}", "dto": "\\overset{d}{\\to}", "iid": "\\overset{\\text{iid}}{\\sim}", "ols": "\\hat{\\beta}_{\\text{OLS}}"}}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/production_pipeline';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="DML Estimators" href="../api/dml.html" />
+    <link rel="prev" title="Time Series DML" href="time_series_dml.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="time_series_dml.html">Time Series DML</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Production Causal Inference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2Fuser_guide/production_pipeline.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Production Causal Inference</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-fundamental-challenge">1. The Fundamental Challenge</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-standard-ml-monitoring-fails">1.1 Why Standard ML Monitoring Fails</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-can-monitor">1.2 What You Can Monitor</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#four-monitoring-dimensions">2. Four Monitoring Dimensions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overlap-monitoring">2.1 Overlap Monitoring</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#treatment-distribution-monitoring">2.2 Treatment Distribution Monitoring</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nuisance-model-quality">2.3 Nuisance Model Quality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#effect-stability-monitoring">2.4 Effect Stability Monitoring</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-versioning">3. Model Versioning</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-causal-models-need-special-versioning">3.1 Why Causal Models Need Special Versioning</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-lifecycle">3.2 Version Lifecycle</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#alert-interpretation">4. Alert Interpretation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-alerts-fire">4.1 When Alerts Fire</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#false-positive-considerations">4.2 False Positive Considerations</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#retraining-triggers">5. Retraining Triggers</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#causal-specific-vs-standard-ml-triggers">5.1 Causal-Specific vs Standard ML Triggers</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example-end-to-end-production-pipeline">6. Worked Example: End-to-End Production Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture-summary">7. Architecture Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-also">See Also</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="production-causal-inference">
+<h1>Production Causal Inference<a class="headerlink" href="#production-causal-inference" title="Link to this heading">#</a></h1>
+<p>Deploying causal models in production differs fundamentally from standard ML:
+you cannot monitor treatment effect accuracy because counterfactuals are
+unobservable. Instead, you must monitor the <strong>conditions for identification</strong>.</p>
+<nav class="contents local" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#the-fundamental-challenge" id="id1">1. The Fundamental Challenge</a></p>
+<ul>
+<li><p><a class="reference internal" href="#why-standard-ml-monitoring-fails" id="id2">1.1 Why Standard ML Monitoring Fails</a></p></li>
+<li><p><a class="reference internal" href="#what-you-can-monitor" id="id3">1.2 What You Can Monitor</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#four-monitoring-dimensions" id="id4">2. Four Monitoring Dimensions</a></p>
+<ul>
+<li><p><a class="reference internal" href="#overlap-monitoring" id="id5">2.1 Overlap Monitoring</a></p></li>
+<li><p><a class="reference internal" href="#treatment-distribution-monitoring" id="id6">2.2 Treatment Distribution Monitoring</a></p></li>
+<li><p><a class="reference internal" href="#nuisance-model-quality" id="id7">2.3 Nuisance Model Quality</a></p></li>
+<li><p><a class="reference internal" href="#effect-stability-monitoring" id="id8">2.4 Effect Stability Monitoring</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#model-versioning" id="id9">3. Model Versioning</a></p>
+<ul>
+<li><p><a class="reference internal" href="#why-causal-models-need-special-versioning" id="id10">3.1 Why Causal Models Need Special Versioning</a></p></li>
+<li><p><a class="reference internal" href="#version-lifecycle" id="id11">3.2 Version Lifecycle</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#alert-interpretation" id="id12">4. Alert Interpretation</a></p>
+<ul>
+<li><p><a class="reference internal" href="#when-alerts-fire" id="id13">4.1 When Alerts Fire</a></p></li>
+<li><p><a class="reference internal" href="#false-positive-considerations" id="id14">4.2 False Positive Considerations</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#retraining-triggers" id="id15">5. Retraining Triggers</a></p>
+<ul>
+<li><p><a class="reference internal" href="#causal-specific-vs-standard-ml-triggers" id="id16">5.1 Causal-Specific vs Standard ML Triggers</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#worked-example-end-to-end-production-pipeline" id="id17">6. Worked Example: End-to-End Production Pipeline</a></p></li>
+<li><p><a class="reference internal" href="#architecture-summary" id="id18">7. Architecture Summary</a></p></li>
+<li><p><a class="reference internal" href="#see-also" id="id19">See Also</a></p></li>
+</ul>
+</nav>
+<hr class="docutils" />
+<section id="the-fundamental-challenge">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">1. The Fundamental Challenge</a><a class="headerlink" href="#the-fundamental-challenge" title="Link to this heading">#</a></h2>
+<section id="why-standard-ml-monitoring-fails">
+<h3><a class="toc-backref" href="#id2" role="doc-backlink">1.1 Why Standard ML Monitoring Fails</a><a class="headerlink" href="#why-standard-ml-monitoring-fails" title="Link to this heading">#</a></h3>
+<p>In standard ML, you monitor prediction accuracy:</p>
+<div class="math notranslate nohighlight">
+\[\text{RMSE}_t = \sqrt{\frac{1}{n_t} \sum_{i=1}^{n_t} (Y_i - \hat{Y}_i)^2}\]</div>
+<p>When RMSE degrades, you retrain. This works because <span class="math notranslate nohighlight">\(Y_i\)</span> is observable.</p>
+<p>In causal inference, the quantity of interest is:</p>
+<div class="math notranslate nohighlight">
+\[\theta = \E{Y(1) - Y(0)}\]</div>
+<p>But you <strong>never</strong> observe both <span class="math notranslate nohighlight">\(Y(1)\)</span> and <span class="math notranslate nohighlight">\(Y(0)\)</span> for the same unit.
+You cannot compute prediction error for the treatment effect. A model that
+produces <span class="math notranslate nohighlight">\(\hat\theta = 5.0\)</span> might be correct or wildly wrong — and you
+cannot tell from the data alone.</p>
+</section>
+<section id="what-you-can-monitor">
+<h3><a class="toc-backref" href="#id3" role="doc-backlink">1.2 What You Can Monitor</a><a class="headerlink" href="#what-you-can-monitor" title="Link to this heading">#</a></h3>
+<p>Instead, monitor the <strong>conditions under which</strong> <span class="math notranslate nohighlight">\(\hat\theta\)</span> is valid:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 40.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Condition</p></th>
+<th class="head"><p>What It Means</p></th>
+<th class="head"><p>What Violation Implies</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Overlap/Positivity</strong></p></td>
+<td><p><span class="math notranslate nohighlight">\(0 &lt; P(T=1 \mid X) &lt; 1\)</span> for all <span class="math notranslate nohighlight">\(X\)</span></p></td>
+<td><p>Some subgroups never receive treatment — extrapolation required</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Treatment stability</strong></p></td>
+<td><p>Distribution of <span class="math notranslate nohighlight">\(T \mid X\)</span> is stable over time</p></td>
+<td><p>Treatment assignment mechanism has changed</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Nuisance quality</strong></p></td>
+<td><p>First-stage models maintain <span class="math notranslate nohighlight">\(R^2\)</span></p></td>
+<td><p>Confounding structure has shifted</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Effect stability</strong></p></td>
+<td><p><span class="math notranslate nohighlight">\(\hat\theta_t\)</span> does not drift</p></td>
+<td><p>True effect may be changing (non-stationarity)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="four-monitoring-dimensions">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">2. Four Monitoring Dimensions</a><a class="headerlink" href="#four-monitoring-dimensions" title="Link to this heading">#</a></h2>
+<section id="overlap-monitoring">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">2.1 Overlap Monitoring</a><a class="headerlink" href="#overlap-monitoring" title="Link to this heading">#</a></h3>
+<p>Overlap (positivity) requires that all covariate values have non-degenerate
+treatment probability. In practice, monitor the propensity score distribution:</p>
+<div class="math notranslate nohighlight">
+\[\hat{e}(X_i) = \hat{P}(T_i = 1 \mid X_i)\]</div>
+<p><strong>Alert conditions</strong>:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\hat{e}(X_i) &lt; 0.02\)</span> or <span class="math notranslate nohighlight">\(\hat{e}(X_i) &gt; 0.98\)</span> for any <span class="math notranslate nohighlight">\(i\)</span>
+→ <strong>practical positivity violation</strong></p></li>
+<li><p>Proportion of near-boundary scores increasing over time
+→ <strong>overlap degradation</strong></p></li>
+<li><p>For continuous treatments: density of <span class="math notranslate nohighlight">\(T \mid X\)</span> approaching zero
+in some region</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.production</span><span class="w"> </span><span class="kn">import</span> <span class="n">CausalMonitor</span>
+
+<span class="n">monitor</span> <span class="o">=</span> <span class="n">CausalMonitor</span><span class="p">(</span>
+    <span class="n">overlap_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>    <span class="c1"># flag if P(T|X) &lt; 0.05 or &gt; 0.95</span>
+    <span class="n">overlap_fraction_limit</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>  <span class="c1"># alert if &gt;10% of obs violate</span>
+<span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">check_overlap</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">has_violations</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overlap violations: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">n_violations</span><span class="si">}</span><span class="s2"> obs &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">violation_fraction</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="treatment-distribution-monitoring">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">2.2 Treatment Distribution Monitoring</a><a class="headerlink" href="#treatment-distribution-monitoring" title="Link to this heading">#</a></h3>
+<p>Even with good overlap, the treatment assignment mechanism may shift.
+Monitor the marginal and conditional distribution of <span class="math notranslate nohighlight">\(T\)</span>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">check_treatment_stability</span><span class="p">(</span>
+    <span class="n">T_train</span><span class="o">=</span><span class="n">T_historical</span><span class="p">,</span>
+    <span class="n">T_new</span><span class="o">=</span><span class="n">T_current</span><span class="p">,</span>
+    <span class="n">X_train</span><span class="o">=</span><span class="n">X_historical</span><span class="p">,</span>
+    <span class="n">X_new</span><span class="o">=</span><span class="n">X_current</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;KS statistic: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ks_statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distribution shift detected: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">shift_detected</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="nuisance-model-quality">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">2.3 Nuisance Model Quality</a><a class="headerlink" href="#nuisance-model-quality" title="Link to this heading">#</a></h3>
+<p>The first-stage models <span class="math notranslate nohighlight">\(\hat{g}(X)\)</span> and <span class="math notranslate nohighlight">\(\hat{m}(X)\)</span> must
+maintain predictive quality. If the covariate-outcome relationship changes,
+nuisance models produce poor residuals, biasing <span class="math notranslate nohighlight">\(\hat\theta\)</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">check_nuisance_quality</span><span class="p">(</span>
+    <span class="n">Y_new</span><span class="o">=</span><span class="n">Y_current</span><span class="p">,</span>
+    <span class="n">T_new</span><span class="o">=</span><span class="n">T_current</span><span class="p">,</span>
+    <span class="n">X_new</span><span class="o">=</span><span class="n">X_current</span><span class="p">,</span>
+    <span class="n">model_y</span><span class="o">=</span><span class="n">fitted_model_y</span><span class="p">,</span>
+    <span class="n">model_t</span><span class="o">=</span><span class="n">fitted_model_t</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;R² (outcome model): </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">r2_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;R² (treatment model): </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">r2_t</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">r2_y</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: Outcome model has degraded&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="effect-stability-monitoring">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">2.4 Effect Stability Monitoring</a><a class="headerlink" href="#effect-stability-monitoring" title="Link to this heading">#</a></h3>
+<p>Track <span class="math notranslate nohighlight">\(\hat\theta\)</span> over time using rolling or expanding windows.
+A persistent drift signals non-stationarity in the treatment effect:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">check_effect_stability</span><span class="p">(</span>
+    <span class="n">theta_history</span><span class="o">=</span><span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="mf">1.6</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>  <span class="c1"># declining</span>
+    <span class="n">window_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trend detected: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">trend_detected</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recent mean: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">recent_mean</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Baseline mean: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">baseline_mean</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="model-versioning">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">3. Model Versioning</a><a class="headerlink" href="#model-versioning" title="Link to this heading">#</a></h2>
+<section id="why-causal-models-need-special-versioning">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">3.1 Why Causal Models Need Special Versioning</a><a class="headerlink" href="#why-causal-models-need-special-versioning" title="Link to this heading">#</a></h3>
+<p>Standard ML versioning stores one model artifact per version. DML requires
+storing <strong>per-fold nuisance models</strong> because cross-fitting produces <span class="math notranslate nohighlight">\(K\)</span>
+distinct <span class="math notranslate nohighlight">\(\hat{g}^{(k)}\)</span> and <span class="math notranslate nohighlight">\(\hat{m}^{(k)}\)</span> models.</p>
+<p>The <a class="reference internal" href="../api/production.html#src.production.model_registry.DMLModelRegistry" title="src.production.model_registry.DMLModelRegistry"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMLModelRegistry</span></code></a> stores:</p>
+<ul class="simple">
+<li><p>Fold-specific nuisance models <span class="math notranslate nohighlight">\(\{(\hat{g}^{(k)}, \hat{m}^{(k)})\}_{k=1}^K\)</span></p></li>
+<li><p>Cross-validation fold indices</p></li>
+<li><p>Treatment effect estimate <span class="math notranslate nohighlight">\(\hat\theta\)</span> and standard error</p></li>
+<li><p>Training data hash (for reproducibility)</p></li>
+<li><p>Metadata: timestamp, hyperparameters, diagnostics</p></li>
+</ul>
+</section>
+<section id="version-lifecycle">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">3.2 Version Lifecycle</a><a class="headerlink" href="#version-lifecycle" title="Link to this heading">#</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>candidate → validated → promoted → archived
+    ↓           ↓          ↓
+  failed     rejected   superseded
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.production</span><span class="w"> </span><span class="kn">import</span> <span class="n">DMLModelRegistry</span><span class="p">,</span> <span class="n">DMLModelVersion</span>
+
+<span class="n">registry</span> <span class="o">=</span> <span class="n">DMLModelRegistry</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="s2">&quot;./model_registry&quot;</span><span class="p">)</span>
+
+<span class="c1"># Register a new model version</span>
+<span class="n">version</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
+    <span class="n">theta</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span>
+    <span class="n">se</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="p">,</span>
+    <span class="n">nuisance_models</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">fold_models</span><span class="p">,</span>
+    <span class="n">fold_indices</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">fold_indices</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;n_obs&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">),</span> <span class="s2">&quot;n_folds&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registered: </span><span class="si">{</span><span class="n">version</span><span class="o">.</span><span class="n">version_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Validate and promote</span>
+<span class="n">registry</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">version</span><span class="o">.</span><span class="n">version_id</span><span class="p">,</span> <span class="n">validation_result</span><span class="p">)</span>
+<span class="n">registry</span><span class="o">.</span><span class="n">promote</span><span class="p">(</span><span class="n">version</span><span class="o">.</span><span class="n">version_id</span><span class="p">)</span>
+
+<span class="c1"># Get current production model</span>
+<span class="n">prod</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">get_production_model</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Production model: </span><span class="si">{</span><span class="n">prod</span><span class="o">.</span><span class="n">version_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;θ = </span><span class="si">{</span><span class="n">prod</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="n">prod</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="alert-interpretation">
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">4. Alert Interpretation</a><a class="headerlink" href="#alert-interpretation" title="Link to this heading">#</a></h2>
+<section id="when-alerts-fire">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">4.1 When Alerts Fire</a><a class="headerlink" href="#when-alerts-fire" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 35.0%" />
+<col style="width: 25.0%" />
+<col style="width: 20.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Alert</p></th>
+<th class="head"><p>Mathematical Condition</p></th>
+<th class="head"><p>False Positive Risk</p></th>
+<th class="head"><p>Action</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Overlap violation</p></td>
+<td><p><span class="math notranslate nohighlight">\(\hat{e}(X_i) &lt; \epsilon\)</span> for <span class="math notranslate nohighlight">\(&gt; p\%\)</span> of <span class="math notranslate nohighlight">\(i\)</span></p></td>
+<td><p>Low if <span class="math notranslate nohighlight">\(\epsilon\)</span> well-calibrated</p></td>
+<td><p>Trim or reweight</p></td>
+</tr>
+<tr class="row-odd"><td><p>Treatment shift</p></td>
+<td><p>KS test <span class="math notranslate nohighlight">\(p &lt; 0.01\)</span></p></td>
+<td><p>Moderate (multiple testing)</p></td>
+<td><p>Investigate mechanism</p></td>
+</tr>
+<tr class="row-even"><td><p>Nuisance degradation</p></td>
+<td><p><span class="math notranslate nohighlight">\(R^2_{\text{new}} &lt; 0.5 \cdot R^2_{\text{train}}\)</span></p></td>
+<td><p>Low</p></td>
+<td><p>Retrain nuisance models</p></td>
+</tr>
+<tr class="row-odd"><td><p>Effect drift</p></td>
+<td><p><span class="math notranslate nohighlight">\(|\hat\theta_{\text{recent}} - \hat\theta_{\text{baseline}}| &gt; 2\sigma\)</span></p></td>
+<td><p>Moderate (noise)</p></td>
+<td><p>Re-estimate with more data</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="false-positive-considerations">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">4.2 False Positive Considerations</a><a class="headerlink" href="#false-positive-considerations" title="Link to this heading">#</a></h3>
+<p>Multiple monitoring checks create a multiple testing problem. With 4 checks
+run daily, the probability of at least one false alarm in a month:</p>
+<div class="math notranslate nohighlight">
+\[P(\text{any false alarm}) = 1 - (1 - \alpha)^{4 \times 30}
+\approx 1 - (0.95)^{120} \approx 0.998\]</div>
+<p>At <span class="math notranslate nohighlight">\(\alpha = 0.05\)</span>, you will get false alarms almost daily.</p>
+<p><strong>Mitigations</strong>:</p>
+<ul class="simple">
+<li><p>Use stricter per-test <span class="math notranslate nohighlight">\(\alpha\)</span> (Bonferroni: <span class="math notranslate nohighlight">\(\alpha/4 = 0.0125\)</span>)</p></li>
+<li><p>Require consecutive violations before alerting (e.g., 3 of 5 days)</p></li>
+<li><p>Use adaptive thresholds calibrated to historical variation</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="retraining-triggers">
+<h2><a class="toc-backref" href="#id15" role="doc-backlink">5. Retraining Triggers</a><a class="headerlink" href="#retraining-triggers" title="Link to this heading">#</a></h2>
+<section id="causal-specific-vs-standard-ml-triggers">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">5.1 Causal-Specific vs Standard ML Triggers</a><a class="headerlink" href="#causal-specific-vs-standard-ml-triggers" title="Link to this heading">#</a></h3>
+<p>Standard ML retraining triggers (accuracy drop, data drift) are necessary
+but not sufficient for causal models. Causal-specific triggers monitor the
+identification conditions:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 35.0%" />
+<col style="width: 35.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Trigger Type</p></th>
+<th class="head"><p>Standard ML</p></th>
+<th class="head"><p>Causal-Specific</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Accuracy-based</p></td>
+<td><p><span class="math notranslate nohighlight">\(\text{RMSE} &gt; \tau\)</span></p></td>
+<td><p>Not applicable (no ground truth)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Data drift</p></td>
+<td><p><span class="math notranslate nohighlight">\(P(X)\)</span> shift</p></td>
+<td><p><span class="math notranslate nohighlight">\(P(T \mid X)\)</span> shift specifically</p></td>
+</tr>
+<tr class="row-even"><td><p>Model degradation</p></td>
+<td><p>Any model quality drop</p></td>
+<td><p><strong>Nuisance model</strong> quality drop</p></td>
+</tr>
+<tr class="row-odd"><td><p>Concept drift</p></td>
+<td><p><span class="math notranslate nohighlight">\(P(Y \mid X)\)</span> change</p></td>
+<td><p><span class="math notranslate nohighlight">\(\theta\)</span> stability over time</p></td>
+</tr>
+<tr class="row-even"><td><p>Overlap-specific</p></td>
+<td><p>N/A</p></td>
+<td><p>Positivity violations increasing</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.production</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetrainScheduler</span><span class="p">,</span> <span class="n">RetrainTrigger</span>
+
+<span class="n">scheduler</span> <span class="o">=</span> <span class="n">RetrainScheduler</span><span class="p">(</span>
+    <span class="n">triggers</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">RetrainTrigger</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;overlap_degradation&quot;</span><span class="p">,</span>
+            <span class="n">check_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">check_overlap</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span><span class="o">.</span><span class="n">violation_fraction</span> <span class="o">&gt;</span> <span class="mf">0.10</span><span class="p">,</span>
+            <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">RetrainTrigger</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;nuisance_degradation&quot;</span><span class="p">,</span>
+            <span class="n">check_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">check_nuisance_quality</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span><span class="o">.</span><span class="n">r2_y</span> <span class="o">&lt;</span> <span class="mf">0.15</span><span class="p">,</span>
+            <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">RetrainTrigger</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;effect_drift&quot;</span><span class="p">,</span>
+            <span class="n">check_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">check_effect_stability</span><span class="p">(</span><span class="n">history</span><span class="p">)</span><span class="o">.</span><span class="n">trend_detected</span><span class="p">,</span>
+            <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;medium&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">min_retrain_interval_days</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Check if retraining is needed</span>
+<span class="n">decision</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">monitor</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">decision</span><span class="o">.</span><span class="n">should_retrain</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Retrain triggered by: </span><span class="si">{</span><span class="n">decision</span><span class="o">.</span><span class="n">triggered_by</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Severity: </span><span class="si">{</span><span class="n">decision</span><span class="o">.</span><span class="n">severity</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="worked-example-end-to-end-production-pipeline">
+<h2><a class="toc-backref" href="#id17" role="doc-backlink">6. Worked Example: End-to-End Production Pipeline</a><a class="headerlink" href="#worked-example-end-to-end-production-pipeline" title="Link to this heading">#</a></h2>
+<p>Complete production workflow: configure, fit, monitor, and make retraining
+decisions using the <a class="reference internal" href="../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline" title="src.production.dml_pipeline.InsuranceDMLPipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">InsuranceDMLPipeline</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.production</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">InsuranceDMLPipeline</span><span class="p">,</span>
+    <span class="n">PipelineConfig</span><span class="p">,</span>
+    <span class="n">DMLModelRegistry</span><span class="p">,</span>
+    <span class="n">CausalMonitor</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_insurance_dgp</span><span class="p">,</span> <span class="n">InsuranceDGPParams</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span>
+
+<span class="c1"># 1. Generate training data</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">InsuranceDGPParams</span><span class="p">(</span>
+    <span class="n">n_obs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">n_competitors</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">true_effect</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+    <span class="n">realism_level</span><span class="o">=</span><span class="s2">&quot;moderate&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="n">create_insurance_dgp</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+<span class="c1"># 2. Configure pipeline</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
+    <span class="n">model_y</span><span class="o">=</span><span class="n">GradientBoostingRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">200</span><span class="p">),</span>
+    <span class="n">model_t</span><span class="o">=</span><span class="n">GradientBoostingRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">200</span><span class="p">),</span>
+    <span class="n">n_folds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">cv_type</span><span class="o">=</span><span class="s2">&quot;temporal&quot;</span><span class="p">,</span>
+    <span class="n">hac_bandwidth</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># 3. Fit pipeline</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">InsuranceDMLPipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">Y</span><span class="o">=</span><span class="n">train_data</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="n">train_data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+    <span class="n">X</span><span class="o">=</span><span class="n">train_data</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training estimate: θ = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;True effect: </span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">true_effect</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># 4. Register model</span>
+<span class="n">registry</span> <span class="o">=</span> <span class="n">DMLModelRegistry</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="s2">&quot;./model_registry&quot;</span><span class="p">)</span>
+<span class="n">version</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
+    <span class="n">theta</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span>
+    <span class="n">se</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="p">,</span>
+    <span class="n">nuisance_models</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">fold_models</span><span class="p">,</span>
+    <span class="n">fold_indices</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">fold_indices</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># 5. Monitor on new data</span>
+<span class="n">new_data</span> <span class="o">=</span> <span class="n">create_insurance_dgp</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+<span class="n">monitor</span> <span class="o">=</span> <span class="n">CausalMonitor</span><span class="p">()</span>
+
+<span class="n">overlap_check</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">check_overlap</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">propensity_scores</span><span class="p">)</span>
+<span class="n">nuisance_check</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">check_nuisance_quality</span><span class="p">(</span>
+    <span class="n">new_data</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">new_data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">new_data</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">model_y</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">model_t</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Monitoring Results:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Overlap violations: </span><span class="si">{</span><span class="n">overlap_check</span><span class="o">.</span><span class="n">violation_fraction</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Nuisance R² (Y): </span><span class="si">{</span><span class="n">nuisance_check</span><span class="o">.</span><span class="n">r2_y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Nuisance R² (T): </span><span class="si">{</span><span class="n">nuisance_check</span><span class="o">.</span><span class="n">r2_t</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># 6. Retrain decision</span>
+<span class="k">if</span> <span class="n">nuisance_check</span><span class="o">.</span><span class="n">r2_y</span> <span class="o">&lt;</span> <span class="mf">0.15</span> <span class="ow">or</span> <span class="n">overlap_check</span><span class="o">.</span><span class="n">violation_fraction</span> <span class="o">&gt;</span> <span class="mf">0.10</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">⚠ Retraining recommended&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✓ Model stable — no retraining needed&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="architecture-summary">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">7. Architecture Summary</a><a class="headerlink" href="#architecture-summary" title="Link to this heading">#</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────┐
+│                Production Pipeline                   │
+│                                                      │
+│  ┌──────────┐    ┌──────────────┐    ┌────────────┐ │
+│  │ Pipeline │───→│ Model        │───→│ Causal     │ │
+│  │ Config   │    │ Registry     │    │ Monitor    │ │
+│  └──────────┘    └──────────────┘    └────────────┘ │
+│       │               │                    │         │
+│       │          ┌────┴─────┐         ┌────┴─────┐  │
+│       │          │ Version  │         │ Retrain  │  │
+│       │          │ Control  │         │ Scheduler│  │
+│       │          └──────────┘         └──────────┘  │
+│       │                                              │
+│  ┌────┴──────────────────────────────────────────┐  │
+│  │  DML Estimator (cross-fitted, temporal CV)    │  │
+│  │  ├── Fold 1: ĝ₁, m̂₁                         │  │
+│  │  ├── Fold 2: ĝ₂, m̂₂                         │  │
+│  │  └── Fold K: ĝ_K, m̂_K                       │  │
+│  └───────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="see-also">
+<h2><a class="toc-backref" href="#id19" role="doc-backlink">See Also</a><a class="headerlink" href="#see-also" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="fwl_to_dml.html"><span class="doc">From FWL to Double Machine Learning</span></a> — Foundation: understanding DML estimation</p></li>
+<li><p><a class="reference internal" href="time_series_dml.html"><span class="doc">Time Series DML</span></a> — Time series extensions for temporal data</p></li>
+<li><p><a class="reference internal" href="../api/production.html"><span class="doc">Production Pipeline</span></a> — Full API reference</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="time_series_dml.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Time Series DML</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../api/dml.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">DML Estimators</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-fundamental-challenge">1. The Fundamental Challenge</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-standard-ml-monitoring-fails">1.1 Why Standard ML Monitoring Fails</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-can-monitor">1.2 What You Can Monitor</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#four-monitoring-dimensions">2. Four Monitoring Dimensions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overlap-monitoring">2.1 Overlap Monitoring</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#treatment-distribution-monitoring">2.2 Treatment Distribution Monitoring</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nuisance-model-quality">2.3 Nuisance Model Quality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#effect-stability-monitoring">2.4 Effect Stability Monitoring</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-versioning">3. Model Versioning</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-causal-models-need-special-versioning">3.1 Why Causal Models Need Special Versioning</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#version-lifecycle">3.2 Version Lifecycle</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#alert-interpretation">4. Alert Interpretation</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-alerts-fire">4.1 When Alerts Fire</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#false-positive-considerations">4.2 False Positive Considerations</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#retraining-triggers">5. Retraining Triggers</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#causal-specific-vs-standard-ml-triggers">5.1 Causal-Specific vs Standard ML Triggers</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example-end-to-end-production-pipeline">6. Worked Example: End-to-End Production Pipeline</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture-summary">7. Architecture Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-also">See Also</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

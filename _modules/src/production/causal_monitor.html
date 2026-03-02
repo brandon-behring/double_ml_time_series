@@ -1,0 +1,1094 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.production.causal_monitor &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/production/causal_monitor';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Time Series DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Production Causal Inference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/production/causal_monitor.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for src.production.causal_monitor</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Causal-specific monitoring for production DML pipelines.</span>
+
+<span class="sd">This module monitors phenomena UNIQUE to causal inference:</span>
+
+<span class="sd">1. Treatment Distribution Shift</span>
+<span class="sd">   - Standard ML: monitors feature drift</span>
+<span class="sd">   - Causal: ALSO monitors if treatment assignment mechanism changed</span>
+
+<span class="sd">2. Overlap Violations (Positivity)</span>
+<span class="sd">   - Standard ML: N/A</span>
+<span class="sd">   - Causal: Propensity scores near 0 or 1 indicate extrapolation</span>
+
+<span class="sd">3. Nuisance Model Degradation</span>
+<span class="sd">   - Standard ML: monitors prediction accuracy</span>
+<span class="sd">   - Causal: monitors nuisance R² (NOT causal accuracy - that&#39;s unknowable!)</span>
+
+<span class="sd">4. Effect Stability</span>
+<span class="sd">   - Standard ML: monitors prediction stability</span>
+<span class="sd">   - Causal: monitors if treatment effect itself is changing over time</span>
+
+<span class="sd">Key insight: In causal inference, we CANNOT directly monitor treatment effect</span>
+<span class="sd">accuracy because ground truth counterfactuals are unobservable. We can only</span>
+<span class="sd">monitor the *conditions* under which our estimates are valid.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC</span><span class="p">,</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+
+
+<div class="viewcode-block" id="AlertLevel">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.AlertLevel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AlertLevel</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Severity levels for monitoring alerts.&quot;&quot;&quot;</span>
+
+    <span class="n">OK</span> <span class="o">=</span> <span class="s2">&quot;ok&quot;</span>
+    <span class="n">WARNING</span> <span class="o">=</span> <span class="s2">&quot;warning&quot;</span>
+    <span class="n">CRITICAL</span> <span class="o">=</span> <span class="s2">&quot;critical&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="MonitoringResult">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.MonitoringResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MonitoringResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Result from a single monitoring check.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        check_name: Name of the check performed</span>
+<span class="sd">        level: Alert severity level</span>
+<span class="sd">        message: Human-readable description</span>
+<span class="sd">        value: Numeric value of the metric</span>
+<span class="sd">        threshold: Threshold that triggered the alert (if any)</span>
+<span class="sd">        timestamp: When the check was performed</span>
+<span class="sd">        details: Additional diagnostic information</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">check_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">level</span><span class="p">:</span> <span class="n">AlertLevel</span>
+    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
+    <span class="n">details</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MonitoringResult.is_ok">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.MonitoringResult.is_ok">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_ok</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return True if no issues detected.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span></div>
+
+
+<div class="viewcode-block" id="MonitoringResult.to_dict">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.MonitoringResult.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to dictionary for serialization.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;check_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_name</span><span class="p">,</span>
+            <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span>
+            <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span>
+            <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">,</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CausalMonitorConfig">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitorConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CausalMonitorConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Configuration for CausalMonitor thresholds.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        propensity_clip_min: Minimum acceptable propensity score</span>
+<span class="sd">        propensity_clip_max: Maximum acceptable propensity score</span>
+<span class="sd">        overlap_violation_rate_warning: Warning threshold for overlap violations</span>
+<span class="sd">        overlap_violation_rate_critical: Critical threshold for overlap violations</span>
+<span class="sd">        treatment_shift_warning: Warning threshold for treatment distribution change</span>
+<span class="sd">        treatment_shift_critical: Critical threshold for treatment distribution change</span>
+<span class="sd">        nuisance_r2_warning: Warning threshold for nuisance R² degradation</span>
+<span class="sd">        nuisance_r2_critical: Critical threshold for nuisance R² degradation</span>
+<span class="sd">        effect_change_warning: Warning threshold for effect magnitude change</span>
+<span class="sd">        effect_change_critical: Critical threshold for effect magnitude change</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">propensity_clip_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span>
+    <span class="n">propensity_clip_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.99</span>
+    <span class="n">overlap_violation_rate_warning</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
+    <span class="n">overlap_violation_rate_critical</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span>
+    <span class="n">treatment_shift_warning</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># KS statistic</span>
+    <span class="n">treatment_shift_critical</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span>
+    <span class="n">nuisance_r2_warning</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.50</span>
+    <span class="n">nuisance_r2_critical</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.30</span>
+    <span class="n">effect_change_warning</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.20</span>  <span class="c1"># 20% relative change</span>
+    <span class="n">effect_change_critical</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.50</span>  <span class="c1"># 50% relative change</span>
+    <span class="n">covariate_shift_warning</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># KS statistic per feature</span>
+    <span class="n">covariate_shift_critical</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span></div>
+
+
+
+<div class="viewcode-block" id="CausalMonitor">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CausalMonitor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Production monitoring for DML pipelines.</span>
+
+<span class="sd">    Monitors four causal-specific phenomena:</span>
+<span class="sd">    1. Overlap violations (positivity assumption)</span>
+<span class="sd">    2. Treatment distribution shift</span>
+<span class="sd">    3. Nuisance model degradation</span>
+<span class="sd">    4. Effect stability over time</span>
+
+<span class="sd">    Unlike standard ML monitoring, this class tracks conditions required</span>
+<span class="sd">    for causal identification, not predictive accuracy.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; monitor = CausalMonitor()</span>
+<span class="sd">        &gt;&gt;&gt; results = monitor.run_all_checks(</span>
+<span class="sd">        ...     propensity_scores=e_hat,</span>
+<span class="sd">        ...     treatment=T,</span>
+<span class="sd">        ...     treatment_baseline=T_train,</span>
+<span class="sd">        ...     nuisance_r2_propensity=0.65,</span>
+<span class="sd">        ...     nuisance_r2_outcome=0.72,</span>
+<span class="sd">        ...     current_effect=0.15,</span>
+<span class="sd">        ...     baseline_effect=0.12,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; for r in results:</span>
+<span class="sd">        ...     if not r.is_ok():</span>
+<span class="sd">        ...         print(f&quot;ALERT: {r.message}&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CausalMonitor.__init__">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitor.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CausalMonitorConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize causal monitor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config: Monitoring configuration (uses defaults if None)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">CausalMonitorConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_history</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">MonitoringResult</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="CausalMonitor.check_overlap_violations">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitor.check_overlap_violations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_overlap_violations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">propensity_scores</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitoringResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check for overlap (positivity) violations.</span>
+
+<span class="sd">        Overlap requires P(T=1|X) bounded away from 0 and 1. Violations</span>
+<span class="sd">        indicate regions where treatment effect is extrapolated, not estimated.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            propensity_scores: Estimated P(T=1|X) for inference sample</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MonitoringResult with violation rate and severity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">propensity_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">)</span>
+
+        <span class="c1"># Count violations</span>
+        <span class="n">too_low</span> <span class="o">=</span> <span class="n">propensity_scores</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_clip_min</span>
+        <span class="n">too_high</span> <span class="o">=</span> <span class="n">propensity_scores</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_clip_max</span>
+        <span class="n">n_violations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">too_low</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">too_high</span><span class="p">)</span>
+        <span class="n">violation_rate</span> <span class="o">=</span> <span class="n">n_violations</span> <span class="o">/</span> <span class="n">n_samples</span>
+
+        <span class="c1"># Determine severity</span>
+        <span class="k">if</span> <span class="n">violation_rate</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">overlap_violation_rate_critical</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">CRITICAL</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;CRITICAL: </span><span class="si">{</span><span class="n">violation_rate</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> overlap violations &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">overlap_violation_rate_critical</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">). &quot;</span>
+                <span class="s2">&quot;Treatment effects may be unreliable for extreme propensity regions.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">violation_rate</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">overlap_violation_rate_warning</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;WARNING: </span><span class="si">{</span><span class="n">violation_rate</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> overlap violations. &quot;</span>
+                <span class="s2">&quot;Consider trimming or IPW adjustment.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Overlap OK: </span><span class="si">{</span><span class="n">violation_rate</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> violations (within tolerance)&quot;</span>
+
+        <span class="k">return</span> <span class="n">MonitoringResult</span><span class="p">(</span>
+            <span class="n">check_name</span><span class="o">=</span><span class="s2">&quot;overlap_violations&quot;</span><span class="p">,</span>
+            <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">violation_rate</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">overlap_violation_rate_warning</span><span class="p">,</span>
+            <span class="n">details</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;n_samples&quot;</span><span class="p">:</span> <span class="n">n_samples</span><span class="p">,</span>
+                <span class="s2">&quot;n_violations&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_violations</span><span class="p">),</span>
+                <span class="s2">&quot;n_too_low&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">too_low</span><span class="p">)),</span>
+                <span class="s2">&quot;n_too_high&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">too_high</span><span class="p">)),</span>
+                <span class="s2">&quot;propensity_min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">)),</span>
+                <span class="s2">&quot;propensity_max&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">)),</span>
+                <span class="s2">&quot;propensity_mean&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">)),</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CausalMonitor.check_treatment_shift">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitor.check_treatment_shift">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_treatment_shift</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">treatment_current</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">treatment_baseline</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitoringResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check for treatment distribution shift.</span>
+
+<span class="sd">        Unlike feature drift in standard ML, treatment shift affects causal</span>
+<span class="sd">        identification. If treatment assignment mechanism changed, historical</span>
+<span class="sd">        effects may not transfer.</span>
+
+<span class="sd">        Uses KS statistic for continuous, chi-squared for binary treatment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            treatment_current: Current period treatment values</span>
+<span class="sd">            treatment_baseline: Baseline period treatment values</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MonitoringResult with shift magnitude and severity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">treatment_current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">treatment_current</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">treatment_baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">treatment_baseline</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+        <span class="c1"># Determine if binary or continuous</span>
+        <span class="n">unique_current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">treatment_current</span><span class="p">)</span>
+        <span class="n">unique_baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">treatment_baseline</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_current</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_baseline</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># Binary treatment - compare proportions</span>
+            <span class="n">p_current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">treatment_current</span><span class="p">)</span>
+            <span class="n">p_baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">treatment_baseline</span><span class="p">)</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">p_current</span> <span class="o">-</span> <span class="n">p_baseline</span><span class="p">)</span>
+
+            <span class="c1"># Use proportion difference as metric</span>
+            <span class="n">metric_value</span> <span class="o">=</span> <span class="n">diff</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="s2">&quot;proportion_diff&quot;</span>
+
+            <span class="n">details</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;p_current&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">p_current</span><span class="p">),</span>
+                <span class="s2">&quot;p_baseline&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">p_baseline</span><span class="p">),</span>
+                <span class="s2">&quot;absolute_diff&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">diff</span><span class="p">),</span>
+                <span class="s2">&quot;metric&quot;</span><span class="p">:</span> <span class="n">metric_name</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Continuous treatment - KS test</span>
+            <span class="n">ks_stat</span><span class="p">,</span> <span class="n">ks_pval</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">ks_2samp</span><span class="p">(</span><span class="n">treatment_current</span><span class="p">,</span> <span class="n">treatment_baseline</span><span class="p">)</span>
+            <span class="n">metric_value</span> <span class="o">=</span> <span class="n">ks_stat</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="s2">&quot;ks_statistic&quot;</span>
+
+            <span class="n">details</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;ks_statistic&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">ks_stat</span><span class="p">),</span>
+                <span class="s2">&quot;ks_pvalue&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">ks_pval</span><span class="p">),</span>
+                <span class="s2">&quot;mean_current&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">treatment_current</span><span class="p">)),</span>
+                <span class="s2">&quot;mean_baseline&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">treatment_baseline</span><span class="p">)),</span>
+                <span class="s2">&quot;std_current&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">treatment_current</span><span class="p">)),</span>
+                <span class="s2">&quot;std_baseline&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">treatment_baseline</span><span class="p">)),</span>
+                <span class="s2">&quot;metric&quot;</span><span class="p">:</span> <span class="n">metric_name</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="c1"># Determine severity</span>
+        <span class="k">if</span> <span class="n">metric_value</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">treatment_shift_critical</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">CRITICAL</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;CRITICAL: Treatment distribution shift detected &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">metric_name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">metric_value</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> &gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">treatment_shift_critical</span><span class="si">}</span><span class="s2">). &quot;</span>
+                <span class="s2">&quot;Treatment assignment mechanism may have changed.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">metric_value</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">treatment_shift_warning</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;WARNING: Moderate treatment shift &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">metric_name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">metric_value</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">). Monitor closely.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Treatment distribution stable (</span><span class="si">{</span><span class="n">metric_name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">metric_value</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+        <span class="k">return</span> <span class="n">MonitoringResult</span><span class="p">(</span>
+            <span class="n">check_name</span><span class="o">=</span><span class="s2">&quot;treatment_shift&quot;</span><span class="p">,</span>
+            <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">metric_value</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">treatment_shift_warning</span><span class="p">,</span>
+            <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CausalMonitor.check_nuisance_degradation">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitor.check_nuisance_degradation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_nuisance_degradation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">r2_propensity</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">r2_outcome</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">r2_propensity_baseline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">r2_outcome_baseline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitoringResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check for nuisance model degradation.</span>
+
+<span class="sd">        DML requires well-fitting nuisance models for valid inference.</span>
+<span class="sd">        Poor nuisance fit leads to biased treatment effects.</span>
+
+<span class="sd">        Note: This checks nuisance R², NOT treatment effect accuracy</span>
+<span class="sd">        (which is fundamentally unknowable).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            r2_propensity: Current propensity model R² (or pseudo-R² for classification)</span>
+<span class="sd">            r2_outcome: Current outcome model R²</span>
+<span class="sd">            r2_propensity_baseline: Optional baseline propensity R² for comparison</span>
+<span class="sd">            r2_outcome_baseline: Optional baseline outcome R² for comparison</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MonitoringResult with degradation assessment</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Use minimum of the two as the overall quality metric</span>
+        <span class="n">min_r2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">r2_propensity</span><span class="p">,</span> <span class="n">r2_outcome</span><span class="p">)</span>
+
+        <span class="n">details</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;r2_propensity&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">r2_propensity</span><span class="p">),</span>
+            <span class="s2">&quot;r2_outcome&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">r2_outcome</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Check absolute thresholds</span>
+        <span class="k">if</span> <span class="n">min_r2</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">nuisance_r2_critical</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">CRITICAL</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;CRITICAL: Nuisance model fit very poor &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(min R²=</span><span class="si">{</span><span class="n">min_r2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> &lt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">nuisance_r2_critical</span><span class="si">}</span><span class="s2">). &quot;</span>
+                <span class="s2">&quot;DML estimates may be severely biased.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">min_r2</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">nuisance_r2_warning</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;WARNING: Nuisance model fit degraded &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(min R²=</span><span class="si">{</span><span class="n">min_r2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> &lt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">nuisance_r2_warning</span><span class="si">}</span><span class="s2">). &quot;</span>
+                <span class="s2">&quot;Consider retraining.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Nuisance fit OK (R² propensity=</span><span class="si">{</span><span class="n">r2_propensity</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, outcome=</span><span class="si">{</span><span class="n">r2_outcome</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Check relative degradation if baselines provided</span>
+        <span class="k">if</span> <span class="n">r2_propensity_baseline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prop_degradation</span> <span class="o">=</span> <span class="p">(</span><span class="n">r2_propensity_baseline</span> <span class="o">-</span> <span class="n">r2_propensity</span><span class="p">)</span> <span class="o">/</span> <span class="n">r2_propensity_baseline</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;propensity_degradation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">prop_degradation</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">prop_degradation</span> <span class="o">&gt;</span> <span class="mf">0.2</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
+                    <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span>
+                <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; Propensity degraded </span><span class="si">{</span><span class="n">prop_degradation</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> from baseline.&quot;</span>
+
+        <span class="k">if</span> <span class="n">r2_outcome_baseline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_degradation</span> <span class="o">=</span> <span class="p">(</span><span class="n">r2_outcome_baseline</span> <span class="o">-</span> <span class="n">r2_outcome</span><span class="p">)</span> <span class="o">/</span> <span class="n">r2_outcome_baseline</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;outcome_degradation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">out_degradation</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">out_degradation</span> <span class="o">&gt;</span> <span class="mf">0.2</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
+                    <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span>
+                <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; Outcome degraded </span><span class="si">{</span><span class="n">out_degradation</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> from baseline.&quot;</span>
+
+        <span class="k">return</span> <span class="n">MonitoringResult</span><span class="p">(</span>
+            <span class="n">check_name</span><span class="o">=</span><span class="s2">&quot;nuisance_degradation&quot;</span><span class="p">,</span>
+            <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">min_r2</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">nuisance_r2_warning</span><span class="p">,</span>
+            <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CausalMonitor.check_effect_stability">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitor.check_effect_stability">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_effect_stability</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">current_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">baseline_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">current_se</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">baseline_se</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitoringResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check for treatment effect stability over time.</span>
+
+<span class="sd">        Large changes in estimated effects may indicate:</span>
+<span class="sd">        - Genuine effect heterogeneity over time (valid)</span>
+<span class="sd">        - Model degradation or data issues (problematic)</span>
+<span class="sd">        - Selection/survivor bias in new data (problematic)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            current_effect: Current period ATE estimate</span>
+<span class="sd">            baseline_effect: Baseline period ATE estimate</span>
+<span class="sd">            current_se: Optional standard error for current estimate</span>
+<span class="sd">            baseline_se: Optional standard error for baseline estimate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MonitoringResult with effect change assessment</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Compute relative change (handle zero baseline)</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">baseline_effect</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">current_effect</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+                <span class="n">relative_change</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">relative_change</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">relative_change</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">current_effect</span> <span class="o">-</span> <span class="n">baseline_effect</span><span class="p">)</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">baseline_effect</span><span class="p">)</span>
+
+        <span class="n">details</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;current_effect&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">current_effect</span><span class="p">),</span>
+            <span class="s2">&quot;baseline_effect&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_effect</span><span class="p">),</span>
+            <span class="s2">&quot;absolute_change&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">current_effect</span> <span class="o">-</span> <span class="n">baseline_effect</span><span class="p">),</span>
+            <span class="s2">&quot;relative_change&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">relative_change</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># If standard errors provided, compute significance of change</span>
+        <span class="k">if</span> <span class="n">current_se</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">baseline_se</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">combined_se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">current_se</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">baseline_se</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">z_score</span> <span class="o">=</span> <span class="p">(</span><span class="n">current_effect</span> <span class="o">-</span> <span class="n">baseline_effect</span><span class="p">)</span> <span class="o">/</span> <span class="n">combined_se</span>
+            <span class="n">p_value</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">z_score</span><span class="p">)))</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;z_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">z_score</span><span class="p">)</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;p_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">p_value</span><span class="p">)</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;current_se&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">current_se</span><span class="p">)</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;baseline_se&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">baseline_se</span><span class="p">)</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;statistically_significant&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_value</span> <span class="o">&lt;</span> <span class="mf">0.05</span>
+
+        <span class="c1"># Determine severity</span>
+        <span class="k">if</span> <span class="n">relative_change</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">effect_change_critical</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">CRITICAL</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;CRITICAL: Treatment effect changed </span><span class="si">{</span><span class="n">relative_change</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">baseline_effect</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">current_effect</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">). &quot;</span>
+                <span class="s2">&quot;Investigate cause before deployment.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">relative_change</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">effect_change_warning</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;WARNING: Treatment effect changed </span><span class="si">{</span><span class="n">relative_change</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="s2">&quot;May indicate effect heterogeneity or model issues.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Effect stable: </span><span class="si">{</span><span class="n">relative_change</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> change &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">baseline_effect</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">current_effect</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">MonitoringResult</span><span class="p">(</span>
+            <span class="n">check_name</span><span class="o">=</span><span class="s2">&quot;effect_stability&quot;</span><span class="p">,</span>
+            <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">relative_change</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">effect_change_warning</span><span class="p">,</span>
+            <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CausalMonitor.check_covariate_shift">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitor.check_covariate_shift">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_covariate_shift</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X_current</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X_baseline</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">feature_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonitoringResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check for covariate distribution shift.</span>
+
+<span class="sd">        Covariate shift affects:</span>
+<span class="sd">        1. Nuisance model accuracy (may need retraining)</span>
+<span class="sd">        2. Effect generalization (extrapolation risk)</span>
+<span class="sd">        3. Overlap (new covariate regions may have extreme propensity)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X_current: Current period covariates (n_samples, n_features)</span>
+<span class="sd">            X_baseline: Baseline period covariates (n_samples, n_features)</span>
+<span class="sd">            feature_names: Optional names for features</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MonitoringResult with shift assessment for each feature</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X_current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_current</span><span class="p">)</span>
+        <span class="n">X_baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_baseline</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">X_current</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X_current</span> <span class="o">=</span> <span class="n">X_current</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">X_baseline</span> <span class="o">=</span> <span class="n">X_baseline</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">n_features</span> <span class="o">=</span> <span class="n">X_current</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">feature_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;feature_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)]</span>
+
+        <span class="c1"># Compute KS statistic for each feature</span>
+        <span class="n">ks_stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">feature_shifts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">feature_names</span><span class="p">):</span>
+            <span class="n">ks_stat</span><span class="p">,</span> <span class="n">ks_pval</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">ks_2samp</span><span class="p">(</span><span class="n">X_current</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">X_baseline</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="n">ks_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ks_stat</span><span class="p">)</span>
+            <span class="n">feature_shifts</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;ks_statistic&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">ks_stat</span><span class="p">),</span>
+                <span class="s2">&quot;ks_pvalue&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">ks_pval</span><span class="p">),</span>
+                <span class="s2">&quot;mean_current&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X_current</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])),</span>
+                <span class="s2">&quot;mean_baseline&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X_baseline</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])),</span>
+            <span class="p">}</span>
+
+        <span class="n">max_ks</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ks_stats</span><span class="p">)</span>
+        <span class="n">n_warning</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">ks</span> <span class="ow">in</span> <span class="n">ks_stats</span> <span class="k">if</span> <span class="n">ks</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">covariate_shift_warning</span><span class="p">)</span>
+        <span class="n">n_critical</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">ks</span> <span class="ow">in</span> <span class="n">ks_stats</span> <span class="k">if</span> <span class="n">ks</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">covariate_shift_critical</span><span class="p">)</span>
+
+        <span class="c1"># Determine overall severity</span>
+        <span class="k">if</span> <span class="n">n_critical</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">CRITICAL</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;CRITICAL: </span><span class="si">{</span><span class="n">n_critical</span><span class="si">}</span><span class="s2"> features show significant covariate shift &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(max KS=</span><span class="si">{</span><span class="n">max_ks</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">). Nuisance models may need retraining.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">n_warning</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;WARNING: </span><span class="si">{</span><span class="n">n_warning</span><span class="si">}</span><span class="s2"> features show moderate covariate shift. &quot;</span>
+                <span class="s2">&quot;Monitor nuisance model performance.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Covariate distribution stable (max KS=</span><span class="si">{</span><span class="n">max_ks</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+        <span class="k">return</span> <span class="n">MonitoringResult</span><span class="p">(</span>
+            <span class="n">check_name</span><span class="o">=</span><span class="s2">&quot;covariate_shift&quot;</span><span class="p">,</span>
+            <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">max_ks</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">covariate_shift_warning</span><span class="p">,</span>
+            <span class="n">details</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;n_features&quot;</span><span class="p">:</span> <span class="n">n_features</span><span class="p">,</span>
+                <span class="s2">&quot;n_warning&quot;</span><span class="p">:</span> <span class="n">n_warning</span><span class="p">,</span>
+                <span class="s2">&quot;n_critical&quot;</span><span class="p">:</span> <span class="n">n_critical</span><span class="p">,</span>
+                <span class="s2">&quot;feature_shifts&quot;</span><span class="p">:</span> <span class="n">feature_shifts</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CausalMonitor.run_all_checks">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitor.run_all_checks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_all_checks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">propensity_scores</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">treatment_current</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">treatment_baseline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">r2_propensity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">r2_outcome</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">current_effect</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">baseline_effect</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">X_current</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">X_baseline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">feature_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MonitoringResult</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run all applicable monitoring checks.</span>
+
+<span class="sd">        Skips checks where required inputs are not provided.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            propensity_scores: For overlap check</span>
+<span class="sd">            treatment_current: For treatment shift check</span>
+<span class="sd">            treatment_baseline: For treatment shift check</span>
+<span class="sd">            r2_propensity: For nuisance degradation check</span>
+<span class="sd">            r2_outcome: For nuisance degradation check</span>
+<span class="sd">            current_effect: For effect stability check</span>
+<span class="sd">            baseline_effect: For effect stability check</span>
+<span class="sd">            X_current: For covariate shift check</span>
+<span class="sd">            X_baseline: For covariate shift check</span>
+<span class="sd">            feature_names: Feature names for covariate shift</span>
+<span class="sd">            **kwargs: Additional arguments passed to individual checks</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of MonitoringResult for all executed checks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Overlap check</span>
+        <span class="k">if</span> <span class="n">propensity_scores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_overlap_violations</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">))</span>
+
+        <span class="c1"># Treatment shift check</span>
+        <span class="k">if</span> <span class="n">treatment_current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">treatment_baseline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_treatment_shift</span><span class="p">(</span><span class="n">treatment_current</span><span class="p">,</span> <span class="n">treatment_baseline</span><span class="p">))</span>
+
+        <span class="c1"># Nuisance degradation check</span>
+        <span class="k">if</span> <span class="n">r2_propensity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">r2_outcome</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_nuisance_degradation</span><span class="p">(</span>
+                    <span class="n">r2_propensity</span><span class="p">,</span>
+                    <span class="n">r2_outcome</span><span class="p">,</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;r2_propensity_baseline&quot;</span><span class="p">),</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;r2_outcome_baseline&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Effect stability check</span>
+        <span class="k">if</span> <span class="n">current_effect</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">baseline_effect</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_effect_stability</span><span class="p">(</span>
+                    <span class="n">current_effect</span><span class="p">,</span>
+                    <span class="n">baseline_effect</span><span class="p">,</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;current_se&quot;</span><span class="p">),</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;baseline_se&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Covariate shift check</span>
+        <span class="k">if</span> <span class="n">X_current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">X_baseline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_covariate_shift</span><span class="p">(</span><span class="n">X_current</span><span class="p">,</span> <span class="n">X_baseline</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">))</span>
+
+        <span class="c1"># Store in history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="CausalMonitor.get_summary">
+<a class="viewcode-back" href="../../../api/production.html#src.production.causal_monitor.CausalMonitor.get_summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">MonitoringResult</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get summary of monitoring results.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            results: Results to summarize (defaults to most recent)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict with overall status and check summaries</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_history</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;no_data&quot;</span><span class="p">,</span> <span class="s2">&quot;checks&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Compute overall status</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">level</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">CRITICAL</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+            <span class="n">overall</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">CRITICAL</span>
+        <span class="k">elif</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+            <span class="n">overall</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">overall</span> <span class="o">=</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">overall</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;n_checks&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">),</span>
+            <span class="s2">&quot;n_ok&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">OK</span><span class="p">),</span>
+            <span class="s2">&quot;n_warning&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">WARNING</span><span class="p">),</span>
+            <span class="s2">&quot;n_critical&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">AlertLevel</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">),</span>
+            <span class="s2">&quot;checks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">],</span>
+        <span class="p">}</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;CausalMonitor(n_checks_run=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_history</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
