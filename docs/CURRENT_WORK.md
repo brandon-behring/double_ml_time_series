@@ -67,6 +67,7 @@ Current state (verified 2026-01-30):
 
 ## Recent Completions
 
+- **2026-03-01**: Infrastructure polish — per-tier timeout enforcement, configurable n_jobs, black 25.11.0 alignment, stale ROADMAP.md archived, v1.0.0 tagged
 - **2026-02-28**: Repository consolidation — README rewrite, doc updates, archive stale plans, clean untracked files
 - **2026-02-28**: Test infrastructure overhaul — 4-tier system (tier1-tier4), 796 tests passing, zero unmarked tests, BootstrapConfig factories, pytest-timeout enforcement, cached 401(k) fixture
 

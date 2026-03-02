@@ -2,10 +2,9 @@
 
 **Production-grade DML methodology for time series causal inference, with insurance/annuity pricing applications and macroeconomic controls.**
 
-<!-- Status badges (placeholder) -->
-<!-- ![Tests](https://img.shields.io/badge/tests-796-green) -->
-<!-- ![Python](https://img.shields.io/badge/python-3.11+-blue) -->
-<!-- ![LaTeX](https://img.shields.io/badge/book-180_pages-orange) -->
+![Tests](https://img.shields.io/badge/tests-776-green)
+![Python](https://img.shields.io/badge/python-3.11+-blue)
+![LaTeX](https://img.shields.io/badge/book-180_pages-orange)
 
 ---
 
