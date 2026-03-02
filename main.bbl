@@ -82,6 +82,41 @@
       \field{pages}{C1\bibrangedash C68}
       \range{pages}{-1}
     \endentry
+    \entry{cinelli2020omitted}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=aa688514e4319489094f1006ca357c7e}{%
+           family={Cinelli},
+           familyi={C\bibinitperiod},
+           given={Carlos},
+           giveni={C\bibinitperiod}}}%
+        {{hash=c3de901751a69bd69e344f3901d6d0cf}{%
+           family={Hazlett},
+           familyi={H\bibinitperiod},
+           given={Chad},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{374afa6179d868cc41a3a005fcc29737}
+      \strng{fullhash}{374afa6179d868cc41a3a005fcc29737}
+      \strng{fullhashraw}{374afa6179d868cc41a3a005fcc29737}
+      \strng{bibnamehash}{374afa6179d868cc41a3a005fcc29737}
+      \strng{authorbibnamehash}{374afa6179d868cc41a3a005fcc29737}
+      \strng{authornamehash}{374afa6179d868cc41a3a005fcc29737}
+      \strng{authorfullhash}{374afa6179d868cc41a3a005fcc29737}
+      \strng{authorfullhashraw}{374afa6179d868cc41a3a005fcc29737}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of the Royal Statistical Society: Series B}
+      \field{number}{1}
+      \field{title}{Making Sense of Sensitivity: Extending Omitted Variable Bias}
+      \field{volume}{82}
+      \field{year}{2020}
+      \field{pages}{39\bibrangedash 67}
+      \range{pages}{29}
+    \endentry
     \entry{frisch1933partial}{article}{}{}
       \name{author}{2}{}{%
         {{hash=e4b7f7eaefcae4805a6d0ef5b693df20}{%
@@ -146,6 +181,36 @@
       \field{year}{1986}
       \field{pages}{945\bibrangedash 960}
       \range{pages}{16}
+    \endentry
+    \entry{imbens2003sensitivity}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=9f4fa8d00c0311b9cdad0f20ad429e57}{%
+           family={Imbens},
+           familyi={I\bibinitperiod},
+           given={Guido\bibnamedelima W},
+           giveni={G\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+      }
+      \strng{namehash}{9f4fa8d00c0311b9cdad0f20ad429e57}
+      \strng{fullhash}{9f4fa8d00c0311b9cdad0f20ad429e57}
+      \strng{fullhashraw}{9f4fa8d00c0311b9cdad0f20ad429e57}
+      \strng{bibnamehash}{9f4fa8d00c0311b9cdad0f20ad429e57}
+      \strng{authorbibnamehash}{9f4fa8d00c0311b9cdad0f20ad429e57}
+      \strng{authornamehash}{9f4fa8d00c0311b9cdad0f20ad429e57}
+      \strng{authorfullhash}{9f4fa8d00c0311b9cdad0f20ad429e57}
+      \strng{authorfullhashraw}{9f4fa8d00c0311b9cdad0f20ad429e57}
+      \field{sortinit}{I}
+      \field{sortinithash}{8d291c51ee89b6cd86bf5379f0b151d8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{American Economic Review}
+      \field{number}{2}
+      \field{title}{Sensitivity to Exogeneity Assumptions in Program Evaluation}
+      \field{volume}{93}
+      \field{year}{2003}
+      \field{pages}{126\bibrangedash 132}
+      \range{pages}{7}
     \endentry
     \entry{lovell1963seasonal}{article}{}{}
       \name{author}{1}{}{%
@@ -277,6 +342,35 @@
       \field{title}{Advances in Financial Machine Learning}
       \field{year}{2018}
     \endentry
+    \entry{rosenbaum2002observational}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=2619036f349e499ca578ec1a7ebb3a46}{%
+           family={Rosenbaum},
+           familyi={R\bibinitperiod},
+           given={Paul\bibnamedelima R},
+           giveni={P\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{2619036f349e499ca578ec1a7ebb3a46}
+      \strng{fullhash}{2619036f349e499ca578ec1a7ebb3a46}
+      \strng{fullhashraw}{2619036f349e499ca578ec1a7ebb3a46}
+      \strng{bibnamehash}{2619036f349e499ca578ec1a7ebb3a46}
+      \strng{authorbibnamehash}{2619036f349e499ca578ec1a7ebb3a46}
+      \strng{authornamehash}{2619036f349e499ca578ec1a7ebb3a46}
+      \strng{authorfullhash}{2619036f349e499ca578ec1a7ebb3a46}
+      \strng{authorfullhashraw}{2619036f349e499ca578ec1a7ebb3a46}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2nd}
+      \field{title}{Observational Studies}
+      \field{year}{2002}
+    \endentry
     \entry{rubin1974estimating}{article}{}{}
       \name{author}{1}{}{%
         {{hash=49a367b6280de8a239f8bbdd573f996f}{%
@@ -306,6 +400,41 @@
       \field{year}{1974}
       \field{pages}{688\bibrangedash 701}
       \range{pages}{14}
+    \endentry
+    \entry{vanderweele2017evalue}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=ba96229639c6eae3740881fb282dd436}{%
+           family={VanderWeele},
+           familyi={V\bibinitperiod},
+           given={Tyler\bibnamedelima J},
+           giveni={T\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=284b1660e81956ee8b9e73c17795c851}{%
+           family={Ding},
+           familyi={D\bibinitperiod},
+           given={Peng},
+           giveni={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{6a0b0ff733bc43536411599288659340}
+      \strng{fullhash}{6a0b0ff733bc43536411599288659340}
+      \strng{fullhashraw}{6a0b0ff733bc43536411599288659340}
+      \strng{bibnamehash}{6a0b0ff733bc43536411599288659340}
+      \strng{authorbibnamehash}{6a0b0ff733bc43536411599288659340}
+      \strng{authornamehash}{6a0b0ff733bc43536411599288659340}
+      \strng{authorfullhash}{6a0b0ff733bc43536411599288659340}
+      \strng{authorfullhashraw}{6a0b0ff733bc43536411599288659340}
+      \field{sortinit}{V}
+      \field{sortinithash}{afb52128e5b4dc4b843768c0113d673b}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Annals of Internal Medicine}
+      \field{number}{4}
+      \field{title}{Sensitivity Analysis in Observational Research: Introducing the E-Value}
+      \field{volume}{167}
+      \field{year}{2017}
+      \field{pages}{268\bibrangedash 274}
+      \range{pages}{7}
     \endentry
     \entry{wager2018estimation}{article}{}{}
       \name{author}{2}{}{%

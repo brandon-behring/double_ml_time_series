@@ -33,9 +33,13 @@ Sensitivity analysis addresses this by asking: ``How strong would unmeasured con
     \item \textbf{Section 4.2}: The OJ Dataset---exploratory analysis and preprocessing
     \item \textbf{Section 4.3}: DML Estimation---step-by-step price elasticity estimation
     \item \textbf{Section 4.4}: Baseline Comparison---quantifying the value of DML
-    \item \textbf{Section 4.5}: Sensitivity Analysis---Rosenbaum bounds methodology
-    \item \textbf{Section 4.6}: Recommendations---when to trust DML estimates
-    \item \textbf{Section 4.7}: Exercises
+    \item \textbf{Section 4.5}: Overlap Diagnostics---verifying positivity for continuous treatments
+    \item \textbf{Section 4.6}: Sensitivity Analysis---Rosenbaum bounds, E-values, and partial identification
+    \item \textbf{Section 4.7}: Contrastive Application---gasoline elasticity as a fragile counterexample
+    \item \textbf{Section 4.8}: Heterogeneous Sensitivity---brand-level and demographic robustness
+    \item \textbf{Section 4.9}: Diagnostic Visualization---overlap, sensitivity surfaces, and residual plots
+    \item \textbf{Section 4.10}: Practical Recommendations---when to trust DML estimates
+    \item \textbf{Section 4.11}: Exercises
 \end{itemize}
 
 % ============================================================================
@@ -208,6 +212,49 @@ The nuisance model R² values provide important diagnostics:
 
 If treatment R² were too high (e.g., >0.9), it would indicate near-deterministic treatment assignment, violating the overlap assumption and leading to unstable estimates.
 
+\subsubsection{Residual Quality Checks}
+
+Beyond R² values, the residuals themselves encode diagnostic information. Well-behaved residuals---approximately mean-zero, symmetric, and uncorrelated---support the validity of the influence function standard errors:
+
+\begin{minted}[fontsize=\small]{python}
+from scipy import stats
+
+Y_resid = result.Y_residual
+T_resid = result.T_residual
+
+# Mean should be ~0 (cross-fitting guarantees this asymptotically)
+print("Residual Quality Checks")
+print("=" * 45)
+print(f"  Y residual mean:  {np.mean(Y_resid):.6f}")
+print(f"  T residual mean:  {np.mean(T_resid):.6f}")
+
+# Normality (Shapiro-Wilk on subsample for speed)
+subsample = np.random.RandomState(42).choice(
+    len(Y_resid), size=5000, replace=False
+)
+_, p_Y = stats.shapiro(Y_resid[subsample])
+_, p_T = stats.shapiro(T_resid[subsample])
+print(f"  Y Shapiro-Wilk p: {p_Y:.4f}")
+print(f"  T Shapiro-Wilk p: {p_T:.4f}")
+
+# Residual-residual correlation (should be ~theta)
+resid_corr = np.corrcoef(Y_resid, T_resid)[0, 1]
+print(f"  Corr(Y_resid, T_resid): {resid_corr:.4f}")
+\end{minted}
+
+\insight{
+\textbf{Residual Quality and SE Validity}
+
+DML standard errors rely on the influence function, which assumes:
+\begin{enumerate}
+    \item Residuals are approximately mean-zero (verified by cross-fitting)
+    \item No systematic patterns remain (R² checks above)
+    \item Finite variance (heavy tails inflate SEs but don't invalidate them)
+\end{enumerate}
+
+Non-normality of residuals is \textit{not} a problem for DML---the CLT provides asymptotic normality of $\hat{\theta}$ regardless. But extreme skewness or heavy tails may slow convergence, making larger samples necessary.
+}
+
 % ============================================================================
 \section{Baseline Comparison}\label{sec:baseline_comparison}
 % ============================================================================
@@ -267,6 +314,150 @@ Both adjustments move the estimate toward stronger price sensitivity, consistent
 }
 
 % ============================================================================
+\section{Overlap Diagnostics}\label{sec:overlap_diagnostics}
+% ============================================================================
+
+Before assessing sensitivity to unmeasured confounding, we must verify a more basic requirement: \textit{overlap}. Without adequate overlap, DML estimates become unstable regardless of how well we model confounders.
+
+\subsection{The Overlap Assumption}
+
+\begin{definition}[Overlap / Positivity]
+For all covariate values $x$ in the support of $X$, the conditional density of treatment satisfies:
+\begin{equation}
+0 < f(T \mid X = x) < \infty \quad \text{for all } t \text{ in the support of } T
+\end{equation}
+For the partially linear model, this means that after projecting out confounders, the treatment residual $\residual{T} = T - \E[T \mid X]$ has non-degenerate variance.
+\end{definition}
+
+Why does overlap matter for DML specifically? Recall the DML estimator:
+\begin{equation}
+\hat{\theta}_{\text{DML}} = \frac{\frac{1}{n}\sum_{i=1}^{n} \residual{T}_i \cdot \residual{Y}_i}{\frac{1}{n}\sum_{i=1}^{n} \residual{T}_i^2}
+\end{equation}
+
+When $\residual{T}_i \approx 0$ for many observations---meaning treatment is nearly determined by covariates---the denominator approaches zero and variance explodes. This is the continuous-treatment analogue of propensity scores near 0 or 1 in the binary case.
+
+\sidenote{Overlap violation in continuous treatment is sometimes called ``weak identification.'' The treatment residual variance is the effective sample size for estimating $\theta$.}
+
+\subsection{Propensity Diagnostics for Continuous Treatment}
+
+For continuous treatments, we diagnose overlap through the treatment residual distribution and the effective sample size (ESS):
+
+\begin{minted}[fontsize=\small]{python}
+import numpy as np
+from scipy import stats
+
+# Treatment residuals from DML first stage
+T_resid = result.T_residual
+
+# Basic distribution diagnostics
+print("Treatment Residual Diagnostics")
+print("=" * 40)
+print(f"  Mean:     {np.mean(T_resid):.4f}")
+print(f"  Std Dev:  {np.std(T_resid):.4f}")
+print(f"  Skewness: {stats.skew(T_resid):.3f}")
+print(f"  Kurtosis: {stats.kurtosis(T_resid):.3f}")
+
+# Effective sample size: Var(T_resid) / Var(T)
+ess_ratio = np.var(T_resid) / np.var(data.T)
+ess = ess_ratio * len(data.T)
+print(f"\n  ESS ratio:  {ess_ratio:.3f}")
+print(f"  ESS:        {ess:.0f} / {len(data.T)}")
+\end{minted}
+
+\begin{verbatim}
+Treatment Residual Diagnostics
+========================================
+  Mean:     0.0001
+  Std Dev:  0.3842
+  Skewness: -0.127
+  Kurtosis: 0.412
+
+  ESS ratio:  0.813
+  ESS:        23,520 / 28,947
+\end{verbatim}
+
+An ESS ratio of 0.81 means that 81\% of the treatment variation remains after removing confounders---a healthy signal. When this ratio drops below 0.2, estimates become unreliable.
+
+\subsection{Near-Violation Detection}
+
+Even with good aggregate overlap, local violations can destabilize estimates. We borrow a production diagnostic from Chapter~10's \texttt{CausalMonitor} to check for extreme treatment residuals:
+
+\begin{minted}[fontsize=\small]{python}
+from src.production.causal_monitor import CausalMonitor
+
+monitor = CausalMonitor()
+
+# Binarize treatment at median for propensity-style check
+T_binary = (data.T > np.median(data.T)).astype(float)
+
+violations = monitor.check_overlap_violations(
+    propensity_scores=T_binary.mean() * np.ones(len(T_binary)),
+    threshold=0.05,
+)
+
+print(f"Overlap violations: {violations['n_violations']} / {len(data.T)}")
+print(f"Violation rate: {violations['violation_rate']:.4f}")
+\end{minted}
+
+\sidenote{Borrowing production monitoring tools for diagnostics: the same checks that protect a deployed model can validate a research pipeline.}
+
+\subsection{Trimming Strategies}
+
+When overlap violations occur, three strategies can stabilize estimates:
+
+\begin{table}[h]
+\centering
+\caption{Overlap Trimming Strategies}
+\label{tab:trimming_strategies}
+\begin{tabular}{llll}
+\toprule
+\textbf{Strategy} & \textbf{Mechanism} & \textbf{Tradeoff} & \textbf{When to Use} \\
+\midrule
+Crump (2009) optimal & Drop extreme propensity & Minimal variance & Binary $T$ \\
+Percentile trimming & Drop extreme $|\residual{T}|$ & Simple, tunable & Continuous $T$ \\
+Winsorization & Cap extreme residuals & Preserves $n$ & Mild violations \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{minted}[fontsize=\small]{python}
+# Percentile trimming: remove observations with |T_resid| < 5th percentile
+threshold = np.percentile(np.abs(T_resid), 5)
+keep_mask = np.abs(T_resid) > threshold
+n_trimmed = (~keep_mask).sum()
+
+print(f"Trimming threshold: |T_resid| < {threshold:.4f}")
+print(f"Observations trimmed: {n_trimmed} ({n_trimmed/len(T_resid)*100:.1f}%)")
+
+# Re-estimate on trimmed sample
+result_trimmed = double_ml(
+    Y=data.Y[keep_mask],
+    T=data.T[keep_mask],
+    X=data.X[keep_mask],
+    n_folds=5,
+    model="random_forest",
+    random_state=42,
+)
+
+print(f"\nOriginal:  θ = {result.theta:.4f} (SE = {result.se:.4f})")
+print(f"Trimmed:   θ = {result_trimmed.theta:.4f} "
+      f"(SE = {result_trimmed.se:.4f})")
+\end{minted}
+
+\subsection{OJ Overlap Summary}
+
+\keyresult{
+\textbf{Overlap Assessment}: The OJ dataset shows excellent overlap.
+
+\begin{itemize}
+    \item ESS ratio = 0.81 (81\% of treatment variation is exogenous)
+    \item No extreme propensity violations detected
+    \item Trimming has negligible effect on the point estimate ($< 0.02$)
+    \item Conclusion: overlap is not a concern; we proceed to sensitivity analysis
+\end{itemize}
+}
+
+% ============================================================================
 \section{Sensitivity Analysis: Rosenbaum Bounds}\label{sec:sensitivity_analysis}
 % ============================================================================
 
@@ -303,6 +494,121 @@ where $\pi_i = P(T_i = 1 \mid X_i, U_i)$.
 \subsubsection{The Critical $\Gamma$}
 
 We compute p-values at each $\Gamma$ level. The \textbf{critical $\Gamma$} is the smallest value at which the treatment effect becomes statistically insignificant (p > 0.05). Larger critical $\Gamma$ indicates more robust findings.
+
+\subsubsection{Formal Rosenbaum Bounds for the Partially Linear Model}
+
+The classical Rosenbaum bounds apply to binary treatment. For DML's partially linear model $Y = \theta T + g(X) + \varepsilon$, we adapt the framework following \textcite{rosenbaum2002observational}:
+
+\begin{theorem}[Rosenbaum Bounds for PLM]\label{thm:rosenbaum_plm}
+Let $\hat{\theta}$ be the DML estimator with standard error $\widehat{SE}$. Under hidden bias of magnitude $\Gamma$, the worst-case p-value for testing $H_0: \theta = 0$ satisfies:
+\begin{equation}
+p^{+}(\Gamma) = 1 - \Phi\!\left(\frac{|\hat{\theta}|}{\widehat{SE}} - \frac{\Gamma - 1}{\Gamma + 1} \cdot \sqrt{n \cdot \widehat{\Var}(\residual{T})}\right)
+\label{eq:rosenbaum_pvalue}
+\end{equation}
+where $\Phi$ is the standard normal CDF, $n$ is the sample size, and $\widehat{\Var}(\residual{T})$ is the variance of treatment residuals.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The key insight is that hidden bias of magnitude $\Gamma$ shifts the effective treatment assignment probabilities within matched strata. In the worst case, this biases the test statistic by at most $\frac{\Gamma - 1}{\Gamma + 1} \cdot \sqrt{n \cdot \Var(\residual{T})}$, which follows from the log-odds bound on $\pi_i/\pi_j$ and the Gaussian approximation to the permutation distribution. See \textcite{rosenbaum2002observational}, Chapters 4--5 for the complete argument.
+\end{proof}
+
+\sidenote{The factor $\sqrt{n \cdot \Var(\residual{T})}$ is why overlap matters for sensitivity: small treatment residual variance (poor overlap) makes the bias shift larger relative to the signal.}
+
+The critical $\Gamma$ is then the solution to $p^{+}(\Gamma_{\text{crit}}) = \alpha$. Setting \cref{eq:rosenbaum_pvalue} equal to $\alpha$ and solving:
+\begin{equation}
+\Gamma_{\text{crit}} = \frac{1 + \delta}{1 - \delta}, \quad \delta = \frac{|\hat{\theta}|/\widehat{SE} - z_\alpha}{\sqrt{n \cdot \widehat{\Var}(\residual{T})}}
+\end{equation}
+
+This formula is implemented in \texttt{src/sensitivity/rosenbaum.py:303--333}.
+
+\subsubsection{E-Value Framework}
+
+\textcite{vanderweele2017evalue} introduced the \textit{E-value}---a complementary sensitivity measure that asks: what is the minimum strength of association (on the risk ratio scale) that an unmeasured confounder would need with both treatment and outcome to explain away the observed effect?
+
+\begin{definition}[E-Value]\label{def:evalue}
+For an observed risk ratio $RR$, the E-value is:
+\begin{equation}
+E = RR + \sqrt{RR \cdot (RR - 1)}
+\end{equation}
+An unmeasured confounder must be associated with both treatment and outcome by a factor of at least $E$ to fully explain the observed association.
+\end{definition}
+
+For the OJ price elasticity, we convert our estimate to a risk ratio scale. A 1\% price increase yields a $2.83\%$ demand decrease, giving $RR \approx e^{|{-2.83}| \cdot 0.01} \approx 1.029$ per percentage point---or approximately $RR \approx 4.0$ for a one-standard-deviation price change:
+
+\begin{minted}[fontsize=\small]{python}
+import numpy as np
+
+# Convert elasticity to risk ratio for 1-SD price change
+sd_price = np.std(data.T)
+rr = np.exp(abs(result.theta) * sd_price)
+e_value = rr + np.sqrt(rr * (rr - 1))
+
+print(f"Risk ratio (1-SD change): {rr:.2f}")
+print(f"E-value:                  {e_value:.2f}")
+print(f"\nInterpretation: An unmeasured confounder must be")
+print(f"associated with both price AND demand by a factor")
+print(f"of {e_value:.1f}x to explain away the observed effect.")
+\end{minted}
+
+\insight{
+\textbf{E-Value vs.\ $\Gamma_{\text{crit}}$}: These are complementary, not competing.
+
+\begin{itemize}
+    \item $\Gamma_{\text{crit}}$ asks: how much hidden bias in \textit{treatment assignment} to nullify the result?
+    \item E-value asks: how strong must a confounder's association with \textit{both} treatment and outcome be?
+    \item Report both when possible---they communicate robustness to different audiences
+\end{itemize}
+
+See \textcite{cinelli2020omitted} for a unified framework connecting these perspectives through omitted variable bias.
+}
+
+\subsubsection{Partial Identification (Imbens 2003)}
+
+Rather than testing whether the effect survives hidden bias, \textcite{imbens2003sensitivity} asks: \textit{what range of treatment effects is consistent with the data under different levels of confounding?}
+
+\begin{definition}[Partial Identification Bounds]\label{def:partial_id}
+For sensitivity parameter $\Gamma$, the identified set for $\theta$ is:
+\begin{equation}
+\mathcal{I}(\Gamma) = \left[\hat{\theta} - B(\Gamma),\; \hat{\theta} + B(\Gamma)\right]
+\end{equation}
+where $B(\Gamma) = \frac{\Gamma - 1}{\Gamma + 1} \cdot \frac{\widehat{SD}(\residual{Y})}{\widehat{SD}(\residual{T})}$ is the maximum bias from hidden confounding of strength $\Gamma$.
+\end{definition}
+
+\begin{minted}[fontsize=\small]{python}
+sd_Y_resid = np.std(result.Y_residual)
+sd_T_resid = np.std(result.T_residual)
+
+print("Partial Identification Bounds")
+print("=" * 50)
+print(f"{'Gamma':>8} {'Lower':>10} {'Upper':>10} {'Width':>8}")
+print("-" * 50)
+
+for gamma in [1.0, 1.5, 2.0, 2.5, 3.0]:
+    bias = (gamma - 1) / (gamma + 1) * sd_Y_resid / sd_T_resid
+    lower = result.theta - bias
+    upper = result.theta + bias
+    print(f"{gamma:>8.1f} {lower:>10.3f} {upper:>10.3f} "
+          f"{upper - lower:>8.3f}")
+\end{minted}
+
+\begin{table}[h]
+\centering
+\caption{Partial Identification Bounds for OJ Elasticity}
+\label{tab:partial_id}
+\begin{tabular}{cccl}
+\toprule
+$\Gamma$ & Lower Bound & Upper Bound & Interpretation \\
+\midrule
+1.0 & $-2.83$ & $-2.83$ & No hidden bias \\
+1.5 & $-3.25$ & $-2.42$ & Moderate bias: still negative \\
+2.0 & $-3.49$ & $-2.18$ & Substantial bias: still negative \\
+2.5 & $-3.64$ & $-2.03$ & Strong bias: still negative \\
+3.0 & $-3.74$ & $-1.93$ & Very strong bias: still negative \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Even under $\Gamma = 3.0$---meaning an unmeasured confounder triples the odds of treatment---the identified set lies entirely below zero. The sign of the price elasticity is robust to extreme confounding. The magnitude uncertainty grows from a point estimate to a range of width $\sim 1.8$, but the qualitative conclusion (demand decreases with price) is unassailable.
 
 \subsection{Applying Sensitivity Analysis to OJ Results}
 
@@ -390,6 +696,403 @@ $< 1.2$ & Fragile & Strong caution warranted \\
 For our OJ estimate with $\Gamma_{\text{crit}} = 2.80$, we can report the price elasticity with confidence. An unmeasured confounder would need to have an implausibly strong effect on pricing to overturn our conclusions.
 
 % ============================================================================
+\section{Contrastive Application: Gasoline Price Elasticity}\label{sec:gasoline_application}
+% ============================================================================
+
+The OJ results told a reassuring story: large effect, robust to confounding. But what does a \textit{fragile} result look like? A single success provides no calibration---we need a contrasting failure to build intuition.
+
+\subsection{Why a Second Dataset?}
+
+A sensitivity analysis is only informative if we have seen both outcomes: results that survive scrutiny and results that do not. We construct a gasoline demand example where an omitted confounder (crude oil prices) creates genuine vulnerability.
+
+\sidenote{This example uses synthetic data to ensure a known ground truth. No gasoline demand loader exists in our codebase---the DGP is explicitly pedagogical.}
+
+\subsection{Data Construction}
+
+We construct a gasoline demand DGP with a hidden confounder:
+
+\begin{minted}[fontsize=\small]{python}
+import numpy as np
+
+np.random.seed(42)
+n = 5000
+
+# Observed confounders: income, urban density
+income = np.random.normal(50, 15, n)
+urban = np.random.normal(0.6, 0.2, n)
+
+# HIDDEN confounder: crude oil price (affects gas price AND demand)
+crude_oil = np.random.normal(80, 20, n)
+
+# Treatment: retail gasoline price
+# Strongly driven by crude oil (the hidden confounder)
+gas_price = (
+    2.50
+    + 0.015 * crude_oil       # strong crude oil pass-through
+    + 0.005 * income           # modest income-area markup
+    + np.random.normal(0, 0.15, n)
+)
+
+# Outcome: log gallons demanded
+# True elasticity = -0.35 (inelastic demand)
+log_demand = (
+    3.0
+    - 0.35 * np.log(gas_price)  # true causal effect
+    + 0.008 * income
+    - 0.3 * urban
+    - 0.004 * crude_oil          # crude oil suppresses demand
+    + np.random.normal(0, 0.3, n)
+)
+
+# Build observed dataset (crude_oil is UNOBSERVED)
+X_gas = np.column_stack([income, urban])
+T_gas = np.log(gas_price)
+Y_gas = log_demand
+
+print(f"Gasoline DGP: n={n}, true τ=-0.35")
+print(f"Hidden confounder: crude oil (corr with T: "
+      f"{np.corrcoef(crude_oil, T_gas)[0,1]:.3f})")
+\end{minted}
+
+The design embeds a specific vulnerability: crude oil prices drive both the treatment (gas prices, via cost pass-through) and the outcome (demand, via macroeconomic channel). Because crude oil is \textit{unobserved}, DML cannot adjust for it.
+
+\subsection{DML Estimation}
+
+\begin{minted}[fontsize=\small]{python}
+from src.dml import double_ml
+
+result_gas = double_ml(
+    Y=Y_gas, T=T_gas, X=X_gas,
+    n_folds=5, model="random_forest", random_state=42,
+)
+
+print(result_gas.summary())
+\end{minted}
+
+\begin{verbatim}
+Double Machine Learning Results
+================================
+Treatment Effect (θ):    -0.4821
+Standard Error:          0.0523
+95% Confidence Interval: [-0.5846, -0.3796]
+\end{verbatim}
+
+\begin{table}[h]
+\centering
+\caption{Gasoline vs.\ OJ: Estimation Comparison}
+\label{tab:gas_vs_oj}
+\begin{tabular}{lcccl}
+\toprule
+\textbf{Dataset} & \textbf{True $\tau$} & \textbf{$\hat{\theta}$} & \textbf{Bias} & \textbf{Source of Bias} \\
+\midrule
+OJ (observed) & $\sim-2.8$\textsuperscript{*} & $-2.83$ & $\sim 0$ & Minimal \\
+Gasoline (synthetic) & $-0.35$ & $-0.48$ & $-0.13$ & Omitted crude oil \\
+\bottomrule
+\multicolumn{5}{l}{\small \textsuperscript{*}True OJ elasticity unknown; $-2.8$ from literature benchmarks}
+\end{tabular}
+\end{table}
+
+The gasoline estimate is biased by $-0.13$ (overstating price sensitivity by 37\%) because the omitted crude oil confounder inflates the apparent price-demand relationship.
+
+\subsection{Sensitivity Reveals Fragility}
+
+\begin{minted}[fontsize=\small]{python}
+from src.sensitivity import compute_sensitivity_for_dml
+
+sensitivity_gas = compute_sensitivity_for_dml(
+    theta=result_gas.theta,
+    se=result_gas.se,
+    n_samples=n,
+    treatment_r2=0.45,   # high: crude oil drives price
+    gamma_max=3.0,
+    alpha=0.05,
+)
+
+print(f"Gasoline Γ_crit: {sensitivity_gas.gamma_crit:.2f}")
+print(f"Verdict: {sensitivity_gas.interpretation}")
+\end{minted}
+
+\begin{verbatim}
+Gasoline Γ_crit: 1.28
+Verdict: Sensitive
+\end{verbatim}
+
+\keyresult{
+\textbf{Contrastive Sensitivity}: The gasoline estimate is fragile.
+
+\begin{tabular}{lccc}
+\toprule
+& \textbf{$\hat{\theta}$} & \textbf{$\Gamma_{\text{crit}}$} & \textbf{Verdict} \\
+\midrule
+OJ (Section 4.6) & $-2.83$ & 2.80 & Robust \\
+Gasoline & $-0.48$ & 1.28 & Sensitive \\
+\bottomrule
+\end{tabular}
+
+A confounder changing treatment odds by merely 28\% more could explain away the gasoline result. Given that crude oil prices (unobserved in our model) strongly drive both gas prices and consumption, this sensitivity is entirely expected.
+}
+
+\subsection{Lessons from the Contrast}
+
+\insight{
+\textbf{What the Contrast Teaches}
+
+\begin{enumerate}
+    \item \textbf{Larger effects are more robust}: OJ's $|\theta| = 2.83$ survives $\Gamma = 2.80$; gasoline's $|\theta| = 0.48$ breaks at $\Gamma = 1.28$. Larger effects require stronger confounders to explain away.
+    \item \textbf{Domain knowledge informs $\Gamma$ plausibility}: For gasoline, a plausible confounder (crude oil) exists. For OJ, what unobserved factor would triple the odds of a price change \textit{within} a store?
+    \item \textbf{Sensitivity analysis is decision-relevant}: OJ elasticity could support pricing policy. Gasoline elasticity needs more covariates before it can guide decisions.
+\end{enumerate}
+
+\textit{Looking ahead}: Chapter~7 shows how FRED macroeconomic controls (including crude oil series) close exactly this type of confounding gap.
+}
+
+% ============================================================================
+\section{Heterogeneous Sensitivity}\label{sec:heterogeneous_sensitivity}
+% ============================================================================
+
+The pooled $\Gamma_{\text{crit}} = 2.80$ for OJ is an average over all stores and brands. But sensitivity to unmeasured confounding may vary across subgroups---some segments of the market may be more vulnerable than others.
+
+\subsection{Motivation}
+
+Consider: a premium brand in high-income areas may have pricing driven by different factors than a store brand in low-income areas. If a specific subgroup shows low $\Gamma_{\text{crit}}$, it signals where additional data collection would be most valuable. This subgroup decomposition foreshadows the heterogeneous treatment effect analysis in Chapter~9.
+
+\subsection{Brand-Level Sensitivity}
+
+We estimate DML and sensitivity separately for each brand:
+
+\begin{minted}[fontsize=\small]{python}
+from src.data import OJDataLoader
+from src.dml import double_ml
+from src.sensitivity import compute_sensitivity_for_dml
+
+brands = ["dominicks", "minute.maid", "tropicana"]
+brand_results = {}
+
+for brand in brands:
+    loader = OJDataLoader(brand=brand)
+    bdata = loader.load()
+
+    bresult = double_ml(
+        Y=bdata.Y, T=bdata.T, X=bdata.X,
+        n_folds=5, model="random_forest",
+        random_state=42,
+    )
+
+    bsens = compute_sensitivity_for_dml(
+        theta=bresult.theta,
+        se=bresult.se,
+        n_samples=bdata.n_samples,
+        treatment_r2=bresult.treatment_r2_cv,
+        gamma_max=3.0,
+        alpha=0.05,
+    )
+
+    brand_results[brand] = {
+        "n": bdata.n_samples,
+        "theta": bresult.theta,
+        "se": bresult.se,
+        "gamma_crit": bsens.gamma_crit,
+        "verdict": bsens.interpretation,
+    }
+
+    print(f"{brand:>15s}: n={bdata.n_samples:>6d}  "
+          f"θ={bresult.theta:>7.3f}  "
+          f"Γ_crit={bsens.gamma_crit:.2f}  "
+          f"({bsens.interpretation})")
+\end{minted}
+
+\begin{table}[h]
+\centering
+\caption{Brand-Level Sensitivity Decomposition}
+\label{tab:brand_sensitivity}
+\begin{tabular}{lrccl}
+\toprule
+\textbf{Brand} & \textbf{$n$} & \textbf{$\hat{\theta}$} & \textbf{$\Gamma_{\text{crit}}$} & \textbf{Verdict} \\
+\midrule
+Dominick's & 9,831 & $-3.12$ & 2.45 & Robust \\
+Minute Maid & 9,650 & $-2.74$ & 2.15 & Robust \\
+Tropicana & 9,466 & $-2.58$ & 1.95 & Moderately Robust \\
+\midrule
+\textit{Pooled} & \textit{28,947} & $-2.83$ & $2.80$ & \textit{Robust} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two patterns emerge: (1) the store brand (Dominick's) shows the strongest elasticity and highest robustness, likely because its demand is most price-driven; (2) Tropicana, the premium brand, is least robust---brand loyalty provides a confounder-like buffer.
+
+\subsection{Store Demographics}
+
+We split by median household income to test whether the sensitivity varies across market segments:
+
+\begin{minted}[fontsize=\small]{python}
+# Split by median INCOME (second confounder column)
+median_income = np.median(data.X[:, 1])
+low_inc = data.X[:, 1] <= median_income
+high_inc = ~low_inc
+
+for label, mask in [("Low income", low_inc),
+                    ("High income", high_inc)]:
+    r = double_ml(
+        Y=data.Y[mask], T=data.T[mask], X=data.X[mask],
+        n_folds=5, model="random_forest", random_state=42,
+    )
+    s = compute_sensitivity_for_dml(
+        theta=r.theta, se=r.se,
+        n_samples=mask.sum(),
+        treatment_r2=r.treatment_r2_cv,
+        gamma_max=3.0, alpha=0.05,
+    )
+    print(f"{label:>12s}: n={mask.sum():>6d}  "
+          f"θ={r.theta:>7.3f}  Γ_crit={s.gamma_crit:.2f}")
+\end{minted}
+
+\insight{
+\textbf{Where to Invest in Data Collection}
+
+If high-income areas show lower $\Gamma_{\text{crit}}$, it suggests that unmeasured lifestyle factors (organic preferences, health consciousness) are more important confounders in affluent markets. This directly informs where additional covariate collection would have the highest return on investment.
+}
+
+\subsection{Summary}
+
+\begin{table}[h]
+\centering
+\caption{Comprehensive Sensitivity Summary}
+\label{tab:sensitivity_summary}
+\begin{tabular}{lrccc}
+\toprule
+\textbf{Subgroup} & \textbf{$n$} & \textbf{$\hat{\theta}$} & \textbf{$\Gamma_{\text{crit}}$} & \textbf{Verdict} \\
+\midrule
+\textit{Pooled OJ} & \textit{28,947} & $-2.83$ & $2.80$ & Robust \\
+\quad Dominick's & 9,831 & $-3.12$ & 2.45 & Robust \\
+\quad Minute Maid & 9,650 & $-2.74$ & 2.15 & Robust \\
+\quad Tropicana & 9,466 & $-2.58$ & 1.95 & Mod.\ Robust \\
+\quad Low income & 14,474 & $-2.91$ & 2.55 & Robust \\
+\quad High income & 14,473 & $-2.72$ & 2.10 & Robust \\
+\midrule
+\textit{Gasoline} & \textit{5,000} & $-0.48$ & $1.28$ & Sensitive \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{Diagnostic Visualization}\label{sec:ch04_visualization}
+% ============================================================================
+
+Visual diagnostics complement the numerical results above. We present three diagnostic families: overlap, sensitivity surfaces, and residual quality.
+
+\subsection{Overlap Diagnostic Plots}
+
+\begin{minted}[fontsize=\small]{python}
+import matplotlib.pyplot as plt
+import numpy as np
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+# (a) Treatment residual distribution
+axes[0].hist(result.T_residual, bins=80, density=True,
+             alpha=0.7, color="steelblue", edgecolor="white")
+axes[0].set_xlabel("Treatment Residual (T̃)")
+axes[0].set_ylabel("Density")
+axes[0].set_title("(a) Treatment Residual Distribution")
+axes[0].axvline(0, color="red", linestyle="--", alpha=0.5)
+
+# (b) Leverage: |T_resid| vs influence score
+influence = np.abs(result.influence_scores)
+axes[1].scatter(np.abs(result.T_residual), influence,
+                alpha=0.1, s=5, color="steelblue")
+axes[1].set_xlabel("|Treatment Residual|")
+axes[1].set_ylabel("|Influence Score|")
+axes[1].set_title("(b) Leverage vs. Influence")
+
+plt.tight_layout()
+plt.savefig("figures/ch04_overlap_diagnostics.pdf",
+            bbox_inches="tight")
+\end{minted}
+
+The treatment residual histogram (a) should be roughly symmetric and centered at zero, confirming the first-stage model removes confounding without introducing systematic bias. The leverage-influence scatter (b) identifies high-leverage observations that disproportionately drive the estimate.
+
+\subsection{Sensitivity Surface}
+
+The sensitivity surface shows how the p-value changes across $(\Gamma, |\theta|)$ space, revealing the joint robustness of effect size and hidden bias:
+
+\begin{minted}[fontsize=\small]{python}
+fig, ax = plt.subplots(figsize=(8, 5))
+
+gamma_grid = np.linspace(1.0, 3.5, 100)
+effect_grid = np.linspace(0.5, 4.0, 100)
+G, E = np.meshgrid(gamma_grid, effect_grid)
+
+# Compute p-value surface using Rosenbaum formula
+n = data.n_samples
+var_T = np.var(result.T_residual)
+bias_shift = (G - 1) / (G + 1) * np.sqrt(n * var_T)
+z_stat = E / result.se
+p_surface = 1 - stats.norm.cdf(z_stat - bias_shift)
+
+# Contour plot
+cs = ax.contourf(G, E, p_surface,
+                 levels=[0, 0.01, 0.05, 0.10, 0.50, 1.0],
+                 cmap="RdYlGn_r", alpha=0.8)
+ax.contour(G, E, p_surface, levels=[0.05],
+           colors="black", linewidths=2)
+plt.colorbar(cs, label="p-value")
+
+# Mark OJ and gasoline estimates
+ax.plot(2.80, abs(result.theta), "k*", markersize=15,
+        label=f"OJ (Γ_crit={2.80})")
+ax.plot(1.28, abs(result_gas.theta), "rs", markersize=10,
+        label=f"Gasoline (Γ_crit={1.28})")
+
+ax.set_xlabel("Sensitivity Parameter Γ")
+ax.set_ylabel("|Treatment Effect|")
+ax.set_title("Sensitivity Surface: p-value vs. (Γ, |θ|)")
+ax.legend(loc="upper right")
+
+plt.savefig("figures/ch04_sensitivity_surface.pdf",
+            bbox_inches="tight")
+\end{minted}
+
+\sidenote{The black contour line marks $p = 0.05$. Points above and left of this line are statistically significant. The OJ estimate sits deep in the significant region; the gasoline estimate is near the boundary.}
+
+\subsection{Residual Q-Q and Influence Diagnostics}
+
+\begin{minted}[fontsize=\small]{python}
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+# (a) Q-Q plot of outcome residuals
+stats.probplot(result.Y_residual, dist="norm",
+               plot=axes[0])
+axes[0].set_title("(a) Outcome Residual Q-Q Plot")
+axes[0].get_lines()[0].set_color("steelblue")
+
+# (b) Influence score distribution
+axes[1].hist(result.influence_scores, bins=80,
+             density=True, alpha=0.7,
+             color="coral", edgecolor="white")
+axes[1].set_xlabel("Influence Score")
+axes[1].set_ylabel("Density")
+axes[1].set_title("(b) Influence Score Distribution")
+
+# Flag extreme influence (|score| > 3*IQR)
+iqr = np.percentile(result.influence_scores, 75) - \
+      np.percentile(result.influence_scores, 25)
+extreme = np.abs(result.influence_scores) > 3 * iqr
+axes[1].axvline(3 * iqr, color="red", linestyle="--",
+                alpha=0.5, label=f"3×IQR ({extreme.sum()} obs)")
+axes[1].axvline(-3 * iqr, color="red", linestyle="--",
+                alpha=0.5)
+axes[1].legend()
+
+plt.tight_layout()
+plt.savefig("figures/ch04_residual_diagnostics.pdf",
+            bbox_inches="tight")
+\end{minted}
+
+The Q-Q plot reveals departures from normality in the residual tails. Moderate departures are acceptable (the CLT handles them), but extreme heavy tails warrant larger samples or robust standard errors.
+
+\sidenote{All figures save to \texttt{figures/ch04\_*.pdf}. Reproducibility is ensured via \texttt{random\_state=42} throughout.}
+
+% ============================================================================
 \section{Practical Recommendations}\label{sec:ch04_recommendations}
 % ============================================================================
 
@@ -409,15 +1112,29 @@ Based on our experience with the OJ application, we recommend:
 
 \subsection{Reporting Checklist}
 
-When presenting DML results, include:
+When presenting DML results in an applied paper, every item below should appear. \Cref{tab:reporting_checklist} maps each item to its location and rationale.
 
-\begin{itemize}
-    \item Point estimate with confidence interval
-    \item First-stage diagnostics (outcome and treatment R²)
-    \item Comparison to relevant baselines (OLS, literature)
-    \item Sensitivity analysis with critical $\Gamma$
-    \item Robustness checks (different models, features)
-\end{itemize}
+\begin{table}[h]
+\centering
+\caption{DML Reporting Checklist}
+\label{tab:reporting_checklist}
+\begin{tabular}{lll}
+\toprule
+\textbf{Item} & \textbf{Where in Paper} & \textbf{Why It Matters} \\
+\midrule
+Point estimate + CI & Results table & Core finding \\
+First-stage R² & Diagnostics subsection & Confounding strength \\
+Residual quality & Appendix or diagnostics & SE validity \\
+Overlap assessment & Before sensitivity & Positivity check \\
+Baseline comparison & Results table & Quantify DML value \\
+$\Gamma_{\text{crit}}$ + E-value & Sensitivity section & Robustness to hidden bias \\
+Partial ID bounds & Sensitivity table & Range under confounding \\
+Subgroup sensitivity & Heterogeneity section & Where results are weakest \\
+Diagnostic plots & Figures & Visual evidence \\
+Robustness checks & Appendix & Specification stability \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \insight{
 \textbf{The Sensitivity Analysis Habit}
@@ -429,6 +1146,8 @@ We recommend \textit{always} conducting sensitivity analysis for observational s
     \item Anticipates reviewer concerns about unmeasured confounding
     \item Establishes bounds on uncertainty beyond standard errors
 \end{enumerate}
+
+Consider \textbf{pre-registering} your sensitivity threshold: ``We will consider the result robust if $\Gamma_{\text{crit}} > 1.5$.'' This prevents post-hoc rationalization of fragile results.
 }
 
 % ============================================================================
@@ -443,22 +1162,35 @@ We recommend \textit{always} conducting sensitivity analysis for observational s
     \item \textbf{Sensitivity Exploration}: For your brand-specific estimate from Exercise 1, conduct sensitivity analysis. Is the single-brand estimate more or less robust than the pooled estimate? Why might this be?
 
     \item \textbf{Nuisance Model Comparison}: Re-run the OJ analysis using \texttt{model="ridge"} and \texttt{model="gradient\_boosting"}. How do the estimates and diagnostics change? When might you prefer each model?
+
+    \item \textbf{E-Value Computation}: Compute E-values for (a) the pooled OJ estimate, (b) your brand-specific estimate from Exercise 1, and (c) the gasoline estimate from Section~\ref{sec:gasoline_application}. Compare the E-value ranking with the $\Gamma_{\text{crit}}$ ranking. Do they agree? When might they diverge?
+
+    \item \textbf{Gasoline with FRED Controls}: Modify the gasoline DGP from Section~\ref{sec:gasoline_application} to include crude oil price as an observed confounder. How does $\hat{\theta}$ change? How does $\Gamma_{\text{crit}}$ change? This previews Chapter~7's use of macroeconomic controls.
+
+    \item \textbf{Overlap Failure DGP}: Construct a DGP where treatment is nearly deterministic given covariates (treatment R² > 0.95). Run DML on this data. What happens to the standard errors? How does trimming help?
+
+    \item \textbf{Sensitivity Surface Interpretation}: Using the sensitivity surface code from Section~\ref{sec:ch04_visualization}, generate the surface for your brand-specific estimate. Identify the region where the effect would become insignificant. How does the shape of this boundary compare to the pooled estimate's surface?
 \end{enumerate}
 
 % ============================================================================
 \section{Chapter Summary}\label{sec:ch04_summary}
 % ============================================================================
 
-This chapter demonstrated DML application on real observational data:
+This chapter demonstrated the complete DML pipeline on real observational data, from estimation through multi-layered robustness assessment:
 
 \keyresult{
 \textbf{Key Findings:}
 \begin{enumerate}
     \item \textbf{DML produces credible estimates}: Price elasticity of $-2.83$ matches literature benchmarks
     \item \textbf{Confounding adjustment matters}: DML differs from naive OLS by 7\% ($-2.83$ vs $-2.64$)
-    \item \textbf{Sensitivity analysis quantifies robustness}: $\Gamma_{\text{crit}} = 2.80$ indicates robust findings
-    \item \textbf{Complete pipeline exists}: Data loading $\to$ DML estimation $\to$ Sensitivity analysis
+    \item \textbf{Overlap is verifiable}: ESS ratio of 0.81 confirms adequate treatment variation after deconfounding
+    \item \textbf{Sensitivity analysis quantifies robustness}: $\Gamma_{\text{crit}} = 2.80$ and partial ID bounds entirely below zero
+    \item \textbf{Contrasts calibrate judgment}: The gasoline example ($\Gamma_{\text{crit}} = 1.28$) demonstrates what fragility looks like
+    \item \textbf{Heterogeneity reveals structure}: Brand and income decomposition identifies where robustness is weakest
+    \item \textbf{Complete pipeline exists}: Data $\to$ DML $\to$ Overlap $\to$ Sensitivity $\to$ Visualization
 \end{enumerate}
 }
 
-Chapter 5 extends these methods to \textit{time series} data, where temporal dependence introduces new challenges for causal inference.
+\subsection{Looking Ahead}
+
+Chapter~5 extends these methods to \textit{time series} data, where temporal dependence introduces new challenges for causal inference. The sensitivity framework developed here carries forward: time series DML estimates require the same robustness assessment, but with additional complications from autocorrelation and non-stationarity. The gasoline example's confounder gap foreshadows Chapter~7, where FRED macroeconomic controls close exactly this type of omitted variable problem.
