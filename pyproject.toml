@@ -100,7 +100,8 @@ markers = [
     "tier4: Full replication + stress - full MC, published results, <30min each",
     "network: requires network access (deselect with '-m not network')",
 ]
-timeout = 120
+# NOTE: Per-tier timeouts enforced in test/conftest.py via pytest_collection_modifyitems.
+# Do NOT set a global timeout here — it conflicts with tier3 (300s) and tier4 (1800s).
 
 [tool.coverage.run]
 source = ["src"]

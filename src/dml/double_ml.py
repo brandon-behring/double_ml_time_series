@@ -47,6 +47,7 @@ Econometrica, 56(4), 931-954.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Literal, Optional, Union, cast
 
@@ -57,6 +58,10 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import KFold
+
+# Configurable parallelism: production uses -1 (all cores), tests use 1 (sequential).
+# Set DML_N_JOBS=1 in test/conftest.py to avoid multiprocessing hangs under Python 3.13.
+_DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 
 
 @dataclass
@@ -145,7 +150,7 @@ def _get_nuisance_model(
             max_depth=5,
             min_samples_leaf=10,
             random_state=42,
-            n_jobs=-1,
+            n_jobs=_DEFAULT_N_JOBS,
         )
     elif model_type == "gradient_boosting":
         return GradientBoostingRegressor(

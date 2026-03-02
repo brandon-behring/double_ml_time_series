@@ -14,6 +14,13 @@ Running tiers:
     pytest                               # Full suite (~2h)
 """
 
+import os
+
+# Force sequential execution in tests to avoid multiprocessing hangs
+# under Python 3.13's stricter inspect.signature() in forked workers.
+# Must be set BEFORE any src/ imports that read DML_N_JOBS at module level.
+os.environ.setdefault("DML_N_JOBS", "1")
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -107,6 +114,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:
     """
     for item in items:
         # Find the most specific tier marker on this test
+        has_tier = False
         for tier_name in ("tier4", "tier3", "tier2", "tier1"):
             marker = item.get_closest_marker(tier_name)
             if marker is not None:
@@ -114,7 +122,12 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:
                 # Only set timeout if not already explicitly overridden
                 if item.get_closest_marker("timeout") is None:
                     item.add_marker(pytest.mark.timeout(timeout))
+                has_tier = True
                 break
+
+        # Fallback: unmarked tests get a safe default timeout (120s)
+        if not has_tier and item.get_closest_marker("timeout") is None:
+            item.add_marker(pytest.mark.timeout(120))
 
 
 # ---------------------------------------------------------------------------

@@ -130,6 +130,7 @@ class TestFourZeroOneKReplicationPreprocessing:
 
 
 @pytest.mark.tier4
+@pytest.mark.network
 class TestFourZeroOneKReplicationPLRRandomForest:
     """Test PLR Random Forest replication."""
 
@@ -196,6 +197,7 @@ class TestFourZeroOneKReplicationPLRRandomForest:
 
 
 @pytest.mark.tier4
+@pytest.mark.network
 class TestFourZeroOneKReplicationPLRLasso:
     """Test PLR Lasso replication."""
 
@@ -227,6 +229,7 @@ class TestFourZeroOneKReplicationPLRLasso:
 
 
 @pytest.mark.tier4
+@pytest.mark.network
 class TestFourZeroOneKReplicationComparison:
     """Test comparison with published results."""
 
@@ -276,6 +279,7 @@ class TestFourZeroOneKReplicationComparison:
 
 
 @pytest.mark.tier4
+@pytest.mark.network
 class TestFourZeroOneKReplicationResultDataclass:
     """Test ReplicationResult dataclass."""
 
@@ -311,6 +315,7 @@ class TestFourZeroOneKReplicationResultDataclass:
 
 
 @pytest.mark.tier4
+@pytest.mark.network
 class TestFourZeroOneKReplicationEdgeCases:
     """Test edge cases and robustness."""
 
@@ -348,6 +353,7 @@ class TestFourZeroOneKReplicationEdgeCases:
 
 
 @pytest.mark.tier4
+@pytest.mark.network
 class TestFourZeroOneKReplicationIntegration:
     """Integration tests with realistic scenarios."""
 

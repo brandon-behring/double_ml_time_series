@@ -1,15 +1,9 @@
-"""
-Template for implementing a new validation method.
+"""Bias validation via Monte Carlo simulation.
 
-Copy this file and replace TODOs with your validation logic.
-This template is optimized for Phase 1B validation methods.
-
-Usage:
-    1. Copy this file: cp templates/validation_method_template.py src/validation/my_method.py
-    2. Replace "Bias" with your method name (e.g., "BiasValidation")
-    3. Implement the TODOs
-    4. Write tests in test/validation/test_my_method.py
-    5. Run: pytest test/validation/test_my_method.py
+Validates DML estimator bias, MSE, and confidence interval coverage
+through repeated Monte Carlo draws from a known DGP. Uses EconML's
+LinearDML with bootstrap-based hypothesis tests for statistical and
+practical significance.
 """
 
 from typing import Dict, Any, Optional, Literal
@@ -22,11 +16,12 @@ from src.validation.validation_result import ValidationResult
 
 
 class BiasValidation:
-    """
-    Validation method template.
+    """Validates DML estimator bias through Monte Carlo simulation.
 
-    TODO: Replace with your validation method description.
-    Example: "Validates DML estimator bias through Monte Carlo simulation."
+    Runs ``n_simulations`` DML fits on fresh DGP draws, computing point
+    estimates and confidence intervals per draw. Aggregates bias, MSE,
+    and CI coverage, then applies statistical hypothesis tests (t-test
+    for bias, binomial test for coverage) with Bonferroni correction.
 
     Args:
         n_simulations: Number of Monte Carlo runs

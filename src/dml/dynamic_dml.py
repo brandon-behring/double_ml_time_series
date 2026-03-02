@@ -32,6 +32,7 @@ Usage:
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Any, List, Literal, Optional, Tuple, Union, cast
 
@@ -55,6 +56,9 @@ ArrayLike = Union[np.ndarray, List[float]]
 ModelType = Literal["ridge", "lasso", "random_forest", "gradient_boosting"]
 CVStrategy = Literal["time_series_split", "blocked_cv", "purged_cv"]
 KernelType = Literal["bartlett", "parzen", "quadratic_spectral"]
+
+# Configurable parallelism: production uses -1 (all cores), tests use 1 (sequential).
+_DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 
 
 @dataclass
@@ -155,7 +159,7 @@ def _get_nuisance_model(
             max_depth=5,
             min_samples_leaf=10,
             random_state=random_state,
-            n_jobs=-1,
+            n_jobs=_DEFAULT_N_JOBS,
         )
     elif model_type == "gradient_boosting":
         return GradientBoostingRegressor(
