@@ -29,8 +29,7 @@ from src.validation.validation_result import ValidationResult
 class _Validatable(Protocol):
     """Protocol for objects that support validate(dgp) -> ValidationResult."""
 
-    def validate(self, dgp: DGPGenerator) -> ValidationResult:
-        ...
+    def validate(self, dgp: DGPGenerator) -> ValidationResult: ...
 
 
 class BaselineComparison:

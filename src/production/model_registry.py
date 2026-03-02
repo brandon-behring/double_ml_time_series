@@ -158,9 +158,10 @@ class DMLModelVersion:
             hasher.update(out_bytes)
         return hasher.hexdigest()
 
-    def get_nuisance_models(
-        self, fold: Optional[int] = None
-    ) -> Union[Dict[int, Tuple[Any, Any]], Tuple[Any, Any],]:
+    def get_nuisance_models(self, fold: Optional[int] = None) -> Union[
+        Dict[int, Tuple[Any, Any]],
+        Tuple[Any, Any],
+    ]:
         """
         Deserialize and return nuisance models.
 
