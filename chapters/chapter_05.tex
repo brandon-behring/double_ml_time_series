@@ -227,7 +227,7 @@ Three commonly used kernels (implemented in \texttt{src/dml/hac.py}):
     Optimal for minimizing MSE; non-truncating.
 \end{enumerate}
 
-\begin{figure}[h]
+\begin{figure}[htbp]
 \centering
 % Placeholder for kernel comparison figure
 \begin{tabular}{ccc}
@@ -444,7 +444,7 @@ def generate_ts_dgp(n, tau=2.0, rho_T=0.3, rho_eps=0.2, seed=None):
 
 \subsection{Simulation Results}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{DynamicDML Monte Carlo Results ($n=500$, 200 simulations)}
 \label{tab:monte_carlo}
@@ -483,7 +483,7 @@ The difference becomes more severe with stronger autocorrelation ($\rho > 0.5$).
 
 \subsection{Configuration Guidelines}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{DynamicDML Configuration Guide}
 \label{tab:config_guide}

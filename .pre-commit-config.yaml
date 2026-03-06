@@ -16,7 +16,7 @@ repos:
     hooks:
       - id: mypy
         args: [--ignore-missing-imports, --no-strict-optional, --explicit-package-bases]
-        exclude: ^(test/|templates/)
+        exclude: ^(test/|templates/|scripts/)
 
   - repo: local
     hooks:

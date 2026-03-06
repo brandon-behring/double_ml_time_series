@@ -83,7 +83,7 @@ class TestDataLoading:
     @pytest.mark.tier2
     def test_load_data_success(self) -> None:
         """Test actual data loading (requires doubleml)."""
-        diag = LassoDiagnostic()
+        diag = LassoDiagnostic(data_path="test/fixtures/401k_data.csv")
         df = diag.load_data()
 
         # Should have expected columns
@@ -94,7 +94,7 @@ class TestDataLoading:
     @pytest.mark.tier2
     def test_preprocess_data(self) -> None:
         """Test data preprocessing returns correct shapes."""
-        diag = LassoDiagnostic()
+        diag = LassoDiagnostic(data_path="test/fixtures/401k_data.csv")
         Y, T, X = diag.preprocess_data()
 
         # All arrays should have samples

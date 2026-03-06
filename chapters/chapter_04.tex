@@ -50,7 +50,7 @@ Sensitivity analysis addresses this by asking: ``How strong would unmeasured con
 
 We analyze the Dominick's Orange Juice dataset, a benchmark in causal inference and marketing econometrics. The data comes from Dominick's Finer Foods, a major Chicago-area supermarket chain, and contains weekly store-level sales from 83 stores over 121 weeks.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Orange Juice Dataset Variables}
 \label{tab:oj_variables}
@@ -286,7 +286,7 @@ print(f"OLS + Controls:  θ = {controls_theta:.4f}")
 print(f"DML:             θ = {dml_theta:.4f}")
 \end{minted}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Estimator Comparison for OJ Price Elasticity}
 \label{tab:estimator_comparison}
@@ -405,7 +405,7 @@ print(f"Violation rate: {violations['violation_rate']:.4f}")
 
 When overlap violations occur, three strategies can stabilize estimates:
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Overlap Trimming Strategies}
 \label{tab:trimming_strategies}
@@ -591,7 +591,7 @@ for gamma in [1.0, 1.5, 2.0, 2.5, 3.0]:
           f"{upper - lower:>8.3f}")
 \end{minted}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Partial Identification Bounds for OJ Elasticity}
 \label{tab:partial_id}
@@ -677,7 +677,7 @@ The sensitivity plot shows p-values increasing as $\Gamma$ increases. The shaded
 
 \subsection{Interpretation Guidelines}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Sensitivity Analysis Interpretation Guide}
 \label{tab:sensitivity_interpretation}
@@ -777,7 +777,7 @@ Standard Error:          0.0523
 95% Confidence Interval: [-0.5846, -0.3796]
 \end{verbatim}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Gasoline vs.\ OJ: Estimation Comparison}
 \label{tab:gas_vs_oj}
@@ -901,7 +901,7 @@ for brand in brands:
           f"({bsens.interpretation})")
 \end{minted}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Brand-Level Sensitivity Decomposition}
 \label{tab:brand_sensitivity}
@@ -954,7 +954,7 @@ If high-income areas show lower $\Gamma_{\text{crit}}$, it suggests that unmeasu
 
 \subsection{Summary}
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Comprehensive Sensitivity Summary}
 \label{tab:sensitivity_summary}
@@ -1114,7 +1114,7 @@ Based on our experience with the OJ application, we recommend:
 
 When presenting DML results in an applied paper, every item below should appear. \Cref{tab:reporting_checklist} maps each item to its location and rationale.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{DML Reporting Checklist}
 \label{tab:reporting_checklist}

@@ -16,54 +16,54 @@ from pathlib import Path
 
 # Unicode → LaTeX mappings
 GREEK_LETTERS = {
-    'α': r'\alpha',
-    'β': r'\beta',
-    'γ': r'\gamma',
-    'δ': r'\delta',
-    'ε': r'\epsilon',
-    'θ': r'\theta',
-    'λ': r'\lambda',
-    'μ': r'\mu',
-    'τ': r'\tau',
-    'σ': r'\sigma',
-    'ϕ': r'\phi',
-    'η': r'\eta',
+    "α": r"\alpha",
+    "β": r"\beta",
+    "γ": r"\gamma",
+    "δ": r"\delta",
+    "ε": r"\epsilon",
+    "θ": r"\theta",
+    "λ": r"\lambda",
+    "μ": r"\mu",
+    "τ": r"\tau",
+    "σ": r"\sigma",
+    "ϕ": r"\phi",
+    "η": r"\eta",
 }
 
 MATH_SYMBOLS = {
-    '≈': r'\approx',
-    '≥': r'\geq',
-    '≤': r'\leq',
-    '→': r'\to',
-    '∈': r'\in',
-    '∞': r'\infty',
-    '√': r'\sqrt',
-    '∎': r'\qed',
+    "≈": r"\approx",
+    "≥": r"\geq",
+    "≤": r"\leq",
+    "→": r"\to",
+    "∈": r"\in",
+    "∞": r"\infty",
+    "√": r"\sqrt",
+    "∎": r"\qed",
 }
 
 SUBSCRIPTS = {
-    '₀': r'_0',
-    '₁': r'_1',
-    '₂': r'_2',
-    '₃': r'_3',
-    '₄': r'_4',
+    "₀": r"_0",
+    "₁": r"_1",
+    "₂": r"_2",
+    "₃": r"_3",
+    "₄": r"_4",
 }
 
 # Box drawing → ASCII art replacements
 BOX_DRAWING = {
-    '─': '-',
-    '│': '|',
-    '├': '+',
-    '└': '+',
-    '┌': '+',
-    '┐': '+',
-    '┘': '+',
+    "─": "-",
+    "│": "|",
+    "├": "+",
+    "└": "+",
+    "┌": "+",
+    "┐": "+",
+    "┘": "+",
 }
 
 # Warning symbols → LaTeX text
 WARNING_SYMBOLS = {
-    '⚠': r'\textbf{WARNING:}',
-    '⚠️': r'\textbf{WARNING:}',  # With variation selector
+    "⚠": r"\textbf{WARNING:}",
+    "⚠️": r"\textbf{WARNING:}",  # With variation selector
 }
 
 
@@ -78,7 +78,7 @@ def fix_unicode_in_file(filepath: Path, dry_run: bool = False) -> tuple[int, int
     Returns:
         (total_replacements, unique_chars_replaced)
     """
-    content = filepath.read_text(encoding='utf-8')
+    content = filepath.read_text(encoding="utf-8")
     original_content = content
     total_replacements = 0
     unique_chars = set()
@@ -98,7 +98,7 @@ def fix_unicode_in_file(filepath: Path, dry_run: bool = False) -> tuple[int, int
             count = content.count(unicode_char)
             # Use $ for inline math if not already in math mode
             # This is conservative - assumes standalone Greek letters need math mode
-            content = content.replace(unicode_char, f'${latex_cmd}$')
+            content = content.replace(unicode_char, f"${latex_cmd}$")
             total_replacements += count
             unique_chars.add(unicode_char)
             print(f"  {unicode_char} → ${latex_cmd}$: {count} replacements")
@@ -107,7 +107,7 @@ def fix_unicode_in_file(filepath: Path, dry_run: bool = False) -> tuple[int, int
     for unicode_char, latex_cmd in MATH_SYMBOLS.items():
         if unicode_char in content:
             count = content.count(unicode_char)
-            content = content.replace(unicode_char, f'${latex_cmd}$')
+            content = content.replace(unicode_char, f"${latex_cmd}$")
             total_replacements += count
             unique_chars.add(unicode_char)
             print(f"  {unicode_char} → ${latex_cmd}$: {count} replacements")
@@ -116,7 +116,7 @@ def fix_unicode_in_file(filepath: Path, dry_run: bool = False) -> tuple[int, int
     for unicode_char, latex_cmd in SUBSCRIPTS.items():
         if unicode_char in content:
             count = content.count(unicode_char)
-            content = content.replace(unicode_char, f'${latex_cmd}$')
+            content = content.replace(unicode_char, f"${latex_cmd}$")
             total_replacements += count
             unique_chars.add(unicode_char)
             print(f"  {unicode_char} → ${latex_cmd}$: {count} replacements")
@@ -131,17 +131,17 @@ def fix_unicode_in_file(filepath: Path, dry_run: bool = False) -> tuple[int, int
             print(f"  {unicode_char} → {ascii_char}: {count} replacements")
 
     # Remove variation selectors (invisible Unicode modifiers)
-    variation_selector = '\uFE0F'
+    variation_selector = "\ufe0f"
     if variation_selector in content:
         count = content.count(variation_selector)
-        content = content.replace(variation_selector, '')
+        content = content.replace(variation_selector, "")
         total_replacements += count
         unique_chars.add(variation_selector)
         print(f"  U+FE0F (variation selector) removed: {count} occurrences")
 
     # Write changes if not dry run
     if not dry_run and content != original_content:
-        filepath.write_text(content, encoding='utf-8')
+        filepath.write_text(content, encoding="utf-8")
         print(f"  ✓ File updated: {filepath}")
     elif dry_run and content != original_content:
         print(f"  [DRY RUN] Would update: {filepath}")
@@ -151,12 +151,12 @@ def fix_unicode_in_file(filepath: Path, dry_run: bool = False) -> tuple[int, int
 
 def main():
     """Fix Unicode in all chapter files."""
-    dry_run = '--dry-run' in sys.argv
+    dry_run = "--dry-run" in sys.argv
 
     chapter_files = [
-        Path('chapters/chapter_01.tex'),
-        Path('chapters/chapter_02.tex'),
-        Path('chapters/chapter_03.tex'),
+        Path("chapters/chapter_01.tex"),
+        Path("chapters/chapter_02.tex"),
+        Path("chapters/chapter_03.tex"),
     ]
 
     print("=" * 70)
@@ -191,5 +191,5 @@ def main():
         print("\nRun without --dry-run to apply changes")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

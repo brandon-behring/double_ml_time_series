@@ -13,6 +13,7 @@
 % =============================================================================
 \RequirePackage{iftex}
 \RequireLuaTeX  % Fail with clear error if not LuaLaTeX
+\RequirePackage{scrhack}  % Resolve KOMA-script conflicts with standard packages
 
 % =============================================================================
 % PRINT/DIGITAL TOGGLE
@@ -87,7 +88,7 @@
 \RequirePackage[
   protrusion=true,
   expansion=true,
-  tracking=small,
+  tracking=true,
   final
 ]{microtype}
 
@@ -99,7 +100,6 @@
 }
 
 \RequirePackage[english]{babel}
-\RequirePackage{csquotes}
 
 % Line spacing
 \RequirePackage{setspace}
@@ -164,6 +164,9 @@
 \fi
 
 \usemintedstyle{friendly}
+
+% csquotes must load after fvextra (loaded internally by minted)
+\RequirePackage{csquotes}
 
 % Inline code
 \newcommand{\code}[1]{\texttt{#1}}
@@ -461,16 +464,7 @@
   uniquelist=false
 ]{biblatex}
 
-% =============================================================================
-% GLOSSARY
-% =============================================================================
-\RequirePackage[
-  toc,
-  acronym,
-  nonumberlist,
-  nogroupskip
-]{glossaries}
-\makeglossaries
+% GLOSSARY — removed: no glossary entries defined; avoids "no \printglossary" warning
 
 % =============================================================================
 % INDEX
@@ -586,6 +580,9 @@
   beforeskip=0.6\baselineskip,
   afterskip=0.15\baselineskip
 ]{subsection}
+
+% Fix TOC subsection number width warning
+\DeclareTOCStyleEntry[numwidth=4em]{tocline}{subsection}
 
 % =============================================================================
 % HEADERS (scrlayer-scrpage)

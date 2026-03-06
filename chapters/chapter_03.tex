@@ -49,7 +49,7 @@ This synthetic-first approach builds reader confidence: if DML works correctly w
 
 We compare DML against six baseline methods spanning parametric, semi-parametric, and nonparametric approaches. Table~\ref{tab:method_comparison} summarizes key properties.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Comparison of Seven Causal Inference Methods}
 \label{tab:method_comparison}
@@ -269,7 +269,7 @@ print(results_by_gamma[1.0][['Method', 'Bias', 'RMSE', 'Coverage', 'Status']])
 
 \textbf{Expected Results} (summarized):
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Method Performance at $\gamma=1.0$ (Moderate Confounding)}
 \label{tab:exp31_results}
@@ -357,7 +357,7 @@ for n in sample_sizes:
 
 \textbf{Expected Findings}:
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{RMSE Scaling with Sample Size ($\gamma=1.0$)}
 \label{tab:exp32_rmse}
@@ -422,7 +422,7 @@ for k in fold_counts:
 
 \textbf{Expected Results}:
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Cross-Fitting Performance by Number of Folds}
 \label{tab:exp33_kfold}
@@ -489,7 +489,7 @@ for dgp_type in ['linear', 'nonlinear']:
 
 \textbf{Expected Results}:
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Nuisance Model Performance by DGP Type}
 \label{tab:exp34_nuisance}
@@ -665,7 +665,7 @@ for n_sims, power in power_results.items():
 
 \textbf{Expected Results}:
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Statistical Power by Number of Simulations}
 \label{tab:exp36_power}
@@ -725,7 +725,7 @@ for name, runtime in sorted(runtimes.items(), key=lambda x: x[1]):
 
 \textbf{Expected Results} (64-core Threadripper, $n=2000$, 100 simulations):
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Runtime Comparison (seconds)}
 \label{tab:exp37_runtime}

@@ -56,7 +56,7 @@ class TestFourZeroOneKReplicationDataLoading:
 
     def test_load_data_from_doubleml(self):
         """Test loading data from doubleml package."""
-        replicator = FourZeroOneKReplication()
+        replicator = FourZeroOneKReplication(data_path="test/fixtures/401k_data.csv")
         df = replicator.load_data()
 
         # Check shape (n=9,915, 14 variables)
@@ -71,7 +71,7 @@ class TestFourZeroOneKReplicationDataLoading:
 
     def test_load_data_caching(self):
         """Test that data is cached after first load."""
-        replicator = FourZeroOneKReplication()
+        replicator = FourZeroOneKReplication(data_path="test/fixtures/401k_data.csv")
 
         # First load
         df1 = replicator.load_data()
@@ -88,7 +88,9 @@ class TestFourZeroOneKReplicationPreprocessing:
 
     def test_preprocess_data_with_e401(self):
         """Test preprocessing with e401 (eligibility) treatment."""
-        replicator = FourZeroOneKReplication(random_state=42)
+        replicator = FourZeroOneKReplication(
+            data_path="test/fixtures/401k_data.csv", random_state=42
+        )
         Y, T, X = replicator.preprocess_data(treatment="e401")
 
         # Check shapes
@@ -99,7 +101,9 @@ class TestFourZeroOneKReplicationPreprocessing:
 
     def test_preprocess_data_with_p401(self):
         """Test preprocessing with p401 (participation) treatment."""
-        replicator = FourZeroOneKReplication(random_state=42)
+        replicator = FourZeroOneKReplication(
+            data_path="test/fixtures/401k_data.csv", random_state=42
+        )
         Y, T, X = replicator.preprocess_data(treatment="p401")
 
         # Check shapes
@@ -109,14 +113,16 @@ class TestFourZeroOneKReplicationPreprocessing:
 
     def test_preprocess_data_invalid_treatment(self):
         """Test that invalid treatment raises error."""
-        replicator = FourZeroOneKReplication()
+        replicator = FourZeroOneKReplication(data_path="test/fixtures/401k_data.csv")
 
         with pytest.raises(ValueError, match="treatment must be"):
             replicator.preprocess_data(treatment="invalid")
 
     def test_preprocess_data_caching(self):
         """Test that preprocessed data is cached."""
-        replicator = FourZeroOneKReplication(random_state=42)
+        replicator = FourZeroOneKReplication(
+            data_path="test/fixtures/401k_data.csv", random_state=42
+        )
 
         # First preprocessing
         Y1, T1, X1 = replicator.preprocess_data()

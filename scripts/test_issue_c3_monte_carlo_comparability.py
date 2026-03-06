@@ -267,9 +267,7 @@ def main():
         max_rank_range = (rank_stats["max"] - rank_stats["min"]).max()
 
         if max_rank_variance > 1.0 or max_rank_range > 2:
-            print(
-                f"\n  ⚠️  HIGH INSTABILITY: Rankings vary by up to {max_rank_range:.0f} positions"
-            )
+            print(f"\n  ⚠️  HIGH INSTABILITY: Rankings vary by up to {max_rank_range:.0f} positions")
         else:
             print(f"\n  ✓ Rankings stable across runs (max variance: {max_rank_variance:.2f})")
 

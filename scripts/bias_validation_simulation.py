@@ -156,9 +156,7 @@ def run_parameter_sweep() -> pd.DataFrame:
             status_symbol = (
                 "✅"
                 if result["status"] == "PASS"
-                else "⚠️"
-                if result["status"] == "WARNING"
-                else "❌"
+                else "⚠️" if result["status"] == "WARNING" else "❌"
             )
             print(
                 f"  {status_symbol} Bias={result['bias']:.4f}, RMSE={result['rmse']:.4f}, Status={result['status']}"

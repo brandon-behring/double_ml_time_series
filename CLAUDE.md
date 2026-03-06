@@ -26,11 +26,11 @@ See: `~/Claude/lever_of_archimedes/patterns/` for:
 
 **Double Machine Learning for Time Series** - Academic reference book on DML methodology with focus on time series causal inference for insurance/annuity competitor pricing with macroeconomic controls.
 
-**Current Status** (2026-01-30):
+**Current Status** (2026-03-06):
 - PROJECT COMPLETE - All 10 chapters + Julia appendix
-- Book: 180 pages, 10 chapters + 1 appendix, zero LaTeX errors
-- Code: 14,068 lines Python (incl. 2,453 production module)
-- Tests: 763 total
+- Book: 205 pages, 10 chapters + 1 appendix, zero LaTeX errors/warnings
+- Code: 15,404 lines Python (incl. 2,446 production module)
+- Tests: 796 total
 
 **Build System**: LuaLaTeX (scrbook + Tufte-style) with zero-error compilation requirement.
 
@@ -43,9 +43,9 @@ See: `~/Claude/lever_of_archimedes/patterns/` for:
 lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex
 
 # Run tests by tier (from repo root)
-pytest -m tier1                      # ~12s smoke test (285 tests)
-pytest -m "tier1 or tier2"           # ~2min pre-push (588 tests)
-pytest -m "tier1 or tier2 or tier3"  # ~30min nightly (750 tests)
+pytest -m tier1                      # ~12s smoke test (314 tests)
+pytest -m "tier1 or tier2"           # ~2min pre-push (617 tests)
+pytest -m "tier1 or tier2 or tier3"  # ~30min nightly (762 tests)
 pytest                               # Full suite including tier4 (~2h)
 
 # Quick DML verification (includes time series)
@@ -68,20 +68,38 @@ src/
 │   ├── fwl.py           # Frisch-Waugh-Lovell theorem
 │   ├── robinson.py      # Robinson estimator
 │   ├── double_ml.py     # DML with cross-fitting
-│   ├── cross_fitting.py # TimeSeriesCrossValidator (590 lines)
-│   ├── hac.py           # HAC/Newey-West standard errors (729 lines)
-│   └── dynamic_dml.py   # DynamicDML, RollingWindow, Panel (1,045 lines)
+│   ├── cross_fitting.py # TimeSeriesCrossValidator (591 lines)
+│   ├── hac.py           # HAC/Newey-West standard errors (737 lines)
+│   └── dynamic_dml.py   # DynamicDML, RollingWindow, Panel (1,048 lines)
 ├── data/
-│   └── fred_loader.py   # FRED macroeconomic data (705 lines)
+│   ├── fred_loader.py   # FRED macroeconomic data (705 lines)
+│   └── oj_loader.py     # OJ dataset loader
+├── sensitivity/
+│   └── rosenbaum.py     # Rosenbaum bounds (512 lines)
+├── production/
+│   ├── model_registry.py    # DML model versioning (581 lines)
+│   ├── causal_monitor.py    # Overlap/treatment monitoring (656 lines)
+│   ├── retrain_pipeline.py  # Causal retraining triggers (508 lines)
+│   └── dml_pipeline.py      # End-to-end pipeline (670 lines)
 └── validation/
-    ├── dgp_generator.py    # Cross-sectional DGP
-    ├── dgp_generator_ts.py # Time series DGP (714 lines)
-    ├── stationarity.py     # ADF, KPSS, PP tests (920 lines)
-    ├── insurance_dgp.py    # Insurance DGP (667 lines)
-    └── ...                 # Baseline comparisons
+    ├── dgp_generator.py      # Cross-sectional DGP
+    ├── dgp_generator_ts.py   # Time series DGP (714 lines)
+    ├── stationarity.py       # ADF, KPSS, PP tests (914 lines)
+    ├── insurance_dgp.py      # Insurance DGP (669 lines)
+    ├── baseline_comparison.py
+    ├── bias_validation.py
+    ├── bootstrap_config.py
+    ├── bootstrap_diagnostics.py
+    ├── enhanced_dgp.py
+    ├── ipw_baseline.py
+    ├── lasso_diagnostic.py
+    ├── ml_baseline.py
+    ├── ols_baseline.py
+    ├── plotting.py
+    └── storage.py
 
 test/
-└── validation/          # 652 tests
+└── validation/          # 796 tests
 
 chapters/
 ├── chapter_01.tex       # Potential Outcomes + FWL
@@ -93,8 +111,8 @@ chapters/
 ├── chapter_07.tex       # FRED Integration
 ├── chapter_08.tex       # Competitor Pricing (957 lines)
 ├── chapter_09.tex       # Heterogeneity Analysis (680 lines)
-├── chapter_10.tex       # Production Pipeline (863 lines)
-└── appendix_a.tex       # Julia Roadmap (586 lines)
+├── chapter_10.tex       # Production Pipeline (878 lines)
+└── appendix_a.tex       # Julia Roadmap (597 lines)
 ```
 
 ---
@@ -119,10 +137,10 @@ chapters/
 
 | Tier | Purpose | Speed | Tests | Command |
 |------|---------|-------|-------|---------|
-| tier1 | Unit — no estimation, pure logic | ~12s | 285 | `pytest -m tier1` |
-| tier2 | Integration — light estimation | ~2min | 316 | `pytest -m "tier1 or tier2"` |
-| tier3 | Validation — moderate MC/bootstrap | ~30min | 161 | `pytest -m "tier1 or tier2 or tier3"` |
-| tier4 | Full replication + stress | ~2h | 40 | `pytest` |
+| tier1 | Unit — no estimation, pure logic | ~12s | 314 | `pytest -m tier1` |
+| tier2 | Integration — light estimation | ~2min | 617 | `pytest -m "tier1 or tier2"` |
+| tier3 | Validation — moderate MC/bootstrap | ~30min | 762 | `pytest -m "tier1 or tier2 or tier3"` |
+| tier4 | Full replication + stress | ~2h | 796 | `pytest` |
 
 - Timeouts: 10s / 60s / 300s / 1800s per tier (enforced by pytest-timeout via `test/conftest.py`)
 - Tiered bootstrap: `BootstrapConfig.tier2()` / `.tier3()` factory methods
@@ -146,7 +164,7 @@ chapters/
 
 ## Current Gaps (Document as you work)
 
-**None** - All chapters complete (2026-01-30)
+**None** - All chapters complete (2026-03-06)
 
 ---
 

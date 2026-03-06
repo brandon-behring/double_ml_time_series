@@ -214,9 +214,9 @@ class TestBaselineComparisonSummaryStats:
         assert 0 <= summary["mean_coverage"] <= 1
 
 
-@pytest.mark.tier2
+@pytest.mark.tier4
 class TestBaselineComparisonWithDML:
-    """Test comparison framework with DML included."""
+    """Test comparison framework with DML included (requires econml)."""
 
     def test_compare_with_dml_included(self):
         """Test that comparison works with DML included."""

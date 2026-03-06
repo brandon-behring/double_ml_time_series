@@ -25,7 +25,6 @@ from src.validation.validation_result import ValidationResult
 # =============================================================================
 
 
-@pytest.mark.tier1
 class TestBiasValidationBasicFunctionality:
     """Test basic functionality of BiasValidation validation method."""
 

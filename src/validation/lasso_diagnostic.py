@@ -365,15 +365,13 @@ class LassoDiagnostic:
             >>> result.sensitivity_score
             0.25
         """
-        from econml.dml import LinearDML
-        from sklearn.linear_model import LassoCV, Lasso
-
         # Default values for each parameter
         default_values = {
             "cv_folds": [3, 5, 10],
             "max_iter": [500, 1000, 2000, 5000],
         }
 
+        # Validate parameter before expensive imports (fail fast)
         if values is None:
             if parameter not in default_values:
                 raise ValueError(
@@ -381,6 +379,9 @@ class LassoDiagnostic:
                     f"Must be one of {list(default_values.keys())}"
                 )
             values = default_values[parameter]
+
+        from econml.dml import LinearDML
+        from sklearn.linear_model import LassoCV, Lasso
 
         self._log(f"Analyzing {parameter} sensitivity ({len(values)} values)...")
 
