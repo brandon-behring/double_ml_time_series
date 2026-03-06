@@ -5,6 +5,7 @@ Optimized for 64-core AMD Threadripper 3990X with intelligent workload distribut
 Provides decorators and utilities for parallelizing validation methods.
 """
 
+import os
 from typing import Callable, List, Any, Optional, TypeVar, ParamSpec
 from functools import wraps
 import numpy as np
@@ -18,7 +19,7 @@ T = TypeVar("T")
 
 
 # Hardware configuration (from archimedes_lever)
-DEFAULT_N_JOBS = 48  # Leave 16 cores for system (64 total)
+DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "48"))  # Leave 16 cores for system (64 total)
 MIN_TASKS_PER_CORE = 2  # Minimum tasks per core for efficient parallelization
 
 
