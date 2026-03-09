@@ -27,7 +27,7 @@ jobs:
         run: black --check src/ test/ examples/
 
       - name: Type check (mypy)
-        run: mypy src/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
+        run: mypy src/ --ignore-missing-imports --explicit-package-bases
 
   tier1:
     runs-on: ubuntu-latest

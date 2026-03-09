@@ -36,7 +36,6 @@ from dataclasses import dataclass
 import numpy as np
 from scipy import stats
 
-
 KernelType = Literal["bartlett", "parzen", "quadratic_spectral"]
 BandwidthMethod = Literal["auto", "newey_west", "andrews"]
 

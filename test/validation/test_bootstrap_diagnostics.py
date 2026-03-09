@@ -19,7 +19,6 @@ from src.validation.bootstrap_diagnostics import (
 )
 from src.validation.dgp_generator import DGPGenerator
 
-
 # =============================================================================
 # Test Class 1: Basic Functionality
 # =============================================================================

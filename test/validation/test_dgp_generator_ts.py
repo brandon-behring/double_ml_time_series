@@ -25,7 +25,6 @@ from src.validation.dgp_generator_ts import (
     create_break_dgp,
 )
 
-
 # ============================================================================
 # TimeSeriesDGPGenerator Tests - Single Series
 # ============================================================================

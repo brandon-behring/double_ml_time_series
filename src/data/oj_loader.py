@@ -36,7 +36,6 @@ import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 
-
 # GitHub mirror URL for OJ dataset (Azure blob now private)
 OJ_DATASET_URL = "https://github.com/gchoi/Dataset/raw/refs/heads/master/oj.csv"
 

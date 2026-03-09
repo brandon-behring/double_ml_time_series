@@ -55,7 +55,6 @@ from numpy.typing import NDArray
 from scipy import stats
 from scipy.interpolate import interp1d
 
-
 TestMethod = Literal["adf", "kpss", "pp"]
 
 

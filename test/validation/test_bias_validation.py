@@ -19,7 +19,6 @@ from src.validation.bias_validation import BiasValidation
 from src.validation.dgp_generator import DGPGenerator
 from src.validation.validation_result import ValidationResult
 
-
 # =============================================================================
 # Test Class 1: Basic Functionality
 # =============================================================================

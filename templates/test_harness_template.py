@@ -19,7 +19,6 @@ from datetime import datetime
 # from src.validation.my_method import MyValidationMethod
 from src.validation.dgp_generator import DGPGenerator
 
-
 # =============================================================================
 # Test Class 1: Basic Functionality
 # =============================================================================

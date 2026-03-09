@@ -28,7 +28,6 @@ from dataclasses import dataclass
 import numpy as np
 from sklearn.model_selection import BaseCrossValidator
 
-
 ArrayLike = Union[np.ndarray, List[float]]
 
 

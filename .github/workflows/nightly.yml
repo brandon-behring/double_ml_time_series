@@ -37,7 +37,7 @@ jobs:
           retention-days: 30
 
   tier4-weekly:
-    if: github.event.schedule == '0 8 * * 0'
+    if: github.event_name == 'schedule' && github.event.schedule == '0 8 * * 0'
     runs-on: ubuntu-latest
     timeout-minutes: 150
 
@@ -63,4 +63,4 @@ jobs:
         with:
           name: weekly-full-coverage-report
           path: coverage.xml
-          retention-days: 90
+          retention-days: 30

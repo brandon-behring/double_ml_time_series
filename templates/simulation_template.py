@@ -20,7 +20,6 @@ import json
 
 from src.validation.dgp_generator import DGPGenerator
 
-
 # =============================================================================
 # Simulation Parameters
 # =============================================================================
