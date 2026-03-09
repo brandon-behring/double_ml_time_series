@@ -290,6 +290,7 @@ class TestComprehensiveDiagnostic:
     """Test comprehensive diagnostic (integration test)."""
 
     @pytest.mark.tier4
+    @pytest.mark.timeout(3600)
     def test_mini_comprehensive_diagnostic(self) -> None:
         """Test comprehensive diagnostic with minimal settings.
 
