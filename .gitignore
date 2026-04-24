@@ -108,3 +108,6 @@ credentials.json
 
 # Sphinx documentation build
 docs/sphinx/_build/
+
+# Claude local overrides (machine-specific)
+.claude/settings.local.json
