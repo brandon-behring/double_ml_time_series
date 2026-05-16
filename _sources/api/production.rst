@@ -1,8 +1,9 @@
-Production Pipeline
-===================
+Research Pipeline Utilities
+===========================
 
-Production deployment infrastructure for causal inference models,
-including model versioning, monitoring, and retraining.
+Research/demo utilities for causal inference model versioning, monitoring, and
+retraining concepts. The module path is still ``src.production`` for now, but
+these APIs are not deployment-grade infrastructure.
 
 .. contents:: Module Index
    :local:
@@ -13,8 +14,8 @@ including model versioning, monitoring, and retraining.
 Model Registry (``src.production.model_registry``)
 ---------------------------------------------------
 
-Version control for DML models with per-fold nuisance model storage
-and promotion workflow.
+Version control for DML models with per-fold nuisance model storage and a
+demo promotion workflow.
 
 .. automodule:: src.production.model_registry
    :members:
@@ -26,8 +27,8 @@ and promotion workflow.
 Causal Monitor (``src.production.causal_monitor``)
 ---------------------------------------------------
 
-Runtime monitoring for causal inference assumptions — overlap,
-treatment distribution, nuisance quality, and effect stability.
+Monitoring helpers for causal inference assumptions: overlap, treatment
+distribution, nuisance quality, and effect stability.
 
 .. automodule:: src.production.causal_monitor
    :members:
@@ -51,8 +52,8 @@ Causal-specific retraining triggers and scheduling.
 Insurance DML Pipeline (``src.production.dml_pipeline``)
 ---------------------------------------------------------
 
-End-to-end production pipeline for insurance competitor pricing
-causal inference.
+End-to-end research/demo pipeline for insurance competitor pricing causal
+inference.
 
 .. automodule:: src.production.dml_pipeline
    :members:

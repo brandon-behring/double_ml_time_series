@@ -16,35 +16,38 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=b07499cc" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=a2693998"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=fd10adb8"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>window.MathJax = {"tex": {"macros": {"E": ["\\mathbb{E}\\left[#1\\right]", 1], "Var": ["\\text{Var}\\left(#1\\right)", 1], "Cov": ["\\text{Cov}\\left(#1, #2\\right)", 2], "Prob": ["\\mathbb{P}\\left(#1\\right)", 1], "R": "\\mathbb{R}", "N": "\\mathcal{N}", "indep": "\\perp\\!\\!\\!\\perp", "plim": "\\overset{p}{\\to}", "dto": "\\overset{d}{\\to}", "iid": "\\overset{\\text{iid}}{\\sim}", "ols": "\\hat{\\beta}_{\\text{OLS}}"}}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -52,9 +55,10 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Data Loaders" href="data.html" />
-    <link rel="prev" title="Production Causal Inference" href="../user_guide/production_pipeline.html" />
+    <link rel="prev" title="Research Pipeline Utilities" href="../user_guide/production_pipeline.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -70,19 +74,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../search.html"
       method="get">
@@ -90,7 +83,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -98,8 +90,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -115,7 +107,8 @@
       
       
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -145,15 +138,11 @@
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
@@ -164,15 +153,15 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/time_series_dml.html">Time Series DML</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/production_pipeline.html">Production Causal Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/time_series_dml.html">Temporal PLR DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/production_pipeline.html">Research Pipeline Utilities</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">DML Estimators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="data.html">Data Loaders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="validation.html">Validation Infrastructure</a></li>
-<li class="toctree-l1"><a class="reference internal" href="production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="production.html">Research Pipeline Utilities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sensitivity.html">Sensitivity Analysis</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
@@ -186,9 +175,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -270,7 +264,7 @@
 
 
 <button onclick="toggleFullScreen()"
-  class="btn btn-sm btn-fullscreen-button"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
@@ -284,25 +278,17 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
@@ -389,46 +375,48 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.double_ml.demonstrate_cross_fitting_benefit"><code class="docutils literal notranslate"><span class="pre">demonstrate_cross_fitting_benefit()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamic-dml-src-dml-dynamic-dml">Dynamic DML (<code class="docutils literal notranslate"><span class="pre">src.dml.dynamic_dml</span></code>)</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.theta"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.theta</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.se"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.se</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.t_stat"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.t_stat</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.ci_lower"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.ci_lower</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.ci_upper"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.ci_upper</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.p_value"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.p_value</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.n_samples"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.n_samples</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.n_periods"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.n_periods</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.outcome_r2_cv"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.outcome_r2_cv</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.treatment_r2_cv"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.treatment_r2_cv</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.hac_bandwidth"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.hac_bandwidth</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.cv_strategy"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.cv_strategy</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.Y_residual"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.Y_residual</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.T_residual"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.T_residual</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.influence_scores"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.influence_scores</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.summary"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.summary()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.__init__"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.__init__()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#temporal-plr-dml-src-dml-temporal-plr-dml">Temporal PLR DML (<code class="docutils literal notranslate"><span class="pre">src.dml.temporal_plr_dml</span></code>)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.theta"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.theta</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.se"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.se</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.t_stat"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.t_stat</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_lower"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.ci_lower</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_upper"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.ci_upper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.p_value"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.p_value</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_samples"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.n_samples</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_periods"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.n_periods</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.outcome_r2_cv"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.outcome_r2_cv</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.treatment_r2_cv"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.treatment_r2_cv</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.hac_bandwidth"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.hac_bandwidth</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.cv_strategy"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.cv_strategy</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.Y_residual"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.Y_residual</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.T_residual"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.T_residual</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.influence_scores"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.influence_scores</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.dropped_initial_rows"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.dropped_initial_rows</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.lagged_rows_dropped"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.lagged_rows_dropped</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.summary"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.summary()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.__init__"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.__init__()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML"><code class="docutils literal notranslate"><span class="pre">DynamicDML</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML.__init__"><code class="docutils literal notranslate"><span class="pre">DynamicDML.__init__()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML.fit"><code class="docutils literal notranslate"><span class="pre">DynamicDML.fit()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML.effect"><code class="docutils literal notranslate"><span class="pre">DynamicDML.effect()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML.effect_interval"><code class="docutils literal notranslate"><span class="pre">DynamicDML.effect_interval()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML.__init__"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML.fit"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML.effect"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML.effect()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML.effect_interval"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML.effect_interval()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.RollingWindowDML"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.RollingWindowDML.__init__"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.__init__()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.RollingWindowDML.fit"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.fit()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.RollingWindowDML.get_effects"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.get_effects()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.RollingWindowDML"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.RollingWindowDML.__init__"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.RollingWindowDML.fit"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.RollingWindowDML.get_effects"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.get_effects()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.PanelDML"><code class="docutils literal notranslate"><span class="pre">PanelDML</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.PanelDML.__init__"><code class="docutils literal notranslate"><span class="pre">PanelDML.__init__()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.PanelDML.fit"><code class="docutils literal notranslate"><span class="pre">PanelDML.fit()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.PanelDML"><code class="docutils literal notranslate"><span class="pre">PanelDML</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.PanelDML.__init__"><code class="docutils literal notranslate"><span class="pre">PanelDML.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.PanelDML.fit"><code class="docutils literal notranslate"><span class="pre">PanelDML.fit()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.demonstrate_dynamic_dml"><code class="docutils literal notranslate"><span class="pre">demonstrate_dynamic_dml()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.demonstrate_temporal_plr_dml"><code class="docutils literal notranslate"><span class="pre">demonstrate_temporal_plr_dml()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-series-cross-validation-src-dml-cross-fitting">Time Series Cross-Validation (<code class="docutils literal notranslate"><span class="pre">src.dml.cross_fitting</span></code>)</a><ul class="visible nav section-nav flex-column">
@@ -513,14 +501,14 @@ document.write(`
   <section id="dml-estimators">
 <h1>DML Estimators<a class="headerlink" href="#dml-estimators" title="Link to this heading">#</a></h1>
 <p>Core causal inference estimators implementing the pedagogical progression from
-Frisch-Waugh-Lovell through Double Machine Learning, plus time series extensions.</p>
+Frisch-Waugh-Lovell through Double Machine Learning, plus temporal PLR helpers.</p>
 <nav class="contents local" id="module-index">
 <p class="topic-title">Module Index</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#frisch-waugh-lovell-src-dml-fwl" id="id3">Frisch-Waugh-Lovell (<code class="docutils literal notranslate"><span class="pre">src.dml.fwl</span></code>)</a></p></li>
 <li><p><a class="reference internal" href="#robinson-estimator-src-dml-robinson" id="id4">Robinson Estimator (<code class="docutils literal notranslate"><span class="pre">src.dml.robinson</span></code>)</a></p></li>
 <li><p><a class="reference internal" href="#double-machine-learning-src-dml-double-ml" id="id5">Double Machine Learning (<code class="docutils literal notranslate"><span class="pre">src.dml.double_ml</span></code>)</a></p></li>
-<li><p><a class="reference internal" href="#dynamic-dml-src-dml-dynamic-dml" id="id6">Dynamic DML (<code class="docutils literal notranslate"><span class="pre">src.dml.dynamic_dml</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#temporal-plr-dml-src-dml-temporal-plr-dml" id="id6">Temporal PLR DML (<code class="docutils literal notranslate"><span class="pre">src.dml.temporal_plr_dml</span></code>)</a></p></li>
 <li><p><a class="reference internal" href="#time-series-cross-validation-src-dml-cross-fitting" id="id7">Time Series Cross-Validation (<code class="docutils literal notranslate"><span class="pre">src.dml.cross_fitting</span></code>)</a></p></li>
 <li><p><a class="reference internal" href="#hac-standard-errors-src-dml-hac" id="id8">HAC Standard Errors (<code class="docutils literal notranslate"><span class="pre">src.dml.hac</span></code>)</a></p></li>
 </ul>
@@ -1223,12 +1211,16 @@ DML (cross-fitted) to show the bias reduction from cross-fitting.</p>
 
 </section>
 <hr class="docutils" />
-<section id="dynamic-dml-src-dml-dynamic-dml">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">Dynamic DML (<code class="docutils literal notranslate"><span class="pre">src.dml.dynamic_dml</span></code>)</a><a class="headerlink" href="#dynamic-dml-src-dml-dynamic-dml" title="Link to this heading">#</a></h2>
-<p>Time-varying treatment effect estimation for panel and time series data.</p>
-<p id="module-src.dml.dynamic_dml">Dynamic Double Machine Learning for Time Series.</p>
-<p>Implements sequential g-estimation for time series causal inference with
-time-varying treatments and confounders.</p>
+<section id="temporal-plr-dml-src-dml-temporal-plr-dml">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Temporal PLR DML (<code class="docutils literal notranslate"><span class="pre">src.dml.temporal_plr_dml</span></code>)</a><a class="headerlink" href="#temporal-plr-dml-src-dml-temporal-plr-dml" title="Link to this heading">#</a></h2>
+<p>Scalar temporal partially linear DML with lagged treatment controls,
+time-series cross-fitting, and HAC inference. This module also contains
+rolling-window and panel companion estimators. It is not a true dynamic
+g-estimation implementation.</p>
+<p id="module-src.dml.temporal_plr_dml">Temporal partially linear DML for time series.</p>
+<p>Implements scalar partially linear DML with lagged treatment controls,
+time-series cross-fitting, and HAC inference. This module is not an
+implementation of Lewis-Syrgkanis dynamic g-estimation.</p>
 <p>References:</p>
 <ul class="simple">
 <li><p>Lewis, R. and Syrgkanis, V. (2021). Double/Debiased Machine Learning for
@@ -1236,14 +1228,14 @@ Dynamic Treatment Effects. NeurIPS.</p></li>
 <li><p>Chernozhukov et al. (2018). Double Machine Learning for Treatment and
 Structural Parameters.</p></li>
 </ul>
-<p>Phase 2A Implementation - Core DynamicDML Class</p>
+<p>Core temporal partially linear DML classes.</p>
 <p>Key components:
-1. DynamicDML - Sequential g-estimation with time-series cross-validation
+1. TemporalPLRDML - Scalar PLR DML with time-series cross-validation
 2. RollingWindowDML - Local estimation for non-stationary effects
 3. PanelDML - Fixed effects + DML for panel data structures</p>
 <dl>
-<dt>Usage:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicDML</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">DynamicDML</span><span class="p">(</span>
+<dt>Usage:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">TemporalPLRDML</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">n_lags</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">model_y</span><span class="o">=</span><span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">model_t</span><span class="o">=</span><span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
@@ -1256,21 +1248,21 @@ Structural Parameters.</p></li>
 </dd>
 </dl>
 <dl class="py class">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.dml.dynamic_dml.</span></span><span class="sig-name descname"><span class="pre">DynamicDMLResult</span></span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#DynamicDMLResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.dml.temporal_plr_dml.</span></span><span class="sig-name descname"><span class="pre">TemporalPLRDMLResult</span></span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#TemporalPLRDMLResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Result container for DynamicDML estimation.</p>
+<p>Result container for TemporalPLRDML estimation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>theta</strong> – Treatment effect estimate (ATE or CATE)</p></li>
+<li><p><strong>theta</strong> – Scalar treatment effect estimate</p></li>
 <li><p><strong>se</strong> – Standard error (HAC-adjusted for time series)</p></li>
 <li><p><strong>t_stat</strong> – t-statistic = theta / se</p></li>
 <li><p><strong>ci_lower</strong> – Lower 95% confidence interval bound</p></li>
 <li><p><strong>ci_upper</strong> – Upper 95% confidence interval bound</p></li>
 <li><p><strong>p_value</strong> – Two-sided p-value for H0: theta = 0</p></li>
 <li><p><strong>n_samples</strong> – Number of observations</p></li>
-<li><p><strong>n_periods</strong> – Number of time periods (after lag adjustment)</p></li>
+<li><p><strong>n_periods</strong> – Number of observations used after lag and temporal-CV filtering</p></li>
 <li><p><strong>outcome_r2_cv</strong> – Cross-validated R² for outcome model</p></li>
 <li><p><strong>treatment_r2_cv</strong> – Cross-validated R² for treatment model</p></li>
 <li><p><strong>hac_bandwidth</strong> – Bandwidth used for HAC covariance</p></li>
@@ -1278,88 +1270,101 @@ Structural Parameters.</p></li>
 <li><p><strong>Y_residual</strong> – Outcome residuals (Ỹ = Y - m̂(X))</p></li>
 <li><p><strong>T_residual</strong> – Treatment residuals (T̃ = T - ℓ̂(X))</p></li>
 <li><p><strong>influence_scores</strong> – Influence function values for each observation</p></li>
+<li><p><strong>dropped_initial_rows</strong> – Rows excluded because temporal CV cannot produce
+out-of-fold predictions without training on future observations</p></li>
+<li><p><strong>lagged_rows_dropped</strong> – Rows excluded by lag-feature construction</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.theta">
-<span class="sig-name descname"><span class="pre">theta</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.theta" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.theta">
+<span class="sig-name descname"><span class="pre">theta</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.theta" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.se">
-<span class="sig-name descname"><span class="pre">se</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.se" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.se">
+<span class="sig-name descname"><span class="pre">se</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.se" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.t_stat">
-<span class="sig-name descname"><span class="pre">t_stat</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.t_stat" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.t_stat">
+<span class="sig-name descname"><span class="pre">t_stat</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.t_stat" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.ci_lower">
-<span class="sig-name descname"><span class="pre">ci_lower</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.ci_lower" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_lower">
+<span class="sig-name descname"><span class="pre">ci_lower</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_lower" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.ci_upper">
-<span class="sig-name descname"><span class="pre">ci_upper</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.ci_upper" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_upper">
+<span class="sig-name descname"><span class="pre">ci_upper</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_upper" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.p_value">
-<span class="sig-name descname"><span class="pre">p_value</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.p_value" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.p_value">
+<span class="sig-name descname"><span class="pre">p_value</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.p_value" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.n_samples">
-<span class="sig-name descname"><span class="pre">n_samples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.n_samples" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_samples">
+<span class="sig-name descname"><span class="pre">n_samples</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_samples" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.n_periods">
-<span class="sig-name descname"><span class="pre">n_periods</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.n_periods" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_periods">
+<span class="sig-name descname"><span class="pre">n_periods</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_periods" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.outcome_r2_cv">
-<span class="sig-name descname"><span class="pre">outcome_r2_cv</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.outcome_r2_cv" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.outcome_r2_cv">
+<span class="sig-name descname"><span class="pre">outcome_r2_cv</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.outcome_r2_cv" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.treatment_r2_cv">
-<span class="sig-name descname"><span class="pre">treatment_r2_cv</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.treatment_r2_cv" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.treatment_r2_cv">
+<span class="sig-name descname"><span class="pre">treatment_r2_cv</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.treatment_r2_cv" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.hac_bandwidth">
-<span class="sig-name descname"><span class="pre">hac_bandwidth</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.hac_bandwidth" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.hac_bandwidth">
+<span class="sig-name descname"><span class="pre">hac_bandwidth</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.hac_bandwidth" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.cv_strategy">
-<span class="sig-name descname"><span class="pre">cv_strategy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.cv_strategy" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.cv_strategy">
+<span class="sig-name descname"><span class="pre">cv_strategy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.cv_strategy" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.Y_residual">
-<span class="sig-name descname"><span class="pre">Y_residual</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><span class="pre">dtype</span></a><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.Y_residual" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.Y_residual">
+<span class="sig-name descname"><span class="pre">Y_residual</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><span class="pre">dtype</span></a><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.Y_residual" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.T_residual">
-<span class="sig-name descname"><span class="pre">T_residual</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><span class="pre">dtype</span></a><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.T_residual" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.T_residual">
+<span class="sig-name descname"><span class="pre">T_residual</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><span class="pre">dtype</span></a><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.T_residual" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.influence_scores">
-<span class="sig-name descname"><span class="pre">influence_scores</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><span class="pre">dtype</span></a><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.influence_scores" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.influence_scores">
+<span class="sig-name descname"><span class="pre">influence_scores</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><span class="pre">dtype</span></a><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.influence_scores" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.dropped_initial_rows">
+<span class="sig-name descname"><span class="pre">dropped_initial_rows</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.dropped_initial_rows" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.lagged_rows_dropped">
+<span class="sig-name descname"><span class="pre">lagged_rows_dropped</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.lagged_rows_dropped" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.summary">
-<span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#DynamicDMLResult.summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.summary" title="Link to this definition">#</a></dt>
-<dd><p>Return formatted summary of DynamicDML results.</p>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#TemporalPLRDMLResult.summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.summary" title="Link to this definition">#</a></dt>
+<dd><p>Return formatted summary of TemporalPLRDML results.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
@@ -1368,24 +1373,24 @@ Structural Parameters.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDMLResult.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">se</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_stat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_periods</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcome_r2_cv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_r2_cv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hac_bandwidth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cv_strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_residual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_residual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">influence_scores</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDMLResult.__init__" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDMLResult.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">se</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_stat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_periods</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcome_r2_cv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_r2_cv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hac_bandwidth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cv_strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_residual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_residual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">influence_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropped_initial_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lagged_rows_dropped</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.__init__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDML">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.dml.dynamic_dml.</span></span><span class="sig-name descname"><span class="pre">DynamicDML</span></span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#DynamicDML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDML" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDML">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.dml.temporal_plr_dml.</span></span><span class="sig-name descname"><span class="pre">TemporalPLRDML</span></span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#TemporalPLRDML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDML" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Dynamic Double Machine Learning for time series treatment effects.</p>
-<p>Implements sequential g-estimation for time series data, handling:
-- Time-varying treatments
-- Time-varying confounders
+<p>Temporal partially linear DML for scalar treatment effects.</p>
+<p>Implements scalar PLR DML for ordered data, handling:
+- Lagged treatment controls
+- Time-indexed confounders
 - Autocorrelation in residuals (HAC standard errors)
 - Temporal cross-validation (respects time ordering)</p>
 <p>The algorithm:
-1. Create lagged features to capture dynamic effects
+1. Create lagged controls
 2. Use time series cross-validation to generate out-of-sample predictions
 3. Compute residuals: Ỹ = Y - m̂(X), T̃ = T - ℓ̂(X)
 4. Estimate θ via FWL: θ̂ = Σ(Ỹ·T̃) / Σ(T̃²)
@@ -1413,16 +1418,16 @@ Structural Parameters.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">time</span> <span class="o">/</span> <span class="mi">50</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">T</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">DynamicDML</span><span class="p">(</span><span class="n">n_lags</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">TemporalPLRDML</span><span class="p">(</span><span class="n">n_lags</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="n">time</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>  <span class="c1"># Should be close to 2.0</span>
 </pre></div>
 </div>
 </div>
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDML.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cv_strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time_series_split'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hac_bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hac_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bartlett'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#DynamicDML.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDML.__init__" title="Link to this definition">#</a></dt>
-<dd><p>Initialize DynamicDML.</p>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDML.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cv_strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time_series_split'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hac_bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hac_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bartlett'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#TemporalPLRDML.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDML.__init__" title="Link to this definition">#</a></dt>
+<dd><p>Initialize TemporalPLRDML.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1441,9 +1446,9 @@ Structural Parameters.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDML.fit">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#DynamicDML.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDML.fit" title="Link to this definition">#</a></dt>
-<dd><p>Fit the DynamicDML model.</p>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDML.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#TemporalPLRDML.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDML.fit" title="Link to this definition">#</a></dt>
+<dd><p>Fit the TemporalPLRDML model.</p>
 <dl class="simple">
 <dt>Estimates the Average Treatment Effect (ATE) in the partially linear model:</dt><dd><p>Y_t = θ·T_t + g(X_t, T_{t-1}, …, T_{t-L}) + ε_t</p>
 </dd>
@@ -1461,10 +1466,10 @@ and HAC standard errors.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#src.dml.dynamic_dml.DynamicDMLResult" title="src.dml.dynamic_dml.DynamicDMLResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicDMLResult</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult" title="src.dml.temporal_plr_dml.TemporalPLRDMLResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemporalPLRDMLResult</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>DynamicDMLResult with treatment effect, HAC SE, and diagnostics</p>
+<dd class="field-odd"><p>TemporalPLRDMLResult with treatment effect, HAC SE, and diagnostics</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If inputs have incompatible shapes</p>
@@ -1473,16 +1478,15 @@ and HAC standard errors.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDML.effect">
-<span class="sig-name descname"><span class="pre">effect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#DynamicDML.effect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDML.effect" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDML.effect">
+<span class="sig-name descname"><span class="pre">effect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#TemporalPLRDML.effect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDML.effect" title="Link to this definition">#</a></dt>
 <dd><p>Estimate treatment effect.</p>
 <p>For the partially linear model, the treatment effect is constant
 (homogeneous), so this returns the estimated θ for all observations.</p>
-<p>For heterogeneous effects, use effect_interval or extend to CATE.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>) – Covariate values for CATE estimation (currently unused for PLM)</p></li>
+<li><p><strong>X</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>) – Covariate values used only to set output length; unused by PLR</p></li>
 <li><p><strong>T0</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Baseline treatment value (default 0)</p></li>
 <li><p><strong>T1</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Counterfactual treatment value (default 1)</p></li>
 </ul>
@@ -1500,14 +1504,14 @@ and HAC standard errors.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.DynamicDML.effect_interval">
-<span class="sig-name descname"><span class="pre">effect_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#DynamicDML.effect_interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.DynamicDML.effect_interval" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.TemporalPLRDML.effect_interval">
+<span class="sig-name descname"><span class="pre">effect_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#TemporalPLRDML.effect_interval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.TemporalPLRDML.effect_interval" title="Link to this definition">#</a></dt>
 <dd><p>Compute confidence interval for treatment effect.</p>
 <p>Returns HAC-adjusted confidence intervals for the treatment effect.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>) – Covariate values for CATE intervals (currently unused for PLM)</p></li>
+<li><p><strong>X</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>) – Covariate values used only to set output length; unused by PLR</p></li>
 <li><p><strong>alpha</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Significance level (default 0.05 for 95% CI)</p></li>
 <li><p><strong>T0</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Baseline treatment value</p></li>
 <li><p><strong>T1</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Counterfactual treatment value</p></li>
@@ -1528,8 +1532,8 @@ and HAC standard errors.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.RollingWindowDML">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.dml.dynamic_dml.</span></span><span class="sig-name descname"><span class="pre">RollingWindowDML</span></span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#RollingWindowDML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.RollingWindowDML" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.RollingWindowDML">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.dml.temporal_plr_dml.</span></span><span class="sig-name descname"><span class="pre">RollingWindowDML</span></span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#RollingWindowDML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.RollingWindowDML" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Rolling-window DML for non-stationary treatment effects.</p>
 <p>Estimates local treatment effects using a moving window approach,
@@ -1552,14 +1556,14 @@ Returns a time series of local effects with HAC standard errors.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.RollingWindowDML.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hac_bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#RollingWindowDML.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.RollingWindowDML.__init__" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.RollingWindowDML.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hac_bandwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#RollingWindowDML.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.RollingWindowDML.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize RollingWindowDML.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.RollingWindowDML.fit">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#RollingWindowDML.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.RollingWindowDML.fit" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.RollingWindowDML.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#RollingWindowDML.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.RollingWindowDML.fit" title="Link to this definition">#</a></dt>
 <dd><p>Fit rolling-window DML model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1580,8 +1584,8 @@ Returns a time series of local effects with HAC standard errors.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.RollingWindowDML.get_effects">
-<span class="sig-name descname"><span class="pre">get_effects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#RollingWindowDML.get_effects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.RollingWindowDML.get_effects" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.RollingWindowDML.get_effects">
+<span class="sig-name descname"><span class="pre">get_effects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#RollingWindowDML.get_effects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.RollingWindowDML.get_effects" title="Link to this definition">#</a></dt>
 <dd><p>Get time series of local treatment effects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1599,8 +1603,8 @@ Returns a time series of local effects with HAC standard errors.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.PanelDML">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.dml.dynamic_dml.</span></span><span class="sig-name descname"><span class="pre">PanelDML</span></span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#PanelDML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.PanelDML" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.PanelDML">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">src.dml.temporal_plr_dml.</span></span><span class="sig-name descname"><span class="pre">PanelDML</span></span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#PanelDML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.PanelDML" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Panel DML with fixed effects.</p>
 <p>Implements DML for panel data with:
@@ -1625,14 +1629,14 @@ Returns a time series of local effects with HAC standard errors.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.PanelDML.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_effects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'individual'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_se</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#PanelDML.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.PanelDML.__init__" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.PanelDML.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_effects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'individual'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_se</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random_forest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#PanelDML.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.PanelDML.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize PanelDML.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.PanelDML.fit">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">individual_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#PanelDML.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.PanelDML.fit" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.PanelDML.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">individual_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#PanelDML.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.PanelDML.fit" title="Link to this definition">#</a></dt>
 <dd><p>Fit panel DML model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1645,10 +1649,10 @@ Returns a time series of local effects with HAC standard errors.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#src.dml.dynamic_dml.DynamicDMLResult" title="src.dml.dynamic_dml.DynamicDMLResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicDMLResult</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult" title="src.dml.temporal_plr_dml.TemporalPLRDMLResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemporalPLRDMLResult</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>DynamicDMLResult with treatment effect and cluster-robust SE</p>
+<dd class="field-odd"><p>TemporalPLRDMLResult with treatment effect and cluster-robust SE</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1656,9 +1660,9 @@ Returns a time series of local effects with HAC standard errors.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="src.dml.dynamic_dml.demonstrate_dynamic_dml">
-<span class="sig-prename descclassname"><span class="pre">src.dml.dynamic_dml.</span></span><span class="sig-name descname"><span class="pre">demonstrate_dynamic_dml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/dynamic_dml.html#demonstrate_dynamic_dml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.dynamic_dml.demonstrate_dynamic_dml" title="Link to this definition">#</a></dt>
-<dd><p>Demonstrate DynamicDML on synthetic time series data.</p>
+<dt class="sig sig-object py" id="src.dml.temporal_plr_dml.demonstrate_temporal_plr_dml">
+<span class="sig-prename descclassname"><span class="pre">src.dml.temporal_plr_dml.</span></span><span class="sig-name descname"><span class="pre">demonstrate_temporal_plr_dml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/dml/temporal_plr_dml.html#demonstrate_temporal_plr_dml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.dml.temporal_plr_dml.demonstrate_temporal_plr_dml" title="Link to this definition">#</a></dt>
+<dd><p>Demonstrate TemporalPLRDML on synthetic time series data.</p>
 <p>Generates a DGP with:
 - Autocorrelated treatment
 - Time-varying confounders
@@ -2713,7 +2717,7 @@ standard errors.</p>
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Production Causal Inference</p>
+        <p class="prev-next-title">Research Pipeline Utilities</p>
       </div>
     </a>
     <a class="right-next"
@@ -2732,14 +2736,16 @@ standard errors.</p>
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
   </div>
-  <nav class="bd-toc-nav page-toc">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#frisch-waugh-lovell-src-dml-fwl">Frisch-Waugh-Lovell (<code class="docutils literal notranslate"><span class="pre">src.dml.fwl</span></code>)</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mathematical-foundation">Mathematical Foundation</a></li>
@@ -2805,46 +2811,48 @@ standard errors.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.double_ml.demonstrate_cross_fitting_benefit"><code class="docutils literal notranslate"><span class="pre">demonstrate_cross_fitting_benefit()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamic-dml-src-dml-dynamic-dml">Dynamic DML (<code class="docutils literal notranslate"><span class="pre">src.dml.dynamic_dml</span></code>)</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.theta"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.theta</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.se"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.se</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.t_stat"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.t_stat</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.ci_lower"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.ci_lower</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.ci_upper"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.ci_upper</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.p_value"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.p_value</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.n_samples"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.n_samples</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.n_periods"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.n_periods</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.outcome_r2_cv"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.outcome_r2_cv</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.treatment_r2_cv"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.treatment_r2_cv</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.hac_bandwidth"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.hac_bandwidth</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.cv_strategy"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.cv_strategy</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.Y_residual"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.Y_residual</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.T_residual"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.T_residual</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.influence_scores"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.influence_scores</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.summary"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.summary()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDMLResult.__init__"><code class="docutils literal notranslate"><span class="pre">DynamicDMLResult.__init__()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#temporal-plr-dml-src-dml-temporal-plr-dml">Temporal PLR DML (<code class="docutils literal notranslate"><span class="pre">src.dml.temporal_plr_dml</span></code>)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.theta"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.theta</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.se"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.se</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.t_stat"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.t_stat</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_lower"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.ci_lower</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_upper"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.ci_upper</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.p_value"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.p_value</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_samples"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.n_samples</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_periods"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.n_periods</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.outcome_r2_cv"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.outcome_r2_cv</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.treatment_r2_cv"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.treatment_r2_cv</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.hac_bandwidth"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.hac_bandwidth</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.cv_strategy"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.cv_strategy</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.Y_residual"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.Y_residual</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.T_residual"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.T_residual</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.influence_scores"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.influence_scores</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.dropped_initial_rows"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.dropped_initial_rows</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.lagged_rows_dropped"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.lagged_rows_dropped</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.summary"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.summary()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDMLResult.__init__"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDMLResult.__init__()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML"><code class="docutils literal notranslate"><span class="pre">DynamicDML</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML.__init__"><code class="docutils literal notranslate"><span class="pre">DynamicDML.__init__()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML.fit"><code class="docutils literal notranslate"><span class="pre">DynamicDML.fit()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML.effect"><code class="docutils literal notranslate"><span class="pre">DynamicDML.effect()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.DynamicDML.effect_interval"><code class="docutils literal notranslate"><span class="pre">DynamicDML.effect_interval()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML.__init__"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML.fit"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML.effect"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML.effect()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.TemporalPLRDML.effect_interval"><code class="docutils literal notranslate"><span class="pre">TemporalPLRDML.effect_interval()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.RollingWindowDML"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.RollingWindowDML.__init__"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.__init__()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.RollingWindowDML.fit"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.fit()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.RollingWindowDML.get_effects"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.get_effects()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.RollingWindowDML"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.RollingWindowDML.__init__"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.RollingWindowDML.fit"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.RollingWindowDML.get_effects"><code class="docutils literal notranslate"><span class="pre">RollingWindowDML.get_effects()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.PanelDML"><code class="docutils literal notranslate"><span class="pre">PanelDML</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.PanelDML.__init__"><code class="docutils literal notranslate"><span class="pre">PanelDML.__init__()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.PanelDML.fit"><code class="docutils literal notranslate"><span class="pre">PanelDML.fit()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.PanelDML"><code class="docutils literal notranslate"><span class="pre">PanelDML</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.PanelDML.__init__"><code class="docutils literal notranslate"><span class="pre">PanelDML.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.PanelDML.fit"><code class="docutils literal notranslate"><span class="pre">PanelDML.fit()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.dynamic_dml.demonstrate_dynamic_dml"><code class="docutils literal notranslate"><span class="pre">demonstrate_dynamic_dml()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.dml.temporal_plr_dml.demonstrate_temporal_plr_dml"><code class="docutils literal notranslate"><span class="pre">demonstrate_temporal_plr_dml()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-series-cross-validation-src-dml-cross-fitting">Time Series Cross-Validation (<code class="docutils literal notranslate"><span class="pre">src.dml.cross_fitting</span></code>)</a><ul class="visible nav section-nav flex-column">
@@ -2963,8 +2971,8 @@ By Brandon Behring
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

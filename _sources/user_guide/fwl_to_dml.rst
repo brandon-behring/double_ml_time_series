@@ -155,8 +155,7 @@ ML estimators.
 
    result_robinson = robinson_estimator(
        Y, T, X,
-       model_y=RandomForestRegressor(n_estimators=200, random_state=42),
-       model_t=RandomForestRegressor(n_estimators=200, random_state=42),
+       model=RandomForestRegressor(n_estimators=200, random_state=42),
    )
    print(f"Robinson estimate: {result_robinson.theta:.3f}")
 
@@ -246,8 +245,8 @@ and :math:`\Sigma = \E{\psi^2}`.
 
    result_dml = double_ml(
        Y, T, X,
-       model_y=RandomForestRegressor(n_estimators=200, random_state=42),
-       model_t=RandomForestRegressor(n_estimators=200, random_state=42),
+       outcome_model=RandomForestRegressor(n_estimators=200, random_state=42),
+       treatment_model=RandomForestRegressor(n_estimators=200, random_state=42),
        n_folds=5,
    )
 
@@ -330,11 +329,11 @@ Putting it all together — one DGP, three estimators, clear winner:
    print(f"FWL:      θ = {r_fwl.theta:.3f}  (bias: {r_fwl.theta - TRUE_THETA:+.3f})")
 
    # 2. Robinson — less biased but overfits
-   r_rob = robinson_estimator(Y, T, X, model_y=rf(), model_t=rf())
+   r_rob = robinson_estimator(Y, T, X, model=rf())
    print(f"Robinson: θ = {r_rob.theta:.3f}  (bias: {r_rob.theta - TRUE_THETA:+.3f})")
 
    # 3. DML — unbiased with valid inference
-   r_dml = double_ml(Y, T, X, model_y=rf(), model_t=rf(), n_folds=5)
+   r_dml = double_ml(Y, T, X, outcome_model=rf(), treatment_model=rf(), n_folds=5)
    print(f"DML:      θ = {r_dml.theta:.3f}  (bias: {r_dml.theta - TRUE_THETA:+.3f})")
    print(f"          SE = {r_dml.se:.3f}")
    print(f"          CI = [{r_dml.ci_lower:.3f}, {r_dml.ci_upper:.3f}]")

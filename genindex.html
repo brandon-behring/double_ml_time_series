@@ -15,41 +15,45 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=b07499cc" />
   
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="_static/documentation_options.js?v=a2693998"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=fd10adb8"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -65,19 +69,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="search.html"
       method="get">
@@ -85,7 +78,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -93,8 +85,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -112,7 +104,8 @@
       
         
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -142,15 +135,11 @@
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
@@ -161,15 +150,15 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="user_guide/time_series_dml.html">Time Series DML</a></li>
-<li class="toctree-l1"><a class="reference internal" href="user_guide/production_pipeline.html">Production Causal Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/time_series_dml.html">Temporal PLR DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/production_pipeline.html">Research Pipeline Utilities</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="api/dml.html">DML Estimators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/data.html">Data Loaders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/validation.html">Validation Infrastructure</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api/production.html">Production Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/production.html">Research Pipeline Utilities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/sensitivity.html">Sensitivity Analysis</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
@@ -183,9 +172,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -267,7 +261,7 @@
 
 
 <button onclick="toggleFullScreen()"
-  class="btn btn-sm btn-fullscreen-button"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
@@ -281,24 +275,16 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
+</button>
 
 </div></div>
       
@@ -379,14 +365,6 @@ document.write(`
 </li>
         <li><a href="api/dml.html#src.dml.double_ml.DMLResult.__init__">(src.dml.double_ml.DMLResult method)</a>
 </li>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDML.__init__">(src.dml.dynamic_dml.DynamicDML method)</a>
-</li>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.__init__">(src.dml.dynamic_dml.DynamicDMLResult method)</a>
-</li>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.PanelDML.__init__">(src.dml.dynamic_dml.PanelDML method)</a>
-</li>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.RollingWindowDML.__init__">(src.dml.dynamic_dml.RollingWindowDML method)</a>
-</li>
         <li><a href="api/dml.html#src.dml.fwl.FWLResult.__init__">(src.dml.fwl.FWLResult method)</a>
 </li>
         <li><a href="api/dml.html#src.dml.hac.HACEstimator.__init__">(src.dml.hac.HACEstimator method)</a>
@@ -394,6 +372,14 @@ document.write(`
         <li><a href="api/dml.html#src.dml.hac.HACResult.__init__">(src.dml.hac.HACResult method)</a>
 </li>
         <li><a href="api/dml.html#src.dml.robinson.RobinsonResult.__init__">(src.dml.robinson.RobinsonResult method)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.PanelDML.__init__">(src.dml.temporal_plr_dml.PanelDML method)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.RollingWindowDML.__init__">(src.dml.temporal_plr_dml.RollingWindowDML method)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML.__init__">(src.dml.temporal_plr_dml.TemporalPLRDML method)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.__init__">(src.dml.temporal_plr_dml.TemporalPLRDMLResult method)</a>
 </li>
         <li><a href="api/production.html#src.production.causal_monitor.CausalMonitor.__init__">(src.production.causal_monitor.CausalMonitor method)</a>
 </li>
@@ -535,13 +521,13 @@ document.write(`
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.ci_lower">ci_lower (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.ci_lower">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_lower">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.ci_upper">ci_upper (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.ci_upper">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.ci_upper">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/dml.html#src.dml.robinson.compare_fwl_vs_robinson">compare_fwl_vs_robinson() (in module src.dml.robinson)</a>
@@ -592,7 +578,7 @@ document.write(`
 </li>
       <li><a href="api/validation.html#src.validation.stationarity.StationarityResult.critical_values">critical_values (src.validation.stationarity.StationarityResult attribute)</a>
 </li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.cv_strategy">cv_strategy (src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.cv_strategy">cv_strategy (src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       <li><a href="api/dml.html#src.dml.cross_fitting.CVFold">CVFold (class in src.dml.cross_fitting)</a>
 </li>
@@ -612,9 +598,9 @@ document.write(`
 </li>
       <li><a href="api/dml.html#src.dml.double_ml.demonstrate_cross_fitting_benefit">demonstrate_cross_fitting_benefit() (in module src.dml.double_ml)</a>
 </li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.demonstrate_dynamic_dml">demonstrate_dynamic_dml() (in module src.dml.dynamic_dml)</a>
-</li>
       <li><a href="api/dml.html#src.dml.fwl.demonstrate_fwl_theorem">demonstrate_fwl_theorem() (in module src.dml.fwl)</a>
+</li>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.demonstrate_temporal_plr_dml">demonstrate_temporal_plr_dml() (in module src.dml.temporal_plr_dml)</a>
 </li>
       <li><a href="api/dml.html#src.dml.robinson.demonstrate_when_fwl_fails">demonstrate_when_fwl_fails() (in module src.dml.robinson)</a>
 </li>
@@ -640,9 +626,7 @@ document.write(`
 </li>
       <li><a href="api/dml.html#src.dml.double_ml.double_ml">double_ml() (in module src.dml.double_ml)</a>
 </li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDML">DynamicDML (class in src.dml.dynamic_dml)</a>
-</li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult">DynamicDMLResult (class in src.dml.dynamic_dml)</a>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.dropped_initial_rows">dropped_initial_rows (src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -650,7 +634,7 @@ document.write(`
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDML.effect">effect() (src.dml.dynamic_dml.DynamicDML method)</a>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML.effect">effect() (src.dml.temporal_plr_dml.TemporalPLRDML method)</a>
 </li>
       <li><a href="api/production.html#src.production.causal_monitor.CausalMonitorConfig.effect_change_critical">effect_change_critical (src.production.causal_monitor.CausalMonitorConfig attribute)</a>
 </li>
@@ -658,7 +642,7 @@ document.write(`
 </li>
       <li><a href="api/production.html#src.production.retrain_pipeline.TriggerType.EFFECT_INSTABILITY">EFFECT_INSTABILITY (src.production.retrain_pipeline.TriggerType attribute)</a>
 </li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDML.effect_interval">effect_interval() (src.dml.dynamic_dml.DynamicDML method)</a>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML.effect_interval">effect_interval() (src.dml.temporal_plr_dml.TemporalPLRDML method)</a>
 </li>
       <li><a href="api/validation.html#src.validation.dgp_generator_ts.BreakDGPResult.effect_periods">effect_periods (src.validation.dgp_generator_ts.BreakDGPResult attribute)</a>
 </li>
@@ -696,14 +680,14 @@ document.write(`
         <li><a href="api/production.html#src.production.model_registry.DMLModelVersion.feature_names">(src.production.model_registry.DMLModelVersion attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDML.fit">fit() (src.dml.dynamic_dml.DynamicDML method)</a>
+      <li><a href="api/dml.html#src.dml.hac.HACEstimator.fit">fit() (src.dml.hac.HACEstimator method)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.PanelDML.fit">(src.dml.dynamic_dml.PanelDML method)</a>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.PanelDML.fit">(src.dml.temporal_plr_dml.PanelDML method)</a>
 </li>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.RollingWindowDML.fit">(src.dml.dynamic_dml.RollingWindowDML method)</a>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.RollingWindowDML.fit">(src.dml.temporal_plr_dml.RollingWindowDML method)</a>
 </li>
-        <li><a href="api/dml.html#src.dml.hac.HACEstimator.fit">(src.dml.hac.HACEstimator method)</a>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML.fit">(src.dml.temporal_plr_dml.TemporalPLRDML method)</a>
 </li>
         <li><a href="api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.fit">(src.production.dml_pipeline.InsuranceDMLPipeline method)</a>
 </li>
@@ -758,7 +742,7 @@ document.write(`
 </li>
       <li><a href="api/dml.html#src.dml.hac.HACEstimator.get_covariance">get_covariance() (src.dml.hac.HACEstimator method)</a>
 </li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.RollingWindowDML.get_effects">get_effects() (src.dml.dynamic_dml.RollingWindowDML method)</a>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.RollingWindowDML.get_effects">get_effects() (src.dml.temporal_plr_dml.RollingWindowDML method)</a>
 </li>
       <li><a href="api/production.html#src.production.model_registry.DMLModelVersion.get_feature_transformer">get_feature_transformer() (src.production.model_registry.DMLModelVersion method)</a>
 </li>
@@ -810,7 +794,7 @@ document.write(`
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.hac_bandwidth">hac_bandwidth (src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.hac_bandwidth">hac_bandwidth (src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 
       <ul>
         <li><a href="api/production.html#src.production.dml_pipeline.PipelineConfig.hac_bandwidth">(src.production.dml_pipeline.PipelineConfig attribute)</a>
@@ -835,7 +819,7 @@ document.write(`
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.influence_scores">influence_scores (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.influence_scores">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.influence_scores">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/validation.html#src.validation.insurance_dgp.InsuranceDGPParams">InsuranceDGPParams (class in src.validation.insurance_dgp)</a>
@@ -876,20 +860,22 @@ document.write(`
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.lagged_rows_dropped">lagged_rows_dropped (src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
+</li>
       <li><a href="api/production.html#src.production.causal_monitor.MonitoringResult.level">level (src.production.causal_monitor.MonitoringResult attribute)</a>
 </li>
       <li><a href="api/data.html#src.data.fred_loader.FREDLoader.list_available_series">list_available_series() (src.data.fred_loader.FREDLoader static method)</a>
 </li>
       <li><a href="api/data.html#src.data.fred_loader.FREDLoader.list_control_sets">list_control_sets() (src.data.fred_loader.FREDLoader static method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline.list_versions">list_versions() (src.production.dml_pipeline.InsuranceDMLPipeline method)</a>
 
       <ul>
         <li><a href="api/production.html#src.production.model_registry.DMLModelRegistry.list_versions">(src.production.model_registry.DMLModelRegistry method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/data.html#src.data.oj_loader.OJDataLoader.load">load() (src.data.oj_loader.OJDataLoader method)</a>
 
       <ul>
@@ -952,13 +938,13 @@ document.write(`
 </li>
         <li><a href="api/dml.html#module-src.dml.double_ml">src.dml.double_ml</a>
 </li>
-        <li><a href="api/dml.html#module-src.dml.dynamic_dml">src.dml.dynamic_dml</a>
-</li>
         <li><a href="api/dml.html#module-src.dml.fwl">src.dml.fwl</a>
 </li>
         <li><a href="api/dml.html#module-src.dml.hac">src.dml.hac</a>
 </li>
         <li><a href="api/dml.html#module-src.dml.robinson">src.dml.robinson</a>
+</li>
+        <li><a href="api/dml.html#module-src.dml.temporal_plr_dml">src.dml.temporal_plr_dml</a>
 </li>
         <li><a href="api/production.html#module-src.production.causal_monitor">src.production.causal_monitor</a>
 </li>
@@ -1013,7 +999,7 @@ document.write(`
 </li>
       <li><a href="api/validation.html#src.validation.stationarity.StationarityResult.n_lags">n_lags (src.validation.stationarity.StationarityResult attribute)</a>
 </li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.n_periods">n_periods (src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_periods">n_periods (src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 
       <ul>
         <li><a href="api/validation.html#src.validation.dgp_generator_ts.BreakDGPResult.n_periods">(src.validation.dgp_generator_ts.BreakDGPResult attribute)</a>
@@ -1024,9 +1010,9 @@ document.write(`
       <li><a href="api/data.html#src.data.oj_loader.OJDataset.n_samples">n_samples (src.data.oj_loader.OJDataset attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.n_samples">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
-</li>
         <li><a href="api/dml.html#src.dml.hac.HACResult.n_samples">(src.dml.hac.HACResult attribute)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.n_samples">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1076,7 +1062,7 @@ document.write(`
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.outcome_r2_cv">outcome_r2_cv (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.outcome_r2_cv">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.outcome_r2_cv">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/validation.html#src.validation.stationarity.ComprehensiveStationarityResult.overall_conclusion">overall_conclusion (src.validation.stationarity.ComprehensiveStationarityResult attribute)</a>
@@ -1104,16 +1090,16 @@ document.write(`
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.p_value">p_value (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.p_value">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
-</li>
         <li><a href="api/dml.html#src.dml.fwl.FWLResult.p_value">(src.dml.fwl.FWLResult attribute)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.p_value">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
         <li><a href="api/validation.html#src.validation.stationarity.StationarityResult.p_value">(src.validation.stationarity.StationarityResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/sensitivity.html#src.sensitivity.rosenbaum.SensitivityResult.p_values_by_gamma">p_values_by_gamma (src.sensitivity.rosenbaum.SensitivityResult attribute)</a>
 </li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.PanelDML">PanelDML (class in src.dml.dynamic_dml)</a>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.PanelDML">PanelDML (class in src.dml.temporal_plr_dml)</a>
 </li>
       <li><a href="api/validation.html#src.validation.parallel.parallel_map">parallel_map() (in module src.validation.parallel)</a>
 </li>
@@ -1213,7 +1199,7 @@ document.write(`
         <li><a href="api/production.html#src.production.model_registry.DMLModelRegistry.rollback">(src.production.model_registry.DMLModelRegistry method)</a>
 </li>
       </ul></li>
-      <li><a href="api/dml.html#src.dml.dynamic_dml.RollingWindowDML">RollingWindowDML (class in src.dml.dynamic_dml)</a>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.RollingWindowDML">RollingWindowDML (class in src.dml.temporal_plr_dml)</a>
 </li>
       <li><a href="api/sensitivity.html#src.sensitivity.rosenbaum.RosenbaumBounds">RosenbaumBounds (class in src.sensitivity.rosenbaum)</a>
 </li>
@@ -1240,13 +1226,13 @@ document.write(`
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.se">se (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.se">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
-</li>
         <li><a href="api/dml.html#src.dml.fwl.FWLResult.se">(src.dml.fwl.FWLResult attribute)</a>
 </li>
         <li><a href="api/dml.html#src.dml.hac.HACResult.se">(src.dml.hac.HACResult attribute)</a>
 </li>
         <li><a href="api/dml.html#src.dml.robinson.RobinsonResult.se">(src.dml.robinson.RobinsonResult attribute)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.se">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
         <li><a href="api/sensitivity.html#src.sensitivity.rosenbaum.SensitivityResult.se">(src.sensitivity.rosenbaum.SensitivityResult attribute)</a>
 </li>
@@ -1304,13 +1290,6 @@ document.write(`
 </li>
       </ul></li>
       <li>
-    src.dml.dynamic_dml
-
-      <ul>
-        <li><a href="api/dml.html#module-src.dml.dynamic_dml">module</a>
-</li>
-      </ul></li>
-      <li>
     src.dml.fwl
 
       <ul>
@@ -1324,13 +1303,20 @@ document.write(`
         <li><a href="api/dml.html#module-src.dml.hac">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     src.dml.robinson
 
       <ul>
         <li><a href="api/dml.html#module-src.dml.robinson">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    src.dml.temporal_plr_dml
+
+      <ul>
+        <li><a href="api/dml.html#module-src.dml.temporal_plr_dml">module</a>
 </li>
       </ul></li>
       <li>
@@ -1425,7 +1411,7 @@ document.write(`
       <ul>
         <li><a href="api/dml.html#src.dml.double_ml.DMLResult.summary">(src.dml.double_ml.DMLResult method)</a>
 </li>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.summary">(src.dml.dynamic_dml.DynamicDMLResult method)</a>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.summary">(src.dml.temporal_plr_dml.TemporalPLRDMLResult method)</a>
 </li>
         <li><a href="api/sensitivity.html#src.sensitivity.rosenbaum.SensitivityResult.summary">(src.sensitivity.rosenbaum.SensitivityResult method)</a>
 </li>
@@ -1451,24 +1437,28 @@ document.write(`
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.T_residual">T_residual (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.T_residual">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
-</li>
         <li><a href="api/dml.html#src.dml.fwl.FWLResult.T_residual">(src.dml.fwl.FWLResult attribute)</a>
 </li>
         <li><a href="api/dml.html#src.dml.robinson.RobinsonResult.T_residual">(src.dml.robinson.RobinsonResult attribute)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.T_residual">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.t_stat">t_stat (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.t_stat">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
-</li>
         <li><a href="api/dml.html#src.dml.fwl.FWLResult.t_stat">(src.dml.fwl.FWLResult attribute)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.t_stat">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/validation.html#src.validation.insurance_dgp.InsuranceDGPParams.tau">tau (src.validation.insurance_dgp.InsuranceDGPParams attribute)</a>
 </li>
       <li><a href="api/validation.html#src.validation.insurance_dgp.InsuranceDGPParams.tau_by_product">tau_by_product (src.validation.insurance_dgp.InsuranceDGPParams attribute)</a>
+</li>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML">TemporalPLRDML (class in src.dml.temporal_plr_dml)</a>
+</li>
+      <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult">TemporalPLRDMLResult (class in src.dml.temporal_plr_dml)</a>
 </li>
       <li><a href="api/validation.html#src.validation.stationarity.StationarityDiagnostic.test">test() (src.validation.stationarity.StationarityDiagnostic method)</a>
 </li>
@@ -1489,21 +1479,21 @@ document.write(`
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.theta">theta (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.theta">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
-</li>
         <li><a href="api/dml.html#src.dml.fwl.FWLResult.theta">(src.dml.fwl.FWLResult attribute)</a>
 </li>
         <li><a href="api/dml.html#src.dml.robinson.RobinsonResult.theta">(src.dml.robinson.RobinsonResult attribute)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.theta">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
         <li><a href="api/sensitivity.html#src.sensitivity.rosenbaum.SensitivityResult.theta">(src.sensitivity.rosenbaum.SensitivityResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/production.html#src.production.causal_monitor.MonitoringResult.threshold">threshold (src.production.causal_monitor.MonitoringResult attribute)</a>
 </li>
-      <li><a href="api/production.html#src.production.dml_pipeline.PipelineConfig.time_column">time_column (src.production.dml_pipeline.PipelineConfig attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/production.html#src.production.dml_pipeline.PipelineConfig.time_column">time_column (src.production.dml_pipeline.PipelineConfig attribute)</a>
+</li>
       <li><a href="api/validation.html#src.validation.dgp_generator_ts.TimeSeriesDGPResult.time_index">time_index (src.validation.dgp_generator_ts.TimeSeriesDGPResult attribute)</a>
 
       <ul>
@@ -1541,7 +1531,7 @@ document.write(`
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.treatment_r2_cv">treatment_r2_cv (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.treatment_r2_cv">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.treatment_r2_cv">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       </ul></li>
       <li><a href="api/production.html#src.production.retrain_pipeline.TriggerType.TREATMENT_SHIFT">TREATMENT_SHIFT (src.production.retrain_pipeline.TriggerType attribute)</a>
@@ -1657,11 +1647,11 @@ document.write(`
       <li><a href="api/dml.html#src.dml.double_ml.DMLResult.Y_residual">Y_residual (src.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
-        <li><a href="api/dml.html#src.dml.dynamic_dml.DynamicDMLResult.Y_residual">(src.dml.dynamic_dml.DynamicDMLResult attribute)</a>
-</li>
         <li><a href="api/dml.html#src.dml.fwl.FWLResult.Y_residual">(src.dml.fwl.FWLResult attribute)</a>
 </li>
         <li><a href="api/dml.html#src.dml.robinson.RobinsonResult.Y_residual">(src.dml.robinson.RobinsonResult attribute)</a>
+</li>
+        <li><a href="api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.Y_residual">(src.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1729,8 +1719,8 @@ By Brandon Behring
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

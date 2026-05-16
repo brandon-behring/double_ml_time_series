@@ -2,7 +2,7 @@ DML Estimators
 ==============
 
 Core causal inference estimators implementing the pedagogical progression from
-Frisch-Waugh-Lovell through Double Machine Learning, plus time series extensions.
+Frisch-Waugh-Lovell through Double Machine Learning, plus temporal PLR helpers.
 
 .. contents:: Module Index
    :local:
@@ -49,12 +49,15 @@ of the Robinson estimator via sample splitting.
 
 ----
 
-Dynamic DML (``src.dml.dynamic_dml``)
---------------------------------------
+Temporal PLR DML (``src.dml.temporal_plr_dml``)
+-----------------------------------------------
 
-Time-varying treatment effect estimation for panel and time series data.
+Scalar temporal partially linear DML with lagged treatment controls,
+time-series cross-fitting, and HAC inference. This module also contains
+rolling-window and panel companion estimators. It is not a true dynamic
+g-estimation implementation.
 
-.. automodule:: src.dml.dynamic_dml
+.. automodule:: src.dml.temporal_plr_dml
    :members:
    :undoc-members: False
    :show-inheritance:
