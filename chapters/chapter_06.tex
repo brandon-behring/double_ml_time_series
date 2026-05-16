@@ -10,7 +10,7 @@
 
 \section{Introduction}\label{sec:ch06_introduction}
 
-Chapter 5 introduced DynamicDML for single time series with autocorrelation. Many economic applications involve \textbf{panel data}---repeated observations on multiple units over time. This chapter develops DML methods for panel data, addressing both fixed effects and time-varying treatment effects.
+Chapter 5 introduced TemporalPLRDML for single time series with autocorrelation. Many economic applications involve \textbf{panel data}---repeated observations on multiple units over time. This chapter develops DML methods for panel data, addressing both fixed effects and time-varying treatment effects.
 
 \keyresult{
 \textbf{Chapter Objectives:}
@@ -138,8 +138,8 @@ DML relaxes the linearity assumption, but combining ML with fixed effects requir
     \STATE Demean: $\ddot{V}_{it} = V_{it} - \bar{V}_i$
 \ENDFOR
 
-\STATE \textbf{Run DynamicDML on transformed data}:
-\STATE $\hat{\tau} \gets \text{DynamicDML}(\ddot{Y}, \ddot{T}, \ddot{X})$
+\STATE \textbf{Run TemporalPLRDML on transformed data}:
+\STATE $\hat{\tau} \gets \text{TemporalPLRDML}(\ddot{Y}, \ddot{T}, \ddot{X})$
 
 \STATE \textbf{Compute cluster-robust standard errors}:
 \FOR{each individual $i$}
@@ -181,8 +181,8 @@ true_tau = 2.0
 Y = true_tau * T + X[:, 0]**2 + alpha_expanded + np.random.randn(n_total)
 
 # Without fixed effects: BIASED
-from src.dml import DynamicDML
-naive_model = DynamicDML(n_lags=0, model_y="ridge", model_t="ridge")
+from src.dml import TemporalPLRDML
+naive_model = TemporalPLRDML(n_lags=0, model_y="ridge", model_t="ridge")
 naive_result = naive_model.fit(Y, T, X)
 print(f"Naive (no FE): theta = {naive_result.theta:.3f}")  # Biased!
 
@@ -511,4 +511,4 @@ Chapter 7 integrates our methods with real macroeconomic data from FRED (Federal
     \item \textbf{Application}: Policy effect estimation with real data
 \end{enumerate}
 
-This bridges the gap from synthetic validation to production applications with real economic data.
+This bridges the gap from synthetic validation to audited applications with real economic data.

@@ -1,5 +1,5 @@
 """
-Causal-specific monitoring for production DML pipelines.
+Causal-specific monitoring utilities for DML research/demo pipelines.
 
 This module monitors phenomena UNIQUE to causal inference:
 
@@ -117,7 +117,7 @@ class CausalMonitorConfig:
 
 class CausalMonitor:
     """
-    Production monitoring for DML pipelines.
+    Companion monitoring utility for DML pipelines.
 
     Monitors four causal-specific phenomena:
     1. Overlap violations (positivity assumption)

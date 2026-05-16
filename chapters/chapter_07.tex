@@ -12,7 +12,7 @@
 
 \section{Introduction}\label{sec:ch07_introduction}
 
-Chapters 5--6 developed time series and panel DML methods using synthetic data. Production applications require \textbf{real macroeconomic controls}---GDP, inflation, interest rates---that create common confounders across economic units. This chapter integrates our methods with Federal Reserve Economic Data (FRED), the canonical source for U.S.\ macroeconomic time series.
+Chapters 5--6 developed time series and panel DML methods using synthetic data. Real macroeconomic applications require \textbf{audited macroeconomic controls}---GDP, inflation, interest rates---that create common confounders across economic units. This chapter integrates our methods with Federal Reserve Economic Data (FRED), the canonical source for U.S.\ macroeconomic time series.
 
 \keyresult{
 \textbf{Chapter Objectives:}
@@ -384,12 +384,12 @@ High missing percentages for quarterly series (like GDPC1) when targeting monthl
 
 \subsection{Basic Integration Pattern}
 
-Combining macro controls with DynamicDML:
+Combining macro controls with TemporalPLRDML:
 
 \begin{minted}[fontsize=\small]{python}
 import numpy as np
 from src.data import FREDLoader, create_synthetic_fred_data
-from src.dml import DynamicDML
+from src.dml import TemporalPLRDML
 
 # Get macro controls (or use synthetic for testing)
 # For production: loader = FREDLoader(); macro = loader.get_macro_controls(...)
@@ -412,13 +412,13 @@ Y = 2.0 * T + 0.5 * macro.data["GDPC1"].values + np.random.randn(n)
 X_firm = np.random.randn(n, 3)
 
 # WITHOUT macro controls: BIASED
-model_naive = DynamicDML(n_lags=2, model_y="ridge", model_t="ridge")
+model_naive = TemporalPLRDML(n_lags=2, model_y="ridge", model_t="ridge")
 result_naive = model_naive.fit(Y, T, X_firm)
 print(f"Naive (no macro): theta = {result_naive.theta:.3f}")  # Biased!
 
 # WITH macro controls: UNBIASED
 X_full = np.column_stack([X_firm, macro.data.values])
-model_macro = DynamicDML(n_lags=2, model_y="ridge", model_t="ridge")
+model_macro = TemporalPLRDML(n_lags=2, model_y="ridge", model_t="ridge")
 result_macro = model_macro.fit(Y, T, X_full)
 print(f"With macro:       theta = {result_macro.theta:.3f}")  # Close to 2.0
 \end{minted}
@@ -428,20 +428,19 @@ print(f"With macro:       theta = {result_macro.theta:.3f}")  # Close to 2.0
 Adding macro controls increases dimensionality. Regularization prevents overfitting:
 
 \begin{minted}[fontsize=\small]{python}
-from sklearn.linear_model import RidgeCV, LassoCV
-
-# Ridge: shrinks all coefficients (keeps all controls)
-model_ridge = DynamicDML(
+# Current TemporalPLRDML accepts built-in nuisance model names.
+# Use "ridge" when macro controls should be retained with shrinkage.
+model_ridge = TemporalPLRDML(
     n_lags=2,
-    model_y=RidgeCV(alphas=[0.1, 1.0, 10.0]),
-    model_t=RidgeCV(alphas=[0.1, 1.0, 10.0])
+    model_y="ridge",
+    model_t="ridge"
 )
 
-# Lasso: performs variable selection (may drop irrelevant macro)
-model_lasso = DynamicDML(
+# Use "lasso" only when a sparse-control assumption is defensible.
+model_lasso = TemporalPLRDML(
     n_lags=2,
-    model_y=LassoCV(cv=5),
-    model_t=LassoCV(cv=5)
+    model_y="lasso",
+    model_t="lasso"
 )
 \end{minted}
 
@@ -461,10 +460,10 @@ For causal inference, Ridge's ``keep everything'' approach is typically safer th
 Macro variables are highly persistent (autocorrelated), which affects standard errors:
 
 \begin{minted}[fontsize=\small]{python}
-from src.dml import DynamicDML
+from src.dml import TemporalPLRDML
 
 # Longer bandwidth for persistent macro controls
-model = DynamicDML(
+model = TemporalPLRDML(
     n_lags=3,
     hac_kernel="bartlett",
     hac_bandwidth="auto",  # Andrews' optimal bandwidth
@@ -498,7 +497,7 @@ The optimal HAC bandwidth often increases when macro controls are included, refl
 
 \begin{minted}[fontsize=\small]{python}
 from src.data import create_synthetic_fred_data
-from src.dml import DynamicDML, PanelDML
+from src.dml import TemporalPLRDML, PanelDML
 import numpy as np
 
 # Macro environment
@@ -519,13 +518,13 @@ our_sales = (
 
 # Without macro controls
 X_naive = np.ones((len(fed_funds), 1))  # Intercept only
-model_naive = DynamicDML(n_lags=1, model_y="ridge", model_t="ridge")
+model_naive = TemporalPLRDML(n_lags=1, model_y="ridge", model_t="ridge")
 result_naive = model_naive.fit(our_sales, competitor_rate_change, X_naive)
 print(f"Naive estimate: {result_naive.theta:.2f}")  # Biased toward zero
 
 # With rate controls
 X_rates = np.column_stack([fed_funds, treasury_10y])
-model_rates = DynamicDML(n_lags=1, model_y="ridge", model_t="ridge")
+model_rates = TemporalPLRDML(n_lags=1, model_y="ridge", model_t="ridge")
 result_rates = model_rates.fit(our_sales, competitor_rate_change, X_rates)
 print(f"Rate-controlled: {result_rates.theta:.2f}")  # Close to -0.8
 \end{minted}
@@ -558,7 +557,7 @@ sp500_return = (
 
 # Full macro controls
 X_macro = macro.data.values
-model = DynamicDML(n_lags=0, model_y="ridge", model_t="ridge")
+model = TemporalPLRDML(n_lags=0, model_y="ridge", model_t="ridge")
 result = model.fit(sp500_return, policy_surprise, X_macro)
 print(f"Policy effect: {result.theta:.2f} ({result.ci_lower:.2f}, {result.ci_upper:.2f})")
 \end{minted}
@@ -641,7 +640,7 @@ Use \texttt{create\_synthetic\_fred\_data} to validate that macro controls elimi
 \begin{minted}[fontsize=\small]{python}
 import numpy as np
 from src.data import create_synthetic_fred_data
-from src.dml import DynamicDML
+from src.dml import TemporalPLRDML
 
 # Monte Carlo validation
 n_sims = 200
@@ -660,13 +659,13 @@ for sim in range(n_sims):
 
     # Naive estimate
     X_naive = np.ones((n, 1))
-    model_n = DynamicDML(n_lags=1, model_y="ridge", model_t="ridge")
+    model_n = TemporalPLRDML(n_lags=1, model_y="ridge", model_t="ridge")
     res_n = model_n.fit(Y, T, X_naive)
     results_naive.append(res_n.theta)
 
     # Controlled estimate
     X_ctrl = macro.data.values
-    model_c = DynamicDML(n_lags=1, model_y="ridge", model_t="ridge")
+    model_c = TemporalPLRDML(n_lags=1, model_y="ridge", model_t="ridge")
     res_c = model_c.fit(Y, T, X_ctrl)
     results_controlled.append(res_c.theta)
 

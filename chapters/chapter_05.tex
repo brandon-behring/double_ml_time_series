@@ -1,18 +1,22 @@
-% Chapter 5: Dynamic Treatment Effects for Time Series
+% Chapter 5: Temporal PLR DML for Time Series
 % ============================================================================
 % This chapter extends DML to time series settings, addressing:
 % - Temporal dependence and autocorrelation
 % - Time series cross-validation with purging
 % - HAC (Newey-West) standard errors
-% - DynamicDML implementation
+% - TemporalPLRDML implementation (scalar PLR, not dynamic g-estimation)
 % ============================================================================
 
-\chapter{Dynamic Treatment Effects for Time Series}
+\chapter{Temporal PLR DML for Time Series}
 \label{ch:dynamic_treatment_effects}
 
 \section{Introduction}\label{sec:ch05_introduction}
 
-Chapters 1--4 developed DML for cross-sectional data where observations are independent. However, many economic questions involve \textbf{time series data} where observations exhibit temporal dependence. This chapter extends DML to handle autocorrelated treatments, confounders, and outcomes---a critical extension for macroeconomic policy analysis, financial applications, and dynamic pricing.
+Chapters 1--4 developed DML for cross-sectional data where observations are independent. However, many economic questions involve \textbf{time series data} where observations exhibit temporal dependence. This chapter develops the companion repo's current time-series implementation: scalar partially linear DML with lagged treatment controls, temporal cross-fitting, and HAC inference.
+
+\keyresult{
+The class used in this chapter, \texttt{TemporalPLRDML}, is not a recursive dynamic g-estimation implementation and does not estimate period-specific $\theta_t$ effects. It estimates one scalar treatment effect after controlling for current covariates and lagged treatments. True dynamic g-estimation is deferred future work.
+}
 
 \keyresult{
 \textbf{Chapter Objectives:}
@@ -20,8 +24,8 @@ Chapters 1--4 developed DML for cross-sectional data where observations are inde
     \item Understand why standard cross-fitting fails with time series data
     \item Implement time series cross-validation with purging and blocking
     \item Derive HAC (Newey-West) standard errors for autocorrelation-robust inference
-    \item Apply DynamicDML to estimate dynamic treatment effects
-    \item Validate implementation with Monte Carlo simulations
+    \item Apply TemporalPLRDML to estimate scalar temporal PLR effects
+    \item Use simulations as implementation checks, not proof of universal validity
 \end{itemize}
 }
 
@@ -50,7 +54,7 @@ Standard DML with random K-fold splitting achieves:
     \item \textbf{Overly optimistic} nuisance model performance (future leakage)
 \end{itemize}
 
-DynamicDML fixes both issues through temporal cross-validation and HAC inference.
+TemporalPLRDML addresses these two engineering issues through temporal cross-validation and HAC inference.
 }
 
 \subsection{Chapter Roadmap}
@@ -58,7 +62,7 @@ DynamicDML fixes both issues through temporal cross-validation and HAC inference
 \begin{itemize}
     \item \textbf{Section 5.2}: Time Series Cross-Validation---purging, blocking, and embargo
     \item \textbf{Section 5.3}: HAC Standard Errors---Newey-West estimation for autocorrelation
-    \item \textbf{Section 5.4}: DynamicDML Framework---combining the components
+    \item \textbf{Section 5.4}: TemporalPLRDML Framework---combining the components
     \item \textbf{Section 5.5}: Monte Carlo Validation---verifying coverage and unbiasedness
     \item \textbf{Section 5.6}: Practical Recommendations
     \item \textbf{Section 5.7}: Exercises
@@ -284,16 +288,16 @@ print(f"Long-run variance: {hac.get_variance():.4f}")
 \end{minted}
 
 % ============================================================================
-\section{The DynamicDML Framework}\label{sec:dynamic_dml}
+\section{The TemporalPLRDML Framework}\label{sec:temporal_plr_dml}
 % ============================================================================
 
 \subsection{Algorithm Overview}
 
-DynamicDML combines time series cross-validation with HAC inference:
+TemporalPLRDML combines time series cross-validation with HAC inference:
 
 \begin{algorithm}[H]
-\caption{DynamicDML Estimation}
-\label{alg:dynamic_dml}
+\caption{TemporalPLRDML Estimation}
+\label{alg:temporal_plr_dml}
 \begin{algorithmic}[1]
 \REQUIRE Outcome $Y$, Treatment $T$, Confounders $X$, Number of lags $L$
 \ENSURE Treatment effect $\hat{\tau}$ with HAC standard error
@@ -307,6 +311,7 @@ DynamicDML combines time series cross-validation with HAC inference:
     \STATE Predict on test fold: $\hat{Y}^{(-k)}_t$, $\hat{T}^{(-k)}_t$
 \ENDFOR
 
+\STATE \textbf{Exclude uncovered early rows}: drop observations without valid temporal out-of-fold predictions
 \STATE \textbf{Compute residuals}: $\tilde{Y}_t = Y_t - \hat{Y}^{(-t)}_t$, $\tilde{T}_t = T_t - \hat{T}^{(-t)}_t$
 \STATE \textbf{Estimate $\tau$}: $\hat{\tau} = \frac{\sum_t \tilde{Y}_t \tilde{T}_t}{\sum_t \tilde{T}_t^2}$
 \STATE \textbf{Compute influence scores}: $\psi_t = \frac{(\tilde{Y}_t - \hat{\tau}\tilde{T}_t)\tilde{T}_t}{\bar{T}^2}$
@@ -320,7 +325,7 @@ DynamicDML combines time series cross-validation with HAC inference:
 \subsection{Implementation}
 
 \begin{minted}[fontsize=\small]{python}
-from src.dml import DynamicDML
+from src.dml import TemporalPLRDML
 import numpy as np
 
 # Generate time series data with autocorrelation
@@ -344,8 +349,8 @@ for t in range(1, n):
 true_tau = 2.0
 Y = true_tau * T + X[:, 0]**2 + np.random.randn(n)
 
-# Fit DynamicDML
-model = DynamicDML(
+# Fit TemporalPLRDML
+model = TemporalPLRDML(
     n_lags=3,
     model_y="random_forest",
     model_t="random_forest",
@@ -360,8 +365,8 @@ print(result.summary())
 \subsection{Output Interpretation}
 
 \begin{verbatim}
-Dynamic Double Machine Learning Results
-=======================================
+Temporal PLR DML Results
+========================
 Treatment Effect (τ):    2.0391
 HAC Standard Error:      0.0854
 t-statistic:             23.87
@@ -370,7 +375,9 @@ p-value:                 0.0000
 
 Sample Information:
   Observations:          500
-  Time periods:          497  (3 lost to lags)
+  Used observations:     414
+  Lag rows dropped:      3
+  CV rows dropped:       83
 
 Nuisance Model Diagnostics:
   Outcome R² (CV):       0.451
@@ -389,7 +396,7 @@ The HAC bandwidth of 7 was automatically selected using the $n^{1/3}$ rule. For 
 \section{Monte Carlo Validation}\label{sec:monte_carlo_validation}
 % ============================================================================
 
-We validate DynamicDML through simulation studies examining:
+We validate TemporalPLRDML through simulation studies examining:
 \begin{enumerate}
     \item \textbf{Unbiasedness}: $\E[\hat{\tau}] \approx \tau_0$
     \item \textbf{Coverage}: 95\% CI covers $\tau_0$ in $\approx$ 95\% of simulations
@@ -446,14 +453,14 @@ def generate_ts_dgp(n, tau=2.0, rho_T=0.3, rho_eps=0.2, seed=None):
 
 \begin{table}[htbp]
 \centering
-\caption{DynamicDML Monte Carlo Results ($n=500$, 200 simulations)}
+\caption{TemporalPLRDML Monte Carlo Results ($n=500$, 200 simulations)}
 \label{tab:monte_carlo}
 \begin{tabular}{lcccc}
 \hline
 \textbf{Method} & \textbf{Bias} & \textbf{Emp. SE} & \textbf{Avg. SE} & \textbf{Coverage} \\
 \hline
 DML (i.i.d. SE) & 0.02 & 0.12 & 0.08 & 78\% \\
-DynamicDML (HAC SE) & 0.02 & 0.12 & 0.11 & 93\% \\
+TemporalPLRDML (HAC SE) & 0.02 & 0.12 & 0.11 & 93\% \\
 \hline
 \end{tabular}
 \end{table}
@@ -472,12 +479,12 @@ The difference becomes more severe with stronger autocorrelation ($\rho > 0.5$).
 \section{Practical Recommendations}\label{sec:recommendations}
 % ============================================================================
 
-\subsection{When to Use DynamicDML}
+\subsection{When to Use TemporalPLRDML}
 
 \begin{enumerate}
     \item \textbf{Time series data}: Any setting with temporal ordering
     \item \textbf{Autocorrelated outcomes}: Check with Durbin-Watson or Ljung-Box tests
-    \item \textbf{Dynamic effects}: When lagged treatments affect current outcomes
+    \item \textbf{Lagged treatment controls}: When prior treatments are confounders or state variables for the current scalar effect
     \item \textbf{Macro/finance applications}: Interest rates, prices, policies over time
 \end{enumerate}
 
@@ -485,7 +492,7 @@ The difference becomes more severe with stronger autocorrelation ($\rho > 0.5$).
 
 \begin{table}[htbp]
 \centering
-\caption{DynamicDML Configuration Guide}
+\caption{TemporalPLRDML Configuration Guide}
 \label{tab:config_guide}
 \begin{tabular}{lll}
 \hline
@@ -603,15 +610,15 @@ This chapter extended DML to time series settings through three key innovations:
 
     \item \textbf{HAC Standard Errors}: Newey-West estimation accounts for autocorrelation in influence scores, providing correctly-sized confidence intervals
 
-    \item \textbf{DynamicDML Framework}: Integrates lagged features, temporal CV, and HAC inference into a unified estimation procedure
+    \item \textbf{TemporalPLRDML Framework}: Integrates lagged controls, temporal CV, and HAC inference into a scalar PLR estimation procedure
 \end{enumerate}
 
 \textbf{Key Takeaways:}
 \begin{itemize}
-    \item Standard DML produces correct point estimates but \textbf{invalid SEs} for time series data
+    \item Standard random-fold DML can create future-data leakage and misleading uncertainty for ordered data
     \item Time series CV with gaps prevents future information leakage
     \item HAC SEs with bandwidth $B \approx n^{1/3}$ correct for autocorrelation
-    \item DynamicDML achieves near-nominal coverage in Monte Carlo simulations
+    \item TemporalPLRDML reports lag rows and temporal-CV rows dropped before final residual regression
 \end{itemize}
 
 % ============================================================================

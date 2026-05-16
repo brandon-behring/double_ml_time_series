@@ -1,7 +1,7 @@
-"""Tests for DynamicDML time series implementation.
+"""Tests for TemporalPLRDML time series implementation.
 
 Tests cover:
-1. DynamicDML core functionality
+1. TemporalPLRDML core functionality
 2. RollingWindowDML for time-varying effects
 3. PanelDML with fixed effects
 4. Integration with HAC and cross-fitting components
@@ -10,14 +10,17 @@ Tests cover:
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from sklearn.dummy import DummyRegressor
 
-from src.dml.dynamic_dml import (
-    DynamicDML,
-    DynamicDMLResult,
+from src.dml.cross_fitting import TimeSeriesCrossValidator
+from src.dml.temporal_plr_dml import (
+    TemporalPLRDML,
+    TemporalPLRDMLResult,
     PanelDML,
     RollingWindowDML,
     _compute_r2,
     _create_lagged_features,
+    _cross_fit_nuisance_time_series,
     _get_nuisance_model,
 )
 
@@ -177,19 +180,42 @@ class TestHelperFunctions:
         expected_last = [1.0, 4.0, 3.0]
         assert_allclose(X_aug[-1], expected_last)
 
+    def test_temporal_cross_fit_does_not_backfill_early_rows(self):
+        """Early rows without temporal OOF predictions stay missing."""
+        n = 30
+        X = np.arange(n, dtype=float).reshape(-1, 1)
+        Y = np.arange(n, dtype=float)
+        T = np.arange(n, dtype=float) * 0.5
+        cv = TimeSeriesCrossValidator(n_splits=3)
+
+        Y_hat, T_hat = _cross_fit_nuisance_time_series(
+            X=X,
+            Y=Y,
+            T=T,
+            cv=cv,
+            outcome_model=DummyRegressor(strategy="mean"),
+            treatment_model=DummyRegressor(strategy="mean"),
+        )
+
+        first_predicted = min(int(test_idx[0]) for _, test_idx in cv.split(X, Y))
+        assert np.isnan(Y_hat[:first_predicted]).all()
+        assert np.isnan(T_hat[:first_predicted]).all()
+        assert np.isfinite(Y_hat[first_predicted:]).all()
+        assert np.isfinite(T_hat[first_predicted:]).all()
+
 
 # ============================================================================
-# DynamicDMLResult Tests
+# TemporalPLRDMLResult Tests
 # ============================================================================
 
 
 @pytest.mark.tier1
-class TestDynamicDMLResult:
-    """Tests for DynamicDMLResult dataclass."""
+class TestTemporalPLRDMLResult:
+    """Tests for TemporalPLRDMLResult dataclass."""
 
     def test_result_repr(self):
         """Test result string representation."""
-        result = DynamicDMLResult(
+        result = TemporalPLRDMLResult(
             theta=2.0,
             se=0.1,
             t_stat=20.0,
@@ -213,7 +239,7 @@ class TestDynamicDMLResult:
 
     def test_result_summary(self):
         """Test result summary output."""
-        result = DynamicDMLResult(
+        result = TemporalPLRDMLResult(
             theta=2.0,
             se=0.1,
             t_stat=20.0,
@@ -232,23 +258,23 @@ class TestDynamicDMLResult:
         )
 
         summary = result.summary()
-        assert "Dynamic Double Machine Learning Results" in summary
+        assert "Temporal PLR DML Results" in summary
         assert "HAC Standard Error:" in summary
         assert "Bandwidth:" in summary
 
 
 # ============================================================================
-# DynamicDML Core Tests
+# TemporalPLRDML Core Tests
 # ============================================================================
 
 
 @pytest.mark.tier1
-class TestDynamicDMLInit:
-    """Tests for DynamicDML initialization."""
+class TestTemporalPLRDMLInit:
+    """Tests for TemporalPLRDML initialization."""
 
     def test_default_init(self):
         """Test default initialization."""
-        model = DynamicDML()
+        model = TemporalPLRDML()
         assert model.n_lags == 1
         assert model.model_y == "random_forest"
         assert model.model_t == "random_forest"
@@ -258,7 +284,7 @@ class TestDynamicDMLInit:
 
     def test_custom_init(self):
         """Test custom initialization."""
-        model = DynamicDML(
+        model = TemporalPLRDML(
             n_lags=3,
             model_y="ridge",
             model_t="lasso",
@@ -281,30 +307,30 @@ class TestDynamicDMLInit:
 
 
 @pytest.mark.tier2
-class TestDynamicDMLFit:
-    """Tests for DynamicDML fit method."""
+class TestTemporalPLRDMLFit:
+    """Tests for TemporalPLRDML fit method."""
 
     def test_fit_returns_result(self, simple_time_series):
-        """Test that fit returns DynamicDMLResult."""
+        """Test that fit returns TemporalPLRDMLResult."""
         Y, T, X, time, _ = simple_time_series
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         result = model.fit(Y, T, X, time_index=time)
 
-        assert isinstance(result, DynamicDMLResult)
+        assert isinstance(result, TemporalPLRDMLResult)
         assert model._is_fitted
 
     def test_fit_without_time_index(self, simple_time_series):
         """Test fit without explicit time index."""
         Y, T, X, _, _ = simple_time_series
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         result = model.fit(Y, T, X)  # No time_index
 
-        assert isinstance(result, DynamicDMLResult)
+        assert isinstance(result, TemporalPLRDMLResult)
 
     def test_fit_estimates_reasonable(self, simple_time_series):
         """Test that estimates are in reasonable range of true value."""
         Y, T, X, time, true_theta = simple_time_series
-        model = DynamicDML(n_lags=2, random_state=42)
+        model = TemporalPLRDML(n_lags=2, random_state=42)
         result = model.fit(Y, T, X, time_index=time)
 
         # Theta should be within 50% of true value
@@ -313,7 +339,7 @@ class TestDynamicDMLFit:
     def test_fit_hac_se_positive(self, simple_time_series):
         """Test that HAC SE is positive."""
         Y, T, X, time, _ = simple_time_series
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         result = model.fit(Y, T, X, time_index=time)
 
         assert result.se > 0
@@ -321,7 +347,7 @@ class TestDynamicDMLFit:
     def test_fit_with_autocorrelation(self, autocorrelated_time_series):
         """Test fit with autocorrelated treatment."""
         Y, T, X, time, true_theta = autocorrelated_time_series
-        model = DynamicDML(
+        model = TemporalPLRDML(
             n_lags=3,
             hac_kernel="bartlett",
             random_state=42,
@@ -334,19 +360,19 @@ class TestDynamicDMLFit:
     def test_fit_stores_residuals(self, simple_time_series):
         """Test that residuals are stored after fit."""
         Y, T, X, time, _ = simple_time_series
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         model.fit(Y, T, X, time_index=time)
 
         assert model._Y_residual is not None
         assert model._T_residual is not None
-        assert len(model._Y_residual) == len(Y) - model.n_lags
+        assert len(model._Y_residual) == len(Y) - model.n_lags - model._result.dropped_initial_rows
 
     def test_fit_with_different_cv_strategies(self, simple_time_series):
         """Test fit with different CV strategies."""
         Y, T, X, time, _ = simple_time_series
 
         for cv_strategy in ["time_series_split", "blocked_cv", "purged_cv"]:
-            model = DynamicDML(
+            model = TemporalPLRDML(
                 n_lags=1,
                 cv_strategy=cv_strategy,  # type: ignore
                 random_state=42,
@@ -359,7 +385,7 @@ class TestDynamicDMLFit:
         Y, T, X, time, _ = simple_time_series
 
         for model_type in ["ridge", "lasso", "random_forest", "gradient_boosting"]:
-            model = DynamicDML(
+            model = TemporalPLRDML(
                 n_lags=1,
                 model_y=model_type,  # type: ignore
                 model_t=model_type,  # type: ignore
@@ -370,7 +396,7 @@ class TestDynamicDMLFit:
 
     def test_fit_input_validation(self):
         """Test input validation in fit."""
-        model = DynamicDML()
+        model = TemporalPLRDML()
 
         Y = np.array([1.0, 2.0, 3.0])
         T = np.array([1.0, 2.0])  # Wrong length
@@ -381,7 +407,7 @@ class TestDynamicDMLFit:
 
     def test_fit_x_validation(self):
         """Test X shape validation in fit."""
-        model = DynamicDML()
+        model = TemporalPLRDML()
 
         Y = np.array([1.0, 2.0, 3.0])
         T = np.array([1.0, 2.0, 3.0])
@@ -401,35 +427,35 @@ class TestDynamicDMLFit:
         T = np.zeros(n)  # Constant treatment = no variation
         Y = 2.0 * T + np.random.randn(n)
 
-        model = DynamicDML(n_lags=0, model_y="ridge", model_t="ridge", random_state=42)
+        model = TemporalPLRDML(n_lags=0, model_y="ridge", model_t="ridge", random_state=42)
 
         with pytest.raises(ValueError, match="no variation"):
             model.fit(Y, T, X)
 
 
 @pytest.mark.tier2
-class TestDynamicDMLEffect:
-    """Tests for DynamicDML effect methods."""
+class TestTemporalPLRDMLEffect:
+    """Tests for TemporalPLRDML effect methods."""
 
     def test_effect_before_fit(self):
         """Test effect raises error before fit."""
-        model = DynamicDML()
+        model = TemporalPLRDML()
         with pytest.raises(ValueError, match="must be fitted"):
             model.effect()
 
     def test_effect_after_fit(self, simple_time_series):
         """Test effect returns correct shape."""
         Y, T, X, time, _ = simple_time_series
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         model.fit(Y, T, X, time_index=time)
 
         effects = model.effect()
-        assert len(effects) == len(Y) - model.n_lags
+        assert len(effects) == model._result.n_periods
 
     def test_effect_with_X(self, simple_time_series):
         """Test effect with new X values."""
         Y, T, X, time, _ = simple_time_series
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         model.fit(Y, T, X, time_index=time)
 
         X_new = np.random.randn(10, X.shape[1])
@@ -439,7 +465,7 @@ class TestDynamicDMLEffect:
     def test_effect_scaling(self, simple_time_series):
         """Test effect scaling with T0 and T1."""
         Y, T, X, time, _ = simple_time_series
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         result = model.fit(Y, T, X, time_index=time)
 
         effects_default = model.effect(T0=0, T1=1)
@@ -449,25 +475,24 @@ class TestDynamicDMLEffect:
 
     def test_effect_interval_before_fit(self):
         """Test effect_interval raises error before fit."""
-        model = DynamicDML()
+        model = TemporalPLRDML()
         with pytest.raises(ValueError, match="must be fitted"):
             model.effect_interval()
 
     def test_effect_interval_after_fit(self, simple_time_series):
         """Test effect_interval returns correct shape."""
         Y, T, X, time, _ = simple_time_series
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         model.fit(Y, T, X, time_index=time)
 
         lower, upper = model.effect_interval()
-        n_eff = len(Y) - model.n_lags
-        assert len(lower) == n_eff
-        assert len(upper) == n_eff
+        assert len(lower) == model._result.n_periods
+        assert len(upper) == model._result.n_periods
 
     def test_effect_interval_ordering(self, simple_time_series):
         """Test that lower < upper for confidence intervals."""
         Y, T, X, time, _ = simple_time_series
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         model.fit(Y, T, X, time_index=time)
 
         lower, upper = model.effect_interval(alpha=0.05)
@@ -570,7 +595,7 @@ class TestPanelDML:
         )
         result = model.fit(Y, T, X, individual_id, time_id)
 
-        assert isinstance(result, DynamicDMLResult)
+        assert isinstance(result, TemporalPLRDMLResult)
         # With proper FE, should get close to true effect
         assert abs(result.theta - true_theta) < 1.5
 
@@ -586,7 +611,7 @@ class TestPanelDML:
         )
         result = model.fit(Y, T, X, individual_id, time_id)
 
-        assert isinstance(result, DynamicDMLResult)
+        assert isinstance(result, TemporalPLRDMLResult)
 
     @pytest.mark.tier2
     def test_fit_twoway_fe(self, panel_data):
@@ -600,7 +625,7 @@ class TestPanelDML:
         )
         result = model.fit(Y, T, X, individual_id, time_id)
 
-        assert isinstance(result, DynamicDMLResult)
+        assert isinstance(result, TemporalPLRDMLResult)
 
     @pytest.mark.tier2
     def test_cluster_se(self, panel_data):
@@ -637,8 +662,8 @@ class TestPanelDML:
 
 
 @pytest.mark.tier2
-class TestDynamicDMLIntegration:
-    """Integration tests for DynamicDML with other components."""
+class TestTemporalPLRDMLIntegration:
+    """Integration tests for TemporalPLRDML with other components."""
 
     def test_integration_with_hac(self, autocorrelated_time_series):
         """Test integration with HAC covariance estimation."""
@@ -646,7 +671,7 @@ class TestDynamicDMLIntegration:
 
         # Different HAC kernels should all work
         for kernel in ["bartlett", "parzen", "quadratic_spectral"]:
-            model = DynamicDML(
+            model = TemporalPLRDML(
                 n_lags=2,
                 hac_kernel=kernel,  # type: ignore
                 random_state=42,
@@ -659,7 +684,7 @@ class TestDynamicDMLIntegration:
         """Test integration with time series cross-validation."""
         Y, T, X, time, _ = simple_time_series
 
-        model = DynamicDML(
+        model = TemporalPLRDML(
             n_lags=1,
             cv_strategy="time_series_split",
             n_splits=5,
@@ -693,7 +718,7 @@ class TestDynamicDMLIntegration:
             T = 0.5 * X[:, 0] + np.random.randn(n)
             Y = true_theta * T + X[:, 0] + np.random.randn(n)
 
-            model = DynamicDML(
+            model = TemporalPLRDML(
                 n_lags=0,
                 model_y="ridge",
                 model_t="ridge",
@@ -736,7 +761,7 @@ class TestEdgeCases:
         T = 0.5 * X[:, 0] + np.random.randn(n)
         Y = 2.0 * T + X[:, 0] + np.random.randn(n)
 
-        model = DynamicDML(
+        model = TemporalPLRDML(
             n_lags=1,
             n_splits=3,  # Fewer splits for small sample
             model_y="ridge",
@@ -756,7 +781,7 @@ class TestEdgeCases:
         T = 0.5 * X + np.random.randn(n)
         Y = 2.0 * T + X + np.random.randn(n)
 
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         result = model.fit(Y, T, X)
 
         assert isinstance(result.theta, float)
@@ -769,11 +794,12 @@ class TestEdgeCases:
         T = 0.5 * X[:, 0] + np.random.randn(n)
         Y = 2.0 * T + X[:, 0] + np.random.randn(n)
 
-        model = DynamicDML(n_lags=0, random_state=42)
+        model = TemporalPLRDML(n_lags=0, random_state=42)
         result = model.fit(Y, T, X)
 
-        # No observations should be dropped
-        assert result.n_periods == n
+        # No lag rows should be dropped, but early temporal-CV rows are excluded.
+        assert result.lagged_rows_dropped == 0
+        assert result.n_periods + result.dropped_initial_rows == n
 
     def test_many_lags(self):
         """Test with many lags."""
@@ -783,11 +809,12 @@ class TestEdgeCases:
         T = 0.5 * X[:, 0] + np.random.randn(n)
         Y = 2.0 * T + X[:, 0] + np.random.randn(n)
 
-        model = DynamicDML(n_lags=10, random_state=42)
+        model = TemporalPLRDML(n_lags=10, random_state=42)
         result = model.fit(Y, T, X)
 
-        # 10 observations should be dropped
-        assert result.n_periods == n - 10
+        # 10 lag rows are dropped before temporal-CV filtering.
+        assert result.lagged_rows_dropped == 10
+        assert result.n_periods + result.dropped_initial_rows == n - 10
 
     def test_list_inputs(self):
         """Test with list inputs instead of arrays."""
@@ -797,7 +824,7 @@ class TestEdgeCases:
         T = (0.5 * np.array(X)[:, 0] + np.random.randn(n)).tolist()
         Y = (2.0 * np.array(T) + np.array(X)[:, 0] + np.random.randn(n)).tolist()
 
-        model = DynamicDML(n_lags=1, random_state=42)
+        model = TemporalPLRDML(n_lags=1, random_state=42)
         result = model.fit(Y, T, X)
 
         assert isinstance(result.theta, float)
@@ -821,7 +848,7 @@ class TestBenchmarks:
         Y = 2.0 * T + X[:, 0] ** 2 + np.random.randn(n)
         time = np.arange(n)
 
-        model = DynamicDML(
+        model = TemporalPLRDML(
             n_lags=5,
             model_y="random_forest",
             model_t="random_forest",
@@ -841,7 +868,7 @@ class TestBenchmarks:
         T = 0.5 * X[:, 0] + np.random.randn(n)
         Y = 2.0 * T + X[:, 0] + X[:, 1] ** 2 + np.random.randn(n)
 
-        model = DynamicDML(
+        model = TemporalPLRDML(
             n_lags=2,
             model_y="random_forest",
             model_t="random_forest",

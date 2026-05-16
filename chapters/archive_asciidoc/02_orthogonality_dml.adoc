@@ -361,7 +361,7 @@ where stem:[k(i)] denotes the fold containing observation stem:[i], and stem:[\h
 
 == Python Implementation with EconML
 
-Microsoft's **EconML** library provides production-ready implementations of DML estimators. Let's see how to apply DML to the partially linear model.
+Microsoft's **EconML** library provides established implementations of DML estimators. Let's see how to apply DML to the partially linear model.
 
 === Basic DML Example
 
@@ -1210,7 +1210,7 @@ This chapter developed the theoretical foundation for Double Machine Learning:
 1. **Neyman Orthogonality**: Structure estimation to be robust to first-order bias in nuisance functions
 2. **Sample Splitting**: Use cross-fitting to eliminate overfitting bias
 3. **Asymptotic Properties**: DML achieves stem:[\sqrt{n}]-consistency and asymptotic normality with flexible ML
-4. **Implementation**: EconML provides production-ready tools with automatic inference
+4. **Implementation**: EconML provides established tools with automatic inference
 5. **Diagnostics**: Check first-stage fit quality and compare ML methods
 
 **Key Takeaways**:

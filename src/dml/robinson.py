@@ -55,7 +55,7 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Ridge
 
-# Configurable parallelism: production uses -1 (all cores), tests use 1 (sequential).
+# Configurable parallelism: default uses all cores; tests can set DML_N_JOBS=1.
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 
 

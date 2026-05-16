@@ -198,7 +198,7 @@ class TestDMLModelVersion:
         out = LinearRegression().fit(X, Y)
 
         version = DMLModelVersion.create(
-            model_type="dynamic_dml",
+            model_type="temporal_plr_dml",
             nuisance_models={0: (prop, out), 1: (prop, out)},
             feature_names=["a", "b", "c"],
             treatment_name="treatment",

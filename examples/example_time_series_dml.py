@@ -1,21 +1,19 @@
-"""Time Series DML with Temporal Cross-Validation and HAC Standard Errors.
+"""Temporal PLR DML with temporal cross-validation and HAC standard errors.
 
-Demonstrates the full time series DML workflow:
+Demonstrates the current time-series companion workflow:
     1. Generate autocorrelated data with a known treatment effect
     2. Show temporal cross-validation fold structure
-    3. Estimate treatment effect with DML
-    4. Compare HAC vs naive standard errors
+    3. Estimate a scalar temporal PLR treatment effect
+    4. Report dropped initial rows and HAC inference
 
 Usage:
-    python examples/example_time_series_dml.py
+    venv/bin/python examples/example_time_series_dml.py
 """
 
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor
 
-from src.dml import double_ml
+from src.dml import TemporalPLRDML
 from src.dml.cross_fitting import TimeSeriesCrossValidator
-from src.dml.hac import newey_west_se
 from src.validation import TimeSeriesDGPGenerator
 
 
@@ -64,43 +62,37 @@ def main() -> None:
         )
     print()
 
-    # ── Part 3: DML Estimation ───────────────────────────────────────────
+    # ── Part 3: Temporal PLR DML Estimation ──────────────────────────────
     print("=" * 60)
-    print("Part 3: DML with Temporal CV")
+    print("Part 3: TemporalPLRDML")
     print("=" * 60)
 
-    result = double_ml(
-        Y,
-        T,
-        X,
-        outcome_model=RandomForestRegressor(n_estimators=100, random_state=42),
-        treatment_model=RandomForestRegressor(n_estimators=100, random_state=42),
-        n_folds=5,
+    model = TemporalPLRDML(
+        n_lags=2,
+        model_y="ridge",
+        model_t="ridge",
+        n_splits=5,
+        gap=10,
+        hac_bandwidth=8,
+        random_state=42,
     )
+    result = model.fit(Y, T, X, time_index=np.arange(len(Y)))
 
-    print(f"  DML estimate: {result.theta:.3f} (true: {TRUE_THETA})")
-    print(f"  Naive SE:     {result.se:.4f}")
-    print(f"  95% CI:       [{result.ci_lower:.3f}, {result.ci_upper:.3f}]")
+    print(f"  Temporal PLR estimate: {result.theta:.3f} (true: {TRUE_THETA})")
+    print(f"  HAC SE:                {result.se:.4f}")
+    print(f"  95% CI:                [{result.ci_lower:.3f}, {result.ci_upper:.3f}]")
+    print(f"  Lag rows dropped:      {result.lagged_rows_dropped}")
+    print(f"  CV rows dropped:       {result.dropped_initial_rows}")
     print()
 
-    # ── Part 4: HAC Standard Errors ──────────────────────────────────────
+    # ── Part 4: Diagnostics ──────────────────────────────────────────────
     print("=" * 60)
-    print("Part 4: HAC vs Naive Standard Errors")
+    print("Part 4: Nuisance Diagnostics")
     print("=" * 60)
 
-    # Use influence scores as residuals for HAC
-    se_hac = newey_west_se(result.influence_scores, bandwidth="auto")
-
-    print(f"  Naive SE: {result.se:.4f}")
-    print(f"  HAC SE:   {se_hac:.4f}")
-    ratio = se_hac / result.se if result.se > 0 else float("inf")
-    print(f"  Ratio:    {ratio:.2f}x")
-    print()
-
-    if ratio > 1.2:
-        print("  -> HAC SE substantially larger: autocorrelation matters here")
-    else:
-        print("  -> HAC and naive SE are similar: autocorrelation is mild")
+    print(f"  Outcome R2 (temporal CV):   {result.outcome_r2_cv:.3f}")
+    print(f"  Treatment R2 (temporal CV): {result.treatment_r2_cv:.3f}")
+    print(f"  HAC bandwidth:              {result.hac_bandwidth}")
 
 
 if __name__ == "__main__":

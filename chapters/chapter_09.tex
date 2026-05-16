@@ -2,8 +2,8 @@
 % ============================================================================
 % This chapter covers:
 % - CATE estimation theory and practice
-% - CausalForestDML for non-parametric heterogeneity
-% - Best linear predictor of CATE
+% - Optional external EconML discussion for CausalForestDML
+% - Optional Best linear predictor discussion
 % - Heterogeneity visualization and interpretation
 % - Policy-relevant subgroup analysis
 % ============================================================================
@@ -14,6 +14,10 @@
 \section{Introduction}\label{sec:ch09_introduction}
 
 Chapters 1--8 focused on estimating the \textbf{Average Treatment Effect} (ATE)---a single number summarizing the causal effect across an entire population. But in practice, treatment effects often vary across individuals or units. Understanding this \textbf{heterogeneity} is essential for:
+
+\keyresult{
+This chapter is optional methodology discussion. The companion repo does not currently implement CausalForestDML, BLP testing, or policy-tree workflows. Code using EconML should be read as external-package illustration, not as a verified repo API.
+}
 
 \begin{itemize}
     \item \textbf{Targeting}: Who benefits most from treatment?
@@ -26,8 +30,8 @@ Chapters 1--8 focused on estimating the \textbf{Average Treatment Effect} (ATE)-
 \textbf{Chapter Objectives:}
 \begin{itemize}
     \item Define and estimate Conditional Average Treatment Effects (CATE)
-    \item Apply CausalForestDML for non-parametric heterogeneity discovery
-    \item Construct the Best Linear Predictor (BLP) for effect heterogeneity
+    \item Discuss CausalForestDML as optional external-package methodology
+    \item Discuss the Best Linear Predictor (BLP) for effect heterogeneity
     \item Visualize and interpret heterogeneous effects
     \item Connect to policy-relevant decision-making
 \end{itemize}
@@ -148,7 +152,7 @@ This is exactly DML applied point-wise:
 
 \subsection{Implementation with EconML}
 
-EconML provides production-ready implementations:
+EconML provides established external implementations:
 
 \begin{minted}[fontsize=\small]{python}
 from econml.dml import LinearDML, CausalForestDML
@@ -646,19 +650,19 @@ This chapter extended DML from average effects to heterogeneous effects:
 \begin{enumerate}
     \item \textbf{CATE}: $\tau(x) = \mathbb{E}[Y(1) - Y(0) \mid X = x]$ quantifies individual-level effects
     \item \textbf{DML for CATE}: Orthogonal scores eliminate first-stage bias in CATE estimation
-    \item \textbf{CausalForestDML}: Non-parametric heterogeneity discovery with valid inference
-    \item \textbf{BLP}: Linear summary of heterogeneity for interpretation and testing
-    \item \textbf{Policy trees}: Actionable rules for treatment targeting
+    \item \textbf{CausalForestDML}: Optional external-package method for non-parametric heterogeneity
+    \item \textbf{BLP}: Optional linear summary of heterogeneity for interpretation and testing
+    \item \textbf{Policy trees}: Optional rules for treatment targeting
 \end{enumerate}
 
 \keyresult{
 \textbf{Key Takeaways}
 \begin{itemize}
     \item Heterogeneity reveals who benefits from treatment---essential for targeting
-    \item CausalForestDML combines random forests with DML orthogonalization
+    \item CausalForestDML is discussed through EconML, not implemented in this repo
     \item EconML's X/W split distinguishes effect modifiers from controls
     \item BLP tests whether heterogeneity is statistically significant
-    \item Policy trees translate CATE into actionable treatment rules
+    \item Policy trees are deferred optional work for this companion repo
 \end{itemize}
 }
 

@@ -171,7 +171,7 @@ Cross-fitting (5-fold, n=100K) & 45.2 & 8.3 & 5.4$\times$ \\
 Bootstrap (1000 iter, n=10K) & 312.0 & 42.1 & 7.4$\times$ \\
 Monte Carlo (5000 runs, n=5K) & 1840.0 & 215.0 & 8.6$\times$ \\
 HAC standard errors (n=50K, bw=10) & 2.1 & 0.28 & 7.5$\times$ \\
-CATE inference (batch 10K) & 0.85 & 0.11 & 7.7$\times$ \\
+External CATE inference (batch 10K) & 0.85 & 0.11 & 7.7$\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -403,11 +403,11 @@ using MLJ
 using Statistics
 using LinearAlgebra
 
-export DoubleML, DynamicDML, PanelDML
+export DoubleML, TemporalPLRDML, PanelDML
 export fit!, predict_ate, predict_cate
 
 include("estimators/double_ml.jl")
-include("estimators/dynamic_dml.jl")
+include("estimators/temporal_plr_dml.jl")
 include("estimators/panel_dml.jl")
 include("cross_fitting.jl")
 include("hac.jl")
@@ -459,16 +459,16 @@ Deliverables:
 Add advanced functionality:
 
 \begin{itemize}
-    \item \textbf{DynamicDML}: Time-varying treatment effects
+    \item \textbf{TemporalPLRDML}: Scalar temporal PLR effects with HAC inference
     \item \textbf{PanelDML}: Fixed effects with DML
     \item \textbf{CausalForestDML}: Heterogeneity via forest
     \item \textbf{DRIV}: Doubly robust instrumental variables
     \item Stationarity tests (ADF, KPSS, Phillips-Perron)
 \end{itemize}
 
-\subsection{Phase 3: Production (12-18 months)}
+\subsection{Phase 3: Deployment Hardening (12-18 months)}
 
-Production-ready infrastructure:
+Deployment hardening requirements:
 
 \begin{itemize}
     \item Model serialization (JLD2.jl)

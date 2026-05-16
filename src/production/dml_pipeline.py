@@ -1,16 +1,17 @@
 """
-End-to-end DML pipeline for production deployment.
+Research/demo DML pipeline utilities.
 
-This module provides InsuranceDMLPipeline, a complete production pipeline
-for insurance/annuity competitor pricing analysis.
+This module provides InsuranceDMLPipeline as book-companion code for organizing
+insurance/annuity competitor pricing examples. It is not deployment-ready
+production infrastructure.
 
 Pipeline stages:
 1. Data ingestion (FRED macro + insurance pricing data)
 2. Feature engineering (transformers, interactions)
-3. DML estimation (with proper time series cross-fitting)
+3. DML-style estimation helpers
 4. Monitoring integration (causal-specific checks)
 5. Model versioning (registry integration)
-6. Inference serving (batch and online)
+6. Inference-style demo methods
 
 Key design principle: Separate training and inference paths clearly,
 as DML requires different handling than standard ML prediction.
@@ -32,13 +33,13 @@ try:
     from src.dml.double_ml import double_ml  # noqa: F401
     from src.dml.cross_fitting import TimeSeriesCrossValidator  # noqa: F401
     from src.dml.hac import newey_west_se
-    from src.dml.dynamic_dml import DynamicDML  # noqa: F401
+    from src.dml.temporal_plr_dml import TemporalPLRDML  # noqa: F401
 
     DML_AVAILABLE = True
 except ImportError:
     DML_AVAILABLE = False
 
-# Import production components
+# Import registry and monitoring components
 from src.production.model_registry import DMLModelVersion, DMLModelRegistry
 from src.production.causal_monitor import CausalMonitor, MonitoringResult
 from src.production.retrain_pipeline import RetrainScheduler, RetrainTrigger
@@ -58,7 +59,7 @@ class PipelineConfig:
         outcome_model: Model for outcome regression
         use_hac: Use HAC standard errors for time series
         hac_bandwidth: Bandwidth for HAC (None = auto)
-        monitoring_enabled: Enable production monitoring
+        monitoring_enabled: Enable companion monitoring utilities
         feature_columns: List of feature/covariate column names
         treatment_column: Treatment variable name
         outcome_column: Outcome variable name
@@ -526,10 +527,10 @@ class InsuranceDMLPipeline:
 
     def promote_to_production(self) -> str:
         """
-        Promote current model to production.
+        Mark current model as the demo registry's production slot.
 
         Returns:
-            Version ID promoted to production
+            Version ID assigned to the production slot
         """
         if self._current_version is None:
             raise ValueError("No model fitted to promote")
@@ -542,7 +543,7 @@ class InsuranceDMLPipeline:
 
     def rollback(self, to_version: Optional[str] = None) -> str:
         """
-        Rollback to previous production version.
+        Roll back to previous production-slot version.
 
         Args:
             to_version: Specific version to rollback to (None = previous)

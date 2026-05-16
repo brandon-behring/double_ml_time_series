@@ -2,7 +2,12 @@
 
 **Created**: 2026-03-01
 **Objective**: Expand book from 180 pages to ~285 pages (thin chapters + worked examples)
-**Status**: Active
+**Status**: Deferred as of 2026-05-02
+
+> Truth-cleanup note: this content-expansion roadmap is not current execution
+> guidance. Do not expand manuscript claims until README/Sphinx/examples/tests/book
+> gates pass and `docs/CURRENT_STATUS.md` says expansion is unblocked. References
+> below to DynamicDML, production readiness, and chapter completion are historical.
 
 ---
 

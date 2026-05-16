@@ -1,287 +1,213 @@
-# Double Machine Learning for Time Series
+# Double Machine Learning For Time Series
 
-**Production-grade DML methodology for time series causal inference, with insurance/annuity pricing applications and macroeconomic controls.**
+Book-grade companion code for a Double Machine Learning manuscript. This repository is
+not a deployable production package and does not currently expose a stable public API.
 
-![Tests](https://img.shields.io/badge/tests-776-green)
-![Python](https://img.shields.io/badge/python-3.11+-blue)
-![LaTeX](https://img.shields.io/badge/book-180_pages-orange)
+The current verified core is:
 
----
+- Cross-sectional partially linear DML via `double_ml`
+- FWL and Robinson-estimator teaching implementations
+- Temporal partially linear DML via `TemporalPLRDML`
+- Time-series cross-validation helpers and HAC/Newey-West inference utilities
+- Synthetic data generators, stationarity diagnostics, and book examples
 
-## Overview
+The current temporal estimator is intentionally named `TemporalPLRDML`: it estimates a
+scalar partially linear treatment effect with lagged treatment controls, temporal
+cross-fitting, and HAC inference. True Lewis-Syrgkanis dynamic g-estimation,
+period-specific `theta_t` effects, causal forests, BLP/policy-tree workflows, blocking
+stationarity gates, and production deployment are deferred work unless a specific module
+or example proves otherwise.
 
-A complete reference book (180 pages, 10 chapters + Julia appendix) paired with a validated Python library implementing Double Machine Learning for time series causal inference. The progression FWL → Robinson → DML is pedagogically structured: each estimator builds on the last, from linear residualization to cross-fitted debiased inference.
+## Current Status
 
-**Book**: Professional LaTeX typesetting (scrbook + Tufte-style), zero compilation errors, full theorem environments with proofs, executable code examples throughout.
+Use [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md) as the only current project-status
+source. Older reports and roadmaps are archived under
+[docs/archive/superseded_2026-05-02](docs/archive/superseded_2026-05-02/ARCHIVE_INDEX.md).
 
-**Library**: 14,068 lines of Python (2,453 production module), 796 tests across a 4-tier system, validated against published results and Monte Carlo simulations.
+Audit baseline from 2026-05-02:
 
----
-
-## Features
-
-### DML Estimators
-- **FWL** — Frisch-Waugh-Lovell linear residualization baseline
-- **Robinson** — Nonparametric partially linear model with ML nuisances
-- **Double ML** — Cross-fitted Robinson with Neyman-orthogonal scores
-- **DynamicDML** — Sequential g-estimation for time-varying treatment effects
-- **RollingWindowDML** — Adaptive window estimation for non-stationary series
-- **PanelDML** — Entity fixed effects with temporal blocking
-
-### Time Series Infrastructure
-- **TimeSeriesCrossValidator** — Temporal blocking, purged/embargoed cross-validation
-- **HAC Standard Errors** — Newey-West with Bartlett kernel, automatic bandwidth
-- **Stationarity Tests** — ADF, KPSS, Phillips-Perron (from mathematical primitives, verified against statsmodels)
-- **FREDLoader** — Macroeconomic controls from Federal Reserve Economic Data
-
-### Validation Suite (7 methods)
-- Published results replication (Chernozhukov 2018, Facure 2022, 401(k) dataset)
-- Synthetic Monte Carlo (1000 runs, 95% coverage verification)
-- Cross-implementation comparison (manual vs EconML vs R DoubleML)
-- First-stage diagnostics (R², residual analysis, sensitivity)
-- Real-world known outcomes
-- Public dataset benchmarks
-- Synthetic DGP generators (cross-sectional, time series, insurance)
-
-### Production Pipeline
-- **DMLModelRegistry** — Model versioning and promotion (staging → production)
-- **CausalMonitor** — Overlap, treatment distribution, nuisance quality monitoring
-- **RetrainScheduler** — Causal-specific retraining triggers
-- **InsuranceDMLPipeline** — End-to-end pipeline for insurance pricing
-
----
+- 796 tests collected before this remediation pass
+- Tier 1: 314 tests
+- Tier 1 + Tier 2: 615 tests
+- Book PDF: 205 pages
+- Sphinx docs require optional docs dependencies
+- Book build had no recorded fatal TeX errors, but overfull boxes remain known issues
 
 ## Installation
 
-**Requirements**: Python 3.11+
-
 ```bash
-# Clone and install
-git clone <repo-url>
 cd double_ml_time_series
-
-# Install in development mode
-pip install -e .
-pip install -r requirements.txt
-
-# Verify
-python -c "from src.dml import double_ml, DynamicDML, RollingWindowDML; print('OK')"
+venv/bin/python -m pip install -e ".[dev]"
 ```
 
----
+For docs work:
 
-## Quick Start
+```bash
+venv/bin/python -m pip install -e ".[dev,docs]"
+```
 
-### Basic DML Estimation
+Quick import check:
+
+```bash
+venv/bin/python -c "from src.dml import double_ml, TemporalPLRDML, RollingWindowDML; print('OK')"
+```
+
+## Quick Starts
+
+### Cross-Sectional PLR DML
+
+`double_ml` is the i.i.d.-style partially linear DML helper. It does not perform temporal
+cross-validation in this remediation milestone.
 
 ```python
 import numpy as np
+
 from src.dml import double_ml
 
-# Generate sample data
-np.random.seed(42)
+rng = np.random.default_rng(42)
 n = 500
-X = np.random.randn(n, 5)           # Confounders
-T = X @ np.random.randn(5) + np.random.randn(n)  # Treatment
-Y = 2.0 * T + X @ np.random.randn(5) + np.random.randn(n)  # Outcome
+X = rng.normal(size=(n, 5))
+T = X[:, 0] + rng.normal(size=n)
+Y = 2.0 * T + X[:, 1] ** 2 + rng.normal(size=n)
 
-# Estimate causal effect (true ATE = 2.0)
-result = double_ml(Y, T, X, n_folds=5)
-print(f"ATE: {result.theta:.3f} ± {result.se:.3f}")
+result = double_ml(Y, T, X, n_folds=5, model="ridge", random_state=42)
+
+print(f"theta: {result.theta:.3f}")
 print(f"95% CI: [{result.ci_lower:.3f}, {result.ci_upper:.3f}]")
 ```
 
-### Time-Varying Treatment Effects
+### Temporal PLR DML
+
+Use `TemporalPLRDML` for ordered data when lagged treatment controls, temporal
+cross-fitting, and HAC standard errors are part of the chapter claim.
 
 ```python
-from src.dml import DynamicDML
+import numpy as np
 
-# DynamicDML estimates effects across time periods
-dml = DynamicDML(n_periods=10, n_splits=3)
-result = dml.fit(Y, D, X, time_index=time_idx)
-print(f"Period effects: {result.period_effects}")
+from src.dml import TemporalPLRDML
+
+rng = np.random.default_rng(42)
+n = 240
+time_index = np.arange(n)
+X = np.column_stack([rng.normal(size=n), np.sin(time_index / 12)])
+T = 0.4 * X[:, 0] + rng.normal(size=n)
+Y = 1.5 * T + X[:, 1] + rng.normal(size=n)
+
+model = TemporalPLRDML(
+    n_lags=2,
+    model_y="ridge",
+    model_t="ridge",
+    n_splits=4,
+    gap=2,
+    hac_bandwidth=6,
+    random_state=42,
+)
+result = model.fit(Y, T, X, time_index=time_index)
+
+print(f"theta: {result.theta:.3f}")
+print(f"HAC SE: {result.se:.3f}")
+print(f"temporal CV rows dropped: {result.dropped_initial_rows}")
 ```
 
-### Time Series Cross-Validation
+### Time-Series Cross-Validation
 
 ```python
+import numpy as np
+
 from src.dml import TimeSeriesCrossValidator
 
-# Temporal blocking prevents look-ahead bias
-cv = TimeSeriesCrossValidator(n_splits=5, gap=10)
+X = np.arange(100).reshape(-1, 1)
+cv = TimeSeriesCrossValidator(n_splits=5, gap=3, purge_length=2)
+
 for train_idx, test_idx in cv.split(X):
-    # Train always precedes test with gap
-    assert train_idx[-1] + 10 <= test_idx[0]
+    assert train_idx[-1] + 3 + 2 <= test_idx[0]
 ```
 
-### Macroeconomic Controls
+### Synthetic Macro Controls
 
 ```python
-from src.data import FREDLoader, STANDARD_MACRO_SERIES
+from src.data import create_synthetic_fred_data
 
-# Load FRED macro data (GDP, CPI, unemployment, etc.)
-loader = FREDLoader()
-macro = loader.load_controls(
-    series=STANDARD_MACRO_SERIES,
-    start_date="2010-01-01",
-    end_date="2023-12-31",
+macro = create_synthetic_fred_data(
+    start_date="2018-01-01",
+    end_date="2020-12-31",
+    frequency="M",
+    seed=42,
 )
-print(f"Loaded {len(macro.series_names)} macro controls")
+
+X_macro = macro.data.values
+print(macro.data.columns.tolist())
 ```
 
----
+Live FRED access uses `FREDLoader.get_macro_controls(...)` and requires a configured FRED
+API key.
 
-## Project Structure
+## Repository Map
 
-```
-double_ml_time_series/
-├── src/
-│   ├── dml/                    # DML estimators
-│   │   ├── fwl.py              # Frisch-Waugh-Lovell (409 lines)
-│   │   ├── robinson.py         # Robinson estimator (365 lines)
-│   │   ├── double_ml.py        # DML with cross-fitting (554 lines)
-│   │   ├── cross_fitting.py    # TimeSeriesCrossValidator (590 lines)
-│   │   ├── hac.py              # HAC/Newey-West SE (729 lines)
-│   │   └── dynamic_dml.py      # Dynamic/Rolling/Panel DML (1,045 lines)
-│   ├── data/
-│   │   ├── fred_loader.py      # FRED macro data (705 lines)
-│   │   └── oj_loader.py        # Orange Juice benchmark dataset
-│   ├── validation/
-│   │   ├── dgp_generator.py    # Cross-sectional DGP
-│   │   ├── dgp_generator_ts.py # Time series DGP (714 lines)
-│   │   ├── stationarity.py     # ADF, KPSS, PP tests (920 lines)
-│   │   ├── insurance_dgp.py    # Insurance DGP (667 lines)
-│   │   └── bias_validation.py  # Bias diagnostics
-│   └── production/
-│       ├── model_registry.py   # Model versioning
-│       ├── causal_monitor.py   # Causal monitoring
-│       ├── retrain_pipeline.py # Retraining triggers
-│       └── dml_pipeline.py     # End-to-end pipeline
-├── chapters/                   # LaTeX book (10 chapters + appendix)
-│   ├── chapter_01.tex          # Potential Outcomes + FWL
-│   ├── chapter_02.tex          # Neyman Orthogonality + DML
-│   ├── chapter_03.tex          # Validation Framework
-│   ├── chapter_04.tex          # Cross-Sectional Application
-│   ├── chapter_05.tex          # Dynamic Treatment Effects
-│   ├── chapter_06.tex          # Panel DML + Rolling Window
-│   ├── chapter_07.tex          # FRED Integration
-│   ├── chapter_08.tex          # Competitor Pricing (957 lines)
-│   ├── chapter_09.tex          # Heterogeneity Analysis (680 lines)
-│   ├── chapter_10.tex          # Production Pipeline (863 lines)
-│   └── appendix_a.tex          # Julia DML.jl Roadmap (586 lines)
-├── test/                       # 796 tests (4-tier system)
-├── main.tex                    # Book entry point (LuaLaTeX)
-├── docs/                       # State tracking and plans
-└── requirements.txt            # Python dependencies
+```text
+src/dml/
+  fwl.py                 Linear residualization baseline
+  robinson.py            Robinson partially linear estimator
+  double_ml.py           Cross-fitted i.i.d.-style PLR DML
+  cross_fitting.py       Time-series CV helpers
+  hac.py                 HAC/Newey-West inference
+  temporal_plr_dml.py    TemporalPLRDML, RollingWindowDML, PanelDML
+
+src/data/                FRED loader, OJ loader, synthetic macro data
+src/validation/          DGPs, diagnostics, validation helpers
+src/production/          Research/demo pipeline utilities, not deployment guarantees
+examples/                Runnable companion examples
+chapters/                LaTeX manuscript chapters
+docs/sphinx/             Sphinx API/user docs
+docs/audits/             Audit reports and evidence
+docs/archive/            Superseded reports and roadmaps
 ```
 
----
-
-## Book Build
-
-The book uses LuaLaTeX (scrbook + Tufte-style). **Not pdflatex.**
+## Verification Commands
 
 ```bash
-# Full build (two passes + bibliography)
-lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex
-
-# Output: main.pdf (180 pages)
+venv/bin/python -m pytest --collect-only -q
+venv/bin/python -m pytest -m tier1 --no-cov -q
+venv/bin/python -m pytest -m "tier1 or tier2" --no-cov -q
+venv/bin/python -m black --check src/ test/ examples/
+venv/bin/python -m mypy src/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
 ```
 
-**Zero-error compilation requirement** — the build must produce no errors and no warnings.
-
----
-
-## Testing
-
-Four-tier system with enforced timeouts (`pytest-timeout`):
-
-| Tier | Purpose | Tests | Time | Command |
-|------|---------|-------|------|---------|
-| tier1 | Unit — pure logic, no estimation | 285 | ~12s | `pytest -m tier1` |
-| tier2 | Integration — light estimation | 316 | ~2min | `pytest -m "tier1 or tier2"` |
-| tier3 | Validation — Monte Carlo/bootstrap | 161 | ~30min | `pytest -m "tier1 or tier2 or tier3"` |
-| tier4 | Full replication + stress | 34 | ~2h | `pytest` |
+Examples:
 
 ```bash
-# Quick smoke test
-pytest -m tier1
-
-# Pre-push gate
-pytest -m "tier1 or tier2"
-
-# Full suite
-pytest
+for f in examples/*.py; do venv/bin/python "$f"; done
 ```
 
-Timeouts per tier: 10s / 60s / 300s / 1800s. Every test has a `@pytest.mark.tierN` marker — zero unmarked tests.
+Sphinx docs:
 
----
-
-## API Reference
-
-### Estimators (`src.dml`)
-
-| Class/Function | Description |
-|----------------|-------------|
-| `fwl_estimate(Y, D, X)` | Linear FWL residualization |
-| `robinson_estimator(Y, D, X)` | Nonparametric partially linear model |
-| `double_ml(Y, D, X)` | Cross-fitted DML with Neyman-orthogonal scores |
-| `DynamicDML` | Time-varying treatment effects |
-| `RollingWindowDML` | Adaptive window DML estimation |
-| `PanelDML` | Entity fixed effects DML |
-| `TimeSeriesCrossValidator` | Temporal blocking cross-validation |
-| `HACEstimator` | HAC covariance estimation |
-| `newey_west_se(residuals)` | Newey-West standard errors |
-
-### Data (`src.data`)
-
-| Class/Function | Description |
-|----------------|-------------|
-| `FREDLoader` | Load FRED macroeconomic series |
-| `OJDataLoader` | Load Orange Juice benchmark dataset |
-| `create_synthetic_fred_data()` | Synthetic FRED data for testing |
-
-### Validation (`src.validation`)
-
-| Class/Function | Description |
-|----------------|-------------|
-| `DGPGenerator` | Cross-sectional data generating process |
-| `TimeSeriesDGPGenerator` | Time series DGP with autocorrelation |
-| `create_insurance_dgp()` | Parameterized insurance pricing DGP |
-| `StationarityDiagnostic` | ADF, KPSS, Phillips-Perron tests |
-| `BiasValidation` | Bias diagnostics and coverage checks |
-
-### Production (`src.production`)
-
-| Class/Function | Description |
-|----------------|-------------|
-| `DMLModelRegistry` | Model versioning and promotion |
-| `CausalMonitor` | Causal-specific monitoring |
-| `RetrainScheduler` | Intelligent retraining triggers |
-| `InsuranceDMLPipeline` | End-to-end insurance pricing pipeline |
-
----
-
-## Hardware
-
-Optimized for 64-core AMD Threadripper:
-
-```python
-import os
-os.environ['OPENBLAS_NUM_THREADS'] = '1'  # Prevent nested parallelism
-os.environ['MKL_NUM_THREADS'] = '1'
-N_JOBS = 48  # Leave 16 cores for system
+```bash
+venv/bin/python -m sphinx -b html -W --keep-going docs/sphinx docs/sphinx/_build/html
 ```
 
-Monte Carlo simulations, cross-validation, and bootstrap all parallelize across 48 cores.
+Book:
 
----
+```bash
+lualatex -shell-escape main.tex
+biber main
+lualatex -shell-escape main.tex
+lualatex -shell-escape main.tex
+```
 
-## Author
+Fatal TeX errors are blocking. Overfull and underfull boxes are reported in this
+milestone but are not yet blocking.
 
-Brandon Behring
+## Methodology Guardrails
+
+- `double_ml` should be documented as cross-sectional/i.i.d.-style PLR DML.
+- `TemporalPLRDML` should be documented as scalar temporal PLR DML, not recursive
+  dynamic g-estimation.
+- Temporal CV predictions are only used where true out-of-fold predictions exist; early
+  uncovered rows are excluded and reported.
+- Stationarity, cointegration, overlap, and weak treatment residual variation remain
+  user responsibilities in this milestone. The code provides diagnostics and warnings,
+  not blocking automatic enforcement.
 
 ## License
 
-Personal research project — not for distribution.
+Personal research project. Not for distribution without an explicit release pass.

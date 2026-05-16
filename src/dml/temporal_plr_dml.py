@@ -1,8 +1,9 @@
 """
-Dynamic Double Machine Learning for Time Series.
+Temporal partially linear DML for time series.
 
-Implements sequential g-estimation for time series causal inference with
-time-varying treatments and confounders.
+Implements scalar partially linear DML with lagged treatment controls,
+time-series cross-fitting, and HAC inference. This module is not an
+implementation of Lewis-Syrgkanis dynamic g-estimation.
 
 References:
 
@@ -11,16 +12,16 @@ References:
 - Chernozhukov et al. (2018). Double Machine Learning for Treatment and
   Structural Parameters.
 
-Phase 2A Implementation - Core DynamicDML Class
+Core temporal partially linear DML classes.
 
 Key components:
-1. DynamicDML - Sequential g-estimation with time-series cross-validation
+1. TemporalPLRDML - Scalar PLR DML with time-series cross-validation
 2. RollingWindowDML - Local estimation for non-stationary effects
 3. PanelDML - Fixed effects + DML for panel data structures
 
 Usage:
-    >>> from src.dml import DynamicDML
-    >>> model = DynamicDML(
+    >>> from src.dml import TemporalPLRDML
+    >>> model = TemporalPLRDML(
     ...     n_lags=5,
     ...     model_y="random_forest",
     ...     model_t="random_forest",
@@ -33,6 +34,7 @@ Usage:
 from __future__ import annotations
 
 import os
+import warnings
 from dataclasses import dataclass
 from typing import Any, List, Literal, Optional, Tuple, Union, cast
 
@@ -57,23 +59,23 @@ ModelType = Literal["ridge", "lasso", "random_forest", "gradient_boosting"]
 CVStrategy = Literal["time_series_split", "blocked_cv", "purged_cv"]
 KernelType = Literal["bartlett", "parzen", "quadratic_spectral"]
 
-# Configurable parallelism: production uses -1 (all cores), tests use 1 (sequential).
+# Configurable parallelism: default uses all cores; tests can set DML_N_JOBS=1.
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 
 
 @dataclass
-class DynamicDMLResult:
-    """Result container for DynamicDML estimation.
+class TemporalPLRDMLResult:
+    """Result container for TemporalPLRDML estimation.
 
     Attributes:
-        theta: Treatment effect estimate (ATE or CATE)
+        theta: Scalar treatment effect estimate
         se: Standard error (HAC-adjusted for time series)
         t_stat: t-statistic = theta / se
         ci_lower: Lower 95% confidence interval bound
         ci_upper: Upper 95% confidence interval bound
         p_value: Two-sided p-value for H0: theta = 0
         n_samples: Number of observations
-        n_periods: Number of time periods (after lag adjustment)
+        n_periods: Number of observations used after lag and temporal-CV filtering
         outcome_r2_cv: Cross-validated R² for outcome model
         treatment_r2_cv: Cross-validated R² for treatment model
         hac_bandwidth: Bandwidth used for HAC covariance
@@ -81,6 +83,9 @@ class DynamicDMLResult:
         Y_residual: Outcome residuals (Ỹ = Y - m̂(X))
         T_residual: Treatment residuals (T̃ = T - ℓ̂(X))
         influence_scores: Influence function values for each observation
+        dropped_initial_rows: Rows excluded because temporal CV cannot produce
+            out-of-fold predictions without training on future observations
+        lagged_rows_dropped: Rows excluded by lag-feature construction
     """
 
     theta: float
@@ -98,19 +103,21 @@ class DynamicDMLResult:
     Y_residual: NDArray[np.float64]
     T_residual: NDArray[np.float64]
     influence_scores: NDArray[np.float64]
+    dropped_initial_rows: int = 0
+    lagged_rows_dropped: int = 0
 
     def __repr__(self) -> str:
         return (
-            f"DynamicDMLResult(θ={self.theta:.4f}, SE={self.se:.4f}, "
+            f"TemporalPLRDMLResult(θ={self.theta:.4f}, SE={self.se:.4f}, "
             f"95% CI=[{self.ci_lower:.4f}, {self.ci_upper:.4f}], "
             f"p={self.p_value:.4f})"
         )
 
     def summary(self) -> str:
-        """Return formatted summary of DynamicDML results."""
+        """Return formatted summary of TemporalPLRDML results."""
         return f"""
-Dynamic Double Machine Learning Results
-=======================================
+Temporal PLR DML Results
+========================
 Treatment Effect (θ):    {self.theta:.4f}
 HAC Standard Error:      {self.se:.4f}
 t-statistic:             {self.t_stat:.2f}
@@ -119,7 +126,9 @@ p-value:                 {self.p_value:.4f}
 
 Sample Information:
   Observations:          {self.n_samples}
-  Time periods:          {self.n_periods}
+  Used observations:     {self.n_periods}
+  Lag rows dropped:      {self.lagged_rows_dropped}
+  CV rows dropped:       {self.dropped_initial_rows}
 
 Nuisance Model Diagnostics:
   Outcome R² (CV):       {self.outcome_r2_cv:.3f}
@@ -184,10 +193,11 @@ def _create_lagged_features(
     T: NDArray[np.float64],
     n_lags: int,
 ) -> Tuple[NDArray[np.float64], int]:
-    """Create lagged features for dynamic treatment effects.
+    """Create lagged controls for temporal partially linear DML.
 
-    Constructs feature matrix with lagged treatment and covariates
-    to capture dynamic effects over time.
+    Constructs a feature matrix with current controls and lagged treatment
+    values. The resulting estimator remains scalar PLR DML, not a recursive
+    dynamic treatment-effect estimator.
 
     Args:
         X: Covariates (n_samples, n_features)
@@ -253,9 +263,6 @@ def _cross_fit_nuisance_time_series(
     Y_hat = np.full(n, np.nan)
     T_hat = np.full(n, np.nan)
 
-    # Track which indices have predictions
-    predicted_indices: set[int] = set()
-
     # Get splits - different CV classes have different signatures
     if isinstance(cv, TimeSeriesCrossValidator):
         splits = cv.split(X, Y, time_index=time_index)
@@ -277,40 +284,24 @@ def _cross_fit_nuisance_time_series(
         treatment_mod.fit(X_train, T_train)
         T_hat[test_idx] = treatment_mod.predict(X_test)
 
-        predicted_indices.update(test_idx.tolist())
-
-    # Handle any missing predictions (e.g., early observations)
-    # Use expanding window for initial observations if needed
-    missing_mask = np.isnan(Y_hat)
-    if missing_mask.any():
-        # For missing early observations, use leave-future-out approach
-        # Train on all later data and predict backwards
-        missing_idx = np.where(missing_mask)[0]
-        available_idx = np.where(~missing_mask)[0]
-
-        if len(available_idx) > 0:
-            outcome_mod = clone(outcome_model)
-            outcome_mod.fit(X[available_idx], Y[available_idx])
-            Y_hat[missing_idx] = outcome_mod.predict(X[missing_idx])
-
-            treatment_mod = clone(treatment_model)
-            treatment_mod.fit(X[available_idx], T[available_idx])
-            T_hat[missing_idx] = treatment_mod.predict(X[missing_idx])
+    # Early observations may be uncovered by expanding-window temporal CV.
+    # Leave these predictions as NaN so the estimator can exclude them rather
+    # than training on future observations to fill the gaps.
 
     return Y_hat, T_hat
 
 
-class DynamicDML:
-    """Dynamic Double Machine Learning for time series treatment effects.
+class TemporalPLRDML:
+    """Temporal partially linear DML for scalar treatment effects.
 
-    Implements sequential g-estimation for time series data, handling:
-    - Time-varying treatments
-    - Time-varying confounders
+    Implements scalar PLR DML for ordered data, handling:
+    - Lagged treatment controls
+    - Time-indexed confounders
     - Autocorrelation in residuals (HAC standard errors)
     - Temporal cross-validation (respects time ordering)
 
     The algorithm:
-    1. Create lagged features to capture dynamic effects
+    1. Create lagged controls
     2. Use time series cross-validation to generate out-of-sample predictions
     3. Compute residuals: Ỹ = Y - m̂(X), T̃ = T - ℓ̂(X)
     4. Estimate θ via FWL: θ̂ = Σ(Ỹ·T̃) / Σ(T̃²)
@@ -334,7 +325,7 @@ class DynamicDML:
         >>> X = np.random.randn(n, 3)
         >>> T = 0.5 * X[:, 0] + 0.3 * np.sin(time / 50) + np.random.randn(n)
         >>> Y = 2.0 * T + np.exp(X[:, 1] / 2) + np.random.randn(n)
-        >>> model = DynamicDML(n_lags=3)
+        >>> model = TemporalPLRDML(n_lags=3)
         >>> result = model.fit(Y, T, X, time_index=time)
         >>> print(result.theta)  # Should be close to 2.0
     """
@@ -351,7 +342,7 @@ class DynamicDML:
         hac_kernel: KernelType = "bartlett",
         random_state: Optional[int] = None,
     ):
-        """Initialize DynamicDML.
+        """Initialize TemporalPLRDML.
 
         Args:
             n_lags: Number of lags for treatment and confounders
@@ -378,7 +369,7 @@ class DynamicDML:
         self._outcome_model: Optional[BaseEstimator] = None
         self._treatment_model: Optional[BaseEstimator] = None
         self._is_fitted = False
-        self._result: Optional[DynamicDMLResult] = None
+        self._result: Optional[TemporalPLRDMLResult] = None
 
         # Data state
         self._Y_residual: Optional[NDArray[np.float64]] = None
@@ -420,8 +411,8 @@ class DynamicDML:
         X: ArrayLike,
         time_index: Optional[ArrayLike] = None,
         alpha: float = 0.05,
-    ) -> DynamicDMLResult:
-        """Fit the DynamicDML model.
+    ) -> TemporalPLRDMLResult:
+        """Fit the TemporalPLRDML model.
 
         Estimates the Average Treatment Effect (ATE) in the partially linear model:
             Y_t = θ·T_t + g(X_t, T_{t-1}, ..., T_{t-L}) + ε_t
@@ -437,7 +428,7 @@ class DynamicDML:
             alpha: Significance level for confidence intervals (default 0.05)
 
         Returns:
-            DynamicDMLResult with treatment effect, HAC SE, and diagnostics
+            TemporalPLRDMLResult with treatment effect, HAC SE, and diagnostics
 
         Raises:
             ValueError: If inputs have incompatible shapes
@@ -497,32 +488,65 @@ class DynamicDML:
             time_index=time_eff,
         )
 
-        # Compute cross-validated R²
-        outcome_r2_cv = _compute_r2(Y_eff, Y_hat)
-        treatment_r2_cv = _compute_r2(T_eff, T_hat)
+        # Expanding-window temporal CV cannot predict the earliest rows without
+        # using future observations. Exclude rows without true out-of-fold
+        # predictions from all downstream residual and inference calculations.
+        valid_oof_mask = np.isfinite(Y_hat) & np.isfinite(T_hat)
+        dropped_initial_rows = int(np.sum(~valid_oof_mask))
+        if not valid_oof_mask.any():
+            raise ValueError(
+                "Temporal cross-fitting produced no out-of-fold predictions. "
+                "Use more observations, fewer splits, or a smaller gap/purge setting."
+            )
+
+        Y_used = Y_eff[valid_oof_mask]
+        T_used = T_eff[valid_oof_mask]
+        X_used = X_augmented[valid_oof_mask]
+        Y_hat_used = Y_hat[valid_oof_mask]
+        T_hat_used = T_hat[valid_oof_mask]
+        n_used = len(Y_used)
+
+        # Compute cross-validated R² on rows with valid OOF predictions.
+        outcome_r2_cv = _compute_r2(Y_used, Y_hat_used)
+        treatment_r2_cv = _compute_r2(T_used, T_hat_used)
+        if outcome_r2_cv < -0.25 or treatment_r2_cv < -0.25:
+            warnings.warn(
+                "Nuisance model diagnostics are poor: at least one temporal "
+                "cross-validated R² is below -0.25. Check controls, stationarity, "
+                "overlap, and nuisance model specification.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
         # Compute residuals
-        Y_tilde = Y_eff - Y_hat
-        T_tilde = T_eff - T_hat
+        Y_tilde = Y_used - Y_hat_used
+        T_tilde = T_used - T_hat_used
 
         # Store for later use
         self._Y_residual = Y_tilde
         self._T_residual = T_tilde
-        self._X_augmented = X_augmented
+        self._X_augmented = X_used
 
         # Estimate theta via FWL
         T_tilde_sq_sum = np.sum(T_tilde**2)
+        T_tilde_sq_mean = np.mean(T_tilde**2)
 
         if T_tilde_sq_sum < 1e-10:
             raise ValueError(
                 "Treatment has no variation after controlling for X and lags. "
                 "This may indicate perfect prediction of T by X."
             )
+        if T_tilde_sq_mean < 1e-6:
+            warnings.warn(
+                "Treatment residual variation is very low after controlling for "
+                "X and lags. Overlap may be weak and inference may be unstable.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
         theta = float(np.sum(Y_tilde * T_tilde) / T_tilde_sq_sum)
 
         # Compute influence scores
-        T_tilde_sq_mean = np.mean(T_tilde**2)
         influence_scores = (Y_tilde - theta * T_tilde) * T_tilde / T_tilde_sq_mean
 
         # Compute HAC standard errors
@@ -536,7 +560,7 @@ class DynamicDML:
 
         # Get variance and SE using get_variance() for 1D case
         hac_var = hac_estimator.get_variance()
-        hac_se = float(np.sqrt(hac_var / n_effective))
+        hac_se = float(np.sqrt(hac_var / n_used))
 
         # Get bandwidth used
         bandwidth_used = hac_estimator.bandwidth_used
@@ -556,7 +580,7 @@ class DynamicDML:
         self._is_fitted = True
 
         # Create result
-        result = DynamicDMLResult(
+        result = TemporalPLRDMLResult(
             theta=theta,
             se=hac_se,
             t_stat=t_stat,
@@ -564,7 +588,7 @@ class DynamicDML:
             ci_upper=ci_upper,
             p_value=p_value,
             n_samples=n_samples,
-            n_periods=n_effective,
+            n_periods=n_used,
             outcome_r2_cv=outcome_r2_cv,
             treatment_r2_cv=treatment_r2_cv,
             hac_bandwidth=bandwidth_used,
@@ -572,6 +596,8 @@ class DynamicDML:
             Y_residual=Y_tilde,
             T_residual=T_tilde,
             influence_scores=influence_scores,
+            dropped_initial_rows=dropped_initial_rows,
+            lagged_rows_dropped=n_dropped,
         )
 
         self._result = result
@@ -588,10 +614,8 @@ class DynamicDML:
         For the partially linear model, the treatment effect is constant
         (homogeneous), so this returns the estimated θ for all observations.
 
-        For heterogeneous effects, use effect_interval or extend to CATE.
-
         Args:
-            X: Covariate values for CATE estimation (currently unused for PLM)
+            X: Covariate values used only to set output length; unused by PLR
             T0: Baseline treatment value (default 0)
             T1: Counterfactual treatment value (default 1)
 
@@ -628,7 +652,7 @@ class DynamicDML:
         Returns HAC-adjusted confidence intervals for the treatment effect.
 
         Args:
-            X: Covariate values for CATE intervals (currently unused for PLM)
+            X: Covariate values used only to set output length; unused by PLR
             alpha: Significance level (default 0.05 for 95% CI)
             T0: Baseline treatment value
             T1: Counterfactual treatment value
@@ -756,9 +780,9 @@ class RollingWindowDML:
             if len(Y_window) < 30:
                 continue
 
-            # Fit DynamicDML on window
+            # Fit TemporalPLRDML on window
             try:
-                dml = DynamicDML(
+                dml = TemporalPLRDML(
                     n_lags=0,  # No lags for rolling window
                     model_y=self.model_y,
                     model_t=self.model_t,
@@ -840,7 +864,7 @@ class PanelDML:
         self.n_folds = n_folds
         self.random_state = random_state
 
-        self._result: Optional[DynamicDMLResult] = None
+        self._result: Optional[TemporalPLRDMLResult] = None
         self._is_fitted = False
 
     def _demean_by_group(
@@ -868,7 +892,7 @@ class PanelDML:
         X: ArrayLike,
         individual_id: ArrayLike,
         time_id: ArrayLike,
-    ) -> DynamicDMLResult:
+    ) -> TemporalPLRDMLResult:
         """Fit panel DML model.
 
         Args:
@@ -879,7 +903,7 @@ class PanelDML:
             time_id: Time period identifiers
 
         Returns:
-            DynamicDMLResult with treatment effect and cluster-robust SE
+            TemporalPLRDMLResult with treatment effect and cluster-robust SE
         """
         Y = np.asarray(Y, dtype=np.float64)
         T = np.asarray(T, dtype=np.float64)
@@ -910,8 +934,8 @@ class PanelDML:
         else:
             raise ValueError(f"Unknown fixed_effects: {self.fixed_effects}")
 
-        # Run DynamicDML on transformed data
-        dml = DynamicDML(
+        # Run TemporalPLRDML on transformed data
+        dml = TemporalPLRDML(
             n_lags=0,
             model_y=self.model_y,
             model_t=self.model_t,
@@ -933,10 +957,12 @@ class PanelDML:
             cluster_psi = np.zeros(n_clusters)
             for i, ind in enumerate(unique_individuals):
                 mask = individual_id == ind
-                # Align mask with effective sample (after any lag adjustment)
+                # Align mask with the fitted sample after temporal-CV filtering.
                 n_eff = len(result.influence_scores)
-                n_total = len(mask)
-                if n_eff < n_total:
+                cv_start = result.lagged_rows_dropped + result.dropped_initial_rows
+                if len(mask) - cv_start == n_eff:
+                    mask_eff = mask[cv_start:]
+                elif n_eff < len(mask):
                     mask_eff = mask[-n_eff:]
                 else:
                     mask_eff = mask
@@ -948,7 +974,7 @@ class PanelDML:
 
             # Update result with cluster SE
             z_crit = stats.norm.ppf(0.975)
-            result = DynamicDMLResult(
+            result = TemporalPLRDMLResult(
                 theta=result.theta,
                 se=cluster_se,
                 t_stat=result.theta / cluster_se if cluster_se > 1e-10 else 0.0,
@@ -968,6 +994,8 @@ class PanelDML:
                 Y_residual=result.Y_residual,
                 T_residual=result.T_residual,
                 influence_scores=result.influence_scores,
+                dropped_initial_rows=result.dropped_initial_rows,
+                lagged_rows_dropped=result.lagged_rows_dropped,
             )
 
         self._result = result
@@ -975,8 +1003,8 @@ class PanelDML:
         return result
 
 
-def demonstrate_dynamic_dml(seed: int = 42) -> None:
-    """Demonstrate DynamicDML on synthetic time series data.
+def demonstrate_temporal_plr_dml(seed: int = 42) -> None:
+    """Demonstrate TemporalPLRDML on synthetic time series data.
 
     Generates a DGP with:
     - Autocorrelated treatment
@@ -986,7 +1014,7 @@ def demonstrate_dynamic_dml(seed: int = 42) -> None:
     np.random.seed(seed)
 
     print("=" * 70)
-    print("DynamicDML: Time Series Double Machine Learning")
+    print("TemporalPLRDML: Time Series Double Machine Learning")
     print("=" * 70)
     print()
 
@@ -1018,9 +1046,9 @@ def demonstrate_dynamic_dml(seed: int = 42) -> None:
     print(f"     n = {n} observations")
     print()
 
-    # Fit DynamicDML
-    print("Fitting DynamicDML with HAC standard errors...")
-    model = DynamicDML(
+    # Fit TemporalPLRDML
+    print("Fitting TemporalPLRDML with HAC standard errors...")
+    model = TemporalPLRDML(
         n_lags=3,
         model_y="random_forest",
         model_t="random_forest",
@@ -1045,4 +1073,4 @@ def demonstrate_dynamic_dml(seed: int = 42) -> None:
 
 
 if __name__ == "__main__":
-    demonstrate_dynamic_dml()
+    demonstrate_temporal_plr_dml()

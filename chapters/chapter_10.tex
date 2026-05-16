@@ -1,30 +1,30 @@
-% Chapter 10: Production Pipeline for Causal Inference
+% Chapter 10: Research Pipeline Utilities for Causal Inference
 % ============================================================================
 % This chapter covers:
-% - Why production causal inference differs from standard ML
+% - Why deployed causal inference differs from standard ML
 % - Model serialization and versioning for DML
 % - Inference APIs for CATE estimation
 % - Causal-specific monitoring (overlap, treatment shift, nuisance degradation)
 % - Retraining triggers unique to causal inference
-% - End-to-end pipeline with Airflow/Prefect
+% - Research pipeline utility structure
 % ============================================================================
 
-\chapter{Production Pipeline for Causal Inference}
+\chapter{Research Pipeline Utilities for Causal Inference}
 \label{ch:production}
 
 \section{Introduction}\label{sec:ch10_introduction}
 
-Chapters 1--9 developed the theory, methodology, and validation of Double Machine Learning for causal inference. This chapter bridges the gap between research and production deployment. Deploying causal inference systems differs fundamentally from standard machine learning in ways that practitioners must understand to build reliable systems.
+Chapters 1--9 developed the theory, methodology, and validation of Double Machine Learning for causal inference. This chapter sketches research pipeline utilities for organizing model versions, diagnostics, and retraining decisions. The companion repo code is not a production deployment framework; it is a book companion that illustrates the additional requirements a real deployment would need to satisfy.
 
 \keyresult{
 \textbf{Chapter Objectives:}
 \begin{itemize}
-    \item Understand why causal inference deployment differs from standard ML
+    \item Understand why deployed causal inference differs from standard ML
     \item Design model serialization for DML's two-stage architecture
-    \item Build inference APIs for treatment effect estimation
+    \item Sketch inference API contracts for treatment effect estimation
     \item Implement causal-specific monitoring (not just prediction accuracy)
     \item Create intelligent retraining triggers based on causal validity
-    \item Assemble end-to-end production pipelines
+    \item Assemble reproducible research/demo pipelines
 \end{itemize}
 }
 
@@ -71,7 +71,7 @@ DML models have a unique architecture requiring specialized serialization:
 
 \subsection{Components to Serialize}
 
-A production DML model consists of:
+A deployment-oriented DML model would need to serialize:
 
 \begin{enumerate}
     \item \textbf{Nuisance models} for each cross-fitting fold
@@ -93,7 +93,7 @@ class DMLModelVersion:
 
     version_id: str  # Unique hash-based identifier
     created_at: str
-    model_type: str  # "double_ml", "dynamic_dml", etc.
+    model_type: str  # "double_ml", "temporal_plr_dml", etc.
     n_folds: int
 
     # Serialized nuisance models by fold
@@ -142,8 +142,8 @@ A DML-aware model registry supports:
 \begin{itemize}
     \item \textbf{Registration}: Store versioned models with full metadata
     \item \textbf{Retrieval}: Load specific version for inference
-    \item \textbf{Promotion}: Staging $\rightarrow$ Production workflow
-    \item \textbf{Rollback}: Revert to previous production version
+    \item \textbf{Promotion}: Candidate $\rightarrow$ active workflow
+    \item \textbf{Rollback}: Revert to previous active version
     \item \textbf{Lineage}: Track which data/config produced which model
 \end{itemize}
 
@@ -155,7 +155,7 @@ registry = DMLModelRegistry("./models/dml_registry")
 # After training
 version_id = registry.register(model_version)
 
-# Promotion workflow
+# Demo promotion workflow
 registry.promote_to_staging(version_id)
 
 # After validation passes
@@ -191,7 +191,7 @@ This structure enables:
 
 \section{Inference APIs}\label{sec:inference_apis}
 
-Production inference for causal models differs from standard ML prediction.
+Deployed inference for causal models differs from standard ML prediction.
 
 \subsection{Batch vs. Real-time Inference}
 
@@ -212,12 +212,12 @@ Streaming & Continuous effect monitoring & Sub-second \\
 
 \subsection{API Design for CATE Estimation}
 
-A production CATE API should provide:
+A hypothetical deployed CATE API would need to provide:
 
 % CATE estimation API
 \begin{minted}[fontsize=\small]{python}
 class CATEInferenceAPI:
-    """Production API for treatment effect estimation."""
+    """Hypothetical API for treatment effect estimation."""
 
     def estimate_cate(
         self,
@@ -503,9 +503,9 @@ class TriggerType(Enum):
 \end{minted}
 
 
-\section{End-to-End Pipeline}\label{sec:production_pipeline}
+\section{End-to-End Research Pipeline}\label{sec:production_pipeline}
 
-This section assembles all components into a production-ready pipeline.
+This section assembles the companion components into a reproducible research pipeline.
 
 \subsection{Pipeline Architecture}
 
@@ -536,16 +536,16 @@ This section assembles all components into a production-ready pipeline.
 \draw[->] (retrain) |- (dml);
 
 \end{tikzpicture}
-\caption{Production DML pipeline architecture}
+\caption{Research DML pipeline architecture}
 \label{fig:pipeline_architecture}
 \end{figure}
 
 \subsection{InsuranceDMLPipeline Implementation}
 
-% Complete production pipeline
+% Complete research pipeline
 \begin{minted}[fontsize=\small]{python}
 class InsuranceDMLPipeline:
-    """Production DML pipeline for insurance pricing analysis."""
+    """Research DML pipeline for insurance pricing analysis."""
 
     def __init__(self, config: PipelineConfig):
         self.config = config
@@ -630,7 +630,7 @@ class InsuranceDMLPipeline:
 
 \subsection{Workflow Orchestration}
 
-For production, integrate with Airflow or Prefect:
+For a hardened deployment, integrate with Airflow or Prefect:
 
 % Airflow DAG skeleton
 \begin{minted}[fontsize=\small]{python}
@@ -698,7 +698,7 @@ with DAG(
 
 \section{Insurance Pricing Case Study}\label{sec:insurance_case_study}
 
-We conclude with a complete example applying the production pipeline to insurance competitor pricing.
+We conclude with a complete example applying the research/demo pipeline to insurance competitor pricing.
 
 \subsection{Problem Setup}
 
@@ -769,11 +769,11 @@ for check in result.monitoring_results:
     if not check.is_ok():
         print(f"ALERT: {check.message}")
 
-# Promote to production
+# Mark as active in the demo registry
 pipeline.promote_to_production()
 \end{minted}
 
-\subsection{Production Inference}
+\subsection{Deployment-Oriented Inference}
 
 % Production inference
 \begin{minted}[fontsize=\small]{python}
@@ -842,20 +842,20 @@ Extend the production pipeline to handle multiple treatments simultaneously. Wha
 
 \section{Summary}\label{sec:ch10_summary}
 
-This chapter developed production infrastructure for causal inference systems:
+This chapter developed research/demo infrastructure patterns for causal inference systems:
 
 \keyresult{
 \textbf{Key Takeaways:}
 \begin{itemize}
-    \item Production causal inference \textbf{cannot monitor treatment effect accuracy} directly
+    \item Deployed causal inference \textbf{cannot monitor treatment effect accuracy} directly
     \item Monitor \textbf{identification conditions}: overlap, treatment shift, nuisance fit
     \item DML models require \textbf{specialized serialization} for cross-fitting structure
     \item Retraining triggers must be \textbf{causal-specific}, not accuracy-based
-    \item End-to-end pipelines integrate monitoring, versioning, and orchestration
+    \item End-to-end research pipelines can organize monitoring, versioning, and orchestration concepts
 \end{itemize}
 }
 
-The production module developed here provides:
+The companion ``src.production`` module currently provides demo utilities:
 \begin{itemize}
     \item \texttt{DMLModelVersion}, \texttt{DMLModelRegistry}: Model versioning
     \item \texttt{CausalMonitor}: Overlap, treatment shift, nuisance, effect monitoring

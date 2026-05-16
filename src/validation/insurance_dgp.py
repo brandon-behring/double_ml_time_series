@@ -615,13 +615,13 @@ def validate_dgp_recovery(
         Dict with bias, rmse, coverage, avg_se, empirical_se
 
     Note:
-        Requires DynamicDML and PanelDML to be available.
+        Requires PanelDML to be available.
     """
     # Import here to avoid circular dependency
     try:
-        from src.dml import DynamicDML, PanelDML
+        from src.dml import PanelDML
     except ImportError:
-        raise ImportError("DynamicDML/PanelDML required for validation")
+        raise ImportError("PanelDML required for validation")
 
     estimates = []
     ses = []

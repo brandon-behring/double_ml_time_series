@@ -41,7 +41,7 @@ class DMLModelVersion:
     Attributes:
         version_id: Unique identifier (hash of model + timestamp)
         created_at: Creation timestamp (ISO format)
-        model_type: DML variant ("double_ml", "dynamic_dml", "panel_dml", etc.)
+        model_type: DML variant ("double_ml", "temporal_plr_dml", "panel_dml", etc.)
         n_folds: Number of cross-fitting folds
         nuisance_models: Serialized nuisance models by fold
         feature_names: List of feature/covariate names
@@ -203,7 +203,7 @@ class DMLModelVersion:
         Predict conditional average treatment effect (CATE).
 
         Uses stored nuisance models for orthogonalized prediction.
-        For production, typically uses a single fold or averages across folds.
+        This is a simplified demo path that averages across folds.
 
         Args:
             X: Feature matrix (n_samples, n_features)
@@ -216,9 +216,8 @@ class DMLModelVersion:
             This is a simplified inference path. For full uncertainty
             quantification, use the complete DML fit with bootstrap/HAC.
         """
-        # For production inference, we typically use a meta-learner trained
-        # on the orthogonalized residuals. This requires the full pipeline.
-        # Here we provide a simplified averaging approach.
+        # A hardened inference path would usually use a meta-learner trained on
+        # orthogonalized residuals. Here we provide a simplified averaging approach.
 
         n_samples = X.shape[0]
         cate_predictions = np.zeros((self.n_folds, n_samples))
@@ -472,13 +471,13 @@ class DMLModelRegistry:
 
     def promote_to_production(self, version_id: Optional[str] = None) -> str:
         """
-        Promote a version to production.
+        Mark a version as the registry's production slot.
 
         Args:
             version_id: Version to promote (defaults to current staging)
 
         Returns:
-            Version ID promoted to production
+            Version ID assigned to the production slot
 
         Raises:
             ValueError: If no version specified and no staging version
@@ -503,11 +502,11 @@ class DMLModelRegistry:
 
     def rollback(self, to_version: Optional[str] = None) -> str:
         """
-        Rollback production to a previous version.
+        Roll back the registry's production slot to a previous version.
 
         Args:
             to_version: Specific version to rollback to.
-                       If None, rolls back to previous production version.
+                       If None, rolls back to previous production-slot version.
 
         Returns:
             Version ID rolled back to

@@ -634,9 +634,9 @@ class TestConvenienceFunctions:
 class TestDMLIntegration:
     """Tests for integration with DML estimators."""
 
-    def test_single_series_with_dynamic_dml(self):
-        """Test single series DGP with DynamicDML."""
-        from src.dml import DynamicDML
+    def test_single_series_with_temporal_plr_dml(self):
+        """Test single series DGP with TemporalPLRDML."""
+        from src.dml import TemporalPLRDML
 
         result = create_ar_dgp(
             n=300,
@@ -647,7 +647,7 @@ class TestDMLIntegration:
             random_state=42,
         )
 
-        model = DynamicDML(
+        model = TemporalPLRDML(
             n_lags=2,
             model_y="ridge",
             model_t="ridge",

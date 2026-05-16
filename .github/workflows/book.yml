@@ -1,0 +1,48 @@
+name: Build Book
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'main.tex'
+      - 'chapters/**'
+      - 'Makefile'
+      - 'pyproject.toml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'main.tex'
+      - 'chapters/**'
+      - 'Makefile'
+      - 'pyproject.toml'
+
+jobs:
+  book:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install TeX dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            biber \
+            python3-pygments \
+            texlive-bibtex-extra \
+            texlive-fonts-recommended \
+            texlive-latex-extra \
+            texlive-luatex \
+            texlive-pictures \
+            texlive-science
+
+      - name: Build book with LuaLaTeX and biber
+        run: make
+
+      - name: Report non-blocking box warnings
+        if: always()
+        run: |
+          if [ -f main.log ]; then
+            grep -E "Overfull|Underfull" main.log || true
+          fi

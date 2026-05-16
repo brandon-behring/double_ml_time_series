@@ -1,5 +1,5 @@
 """
-Production module for deploying Double Machine Learning pipelines.
+Research/demo utilities for Double Machine Learning pipeline organization.
 
 This module provides tools for:
 - Model serialization and versioning (DMLModelVersion)
@@ -7,11 +7,13 @@ This module provides tools for:
 - Intelligent retraining triggers (RetrainScheduler)
 - End-to-end DML pipelines (InsuranceDMLPipeline)
 
-Key differences from standard ML production:
+Conceptual differences from standard ML deployment:
 1. Monitor treatment distribution shifts (not just feature drift)
 2. Track overlap violations (positivity assumption)
 3. Validate nuisance model quality (propensity/outcome R²)
 4. Detect effect stability changes over time
+
+These are book-companion utilities, not deployment-ready infrastructure.
 """
 
 from src.production.model_registry import DMLModelVersion, DMLModelRegistry

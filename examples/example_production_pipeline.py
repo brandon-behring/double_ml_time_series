@@ -1,13 +1,15 @@
-"""Production Pipeline: Model Registry + Causal Monitoring.
+"""Research Pipeline Utilities: Model Registry + Causal Monitoring.
 
-Demonstrates the production deployment workflow for DML models:
+Demonstrates the companion-code registry and monitoring utilities:
     1. Generate insurance pricing data
     2. Fit DML model
     3. Register model version in the registry
-    4. Monitor causal assumptions on new data
+    4. Inspect causal diagnostics on new data
+
+This is a reproducible research/demo workflow, not a production deployment claim.
 
 Usage:
-    python examples/example_production_pipeline.py
+    venv/bin/python examples/example_production_pipeline.py
 """
 
 import tempfile
@@ -25,7 +27,7 @@ from src.validation import create_insurance_dgp
 
 
 def main() -> None:
-    """Run the production pipeline example."""
+    """Run the research pipeline utility example."""
     # ── Step 1: Generate Training Data ───────────────────────────────────
     print("=" * 60)
     print("Step 1: Generate Insurance Pricing Data")
@@ -71,7 +73,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         registry = DMLModelRegistry(base_path=tmpdir)
 
-        # Create dummy nuisance models (in production, these come from DML folds)
+        # Create dummy nuisance models for registry serialization.
         from sklearn.linear_model import Ridge
 
         dummy_propensity = Ridge().fit(train_data.X[:100], train_data.T[:100])
@@ -112,7 +114,7 @@ def main() -> None:
     print("Step 4: Causal Monitoring")
     print("=" * 60)
 
-    # Generate new data (simulating production scoring)
+    # Generate new data for a simple stability check.
     new_data = create_insurance_dgp(
         realism="moderate",
         n_periods=120,

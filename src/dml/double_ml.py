@@ -59,7 +59,7 @@ from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import KFold
 
-# Configurable parallelism: production uses -1 (all cores), tests use 1 (sequential).
+# Configurable parallelism: default uses all cores; tests use 1 (sequential).
 # Set DML_N_JOBS=1 in test/conftest.py to avoid multiprocessing hangs under Python 3.13.
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 

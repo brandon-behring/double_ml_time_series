@@ -4,7 +4,7 @@
 % - Panel DML with fixed effects
 % - FRED macroeconomic controls
 % - Rolling windows for non-stationary effects
-% - Production deployment guide
+% - Real-data handoff checklist
 % ============================================================================
 
 \chapter{Competitor Pricing: An Insurance Application}
@@ -12,7 +12,7 @@
 
 \section{Introduction}\label{sec:ch08_introduction}
 
-Chapters 5--7 developed the theoretical and computational infrastructure for time series causal inference: DynamicDML, Panel DML, HAC inference, and FRED integration. This chapter synthesizes these tools into a \textbf{production-ready application}: estimating how competitor pricing affects insurance/annuity sales.
+Chapters 5--7 developed the theoretical and computational infrastructure for time series causal inference: TemporalPLRDML, Panel DML, HAC inference, and FRED integration. This chapter synthesizes these tools into a \textbf{research application}: estimating how competitor pricing affects insurance/annuity sales in reproducible companion-code examples.
 
 \keyresult{
 \textbf{Chapter Objectives:}
@@ -21,7 +21,7 @@ Chapters 5--7 developed the theoretical and computational infrastructure for tim
     \item Integrate macroeconomic controls from FRED for confounding adjustment
     \item Detect time-varying effects using rolling window methods
     \item Validate methodology with realistic synthetic data
-    \item Provide production deployment guide for real data
+    \item Provide a real-data handoff checklist
 \end{itemize}
 }
 
@@ -55,7 +55,7 @@ Without adjustment, we may drastically misestimate our competitive position.
     \item \textbf{Section 8.4}: Macro Controls Integration---FRED data as confounders
     \item \textbf{Section 8.5}: Rolling Window Analysis---detecting effect non-stationarity
     \item \textbf{Section 8.6}: Complete Pipeline---end-to-end implementation
-    \item \textbf{Section 8.7}: Production Deployment Guide---configuration for real data
+    \item \textbf{Section 8.7}: Real Data Handoff Checklist---configuration for real data
     \item \textbf{Section 8.8}: Exercises and Validation
 \end{itemize}
 
@@ -158,7 +158,7 @@ Strategic competitor interaction & & & \checkmark \\
 \begin{itemize}
     \item \texttt{simple}: Verify basic DML mechanics work correctly
     \item \texttt{moderate}: Standard validation for panel pricing analysis
-    \item \texttt{full}: Stress-test before production deployment
+    \item \texttt{full}: Stress-test before moving from examples to real data
 \end{itemize}
 
 Start with \texttt{simple} to confirm implementation, graduate to \texttt{full} for realistic validation.
@@ -256,9 +256,9 @@ The estimate $\hat{\tau} = -0.784$ is close to the true $\tau = -0.8$, and the 9
 
 \begin{minted}[fontsize=\small]{python}
 # Without fixed effects (BIASED)
-from src.dml import DynamicDML
+from src.dml import TemporalPLRDML
 
-model_naive = DynamicDML(n_lags=2, model_y="ridge", model_t="ridge")
+model_naive = TemporalPLRDML(n_lags=2, model_y="ridge", model_t="ridge")
 result_naive = model_naive.fit(dgp.Y, dgp.T, dgp.X)
 print(f"Naive (no FE): theta = {result_naive.theta:.3f}")
 
@@ -311,7 +311,7 @@ from src.data import FREDLoader, create_synthetic_fred_data
 from src.dml import PanelDML
 import numpy as np
 
-# For production: Use FREDLoader with API key
+# For live FRED data: use FREDLoader with API key
 # loader = FREDLoader()
 # macro = loader.get_macro_controls("2015-01-01", "2023-12-31", frequency="M")
 
@@ -365,7 +365,7 @@ Firm + Macro (full) & 0.03 & 0.10 & 94\% \\
 
 Without macro controls, bias is $0.35$ (44\% of true effect $-0.8$). Macro controls alone reduce bias to $0.08$. The combination of firm and macro controls achieves near-zero bias and nominal coverage.
 
-For production, \textbf{always include macro controls} for interest rate-sensitive products.
+For real rate-sensitive products, \textbf{always justify macro controls} such as interest rates.
 }
 
 % ============================================================================
@@ -405,7 +405,7 @@ model = RollingWindowDML(
 )
 
 # Fit on pooled data (treating as single time series for illustration)
-# In production, you'd handle the panel structure appropriately
+# With real data, handle the panel structure explicitly
 model.fit(dgp.Y, dgp.T, dgp.X, time_index=dgp.time_index)
 
 # Extract time-varying effects
@@ -471,7 +471,7 @@ The rolling window correctly identifies the 20\% weakening of the treatment effe
     \item Entry of a new competitor fragmenting the market
 \end{itemize}
 
-For production, monitor rolling estimates for unexpected shifts.
+For real data, monitor rolling estimates for unexpected shifts.
 }
 
 % ============================================================================
@@ -484,7 +484,7 @@ For production, monitor rolling estimates for unexpected shifts.
 """
 Complete Pipeline: Insurance Competitor Pricing Analysis
 
-This script implements the full analysis workflow for production use.
+This script implements the full companion analysis workflow for real-data adaptation.
 Replace synthetic data generators with real data loaders for deployment.
 """
 import numpy as np
@@ -493,7 +493,7 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 # DML imports
-from src.dml import PanelDML, RollingWindowDML, DynamicDML
+from src.dml import PanelDML, RollingWindowDML, TemporalPLRDML
 from src.data import FREDLoader, create_synthetic_fred_data
 from src.validation import create_insurance_dgp
 
@@ -501,7 +501,7 @@ from src.validation import create_insurance_dgp
 class CompetitorAnalysisConfig:
     """Configuration for competitor pricing analysis."""
     # Data parameters
-    use_synthetic: bool = True  # False for production
+    use_synthetic: bool = True  # False when connected to real data
     n_periods: int = 120
     n_products: int = 10
 
@@ -530,7 +530,7 @@ class CompetitorAnalysisConfig:
 def load_data(config: CompetitorAnalysisConfig) -> Dict:
     """Load or generate analysis data.
 
-    For production: Replace synthetic generators with real data loaders.
+    For real data: replace synthetic generators with audited data loaders.
     """
     if config.use_synthetic:
         # Synthetic data for validation
@@ -671,14 +671,14 @@ if __name__ == "__main__":
 \end{minted}
 
 % ============================================================================
-\section{Production Deployment Guide}\label{sec:deployment_guide}
+\section{Real Data Handoff Checklist}\label{sec:deployment_guide}
 % ============================================================================
 
 \subsection{Configuration Management}
 
 \begin{minted}[fontsize=\small]{yaml}
 # config/competitor_analysis.yaml
-# Production configuration for competitor pricing DML
+# Real-data configuration for competitor pricing DML
 
 data:
   use_synthetic: false
@@ -742,13 +742,13 @@ df["date"] = pd.to_datetime(df["date"]).dt.to_period("M").dt.to_timestamp("M")
 assert df["date"].min() >= pd.Timestamp(config.fred_start)
     \end{minted}
 
-    \item \textbf{Environment variables}: Set production credentials
+    \item \textbf{Environment variables}: Set live-data credentials
     \begin{minted}[fontsize=\small]{bash}
 export DATABASE_URL="postgresql://user:pass@host/db"
 export FRED_API_KEY="your_api_key"
     \end{minted}
 
-    \item \textbf{Run validation first}: Before production run, validate on synthetic
+    \item \textbf{Run validation first}: Before real-data runs, validate on synthetic
     \begin{minted}[fontsize=\small]{python}
 config = CompetitorAnalysisConfig(use_synthetic=True)
 result = main(config)
@@ -760,7 +760,7 @@ assert result.validation["bias_pct"] < 10, "Validation failed"
 
 \begin{minted}[fontsize=\small]{python}
 def check_result_quality(result, config):
-    """Quality checks for production results."""
+    """Quality checks for real-data analysis results."""
     alerts = []
 
     # Check standard error magnitude
@@ -786,7 +786,7 @@ def send_alerts(alerts: list):
     if alerts:
         for alert in alerts:
             print(f"ALERT: {alert}")
-            # In production: send to Slack, email, or monitoring system
+            # In a deployment hardening pass: send to Slack, email, or monitoring system
 \end{minted}
 
 \subsection{Deployment Checklist}
@@ -926,12 +926,12 @@ This chapter applied the complete time series DML toolkit to insurance competito
 
     \item \textbf{Rolling Windows}: Detect regime changes in price sensitivity; essential for markets undergoing regulatory or structural shifts
 
-    \item \textbf{Production Pipeline}: End-to-end implementation with configuration management, data quality checks, and monitoring
+    \item \textbf{Research Pipeline}: End-to-end companion workflow with configuration management, data quality checks, and monitoring concepts
 \end{enumerate}
 
 \textbf{Key Takeaways:}
 \begin{itemize}
-    \item Always validate on synthetic data before production deployment
+    \item Always validate on synthetic data before moving to real data
     \item Include macro controls for any rate-sensitive financial product
     \item Use fixed effects when products have persistent unobserved heterogeneity
     \item Monitor for regime changes using rolling windows

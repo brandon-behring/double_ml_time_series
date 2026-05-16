@@ -36,12 +36,11 @@ jobs:
 
       - name: Install package and dependencies
         run: |
-          pip install -e .
-          pip install -r requirements-docs.txt
+          pip install -e ".[dev,docs]"
 
       - name: Build Sphinx documentation
         run: |
-          sphinx-build -W --keep-going docs/sphinx docs/sphinx/_build/html
+          python -m sphinx -b html -W --keep-going docs/sphinx docs/sphinx/_build/html
 
       - name: Deploy to GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

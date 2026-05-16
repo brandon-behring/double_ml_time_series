@@ -2,15 +2,16 @@
 #
 # Build professional PDFs with native LaTeX equation rendering
 
-.PHONY: all clean chapter1 chapter2 help view install-deps test test-unit test-integration test-all test-watch test-coverage
+.PHONY: all clean chapter1 chapter2 help view install-deps test test-unit test-integration test-all test-watch test-coverage docs examples check-errors
 
 # Main targets
 MAIN = main
 PDF = $(MAIN).pdf
 
 # LaTeX compilation commands
-LATEX = pdflatex -shell-escape -interaction=nonstopmode -file-line-error
-BIBTEX = bibtex
+LATEX = lualatex -shell-escape -interaction=nonstopmode -file-line-error
+BIBER = biber
+PYTHON = venv/bin/python
 
 # Default target: build complete book
 all: $(PDF)
@@ -21,11 +22,12 @@ $(PDF): $(MAIN).tex chapters/chapter_01.tex chapters/chapter_02.tex chapters/bib
 	@echo "Building complete book..."
 	@echo "=========================================="
 	$(LATEX) $(MAIN)
-	$(BIBTEX) $(MAIN)
+	$(BIBER) $(MAIN)
 	$(LATEX) $(MAIN)
 	$(LATEX) $(MAIN)
 	@echo ""
-	@echo "✓ Build complete: $(PDF)"
+	$(MAKE) check-errors
+	@echo "Build complete: $(PDF)"
 	@ls -lh $(PDF)
 	@echo ""
 
@@ -34,13 +36,13 @@ chapter1: chapters/chapter_01.tex
 	@echo "Building Chapter 1 (standalone)..."
 	@mkdir -p output
 	$(LATEX) -output-directory=output chapters/chapter_01.tex
-	@echo "✓ Chapter 1 built: output/chapter_01.pdf"
+	@echo "Chapter 1 built: output/chapter_01.pdf"
 
 chapter2: chapters/chapter_02.tex
 	@echo "Building Chapter 2 (standalone)..."
 	@mkdir -p output
 	$(LATEX) -output-directory=output chapters/chapter_02.tex
-	@echo "✓ Chapter 2 built: output/chapter_02.pdf"
+	@echo "Chapter 2 built: output/chapter_02.pdf"
 
 # View PDF in default viewer
 view: $(PDF)
@@ -55,9 +57,9 @@ view: $(PDF)
 # Install required dependencies
 install-deps:
 	@echo "Installing Python dependencies for minted..."
-	pip install Pygments
+	$(PYTHON) -m pip install Pygments
 	@echo ""
-	@echo "✓ Dependencies installed"
+	@echo "Dependencies installed"
 	@echo ""
 	@echo "LaTeX packages required (install via TeX distribution):"
 	@echo "  - amsbook (usually included)"
@@ -73,13 +75,13 @@ clean:
 	rm -f $(MAIN).synctex.gz $(MAIN).fdb_latexmk $(MAIN).fls
 	rm -f chapters/*.aux
 	rm -rf _minted-$(MAIN)/
-	@echo "✓ Cleaned"
+	@echo "Cleaned"
 
 # Clean everything including PDF
 distclean: clean
 	@echo "Removing PDF..."
 	rm -f $(PDF)
-	@echo "✓ All generated files removed"
+	@echo "All generated files removed"
 
 # Check for LaTeX errors in log
 check-errors:
@@ -87,21 +89,22 @@ check-errors:
 		echo "Checking for errors in $(MAIN).log..."; \
 		if grep -E "^!" $(MAIN).log; then \
 			echo ""; \
-			echo "❌ Errors found in LaTeX compilation"; \
+			echo "Errors found in LaTeX compilation"; \
 			exit 1; \
 		else \
-			echo "✓ No errors found"; \
+			echo "No fatal TeX errors found"; \
 		fi; \
 		echo ""; \
-		echo "Checking for warnings..."; \
-		if grep -i "warning" $(MAIN).log; then \
+		echo "Reporting overfull/underfull boxes (non-blocking in this milestone)..."; \
+		if grep -E "Overfull|Underfull" $(MAIN).log; then \
 			echo ""; \
-			echo "⚠️  Warnings found (review log)"; \
+			echo "Box warnings found; review log."; \
 		else \
-			echo "✓ No warnings found"; \
+			echo "No overfull/underfull boxes found"; \
 		fi; \
 	else \
 		echo "No log file found. Run 'make' first."; \
+		exit 1; \
 	fi
 
 # Help message
@@ -120,8 +123,8 @@ help:
 	@echo "  help           Show this help message"
 	@echo ""
 	@echo "Requirements:"
-	@echo "  - pdflatex (TeX Live or MiKTeX)"
-	@echo "  - bibtex"
+	@echo "  - lualatex (TeX Live or MiKTeX)"
+	@echo "  - biber"
 	@echo "  - Python + Pygments (for minted code highlighting)"
 	@echo ""
 	@echo "Example usage:"
@@ -131,10 +134,10 @@ help:
 	@echo "  make clean         # Clean auxiliary files"
 	@echo ""
 	@echo "Compilation process:"
-	@echo "  1. pdflatex (first pass)"
-	@echo "  2. bibtex (process bibliography)"
-	@echo "  3. pdflatex (second pass, resolve citations)"
-	@echo "  4. pdflatex (third pass, resolve cross-references)"
+	@echo "  1. lualatex (first pass)"
+	@echo "  2. biber (process bibliography)"
+	@echo "  3. lualatex (second pass, resolve citations)"
+	@echo "  4. lualatex (third pass, resolve cross-references)"
 	@echo ""
 	@echo "Test targets:"
 	@echo "  test-unit        Run unit tests only (~3s, pre-commit level)"
@@ -148,29 +151,26 @@ help:
 # Test Targets (TDD Workflow)
 # ============================================================================
 
-# Alias for test-unit (default test target)
+# Alias for tier1 tests (default test target)
 test: test-unit
 
-# Fast unit tests (pre-commit level) - ~3 seconds
-# Tests: instantiation, serialization, validation (no estimation)
+# Fast tier1 tests
 test-unit:
-	@echo "Running unit tests (fast, ~3s)..."
-	. venv/bin/activate && python -m pytest test/validation/ -v -m "unit" --no-cov --tb=short
-	@echo "✓ Unit tests complete"
+	@echo "Running tier1 tests..."
+	$(PYTHON) -m pytest -m tier1 --no-cov -q
+	@echo "Tier1 tests complete"
 
-# Integration tests (excludes slow Monte Carlo) - ~10 minutes
-# This is what pre-push runs
+# Tier1 + tier2 tests
 test-integration:
-	@echo "Running integration tests (medium, ~10min)..."
-	. venv/bin/activate && python -m pytest test/validation/ -v -m "not slow" --no-cov --tb=short
-	@echo "✓ Integration tests complete"
+	@echo "Running tier1+tier2 tests..."
+	$(PYTHON) -m pytest -m "tier1 or tier2" --no-cov -q
+	@echo "Tier1+tier2 tests complete"
 
-# Full test suite including slow tests - ~30 minutes
-# Run before releases or major merges
+# Full test suite
 test-all:
-	@echo "Running full test suite (slow, ~30min)..."
-	. venv/bin/activate && python -m pytest test/validation/ -v --tb=short
-	@echo "✓ Full test suite complete"
+	@echo "Running full test suite..."
+	$(PYTHON) -m pytest
+	@echo "Full test suite complete"
 
 # TDD watch mode - auto-run unit tests on file save
 # Usage: make test-watch (then edit code, tests auto-run)
@@ -180,10 +180,19 @@ test-watch:
 	@echo "  - Tests auto-run when files change"
 	@echo "  - Press Ctrl+C to exit"
 	@echo ""
-	. venv/bin/activate && ptw test/validation/ -- -m "unit" --no-cov -q
+	venv/bin/ptw test -- -m tier1 --no-cov -q
 
 # Coverage report (generates HTML report in htmlcov/)
 test-coverage:
 	@echo "Running tests with coverage..."
-	. venv/bin/activate && python -m pytest test/validation/ --cov=src/validation --cov-report=html --cov-report=term-missing
-	@echo "✓ Coverage report generated: htmlcov/index.html"
+	$(PYTHON) -m pytest --cov=src --cov-report=html --cov-report=term-missing
+	@echo "Coverage report generated: htmlcov/index.html"
+
+docs:
+	$(PYTHON) -m sphinx -b html -W --keep-going docs/sphinx docs/sphinx/_build/html
+
+examples:
+	@for f in examples/*.py; do \
+		echo "Running $$f"; \
+		$(PYTHON) "$$f"; \
+	done

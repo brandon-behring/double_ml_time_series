@@ -1,8 +1,8 @@
 Examples
 ========
 
-Runnable example scripts demonstrating key library workflows. Each script
-is self-contained and can be executed directly.
+Runnable example scripts demonstrating the current companion-code workflows.
+Each script is self-contained and can be executed directly.
 
 .. contents:: Example Index
    :local:
@@ -25,7 +25,7 @@ Robinson overfits without cross-fitting, DML recovers the true effect.
 Time Series DML
 ---------------
 
-DynamicDML with temporal cross-validation and HAC standard errors
+TemporalPLRDML with temporal cross-validation and HAC standard errors
 on autocorrelated data.
 
 .. literalinclude:: ../../../examples/example_time_series_dml.py
@@ -57,11 +57,11 @@ Rosenbaum bounds sensitivity analysis applied to DML results.
 
 ----
 
-Production Pipeline
--------------------
+Research Pipeline Utilities
+---------------------------
 
-End-to-end production workflow: model registry, causal monitoring,
-and retraining decisions.
+Registry and causal-monitoring utilities used as reproducible research/demo
+code. This example is not a production deployment claim.
 
 .. literalinclude:: ../../../examples/example_production_pipeline.py
    :language: python

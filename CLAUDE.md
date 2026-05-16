@@ -1,198 +1,116 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Repository guidance for coding agents working in this repo.
 
----
+## Project Frame
 
-## Shared Foundation (Hub Reference)
+This is a book-grade companion repository for a Double Machine Learning manuscript,
+not production deployment software and not a stable public package. The public contract
+is being rebuilt around verified runtime behavior.
 
-**This project uses shared patterns from lever_of_archimedes**:
+Use [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md) as the only current status source.
+Older reports and roadmaps live under
+[docs/archive/superseded_2026-05-02](docs/archive/superseded_2026-05-02/ARCHIVE_INDEX.md).
 
-See: `~/Claude/lever_of_archimedes/patterns/` for:
-- `testing.md` - 6-layer validation architecture
-- `sessions.md` - Session workflow (CURRENT_WORK.md, ROADMAP.md)
-- `git.md` - Commit format and workflow
-- `style/python_style.yaml` - Black 100-char, strict mypy
+Current core:
 
-**Core principles** (from hub):
-1. NEVER fail silently - explicit errors always
-2. Simplicity over complexity - 20-50 line functions
-3. Immutability by default
-4. Fail fast with diagnostics
+- FWL, Robinson, and cross-sectional/i.i.d.-style `double_ml`
+- `TemporalPLRDML`: scalar temporal PLR DML with lagged treatment controls,
+  temporal cross-fitting, and HAC inference
+- `RollingWindowDML` and `PanelDML` as companion estimators
+- Time-series CV, HAC/Newey-West, synthetic macro controls, and validation helpers
 
----
+Do not describe this repo as production-grade. Do not describe `TemporalPLRDML` as true
+Lewis-Syrgkanis dynamic g-estimation, period-specific `theta_t`, recursive
+g-estimation, CausalForestDML/BLP/policy-tree implementation, automatic stationarity
+enforcement, or deployment readiness unless the code path being discussed proves it.
 
-## Project Overview
+## Required Commands
 
-**Double Machine Learning for Time Series** - Academic reference book on DML methodology with focus on time series causal inference for insurance/annuity competitor pricing with macroeconomic controls.
-
-**Current Status** (2026-03-06):
-- PROJECT COMPLETE - All 10 chapters + Julia appendix
-- Book: 205 pages, 10 chapters + 1 appendix, zero LaTeX errors/warnings
-- Code: 15,404 lines Python (incl. 2,446 production module)
-- Tests: 796 total
-
-**Build System**: LuaLaTeX (scrbook + Tufte-style) with zero-error compilation requirement.
-
----
-
-## Quick Reference Commands
+Use the repo venv explicitly:
 
 ```bash
-# Build complete book (NOTE: lualatex, NOT pdflatex)
-lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex
-
-# Run tests by tier (from repo root)
-pytest -m tier1                      # ~12s smoke test (314 tests)
-pytest -m "tier1 or tier2"           # ~2min pre-push (617 tests)
-pytest -m "tier1 or tier2 or tier3"  # ~30min nightly (762 tests)
-pytest                               # Full suite including tier4 (~2h)
-
-# Quick DML verification (includes time series)
-python -c "from src.dml import double_ml, DynamicDML, RollingWindowDML; print('OK')"
-
-# Verify FRED loader
-python -c "from src.data import FREDLoader; print('OK')"
-
-# Install in development mode (required for imports)
-pip install -e .
+venv/bin/python -m pytest --collect-only -q
+venv/bin/python -m pytest -m tier1 --no-cov -q
+venv/bin/python -m pytest -m "tier1 or tier2" --no-cov -q
+venv/bin/python -m black --check src/ test/ examples/
+venv/bin/python -m mypy src/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
 ```
 
----
+Examples:
 
-## Project Structure
-
-```
-src/
-├── dml/
-│   ├── fwl.py           # Frisch-Waugh-Lovell theorem
-│   ├── robinson.py      # Robinson estimator
-│   ├── double_ml.py     # DML with cross-fitting
-│   ├── cross_fitting.py # TimeSeriesCrossValidator (591 lines)
-│   ├── hac.py           # HAC/Newey-West standard errors (737 lines)
-│   └── dynamic_dml.py   # DynamicDML, RollingWindow, Panel (1,048 lines)
-├── data/
-│   ├── fred_loader.py   # FRED macroeconomic data (705 lines)
-│   └── oj_loader.py     # OJ dataset loader
-├── sensitivity/
-│   └── rosenbaum.py     # Rosenbaum bounds (512 lines)
-├── production/
-│   ├── model_registry.py    # DML model versioning (581 lines)
-│   ├── causal_monitor.py    # Overlap/treatment monitoring (656 lines)
-│   ├── retrain_pipeline.py  # Causal retraining triggers (508 lines)
-│   └── dml_pipeline.py      # End-to-end pipeline (670 lines)
-└── validation/
-    ├── dgp_generator.py      # Cross-sectional DGP
-    ├── dgp_generator_ts.py   # Time series DGP (714 lines)
-    ├── stationarity.py       # ADF, KPSS, PP tests (914 lines)
-    ├── insurance_dgp.py      # Insurance DGP (669 lines)
-    ├── baseline_comparison.py
-    ├── bias_validation.py
-    ├── bootstrap_config.py
-    ├── bootstrap_diagnostics.py
-    ├── enhanced_dgp.py
-    ├── ipw_baseline.py
-    ├── lasso_diagnostic.py
-    ├── ml_baseline.py
-    ├── ols_baseline.py
-    ├── plotting.py
-    └── storage.py
-
-test/
-└── validation/          # 796 tests
-
-chapters/
-├── chapter_01.tex       # Potential Outcomes + FWL
-├── chapter_02.tex       # Neyman Orthogonality + DML
-├── chapter_03.tex       # Validation Framework
-├── chapter_04.tex       # Cross-Sectional Application
-├── chapter_05.tex       # Dynamic Treatment Effects
-├── chapter_06.tex       # Panel DML + Rolling Window
-├── chapter_07.tex       # FRED Integration
-├── chapter_08.tex       # Competitor Pricing (957 lines)
-├── chapter_09.tex       # Heterogeneity Analysis (680 lines)
-├── chapter_10.tex       # Production Pipeline (878 lines)
-└── appendix_a.tex       # Julia Roadmap (597 lines)
+```bash
+for f in examples/*.py; do venv/bin/python "$f"; done
 ```
 
----
+Docs:
 
-## Key Principles
-
-### LaTeX Compilation
-- **Zero errors, zero warnings** - compilation must be clean
-- Build: `lualatex -shell-escape main.tex && biber main && lualatex -shell-escape main.tex`
-- Uses biber (not bibtex) for bibliography
-
-### Validation (7-Method Suite)
-1. Published results replication
-2. Synthetic Monte Carlo (1000 runs)
-3. Cross-implementation (Manual vs EconML vs R)
-4. First-stage diagnostics
-5. Real-world known outcomes
-6. Public dataset benchmarks
-7. Synthetic DGP generator
-
-### Test Tiers (4-tier system)
-
-| Tier | Purpose | Speed | Tests | Command |
-|------|---------|-------|-------|---------|
-| tier1 | Unit — no estimation, pure logic | ~12s | 314 | `pytest -m tier1` |
-| tier2 | Integration — light estimation | ~2min | 617 | `pytest -m "tier1 or tier2"` |
-| tier3 | Validation — moderate MC/bootstrap | ~30min | 762 | `pytest -m "tier1 or tier2 or tier3"` |
-| tier4 | Full replication + stress | ~2h | 796 | `pytest` |
-
-- Timeouts: 10s / 60s / 300s / 1800s per tier (enforced by pytest-timeout via `test/conftest.py`)
-- Tiered bootstrap: `BootstrapConfig.tier2()` / `.tier3()` factory methods
-- Cached 401(k) data: `test/fixtures/401k_data.csv` (offline testing)
-- Zero unmarked tests — every test has a `@pytest.mark.tierN` marker
-
-### Code Style
-- **Formatter**: Black with 100-character lines
-- **Type hints**: Required everywhere
-- **Parallelization**: n_jobs=48 (64-core Threadripper)
-
----
-
-## State Files
-
-- `docs/CURRENT_WORK.md` - Current task (30-sec resume)
-- `docs/MASTER_ROADMAP_2025-11-21.md` - Master 11-chapter plan
-- `docs/IMPLEMENTATION_STRATEGY_REPORT.md` - Time series DML roadmap
-
----
-
-## Current Gaps (Document as you work)
-
-**None** - All chapters complete (2026-03-06)
-
----
-
-## Time Series Capabilities (IMPLEMENTED)
-
-| Component | Description | Location |
-|-----------|-------------|----------|
-| TimeSeriesCrossValidator | Temporal blocking, proper train/test splits | `src/dml/cross_fitting.py` |
-| HAC Standard Errors | Newey-West, Bartlett kernel | `src/dml/hac.py` |
-| DynamicDML | Time-varying treatment effects | `src/dml/dynamic_dml.py` |
-| RollingWindowDML | Adaptive window estimation | `src/dml/dynamic_dml.py` |
-| PanelDML | Fixed effects, entity-time structure | `src/dml/dynamic_dml.py` |
-| FREDLoader | Macroeconomic controls from FRED | `src/data/fred_loader.py` |
-| Time Series DGP | Autocorrelated confounders | `src/validation/dgp_generator_ts.py` |
-| Stationarity Tests | ADF, KPSS, Phillips-Perron | `src/validation/stationarity.py` |
-| Insurance DGP | Parameterized complexity DGP | `src/validation/insurance_dgp.py` |
-| DMLModelRegistry | Model versioning and promotion | `src/production/model_registry.py` |
-| CausalMonitor | Overlap/treatment/nuisance monitoring | `src/production/causal_monitor.py` |
-| RetrainScheduler | Causal-specific retraining triggers | `src/production/retrain_pipeline.py` |
-| InsuranceDMLPipeline | End-to-end production pipeline | `src/production/dml_pipeline.py` |
-
----
-
-## Hardware
-
-64-core Threadripper configuration:
-```python
-os.environ['OPENBLAS_NUM_THREADS'] = '1'
-os.environ['MKL_NUM_THREADS'] = '1'
-N_JOBS = 48
+```bash
+venv/bin/python -m pip install -e ".[dev,docs]"
+venv/bin/python -m sphinx -b html -W --keep-going docs/sphinx docs/sphinx/_build/html
 ```
+
+Book:
+
+```bash
+lualatex -shell-escape main.tex
+biber main
+lualatex -shell-escape main.tex
+lualatex -shell-escape main.tex
+```
+
+LuaLaTeX plus biber is the intended book toolchain. Fatal TeX errors are blocking.
+Overfull/underfull boxes are currently reported but not yet blocking.
+
+## Current Baseline
+
+Audit baseline from 2026-05-02:
+
+- 796 tests collected before this remediation pass
+- Tier 1: 314 tests
+- Tier 1 + Tier 2: 615 tests
+- Book PDF: 205 pages
+- Sphinx requires docs dependencies
+- Generated artifacts remain tracked until a separate cleanup decides whether to untrack
+  or freeze them
+
+## Source Layout
+
+```text
+src/dml/
+  fwl.py                 FWL residualization baseline
+  robinson.py            Robinson partially linear estimator
+  double_ml.py           Cross-fitted i.i.d.-style PLR DML
+  cross_fitting.py       Time-series CV helpers
+  hac.py                 HAC/Newey-West inference
+  temporal_plr_dml.py    TemporalPLRDML, RollingWindowDML, PanelDML
+
+src/data/                FRED loader, OJ loader, synthetic macro controls
+src/validation/          DGPs, stationarity diagnostics, validation helpers
+src/production/          Research/demo utilities only
+examples/                Runnable public examples
+docs/sphinx/             Sphinx docs
+docs/audits/             Current audit evidence
+docs/archive/            Superseded reports and plans
+chapters/                LaTeX manuscript
+```
+
+## Methodology Rules
+
+- Runtime behavior, tests, live APIs, logs, and primary literature outrank docs.
+- `double_ml` stays cross-sectional/i.i.d.-style in this remediation pass.
+- `TemporalPLRDML` uses temporal CV and excludes rows without valid out-of-fold
+  temporal predictions.
+- Stationarity, cointegration, overlap, and weak treatment residual variation are
+  documented risks. This milestone may warn but should not block estimation on those
+  diagnostics.
+- Keep imports under the staged `src.*` namespace until the documentation/API cleanup
+  has passed.
+
+## Editing Rules
+
+- Keep changes tightly scoped to truth cleanup, API/doc contract repair, examples,
+  and gates.
+- Do not restore archived status docs as current sources.
+- Do not add compatibility aliases for the old `DynamicDML` names.
+- Avoid new methodology claims unless they are backed by executable examples or tests.

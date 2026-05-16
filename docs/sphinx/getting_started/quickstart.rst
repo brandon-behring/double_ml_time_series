@@ -1,108 +1,122 @@
 Quickstart
 ==========
 
-A 5-minute tour of the core library capabilities.
+A short tour of the current executable public contract.
 
-Basic DML Estimation
---------------------
+Cross-Sectional PLR DML
+-----------------------
 
-Estimate a causal treatment effect using cross-fitted Double Machine Learning:
+``double_ml`` estimates a scalar partially linear treatment effect with ordinary
+cross-fitting. In this remediation milestone it should be treated as an
+i.i.d.-style helper, not a temporal-CV estimator.
 
 .. code-block:: python
 
    import numpy as np
-   from sklearn.ensemble import RandomForestRegressor
+
    from src.dml import double_ml
 
-   # Generate data with nonlinear confounding
-   np.random.seed(42)
-   n = 1000
-   X = np.random.randn(n, 5)
-   T = np.sin(X[:, 0]) + 0.5 * X[:, 1] + np.random.randn(n) * 0.5
-   Y = 2.0 * T + np.cos(X[:, 0]) + X[:, 1] ** 2 + np.random.randn(n) * 0.5
+   rng = np.random.default_rng(42)
+   n = 500
+   X = rng.normal(size=(n, 5))
+   T = X[:, 0] + rng.normal(size=n)
+   Y = 2.0 * T + X[:, 1] ** 2 + rng.normal(size=n)
 
-   # Estimate with DML (true effect = 2.0)
-   result = double_ml(
-       Y, T, X,
-       model_y=RandomForestRegressor(n_estimators=100, random_state=42),
-       model_t=RandomForestRegressor(n_estimators=100, random_state=42),
-       n_folds=5,
-   )
+   result = double_ml(Y, T, X, n_folds=5, model="ridge", random_state=42)
 
-   print(f"Estimate: {result.theta:.3f} (true: 2.0)")
+   print(f"theta: {result.theta:.3f}")
    print(f"95% CI: [{result.ci_lower:.3f}, {result.ci_upper:.3f}]")
 
-Time Series Cross-Validation
------------------------------
+Temporal PLR DML
+----------------
 
-Use temporal blocking to prevent information leakage with autocorrelated data:
+``TemporalPLRDML`` estimates a scalar temporal PLR effect with lagged treatment
+controls, temporal cross-fitting, and HAC inference. It does not estimate
+period-specific ``theta_t`` effects.
 
 .. code-block:: python
+
+   import numpy as np
+
+   from src.dml import TemporalPLRDML
+
+   rng = np.random.default_rng(42)
+   n = 240
+   time_index = np.arange(n)
+   X = np.column_stack([rng.normal(size=n), np.sin(time_index / 12)])
+   T = 0.4 * X[:, 0] + rng.normal(size=n)
+   Y = 1.5 * T + X[:, 1] + rng.normal(size=n)
+
+   model = TemporalPLRDML(
+       n_lags=2,
+       model_y="ridge",
+       model_t="ridge",
+       n_splits=4,
+       gap=2,
+       hac_bandwidth=6,
+       random_state=42,
+   )
+   result = model.fit(Y, T, X, time_index=time_index)
+
+   print(f"theta: {result.theta:.3f}")
+   print(f"HAC SE: {result.se:.3f}")
+   print(f"CV rows dropped: {result.dropped_initial_rows}")
+
+Time-Series Cross-Validation
+----------------------------
+
+Use temporal blocking and purging directly when inspecting train/test geometry.
+
+.. code-block:: python
+
+   import numpy as np
 
    from src.dml import TimeSeriesCrossValidator
 
-   cv = TimeSeriesCrossValidator(
-       n_splits=5,
-       test_size=50,
-       gap=10,        # 10-period gap between train and test
-       purge=5,        # purge 5 periods at boundary
-   )
+   X = np.arange(100).reshape(-1, 1)
+   cv = TimeSeriesCrossValidator(n_splits=5, gap=3, purge_length=2)
 
-   for fold_idx, (train_idx, test_idx) in enumerate(cv.split(X)):
-       print(f"Fold {fold_idx}: train={len(train_idx)}, test={len(test_idx)}")
-       # Train and test indices respect temporal ordering
+   for train_idx, test_idx in cv.split(X):
+       assert train_idx[-1] + 3 + 2 <= test_idx[0]
 
-HAC Standard Errors
--------------------
-
-Newey-West standard errors for autocorrelated residuals:
-
-.. code-block:: python
-
-   from src.dml import newey_west_se
-
-   # Compute HAC-robust standard errors
-   se = newey_west_se(residuals, bandwidth="auto")
-   print(f"HAC SE: {se:.4f}")
-
-FRED Macroeconomic Controls
-----------------------------
-
-Load macroeconomic time series for use as controls:
+Synthetic Macro Controls
+------------------------
 
 .. code-block:: python
 
    from src.data import create_synthetic_fred_data
 
-   # Synthetic data for offline development
-   macro_data = create_synthetic_fred_data(n_periods=120)
-   print(f"Series: {list(macro_data.columns)}")
-   print(f"Shape: {macro_data.shape}")
+   macro = create_synthetic_fred_data(
+       start_date="2018-01-01",
+       end_date="2020-12-31",
+       frequency="M",
+       seed=42,
+   )
+
+   print(macro.data.shape)
+   print(macro.data.columns.tolist())
 
 Insurance DGP
 -------------
 
-Generate insurance pricing data with known causal effects:
-
 .. code-block:: python
 
-   from src.validation import create_insurance_dgp, InsuranceDGPParams
+   from src.validation import create_insurance_dgp
 
-   params = InsuranceDGPParams(
-       n_obs=500,
-       n_competitors=3,
-       true_effect=1.5,
-       realism_level="moderate",
+   data = create_insurance_dgp(
+       realism="moderate",
+       n_periods=120,
+       n_products=10,
+       true_tau=-0.8,
+       seed=42,
    )
-   result = create_insurance_dgp(params)
 
-   print(f"True effect: {params.true_effect}")
-   print(f"Y shape: {result.Y.shape}")
-   print(f"T shape: {result.T.shape}")
+   print(f"true effect: {data.true_params.tau}")
+   print(f"observations: {len(data.Y)}")
 
 Next Steps
 ----------
 
-- :doc:`/user_guide/fwl_to_dml` — Mathematical tutorial: FWL → Robinson → DML
-- :doc:`/user_guide/time_series_dml` — Time series extensions with HAC and temporal CV
-- :doc:`/api/dml` — Full API reference
+- :doc:`/user_guide/fwl_to_dml` - Mathematical tutorial: FWL to Robinson to DML
+- :doc:`/user_guide/time_series_dml` - Temporal PLR, HAC, and temporal CV
+- :doc:`/api/dml` - API reference

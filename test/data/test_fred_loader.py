@@ -260,9 +260,9 @@ class TestFREDDMLIntegration:
         assert X_macro.shape[1] == 4
         assert not np.isnan(X_macro).any()
 
-    def test_synthetic_data_with_dynamic_dml(self):
-        """Test synthetic FRED data with DynamicDML."""
-        from src.dml import DynamicDML
+    def test_synthetic_data_with_temporal_plr_dml(self):
+        """Test synthetic FRED data with TemporalPLRDML."""
+        from src.dml import TemporalPLRDML
 
         # Get synthetic macro data
         fred_result = create_synthetic_fred_data(
@@ -279,8 +279,8 @@ class TestFREDDMLIntegration:
         T = 0.5 * X_macro[:, 0] + rng.standard_normal(n)  # Correlated with GDP
         Y = 2.0 * T + X_macro[:, 2] + rng.standard_normal(n)  # Effect + unemployment
 
-        # Fit DynamicDML
-        model = DynamicDML(
+        # Fit TemporalPLRDML
+        model = TemporalPLRDML(
             n_lags=1,
             model_y="ridge",
             model_t="ridge",
