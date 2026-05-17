@@ -1,0 +1,1165 @@
+entries:
+- bibkey: frisch1933partial
+  primary_url: https://www.jstor.org/stable/1907330
+  title: Partial time regressions as compared with individual trends
+  status: verified
+  claim_family: theory_partialing
+  authors: Frisch & Waugh (1933)
+  venue: Econometrica 1933
+- bibkey: lovell1963seasonal
+  primary_url: https://doi.org/10.1080/01621459.1963.10480682
+  title: Seasonal adjustment of economic time series and multiple regression analysis
+  status: verified
+  claim_family: theory_partialing
+  authors: Lovell (1963)
+  venue: JASA 1963
+- bibkey: robinson1988rootn
+  primary_url: https://www.econometricsociety.org/publications/econometrica/1988/07/01/root-n-consistent-semiparametric-regression
+  title: Root-N-Consistent Semiparametric Regression
+  status: verified
+  claim_family: theory_partialing
+  authors: Robinson (1988)
+  venue: Econometrica 1988
+- bibkey: lovell2008simple
+  primary_url: https://doi.org/10.3200/JECE.39.1.88-91
+  title: A Simple Proof of the FWL Theorem
+  status: verified
+  claim_family: theory_partialing
+  authors: Lovell (2008)
+  venue: Journal of Economic Education 2008
+- bibkey: ding2021frisch
+  primary_url: https://arxiv.org/abs/2106.02087
+  title: The Frisch–Waugh–Lovell Theorem for Standard Errors
+  status: verified
+  claim_family: theory_partialing
+  authors: Ding (2021)
+  venue: arXiv preprint
+- bibkey: basu2023yule
+  primary_url: https://arxiv.org/abs/2307.00369
+  title: The Yule-Frisch-Waugh-Lovell Theorem
+  status: verified
+  claim_family: theory_partialing
+  authors: Basu (2023)
+  venue: arXiv preprint
+- bibkey: chernozhukov2018double
+  primary_url: https://academic.oup.com/ectj/article/21/1/C1/5056401
+  title: Double/debiased machine learning for treatment and structural parameters
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Chernozhukov et al. (2018)
+  venue: The Econometrics Journal 2018
+- bibkey: chernozhukov2017double
+  primary_url: https://arxiv.org/abs/1608.00060
+  title: Double/Debiased Machine Learning for Treatment and Causal Parameters
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Chernozhukov et al. (2017)
+  venue: arXiv preprint
+- bibkey: chernozhukov2017aer
+  primary_url: https://www.aeaweb.org/articles?id=10.1257/aer.p20171038
+  title: Double/Debiased/Neyman Machine Learning of Treatment Effects
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Chernozhukov et al. (2017)
+  venue: AER Papers & Proceedings 2017
+- bibkey: chernozhukov2022locally
+  primary_url: https://arxiv.org/abs/1608.00033
+  title: Locally Robust Semiparametric Estimation
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Chernozhukov et al. (2022)
+  venue: Econometrica 2022
+- bibkey: ichimura2022influence
+  primary_url: https://arxiv.org/abs/1508.01378
+  title: The Influence Function of Semiparametric Estimators
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Ichimura & Newey (2022)
+  venue: Quantitative Economics 2022
+- bibkey: newey1994asymptotic
+  primary_url: https://www.jstor.org/stable/2951752
+  title: The Asymptotic Variance of Semiparametric Estimators
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Newey (1994)
+  venue: Econometrica 1994
+- bibkey: newey1990semiparametric
+  primary_url: https://doi.org/10.1002/jae.3950050202
+  title: Semiparametric Efficiency Bounds
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Newey (1990)
+  venue: Journal of Applied Econometrics 1990
+- bibkey: foster2023orthogonal
+  primary_url: https://arxiv.org/abs/1901.09036
+  title: Orthogonal Statistical Learning
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Foster & Syrgkanis (2023)
+  venue: Annals of Statistics 2023
+- bibkey: neyman1959optimal
+  primary_url: https://www.jstor.org/stable/i285003
+  title: Optimal asymptotic tests of composite statistical hypotheses
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Neyman (1959)
+  venue: Probability and Statistics (1959)
+- bibkey: ahrens2025introduction
+  primary_url: https://arxiv.org/abs/2504.08324
+  title: An Introduction to Double/Debiased Machine Learning
+  status: verified
+  claim_family: theory_orthogonality
+  authors: Ahrens et al. (2025)
+  venue: arXiv preprint
+- bibkey: vandervaart2000asymptotic
+  primary_url: https://doi.org/10.1017/CBO9780511802256
+  title: Asymptotic Statistics
+  status: verified
+  claim_family: theory_orthogonality
+  authors: van der Vaart (2000)
+  venue: Cambridge University Press 2000
+- bibkey: wager2018estimation
+  primary_url: https://arxiv.org/abs/1510.04342
+  title: Estimation and Inference of Heterogeneous Treatment Effects using Random Forests
+  status: verified
+  claim_family: estimator_xs
+  authors: Wager & Athey (2018)
+  venue: JASA 2018
+- bibkey: nie2021quasi
+  primary_url: https://arxiv.org/abs/1712.04912
+  title: Quasi-Oracle Estimation of Heterogeneous Treatment Effects
+  status: verified
+  claim_family: estimator_xs
+  authors: Nie & Wager (2021)
+  venue: Biometrika 2021
+  code_url: https://github.com/xnie/rlearner
+- bibkey: kuenzel2019metalearners
+  primary_url: https://arxiv.org/abs/1706.03461
+  title: Meta-learners for Estimating Heterogeneous Treatment Effects using Machine Learning
+  status: verified
+  claim_family: estimator_xs
+  authors: Künzel et al. (2019)
+  venue: PNAS 2019
+- bibkey: athey2019grf
+  primary_url: https://arxiv.org/abs/1610.01271
+  title: Generalized Random Forests
+  status: verified
+  claim_family: estimator_xs
+  authors: Athey, Tibshirani & Wager (2019)
+  venue: Annals of Statistics 2019
+  code_url: https://github.com/grf-labs/grf
+- bibkey: athey2016recursive
+  primary_url: https://doi.org/10.1073/pnas.1510489113
+  title: Recursive Partitioning for Heterogeneous Causal Effects
+  status: verified
+  claim_family: estimator_xs
+  authors: Athey & Imbens (2016)
+  venue: PNAS 2016
+- bibkey: hill2011bayesian
+  primary_url: https://doi.org/10.1198/jcgs.2010.08162
+  title: Bayesian Nonparametric Modeling for Causal Inference
+  status: verified
+  claim_family: estimator_xs
+  authors: Hill (2011)
+  venue: JCGS 2011
+- bibkey: shi2019adapting
+  primary_url: https://arxiv.org/abs/1906.02120
+  title: Adapting Neural Networks for the Estimation of Treatment Effects
+  status: verified
+  claim_family: estimator_xs
+  authors: Shi, Blei & Veitch (2019)
+  venue: NeurIPS 2019
+- bibkey: belloni2014inference
+  primary_url: https://arxiv.org/abs/1201.0224
+  title: Inference on Treatment Effects After Selection Amongst High-Dimensional Controls
+  status: verified
+  claim_family: estimator_xs
+  authors: Belloni, Chernozhukov & Hansen (2014)
+  venue: Review of Economic Studies 2014
+- bibkey: hahn2020bayesian
+  primary_url: https://arxiv.org/abs/1706.09523
+  title: 'Bayesian Regression Tree Models for Causal Inference: Regularization, Confounding, and Heterogeneous Effects'
+  status: verified
+  claim_family: estimator_xs
+  authors: Hahn, Murray & Carvalho (2020)
+  venue: Bayesian Analysis 2020
+- bibkey: athey2019machine
+  primary_url: https://doi.org/10.1146/annurev-economics-080217-053433
+  title: Machine Learning Methods That Economists Should Know About
+  status: verified
+  claim_family: survey
+  authors: Athey & Imbens (2019)
+  venue: Annual Review of Economics 2019
+- bibkey: lewis2020dynamic
+  primary_url: https://arxiv.org/abs/2002.07285
+  title: Double/Debiased Machine Learning for Dynamic Treatment Effects via g-Estimation
+  status: verified
+  claim_family: estimator_temporal
+  authors: Lewis & Syrgkanis (2020)
+  venue: NeurIPS 2021
+- bibkey: bodory2022evaluating
+  primary_url: https://arxiv.org/abs/2012.00370
+  title: Evaluating (weighted) dynamic treatment effects by double machine learning
+  status: verified
+  claim_family: estimator_temporal
+  authors: Bodory, Huber & Lafférs (2022)
+  venue: The Econometrics Journal 2022
+- bibkey: clarke2024doublemlpanel
+  primary_url: https://arxiv.org/abs/2312.08174
+  title: Double Machine Learning for Static Panel Models with Fixed Effects
+  status: verified
+  claim_family: estimator_temporal
+  authors: Clarke & Polselli (2024)
+  venue: The Econometrics Journal 2025
+- bibkey: fuhr2024dmlpaneldata
+  primary_url: https://arxiv.org/abs/2409.01266
+  title: Double Machine Learning meets Panel Data -- Promises, Pitfalls, and Potential Solutions
+  status: verified
+  claim_family: estimator_temporal
+  authors: Fuhr et al. (2024)
+  venue: arXiv preprint
+- bibkey: robins1986newapproach
+  primary_url: https://www.sciencedirect.com/science/article/pii/0270025586900886
+  title: A new approach to causal inference in mortality studies with a sustained exposure period—application to control of the healthy worker survivor effect
+  status: verified
+  claim_family: estimator_temporal
+  authors: Robins (1986)
+  venue: Mathematical Modelling 1986
+- bibkey: robins2000marginal
+  primary_url: https://journals.lww.com/epidem/abstract/2000/09000/marginal_structural_models_and_causal_inference_in.11.aspx
+  title: Marginal Structural Models and Causal Inference in Epidemiology
+  status: verified
+  claim_family: estimator_temporal
+  authors: Robins, Hernán & Brumback (2000)
+  venue: Epidemiology 2000
+- bibkey: naimi2017introduction
+  primary_url: https://academic.oup.com/ije/article/46/2/756/2760169
+  title: An introduction to g methods
+  status: verified
+  claim_family: estimator_temporal
+  authors: Naimi, Cole & Kennedy (2017)
+  venue: International Journal of Epidemiology 2017
+- bibkey: bojinov2019time
+  primary_url: https://doi.org/10.1080/01621459.2018.1554455
+  title: 'Time Series Experiments and Causal Estimands: Exact Randomization Tests and Trading'
+  status: verified
+  claim_family: estimator_temporal
+  authors: Bojinov & Shephard (2019)
+  venue: JASA 2019
+- bibkey: imai2021should
+  primary_url: https://doi.org/10.1111/ajps.12417
+  title: When Should We Use Unit Fixed Effects Regression Models for Causal Inference with Longitudinal Data?
+  status: verified
+  claim_family: estimator_temporal
+  authors: Imai & Kim (2021)
+  venue: American Journal of Political Science 2021
+- bibkey: athey2022design
+  primary_url: https://arxiv.org/abs/1808.05293
+  title: Design-based Analysis in Difference-In-Differences Settings with Staggered Adoption
+  status: verified
+  claim_family: estimator_temporal
+  authors: Athey & Imbens (2022)
+  venue: Journal of Econometrics 2022
+- bibkey: newey1987simple
+  primary_url: https://www.jstor.org/stable/1913610
+  title: A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix
+  status: verified
+  claim_family: inference_ts
+  authors: Newey & West (1987)
+  venue: Econometrica 1987
+- bibkey: andrews1991hac
+  primary_url: https://www.jstor.org/stable/2938229
+  title: Heteroskedasticity and Autocorrelation Consistent Covariance Matrix Estimation
+  status: verified
+  claim_family: inference_ts
+  authors: Andrews (1991)
+  venue: Econometrica 1991
+- bibkey: driscoll1998consistent
+  primary_url: https://doi.org/10.1162/003465398557825
+  title: Consistent Covariance Matrix Estimation With Spatially Dependent Panel Data
+  status: verified
+  claim_family: inference_ts
+  authors: Driscoll & Kraay (1998)
+  venue: Review of Economics and Statistics 1998
+- bibkey: kiefer2005newasym
+  primary_url: https://doi.org/10.1017/S0266466605050516
+  title: A New Asymptotic Theory for Heteroskedasticity-Autocorrelation Robust Tests
+  status: verified
+  claim_family: inference_ts
+  authors: Kiefer & Vogelsang (2005)
+  venue: Econometric Theory 2005
+- bibkey: bergmeir2018note
+  primary_url: https://doi.org/10.1016/j.csda.2017.11.003
+  title: A note on the validity of cross-validation for evaluating autoregressive time series prediction
+  status: verified
+  claim_family: inference_ts
+  authors: Bergmeir, Hyndman & Koo (2018)
+  venue: Computational Statistics & Data Analysis 2018
+- bibkey: deprado2018advances
+  primary_url: https://www.wiley.com/en-us/Advances+in+Financial+Machine+Learning-p-9781119482086
+  title: Advances in Financial Machine Learning
+  status: verified
+  claim_family: inference_ts
+  authors: de Prado (2018)
+  venue: Wiley 2018
+- bibkey: lalonde1986evaluating
+  primary_url: https://www.jstor.org/stable/1806062
+  title: Evaluating the econometric evaluations of training programs with experimental data
+  status: verified
+  claim_family: replication_applied
+  authors: LaLonde (1986)
+  venue: American Economic Review 1986
+- bibkey: dehejia1999causal
+  primary_url: https://doi.org/10.1080/01621459.1999.10473858
+  title: 'Causal effects in nonexperimental studies: Reevaluating the evaluation of training programs'
+  status: verified
+  claim_family: replication_applied
+  authors: Dehejia & Wahba (1999)
+  venue: JASA 1999
+- bibkey: chernozhukov2004effects
+  primary_url: https://doi.org/10.1162/0034653041811734
+  title: 'The Effects of 401(K) Participation on the Wealth Distribution: An Instrumental Quantile Regression Analysis'
+  status: verified
+  claim_family: replication_applied
+  authors: Chernozhukov & Hansen (2004)
+  venue: Review of Economics and Statistics 2004
+- bibkey: poterba1995crowdout
+  primary_url: https://www.sciencedirect.com/science/article/pii/004727279401462W
+  title: Do 401(k) Contributions Crowd Out Other Personal Saving?
+  status: verified
+  claim_family: replication_applied
+  authors: Poterba, Venti & Wise (1995)
+  venue: Journal of Public Economics 1995
+- bibkey: poterba1996reconciling
+  primary_url: https://www.nber.org/papers/w5599
+  title: 'Personal Retirement Saving Programs and Asset Accumulation: Reconciling the Evidence'
+  status: verified
+  claim_family: replication_applied
+  authors: Poterba, Venti & Wise (1996)
+  venue: NBER Working Paper 5599
+- bibkey: belloni2012sparse
+  primary_url: https://arxiv.org/abs/1010.4345
+  title: Sparse Models and Methods for Optimal Instruments with an Application to Eminent Domain
+  status: verified
+  claim_family: replication_applied
+  authors: Belloni, Chen, Chernozhukov & Hansen (2012)
+  venue: Econometrica 2012
+- bibkey: imbens2009recent
+  primary_url: https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5
+  title: Recent Developments in the Econometrics of Program Evaluation
+  status: verified
+  claim_family: replication_applied
+  authors: Imbens & Wooldridge (2009)
+  venue: Journal of Economic Literature 2009
+- bibkey: fred
+  primary_url: https://fred.stlouisfed.org/
+  title: Federal Reserve Economic Data (FRED)
+  status: verified
+  claim_family: replication_applied
+  authors: Federal Reserve Bank of St. Louis (2023)
+  venue: Online data service
+- bibkey: econml
+  primary_url: https://github.com/py-why/EconML
+  title: 'EconML: A Python Package for ML-Based Heterogeneous Treatment Effects Estimation'
+  status: verified
+  claim_family: tooling
+  authors: Microsoft Research / ALICE Team
+  venue: GitHub / Microsoft Research
+  code_url: https://github.com/py-why/EconML
+- bibkey: dowhy2022
+  primary_url: https://arxiv.org/abs/2011.04216
+  title: 'DoWhy: An End-to-End Library for Causal Inference'
+  status: verified
+  claim_family: tooling
+  authors: Sharma & Kıcıman (2020)
+  venue: arXiv preprint
+  code_url: https://github.com/py-why/dowhy
+- bibkey: chen2020causalml
+  primary_url: https://arxiv.org/abs/2002.11631
+  title: 'CausalML: Python Package for Causal Machine Learning'
+  status: verified
+  claim_family: tooling
+  authors: Chen et al. (2020)
+  venue: arXiv preprint
+  code_url: https://github.com/uber/causalml
+- bibkey: bach2022doubleml
+  primary_url: https://www.jstatsoft.org/article/view/v108i03
+  title: DoubleML — An Object-Oriented Implementation of Double Machine Learning in R
+  status: verified
+  claim_family: tooling
+  authors: Bach et al. (2024)
+  venue: Journal of Statistical Software 2024
+- bibkey: bach2022doublemlpy
+  primary_url: https://arxiv.org/abs/2104.03220
+  title: DoubleML -- An Object-Oriented Implementation of Double Machine Learning in Python
+  status: verified
+  claim_family: tooling
+  authors: Bach et al. (2022)
+  venue: Journal of Machine Learning Research 2022
+- bibkey: spindler2016hdm
+  primary_url: https://arxiv.org/abs/1603.01700
+  title: 'hdm: High-Dimensional Metrics in R'
+  status: verified
+  claim_family: tooling
+  authors: Chernozhukov, Hansen & Spindler (2016)
+  venue: The R Journal 2016
+  code_url: https://cran.r-project.org/package=hdm
+- bibkey: athey2019grfpkg
+  primary_url: https://github.com/grf-labs/grf
+  title: 'grf: Generalized Random Forests (R package)'
+  status: verified
+  claim_family: tooling
+  authors: Tibshirani, Athey & Wager
+  venue: CRAN / GitHub
+  code_url: https://github.com/grf-labs/grf
+- bibkey: lewis2021dynamicneurips
+  primary_url: https://proceedings.neurips.cc/paper_files/paper/2021/hash/bf65417dcecc7f2b0006e1f5793b7143-Abstract.html
+  title: Double/Debiased Machine Learning for Dynamic Treatment Effects
+  authors: Greg Lewis, Vasilis Syrgkanis
+  venue: NeurIPS 2021 (Advances in Neural Information Processing Systems 34)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: chernozhukov2022adml
+  primary_url: https://arxiv.org/abs/2203.13887
+  title: Automatic Debiased Machine Learning for Dynamic Treatment Effects and General Nested Functionals
+  authors: Victor Chernozhukov, Whitney Newey, Rahul Singh, Vasilis Syrgkanis
+  venue: arXiv:2203.13887 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: vansteelandt2014snmm
+  primary_url: https://arxiv.org/abs/1503.01589
+  title: 'Structural Nested Models and G-estimation: The Partially Realized Promise'
+  authors: Stijn Vansteelandt, Marshall Joffe
+  venue: Statistical Science, Vol. 29, No. 4, pp. 707-731 (2014)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: shahn2022snmmparalleltrends
+  primary_url: https://arxiv.org/abs/2204.10291
+  title: Structural Nested Mean Models Under Parallel Trends Assumptions
+  authors: Zach Shahn, Oliver Dukes, Meghana Shamsunder, David Richardson, Eric Tchetgen Tchetgen, James Robins
+  venue: arXiv:2204.10291 (stat.ME)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: semenova2018orthoml
+  primary_url: https://arxiv.org/abs/1712.09988
+  title: Estimation and Inference on Heterogeneous Treatment Effects in High-Dimensional Dynamic Panels under Weak Dependence
+  authors: Vira Semenova, Matt Goldman, Victor Chernozhukov, Matt Taddy
+  venue: Quantitative Economics, 2023 (arXiv:1712.09988)
+  status: verified
+  claim_family: estimator_temporal
+  code_url: https://github.com/vsemenova/orthoml
+- bibkey: belloni2016highdimpanel
+  primary_url: https://arxiv.org/abs/1411.6507
+  title: Inference in High Dimensional Panel Models with an Application to Gun Control
+  authors: Alexandre Belloni, Victor Chernozhukov, Christian Hansen, Damian Kozbur
+  venue: Journal of Business & Economic Statistics 34(4), 590-605 (2016)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: clarke2024dmlpanel
+  primary_url: https://arxiv.org/abs/2312.08174
+  title: Double Machine Learning for Static Panel Models with Fixed Effects
+  authors: Paul S. Clarke, Annalivia Polselli
+  venue: The Econometrics Journal (2025); arXiv:2312.08174
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: fuhr2024panelpitfalls
+  primary_url: https://arxiv.org/abs/2409.01266
+  title: Double Machine Learning meets Panel Data -- Promises, Pitfalls, and Potential Solutions
+  authors: Jonathan Fuhr, Dominik Papies
+  venue: arXiv:2409.01266 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: klosin2022panelapd
+  primary_url: https://arxiv.org/abs/2207.08789
+  title: Estimating Continuous Treatment Effects in Panel Data using Machine Learning with a Climate Application
+  authors: Sylvia Klosin, Max Vilgalys
+  venue: arXiv:2207.08789 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: ciganovic2026dmltimeseries
+  primary_url: https://arxiv.org/abs/2603.10999
+  title: Double Machine Learning for Time Series
+  authors: Milos Ciganovic, Federico D'Amario, Massimiliano Tancioni
+  venue: arXiv:2603.10999 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: ballinari2024dmlirf
+  primary_url: https://arxiv.org/abs/2411.10009
+  title: Semiparametric inference for impulse response functions using double/debiased machine learning
+  authors: Daniele Ballinari, Alexander Wehrli
+  venue: arXiv:2411.10009 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: chiang2021multiwaydml
+  primary_url: https://arxiv.org/abs/1909.03489
+  title: Multiway Cluster Robust Double/Debiased Machine Learning
+  authors: Harold D. Chiang, Kengo Kato, Yukun Ma, Yuya Sasaki
+  venue: Journal of Business & Economic Statistics 40(3), 2022; arXiv:1909.03489
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: chen2026crossfittingfree
+  primary_url: https://arxiv.org/abs/2602.11333
+  title: Cross-Fitting-Free Debiased Machine Learning with Multiway Dependence
+  authors: Kaicheng Chen, Harold D. Chiang
+  venue: arXiv:2602.11333 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: cao2025neighborhoodstability
+  primary_url: https://arxiv.org/abs/2511.10995
+  title: Neighborhood Stability in Double/Debiased Machine Learning with Dependent Data
+  authors: Jianfei Cao, Michael P. Leung
+  venue: arXiv:2511.10995 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: zhang2025contdid
+  primary_url: https://arxiv.org/abs/2408.10509
+  title: Continuous difference-in-differences with double/debiased machine learning
+  authors: Lucas Z. Zhang
+  venue: The Econometrics Journal, 2025; arXiv:2408.10509
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: haddad2024tvcontdid
+  primary_url: https://arxiv.org/abs/2410.21105
+  title: Difference-in-Differences with Time-varying Continuous Treatments using Double/Debiased Machine Learning
+  authors: Michel F. C. Haddad, Martin Huber, José Eduardo Medina-Reyes, Lucas Z. Zhang
+  venue: arXiv:2410.21105 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: hatamyar2023mldid
+  primary_url: https://arxiv.org/abs/2310.11962
+  title: Machine Learning for Staggered Difference-in-Differences and Dynamic Treatment Effect Heterogeneity
+  authors: Julia Hatamyar, Noemi Kreif, Rudi Rocha, Martin Huber
+  venue: arXiv:2310.11962 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: athey2018staggeredadoption
+  primary_url: https://arxiv.org/abs/1808.05293
+  title: Design-based Analysis in Difference-In-Differences Settings with Staggered Adoption
+  authors: Susan Athey, Guido Imbens
+  venue: arXiv:1808.05293 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: athey2017matrixcompletion
+  primary_url: https://arxiv.org/abs/1710.10251
+  title: Matrix Completion Methods for Causal Panel Data Models
+  authors: Susan Athey, Mohsen Bayati, Nikolay Doudchenko, Guido Imbens, Khashayar Khosravi
+  venue: Journal of the American Statistical Association 116(536), 2021; arXiv:1710.10251
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: oprescu2019orthorf
+  primary_url: https://arxiv.org/abs/1806.03467
+  title: Orthogonal Random Forest for Causal Inference
+  authors: Miruna Oprescu, Vasilis Syrgkanis, Zhiwei Steven Wu
+  venue: Proceedings of the 36th International Conference on Machine Learning (ICML 2019); arXiv:1806.03467
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: chernozhukov2022locallyrobust
+  primary_url: https://arxiv.org/abs/1608.00033
+  title: Locally Robust Semiparametric Estimation
+  authors: Victor Chernozhukov, Juan Carlos Escanciano, Hidehiko Ichimura, Whitney K. Newey, James M. Robins
+  venue: Econometrica 90(4), 1501-1535 (2022); arXiv:1608.00033
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: kallus2020doublerl
+  primary_url: https://arxiv.org/abs/1908.08526
+  title: Double Reinforcement Learning for Efficient Off-Policy Evaluation in Markov Decision Processes
+  authors: Nathan Kallus, Masatoshi Uehara
+  venue: Journal of Machine Learning Research 21(167), 2020; arXiv:1908.08526
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: murphy2003dtr
+  primary_url: https://academic.oup.com/jrsssb/article/65/2/331/7092852
+  title: Optimal Dynamic Treatment Regimes
+  authors: Susan A. Murphy
+  venue: 'Journal of the Royal Statistical Society: Series B (Statistical Methodology) 65(2), 331-355 (2003)'
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: bica2020crn
+  primary_url: https://arxiv.org/abs/2002.04083
+  title: Estimating Counterfactual Treatment Outcomes over Time Through Adversarially Balanced Representations
+  authors: Ioana Bica, Ahmed M. Alaa, James Jordon, Mihaela van der Schaar
+  venue: ICLR 2020; arXiv:2002.04083
+  status: verified
+  claim_family: estimator_temporal
+  code_url: https://github.com/ioanabica/Counterfactual-Recurrent-Network
+- bibkey: melnychuk2022causaltransformer
+  primary_url: https://arxiv.org/abs/2204.07258
+  title: Causal Transformer for Estimating Counterfactual Outcomes
+  authors: Valentyn Melnychuk, Dennis Frauen, Stefan Feuerriegel
+  venue: Proceedings of the 39th International Conference on Machine Learning, PMLR 162, 2022; arXiv:2204.07258
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: li2020gnet
+  primary_url: https://arxiv.org/abs/2003.10551
+  title: 'G-Net: A Deep Learning Approach to G-computation for Counterfactual Outcome Prediction Under Dynamic Treatment Regimes'
+  authors: Rui Li, Zach Shahn, Jun Li, Mingyu Lu, Prithwish Chakraborty, Daby Sow, Mohamed Ghalwash, Li-wei H. Lehman
+  venue: Proceedings of Machine Learning for Health (ML4H) 2021; arXiv:2003.10551
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: ying2021proximallong
+  primary_url: https://arxiv.org/abs/2109.07030
+  title: Proximal Causal Inference for Complex Longitudinal Studies
+  authors: Andrew Ying, Wang Miao, Xu Shi, Eric J. Tchetgen Tchetgen
+  venue: arXiv:2109.07030 (stat.ME)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: baiardi2026panelivdml
+  primary_url: https://arxiv.org/abs/2603.20464
+  title: 'Double Machine Learning for Static Panel Data with Instrumental Variables: New Method and Applications'
+  authors: Anna Baiardi, Paul S. Clarke, Andrea A. Naghi, Annalivia Polselli
+  venue: arXiv:2603.20464 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: ma2025deepblip
+  primary_url: https://arxiv.org/abs/2511.14545
+  title: 'DeepBlip: Estimating Conditional Average Treatment Effects Over Time'
+  authors: Haorui Ma, Dennis Frauen, Stefan Feuerriegel
+  venue: arXiv:2511.14545 (stat.ML)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: vanderlaan2025semiparametricdrl
+  primary_url: https://arxiv.org/abs/2501.06926
+  title: Semiparametric Double Reinforcement Learning with Applications to Long-Term Causal Inference
+  authors: Lars van der Laan, David Hubbard, Allen Tran, Nathan Kallus, Aurélien Bibaut
+  venue: arXiv:2501.06926 (stat.ML)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: sun2008optimal
+  primary_url: https://onlinelibrary.wiley.com/doi/abs/10.1111/j.0012-9682.2008.00822.x
+  title: Optimal Bandwidth Selection in Heteroskedasticity-Autocorrelation Robust Testing
+  authors: Yixiao Sun, Peter C. B. Phillips, Sainan Jin
+  venue: Econometrica 76(1):175-194
+  status: verified
+  claim_family: inference_ts
+- bibkey: lazarus2018har
+  primary_url: https://scholar.harvard.edu/files/stock/files/lazarus_lewis_stock_watson_har_inference_recommendations_for_practice_jbes_2018.pdf
+  title: 'HAR Inference: Recommendations for Practice'
+  authors: Eben Lazarus, Daniel J. Lewis, James H. Stock, Mark W. Watson
+  venue: Journal of Business & Economic Statistics 36(4):541-559
+  status: verified
+  claim_family: inference_ts
+- bibkey: andrews1992improved
+  primary_url: https://elischolar.library.yale.edu/cowles-discussion-paper-series/1185/
+  title: An Improved Heteroskedasticity and Autocorrelation Consistent Covariance Matrix Estimator
+  authors: Donald W. K. Andrews, J. Christopher Monahan
+  venue: Econometrica 60(4):953-966
+  status: verified
+  claim_family: inference_ts
+- bibkey: mueller2014hac
+  primary_url: https://www.princeton.edu/~umueller/HACtest.pdf
+  title: HAC Corrections for Strongly Autocorrelated Time Series
+  authors: Ulrich K. Müller
+  venue: Journal of Business & Economic Statistics 32(3):311-322
+  status: verified
+  claim_family: inference_ts
+- bibkey: newey1994automatic
+  primary_url: https://users.ssc.wisc.edu/~behansen/718/NeweyWest1994.pdf
+  title: Automatic Lag Selection in Covariance Matrix Estimation
+  authors: Whitney K. Newey, Kenneth D. West
+  venue: Review of Economic Studies 61(4):631-653
+  status: verified
+  claim_family: inference_ts
+- bibkey: kiefer2002bartlett
+  primary_url: https://ideas.repec.org/p/ecl/corcae/01-13.html
+  title: Heteroskedasticity-Autocorrelation Robust Standard Errors Using The Bartlett Kernel Without Truncation
+  authors: Nicholas M. Kiefer, Timothy J. Vogelsang
+  venue: Econometrica 70(5):2093-2095
+  status: verified
+  claim_family: inference_ts
+- bibkey: kwiatkowski1992stationarity
+  primary_url: https://www.sciencedirect.com/science/article/abs/pii/030440769290104Y
+  title: 'Testing the null hypothesis of stationarity against the alternative of a unit root: How sure are we that economic time series have a unit root?'
+  authors: Denis Kwiatkowski, Peter C. B. Phillips, Peter Schmidt, Yongcheol Shin
+  venue: Journal of Econometrics 54(1-3):159-178
+  status: verified
+  claim_family: inference_ts
+- bibkey: dickey1979distribution
+  primary_url: https://www.tandfonline.com/doi/abs/10.1080/01621459.1979.10482531
+  title: Distribution of the Estimators for Autoregressive Time Series with a Unit Root
+  authors: David A. Dickey, Wayne A. Fuller
+  venue: Journal of the American Statistical Association 74(366a):427-431
+  status: verified
+  claim_family: inference_ts
+- bibkey: phillips1988testing
+  primary_url: https://academic.oup.com/biomet/article-abstract/75/2/335/292919
+  title: Testing for a unit root in time series regression
+  authors: Peter C. B. Phillips, Pierre Perron
+  venue: Biometrika 75(2):335-346
+  status: verified
+  claim_family: inference_ts
+- bibkey: racine2000hvblock
+  primary_url: https://econpapers.repec.org/RePEc:eee:econom:v:99:y:2000:i:1:p:39-61
+  title: 'Consistent cross-validatory model-selection for dependent data: hv-block cross-validation'
+  authors: Jeffrey S. Racine
+  venue: Journal of Econometrics 99(1):39-61
+  status: verified
+  claim_family: inference_ts
+- bibkey: romano2005stepwise
+  primary_url: https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1468-0262.2005.00615.x
+  title: Stepwise Multiple Testing as Formalized Data Snooping
+  authors: Joseph P. Romano, Michael Wolf
+  venue: Econometrica 73(4):1237-1282
+  status: verified
+  claim_family: inference_ts
+- bibkey: vogelsang2012heteroskedasticity
+  primary_url: https://ideas.repec.org/a/eee/econom/v166y2012i2p303-319.html
+  title: Heteroskedasticity, autocorrelation, and spatial correlation robust inference in linear panel models with fixed-effects
+  authors: Timothy J. Vogelsang
+  venue: Journal of Econometrics 166(2):303-319
+  status: verified
+  claim_family: inference_ts
+- bibkey: engen1996illusory
+  primary_url: https://www.aeaweb.org/articles?id=10.1257/jep.10.4.113
+  title: The Illusory Effects of Saving Incentives on Saving
+  authors: Eric M. Engen, William G. Gale, John Karl Scholz
+  venue: Journal of Economic Perspectives 10(4):113-138
+  status: verified
+  claim_family: replication_applied
+- bibkey: benjamin2003does
+  primary_url: https://ideas.repec.org/a/eee/pubeco/v87y2003i5-6p1259-1290.html
+  title: Does 401(k) eligibility increase saving? Evidence from propensity score subclassification
+  authors: Daniel J. Benjamin
+  venue: Journal of Public Economics 87(5-6):1259-1290
+  status: verified
+  claim_family: replication_applied
+- bibkey: abadie2003semiparametric
+  primary_url: https://ideas.repec.org/a/eee/econom/v113y2003i2p231-263.html
+  title: Semiparametric instrumental variable estimation of treatment response models
+  authors: Alberto Abadie
+  venue: Journal of Econometrics 113(2):231-263
+  status: verified
+  claim_family: replication_applied
+- bibkey: gelber2011how
+  primary_url: https://www.aeaweb.org/articles?id=10.1257/pol.3.4.103
+  title: How Do 401(k)s Affect Saving? Evidence from Changes in 401(k) Eligibility
+  authors: Alexander M. Gelber
+  venue: 'American Economic Journal: Economic Policy 3(4):103-122'
+  status: verified
+  claim_family: replication_applied
+- bibkey: smith2005does
+  primary_url: https://ideas.repec.org/a/eee/econom/v125y2005i1-2p305-353.html
+  title: Does matching overcome LaLonde's critique of nonexperimental estimators?
+  authors: Jeffrey A. Smith, Petra E. Todd
+  venue: Journal of Econometrics 125(1-2):305-353
+  status: verified
+  claim_family: replication_applied
+- bibkey: imbens2003sensitivity
+  primary_url: https://www.semanticscholar.org/paper/Sensitivity-to-Exogeneity-Assumptions-in-Program-Imbens/f71d13e53828097cf8cd718255fc5b6393809eb9
+  title: Sensitivity to Exogeneity Assumptions in Program Evaluation
+  authors: Guido W. Imbens
+  venue: American Economic Review 93(2):126-132
+  status: verified
+  claim_family: replication_applied
+- bibkey: diamond2013genetic
+  primary_url: https://direct.mit.edu/rest/article/95/3/932/58101/Genetic-Matching-for-Estimating-Causal-Effects-A
+  title: 'Genetic Matching for Estimating Causal Effects: A General Multivariate Matching Method for Achieving Balance in Observational Studies'
+  authors: Alexis Diamond, Jasjeet S. Sekhon
+  venue: Review of Economics and Statistics 95(3):932-945
+  status: verified
+  claim_family: replication_applied
+- bibkey: mertens2013dynamic
+  primary_url: https://www.aeaweb.org/articles?id=10.1257/aer.103.4.1212
+  title: The Dynamic Effects of Personal and Corporate Income Tax Changes in the United States
+  authors: Karel Mertens, Morten O. Ravn
+  venue: American Economic Review 103(4):1212-1247
+  status: verified
+  claim_family: replication_applied
+- bibkey: romer2004new
+  primary_url: https://www.aeaweb.org/articles?id=10.1257/0002828042002651
+  title: 'A New Measure of Monetary Shocks: Derivation and Implications'
+  authors: Christina D. Romer, David H. Romer
+  venue: American Economic Review 94(4):1055-1084
+  status: verified
+  claim_family: replication_applied
+- bibkey: cloyne2013discretionary
+  primary_url: https://www.aeaweb.org/articles?id=10.1257/aer.103.4.1507
+  title: 'Discretionary Tax Changes and the Macroeconomy: New Narrative Evidence from the United Kingdom'
+  authors: James Cloyne
+  venue: American Economic Review 103(4):1507-1528
+  status: verified
+  claim_family: replication_applied
+- bibkey: stock2018identification
+  primary_url: https://onlinelibrary.wiley.com/doi/abs/10.1111/ecoj.12593
+  title: Identification and Estimation of Dynamic Causal Effects in Macroeconomics Using External Instruments
+  authors: James H. Stock, Mark W. Watson
+  venue: The Economic Journal 128(610):917-948
+  status: verified
+  claim_family: replication_applied
+- bibkey: mccracken2016fredmd
+  primary_url: https://ideas.repec.org/a/taf/jnlbes/v34y2016i4p574-589.html
+  title: 'FRED-MD: A Monthly Database for Macroeconomic Research'
+  authors: Michael W. McCracken, Serena Ng
+  venue: Journal of Business & Economic Statistics 34(4):574-589
+  status: verified
+  claim_family: replication_applied
+- bibkey: croushore2001realtime
+  primary_url: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=244554
+  title: A Real-Time Data Set for Macroeconomists
+  authors: Dean Croushore, Tom Stark
+  venue: Journal of Econometrics 105(1):111-130
+  status: verified
+  claim_family: replication_applied
+- bibkey: faust2009comparing
+  primary_url: https://www.tandfonline.com/doi/abs/10.1198/jbes.2009.07214
+  title: Comparing Greenbook and Reduced Form Forecasts Using a Large Realtime Dataset
+  authors: Jon Faust, Jonathan H. Wright
+  venue: Journal of Business & Economic Statistics 27(4):468-479
+  status: verified
+  claim_family: replication_applied
+- bibkey: knaus2022programme
+  primary_url: https://arxiv.org/abs/2003.03191
+  title: Double Machine Learning based Program Evaluation under Unconfoundedness
+  authors: Michael C. Knaus
+  venue: The Econometrics Journal 25(3):602-627
+  code_url: https://github.com/MCKnaus/causalDML
+  status: verified
+  claim_family: replication_applied
+- bibkey: knaus2021heterogeneous
+  primary_url: https://academic.oup.com/ectj/article-abstract/24/1/134/5854188
+  title: 'Machine learning estimation of heterogeneous causal effects: Empirical Monte Carlo evidence'
+  authors: Michael C. Knaus, Michael Lechner, Anthony Strittmatter
+  venue: The Econometrics Journal 24(1):134-161
+  code_url: https://github.com/MCKnaus/CATEs
+  status: verified
+  claim_family: replication_applied
+- bibkey: knaus2022heterogeneous
+  primary_url: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3029832
+  title: 'Heterogeneous Employment Effects of Job Search Programmes: A Machine Learning Approach'
+  authors: Michael C. Knaus, Michael Lechner, Anthony Strittmatter
+  venue: Journal of Human Resources 57(2):597-636
+  status: verified
+  claim_family: replication_applied
+- bibkey: strittmatter2023value
+  primary_url: https://arxiv.org/abs/1812.06533
+  title: What Is the Value Added by Using Causal Machine Learning Methods in a Welfare Experiment Evaluation?
+  authors: Anthony Strittmatter
+  venue: Labour Economics 84:102412
+  status: verified
+  claim_family: replication_applied
+- bibkey: baiardi2024plough
+  primary_url: https://onlinelibrary.wiley.com/doi/abs/10.1002/jae.3083
+  title: 'The effect of plough agriculture on gender roles: A machine learning approach'
+  authors: Anna Baiardi, Andrea A. Naghi
+  venue: Journal of Applied Econometrics 39(7):1396-1402
+  status: verified
+  claim_family: replication_applied
+- bibkey: baiardi2024valueadded
+  primary_url: https://academic.oup.com/ectj/article/27/2/213/7602388
+  title: 'The value added of machine learning to causal inference: evidence from revisited studies'
+  authors: Anna Baiardi, Andrea A. Naghi
+  venue: The Econometrics Journal 27(2):213-234
+  status: verified
+  claim_family: replication_applied
+- bibkey: ahrens2025modelaveraging
+  primary_url: https://onlinelibrary.wiley.com/doi/abs/10.1002/jae.3103
+  title: Model Averaging and Double Machine Learning
+  authors: Achim Ahrens, Christian B. Hansen, Mark E. Schaffer, Thomas Wiemann
+  venue: Journal of Applied Econometrics
+  status: verified
+  claim_family: replication_applied
+- bibkey: bia2024doubleml
+  primary_url: https://arxiv.org/abs/2012.00745
+  title: Double Machine Learning for Sample Selection Models
+  authors: Michela Bia, Martin Huber, Lukáš Lafférs
+  venue: Journal of Business & Economic Statistics 42(3):958-969
+  status: verified
+  claim_family: replication_applied
+- bibkey: belloni2017program
+  primary_url: https://arxiv.org/abs/1311.2645
+  title: Program Evaluation and Causal Inference With High-Dimensional Data
+  authors: Alexandre Belloni, Victor Chernozhukov, Iván Fernández-Val, Christian Hansen
+  venue: Econometrica 85(1):233-298
+  status: verified
+  claim_family: replication_applied
+- bibkey: belloni2016inference
+  primary_url: https://arxiv.org/abs/1411.6507
+  title: Inference in High Dimensional Panel Models with an Application to Gun Control
+  authors: Alexandre Belloni, Victor Chernozhukov, Christian Hansen, Damian Kozbur
+  venue: Journal of Business & Economic Statistics 34(4):590-605
+  status: verified
+  claim_family: replication_applied
+- bibkey: athey2019estimating
+  primary_url: https://arxiv.org/abs/1902.07409
+  title: 'Estimating Treatment Effects with Causal Forests: An Application'
+  authors: Susan Athey, Stefan Wager
+  venue: Observational Studies 5(2):37-51
+  status: verified
+  claim_family: replication_applied
+- bibkey: heckman1999economics
+  primary_url: https://ideas.repec.org/h/eee/labchp/3-31.html
+  title: The economics and econometrics of active labor market programs
+  authors: James J. Heckman, Robert J. LaLonde, Jeffrey A. Smith
+  venue: Handbook of Labor Economics 3:1865-2097
+  status: verified
+  claim_family: replication_applied
+- bibkey: ahrens2024ddml
+  primary_url: https://arxiv.org/abs/2301.09397
+  title: 'ddml: Double/debiased machine learning in Stata'
+  authors: Achim Ahrens, Christian B. Hansen, Mark E. Schaffer, Thomas Wiemann
+  venue: Stata Journal 24(1):3-45
+  code_url: https://statalasso.github.io/
+  status: verified
+  claim_family: tooling
+- bibkey: clarke2025xtdml
+  primary_url: https://arxiv.org/abs/2512.15965
+  title: 'xtdml: Double Machine Learning Estimation to Static Panel Data Models with Fixed Effects in R'
+  authors: Damian Clarke, Annalivia Polselli
+  venue: arXiv preprint
+  code_url: https://github.com/POLSEAN/xtdml
+  status: verified
+  claim_family: tooling
+- bibkey: coyle2020tmle3
+  primary_url: https://tlverse.org/tmle3/
+  title: 'tmle3: The Extensible TMLE Framework'
+  authors: Jeremy R. Coyle, Nima S. Hejazi, Ivana Malenica, Rachael V. Phillips, Mark J. van der Laan
+  venue: R package, tlverse ecosystem
+  code_url: https://github.com/tlverse/tmle3
+  status: verified
+  claim_family: tooling
+- bibkey: bodory2022causalweight
+  primary_url: https://ideas.repec.org/p/fri/fribow/fribow00493.html
+  title: The causalweight package for causal inference in R
+  authors: Hugo Bodory, Martin Huber
+  venue: FSES Working Papers
+  code_url: https://cran.r-project.org/package=causalweight
+  status: verified
+  claim_family: tooling
+- bibkey: causaltune2022
+  primary_url: https://www.pywhy.org/causaltune/
+  title: 'CausalTune: Automated Tuning and Selection for Causal Estimators'
+  authors: PyWhy Contributors
+  venue: Open-source Python package
+  code_url: https://github.com/py-why/causaltune
+  status: verified
+  claim_family: tooling
+- bibkey: cerulli2022mlstata
+  primary_url: https://arxiv.org/abs/2103.03122
+  title: Machine Learning using Stata/Python
+  authors: Giovanni Cerulli
+  venue: Stata Journal 22(4):772-810
+  status: verified
+  claim_family: tooling
+- bibkey: econmldynamicdml
+  primary_url: https://econml.azurewebsites.net/spec/estimation/dynamic_dml.html
+  title: Dynamic Double Machine Learning
+  authors: Microsoft Research / PyWhy
+  venue: EconML official documentation
+  code_url: https://github.com/py-why/EconML
+  status: verified
+  claim_family: tooling
+- bibkey: brodersen2015causalimpact
+  primary_url: https://arxiv.org/abs/1506.00356
+  title: Inferring causal impact using Bayesian structural time-series models
+  authors: Kay H. Brodersen, Fabian Gallusser, Jim Koehler, Nicolas Remy, Steven L. Scott
+  venue: Annals of Applied Statistics 9(1):247-274
+  code_url: https://github.com/google/CausalImpact
+  status: verified
+  claim_family: tooling
+- bibkey: basu2023fwliv
+  primary_url: https://arxiv.org/abs/2307.12731
+  title: The Yule-Frisch-Waugh-Lovell Theorem for Linear Instrumental Variables Estimation
+  authors: Basu (2023)
+  venue: arXiv preprint
+  status: verified
+  claim_family: theory_partialing
+- bibkey: cattaneo2018alternative
+  primary_url: https://arxiv.org/abs/1507.02493
+  title: Inference in Linear Regression Models with Many Covariates and Heteroskedasticity
+  authors: Cattaneo, Jansson & Newey (2018)
+  venue: Journal of the American Statistical Association 2018
+  status: verified
+  claim_family: theory_partialing
+- bibkey: davidson2003econometric
+  primary_url: http://qed.econ.queensu.ca/ETM/ETM-davidson-mackinnon-2021.pdf
+  title: Econometric Theory and Methods
+  authors: Davidson & MacKinnon (2003)
+  venue: Oxford University Press
+  status: verified
+  claim_family: theory_partialing
+- bibkey: vandergeer2014asymptotically
+  primary_url: https://arxiv.org/abs/1303.0518
+  title: On asymptotically optimal confidence regions and tests for high-dimensional models
+  authors: van de Geer, Bühlmann, Ritov & Dezeure (2014)
+  venue: Annals of Statistics 2014
+  status: verified
+  claim_family: theory_partialing
+- bibkey: zhang2014confidence
+  primary_url: https://rss.onlinelibrary.wiley.com/doi/abs/10.1111/rssb.12026
+  title: Confidence intervals for low dimensional parameters in high dimensional linear models
+  authors: Zhang & Zhang (2014)
+  venue: Journal of the Royal Statistical Society Series B 2014
+  status: verified
+  claim_family: theory_partialing
+- bibkey: javanmard2014confidence
+  primary_url: https://arxiv.org/abs/1306.3171
+  title: Confidence Intervals and Hypothesis Testing for High-Dimensional Regression
+  authors: Javanmard & Montanari (2014)
+  venue: Journal of Machine Learning Research 2014
+  status: verified
+  claim_family: theory_partialing
+- bibkey: belloni2014jephighdim
+  primary_url: https://www.aeaweb.org/articles?id=10.1257/jep.28.2.29
+  title: High-Dimensional Methods and Inference on Structural and Treatment Effects
+  authors: Belloni, Chernozhukov & Hansen (2014)
+  venue: Journal of Economic Perspectives 2014
+  status: verified
+  claim_family: theory_partialing
+- bibkey: kennedy2022semiparametric
+  primary_url: https://arxiv.org/abs/2203.06469
+  title: 'Semiparametric doubly robust targeted double machine learning: a review'
+  authors: Kennedy (2022)
+  venue: arXiv preprint
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: hines2022demystifying
+  primary_url: https://arxiv.org/abs/2107.00681
+  title: Demystifying Statistical Learning Based on Efficient Influence Functions
+  authors: Hines, Dukes, Diaz-Ordaz & Vansteelandt (2022)
+  venue: The American Statistician 2022
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: chernozhukov2022locallyriesz
+  primary_url: https://arxiv.org/abs/1802.08667
+  title: Debiased machine learning of global and local parameters using regularized Riesz representers
+  authors: Chernozhukov, Newey & Singh (2022)
+  venue: The Econometrics Journal 2022
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: chernozhukov2022automatic
+  primary_url: https://arxiv.org/abs/1809.05224
+  title: Automatic Debiased Machine Learning of Causal and Structural Effects
+  authors: Chernozhukov, Newey & Singh (2022)
+  venue: Econometrica 2022
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: vanderlaan2006targeted
+  primary_url: https://biostats.bepress.com/ucbbiostat/paper213/
+  title: Targeted Maximum Likelihood Learning
+  authors: van der Laan & Rubin (2006)
+  venue: The International Journal of Biostatistics 2006
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: robins1994estimation
+  primary_url: https://www.tandfonline.com/doi/abs/10.1080/01621459.1994.10476818
+  title: Estimation of Regression Coefficients When Some Regressors are not Always Observed
+  authors: Robins, Rotnitzky & Zhao (1994)
+  venue: Journal of the American Statistical Association 1994
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: bickel1998efficient
+  primary_url: https://link.springer.com/book/9780387984735
+  title: Efficient and Adaptive Estimation for Semiparametric Models
+  authors: Bickel, Klaassen, Ritov & Wellner (1998)
+  venue: Springer
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: robins2008higher
+  primary_url: https://arxiv.org/abs/0805.3040
+  title: Higher order influence functions and minimax estimation of nonlinear functionals
+  authors: Robins, Li, Tchetgen & van der Vaart (2008)
+  venue: IMS Collections 2008
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: kennedy2023optimal
+  primary_url: https://arxiv.org/abs/2004.14497
+  title: Towards optimal doubly robust estimation of heterogeneous causal effects
+  authors: Kennedy (2023)
+  venue: Electronic Journal of Statistics 2023
+  status: verified
+  claim_family: estimator_xs
+- bibkey: oprescu2019orthogonal
+  primary_url: https://arxiv.org/abs/1806.03467
+  title: Orthogonal Random Forest for Causal Inference
+  authors: Oprescu, Syrgkanis & Wu (2019)
+  venue: ICML 2019
+  code_url: https://github.com/Microsoft/EconML
+  status: verified
+  claim_family: estimator_xs
+- bibkey: curth2021nonparametric
+  primary_url: https://arxiv.org/abs/2101.10943
+  title: 'Nonparametric Estimation of Heterogeneous Treatment Effects: From Theory to Learning Algorithms'
+  authors: Curth & van der Schaar (2021)
+  venue: AISTATS 2021
+  code_url: https://github.com/AliciaCurth/CATENets
+  status: verified
+  claim_family: estimator_xs
+- bibkey: curth2021inductive
+  primary_url: https://arxiv.org/abs/2106.03765
+  title: On Inductive Biases for Heterogeneous Treatment Effect Estimation
+  authors: Curth & van der Schaar (2021)
+  venue: NeurIPS 2021
+  code_url: https://github.com/AliciaCurth/CATENets
+  status: verified
+  claim_family: estimator_xs
+- bibkey: shalit2017estimating
+  primary_url: https://arxiv.org/abs/1606.03976
+  title: 'Estimating individual treatment effect: generalization bounds and algorithms'
+  authors: Shalit, Johansson & Sontag (2017)
+  venue: ICML 2017
+  status: verified
+  claim_family: estimator_xs
+- bibkey: yoon2018ganite
+  primary_url: https://openreview.net/forum?id=ByKWUeWA-
+  title: 'GANITE: Estimation of Individualized Treatment Effects using Generative Adversarial Nets'
+  authors: Yoon, Jordon & van der Schaar (2018)
+  venue: ICLR 2018
+  code_url: https://github.com/jsyoon0823/GANITE
+  status: verified
+  claim_family: estimator_xs
+- bibkey: caron2022shrinkage
+  primary_url: https://www.tandfonline.com/doi/full/10.1080/10618600.2022.2067549
+  title: Shrinkage Bayesian Causal Forests for Heterogeneous Treatment Effects Estimation
+  authors: Caron, Baio & Manolopoulou (2022)
+  venue: Journal of Computational and Graphical Statistics 2022
+  status: verified
+  claim_family: estimator_xs
+- bibkey: athey2021policy
+  primary_url: https://arxiv.org/abs/1702.02896
+  title: Policy Learning with Observational Data
+  authors: Athey & Wager (2021)
+  venue: Econometrica 2021
+  status: verified
+  claim_family: estimator_xs
+- bibkey: chernozhukov2022riesznet
+  primary_url: https://arxiv.org/abs/2110.03031
+  title: 'RieszNet and ForestRiesz: Automatic Debiased Machine Learning with Neural Nets and Random Forests'
+  authors: Chernozhukov, Newey, Quintas-Martinez & Syrgkanis (2022)
+  venue: ICML 2022
+  status: verified
+  claim_family: estimator_xs
+- bibkey: wager2024causalinf
+  primary_url: https://web.stanford.edu/~swager/causal_inf_book.pdf
+  title: 'Causal Inference: A Statistical Learning Approach'
+  authors: Wager (2024)
+  venue: Book draft (Stanford)
+  status: verified
+  claim_family: survey
+- bibkey: cinelli2020omitted
+  primary_url: https://academic.oup.com/jrsssb/article-abstract/82/1/39/7056023
+  title: 'Making sense of sensitivity: extending omitted variable bias'
+  authors: Cinelli and Hazlett (2020)
+  venue: Journal of the Royal Statistical Society Series B, 82(1), 39-67
+  status: verified
+  claim_family: inference_ts
+  code_url: https://github.com/carloscinelli/sensemakr
+- bibkey: rubin1974estimating
+  primary_url: https://psycnet.apa.org/doi/10.1037/h0037350
+  title: Estimating Causal Effects of Treatments in Randomized and Nonrandomized Studies
+  authors: Rubin (1974)
+  venue: Journal of Educational Psychology, 66(5), 688-701
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: holland1986statistics
+  primary_url: https://www.tandfonline.com/doi/abs/10.1080/01621459.1986.10478354
+  title: Statistics and Causal Inference
+  authors: Holland (1986)
+  venue: Journal of the American Statistical Association, 81(396), 945-960
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: vanderweele2017evalue
+  primary_url: https://www.acpjournals.org/doi/10.7326/M16-2607
+  title: 'Sensitivity Analysis in Observational Research: Introducing the E-Value'
+  authors: VanderWeele and Ding (2017)
+  venue: Annals of Internal Medicine, 167(4), 268-274
+  status: verified
+  claim_family: inference_ts

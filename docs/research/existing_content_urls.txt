@@ -1,0 +1,23 @@
+# URLs extracted from /Users/brandonbehring/double_ml_time_series/
+# bibliography.bib + chapters/chapter_*.tex
+# Generated: 2026-05-16
+
+# === Direct URLs in bibliography.bib ===
+# bibkey: facure2022causal
+https://matheusfacure.github.io/python-causality-handbook/
+
+# bibkey: econml
+https://github.com/py-why/EconML
+
+# bibkey: fred
+https://fred.stlouisfed.org/
+
+# === arXiv IDs converted to canonical URLs ===
+# bibkey: chernozhukov2017double (arXiv:1608.00060)
+https://arxiv.org/abs/1608.00060
+
+# bibkey: dowhy2022 (arXiv:2011.04216)
+https://arxiv.org/abs/2011.04216
+
+# === URLs in chapter_*.tex ===
+# (none — chapters use \cite{} commands only)

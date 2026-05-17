@@ -1,0 +1,1314 @@
+# Dataset ledger for: Double Machine Learning for time series and panel data
+# Generated 2026-05-16 (Step 8 / dataset-gather)
+# Schema: ~/Claude/research_toolkit/templates/dataset_ledger.template.yml
+
+# Dataset ledger fragment A — FRED-style macro time-series + government data
+# Bucket: FRED + US/intl government statistical agencies for DML applications
+# (treatment-effect estimation with confounding macro covariates, real-time vintages,
+# MIDAS / mixed-frequency).
+#
+# Verification policy: status=verified only when name+primary_url+license were
+# confirmed via WebFetch/WebSearch in the May 2026 gather pass. St. Louis Fed
+# pages (fred.stlouisfed.org/alfred.stlouisfed.org/research.stlouisfed.org)
+# return HTTP 403 to WebFetch — for those, verification used WebSearch result
+# pages quoting the canonical landing page. Anything not crisply confirmed is
+# left as unverified.
+
+entries:
+
+# ---------------------------------------------------------------------------
+# A. Aggregated / bundled macro databases (research-curated)
+# ---------------------------------------------------------------------------
+
+- bibkey: fredmd2015monthly
+  primary_url: https://research.stlouisfed.org/econ/mccracken/fred-databases/
+  name: 'FRED-MD: A Monthly Database for Macroeconomic Research'
+  source: fred
+  status: unverified
+  task_family: time_series
+  license: 'modified ODC-BY 1.0 (public-domain or permitted subset)'
+  size: '~128 monthly series, 1959-01 onward, ~1 MB CSV per vintage'
+  access_method: direct
+  auth_required: false
+  citation: 'McCracken & Ng (2016), Journal of Business & Economic Statistics 34(4)'
+
+- bibkey: fredqd2021quarterly
+  primary_url: https://research.stlouisfed.org/econ/mccracken/fred-databases/
+  name: 'FRED-QD: A Quarterly Database for Macroeconomic Research'
+  source: fred
+  status: unverified
+  task_family: time_series
+  license: 'modified ODC-BY 1.0 (public-domain or permitted subset)'
+  size: '~248 quarterly series, 1959-Q1 onward, vintages from 2018-05'
+  access_method: direct
+  auth_required: false
+  citation: 'McCracken & Ng (2020), Federal Reserve Bank of St. Louis Review'
+
+- bibkey: alfred2010archival
+  primary_url: https://alfred.stlouisfed.org/
+  name: 'ALFRED: ArchivaL Federal Reserve Economic Data (Real-Time Vintages)'
+  source: fred
+  status: unverified
+  task_family: time_series
+  license: 'public domain / FRED terms of use'
+  size: 'all FRED series with vintage history; thousands of series'
+  access_method: API
+  auth_required: true
+  citation: 'St. Louis Fed (ongoing)'
+
+- bibkey: fredapi2024webservice
+  primary_url: https://fred.stlouisfed.org/docs/api/fred/
+  name: 'FRED API (Federal Reserve Economic Data Web Service)'
+  source: fred
+  status: unverified
+  task_family: time_series
+  license: 'FRED Terms of Use (free; redistribution restrictions on some series)'
+  size: '800,000+ series across 100+ sources'
+  access_method: API
+  auth_required: true
+  citation: 'Federal Reserve Bank of St. Louis (2024)'
+
+- bibkey: nbermacrohistory2024database
+  primary_url: https://www.nber.org/research/data/nber-macrohistory-database
+  name: 'NBER Macrohistory Database'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'public (research use)'
+  size: '~3,036 historical series (pre-WWI + interwar US, partial UK/FR/DE)'
+  access_method: direct
+  auth_required: false
+  citation: 'NBER (curated; original assembly by Wesley Mitchell et al.)'
+
+- bibkey: phillyfedrealtime2001vintages
+  primary_url: https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/real-time-data-set-for-macroeconomists
+  name: 'Real-Time Data Set for Macroeconomists (RTDSM)'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'public (Philadelphia Fed; research use)'
+  size: 'vintages updated monthly; major NIPA aggregates from 1965 onward'
+  access_method: direct
+  auth_required: false
+  citation: 'Croushore & Stark (2001), Journal of Econometrics 105'
+
+# ---------------------------------------------------------------------------
+# B. Canonical FRED single-series (the standard DML macro covariates)
+# ---------------------------------------------------------------------------
+
+- bibkey: cpiaucsl1947fred
+  primary_url: https://fred.stlouisfed.org/series/CPIAUCSL
+  name: 'Consumer Price Index for All Urban Consumers: All Items in U.S. City Average (CPIAUCSL)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'monthly, 1947-01 onward; Index 1982-1984=100 SA'
+  access_method: direct
+  auth_required: false
+  citation: 'U.S. Bureau of Labor Statistics via FRED'
+
+- bibkey: unrate1948fred
+  primary_url: https://fred.stlouisfed.org/series/UNRATE
+  name: 'Unemployment Rate (UNRATE)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'monthly, 1948-01 onward; percent SA'
+  access_method: direct
+  auth_required: false
+  citation: 'U.S. Bureau of Labor Statistics, CPS LNS14000000'
+
+- bibkey: fedfunds1954fred
+  primary_url: https://fred.stlouisfed.org/series/FEDFUNDS
+  name: 'Federal Funds Effective Rate (FEDFUNDS, monthly)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'monthly, 1954-07 onward; percent per annum'
+  access_method: direct
+  auth_required: false
+  citation: 'Board of Governors of the Federal Reserve System, H.15'
+
+- bibkey: dff1954fred
+  primary_url: https://fred.stlouisfed.org/series/DFF
+  name: 'Federal Funds Effective Rate (DFF, daily)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'daily, 1954-07 onward; percent per annum'
+  access_method: direct
+  auth_required: false
+  citation: 'Board of Governors of the Federal Reserve System, H.15'
+
+- bibkey: gdpc11947fred
+  primary_url: https://fred.stlouisfed.org/series/GDPC1
+  name: 'Real Gross Domestic Product (GDPC1)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'quarterly, 1947-Q1 onward; billions of chained 2017 USD SAAR'
+  access_method: direct
+  auth_required: false
+  citation: 'U.S. Bureau of Economic Analysis, NIPA'
+
+- bibkey: gdpdef1947fred
+  primary_url: https://fred.stlouisfed.org/series/GDPDEF
+  name: 'Gross Domestic Product: Implicit Price Deflator (GDPDEF)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'quarterly, 1947-Q1 onward; Index 2017=100 SA'
+  access_method: direct
+  auth_required: false
+  citation: 'U.S. Bureau of Economic Analysis, NIPA'
+
+- bibkey: t10y2y1976fred
+  primary_url: https://fred.stlouisfed.org/series/T10Y2Y
+  name: '10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity (T10Y2Y)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'daily, 1976-06 onward; percent (yield curve slope)'
+  access_method: direct
+  auth_required: false
+  citation: 'Board of Governors of the Federal Reserve System, H.15'
+
+- bibkey: dgs101962fred
+  primary_url: https://fred.stlouisfed.org/series/DGS10
+  name: 'Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity (DGS10)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'daily, 1962-01 onward; percent per annum'
+  access_method: direct
+  auth_required: false
+  citation: 'Board of Governors of the Federal Reserve System, H.15'
+
+- bibkey: m2sl1959fred
+  primary_url: https://fred.stlouisfed.org/series/M2SL
+  name: 'M2 (M2SL, seasonally adjusted)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'monthly, 1959-01 onward; billions of USD SA'
+  access_method: direct
+  auth_required: false
+  citation: 'Board of Governors of the Federal Reserve System, H.6'
+
+- bibkey: indpro1919fred
+  primary_url: https://fred.stlouisfed.org/series/INDPRO
+  name: 'Industrial Production: Total Index (INDPRO)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'monthly, 1919-01 onward; Index 2017=100 SA'
+  access_method: direct
+  auth_required: false
+  citation: 'Board of Governors of the Federal Reserve System, G.17'
+
+- bibkey: payems1939fred
+  primary_url: https://fred.stlouisfed.org/series/PAYEMS
+  name: 'All Employees, Total Nonfarm (PAYEMS)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'monthly, 1939-01 onward; thousands of persons SA'
+  access_method: direct
+  auth_required: false
+  citation: 'U.S. Bureau of Labor Statistics, CES0000000001'
+
+- bibkey: houst1959fred
+  primary_url: https://fred.stlouisfed.org/series/HOUST
+  name: 'New Privately-Owned Housing Units Started: Total Units (HOUST)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'monthly, 1959-01 onward; thousands of units SAAR'
+  access_method: direct
+  auth_required: false
+  citation: 'U.S. Census Bureau & HUD'
+
+- bibkey: pcepi1959fred
+  primary_url: https://fred.stlouisfed.org/series/PCEPI
+  name: 'Personal Consumption Expenditures: Chain-type Price Index (PCEPI)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'monthly, 1959-01 onward; Index 2017=100 SA'
+  access_method: direct
+  auth_required: false
+  citation: 'U.S. Bureau of Economic Analysis, Personal Income & Outlays'
+
+- bibkey: vixcls1990fred
+  primary_url: https://fred.stlouisfed.org/series/VIXCLS
+  name: 'CBOE Volatility Index: VIX (VIXCLS)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'CBOE redistribution restrictions + custom restrictions: cannot redistribute outside FRED viewer; check CBOE terms for derivative datasets'
+  size: 'daily close, 1990-01 onward'
+  access_method: direct
+  auth_required: false
+  citation: 'Chicago Board Options Exchange via FRED'
+
+- bibkey: dexuseu1999fred
+  primary_url: https://fred.stlouisfed.org/series/DEXUSEU
+  name: 'U.S. Dollars to Euro Spot Exchange Rate (DEXUSEU)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'daily, 1999-01-04 onward; USD per 1 EUR (noon NYC)'
+  access_method: direct
+  auth_required: false
+  citation: 'Board of Governors of the Federal Reserve System, H.10'
+
+- bibkey: wtisplc1946fred
+  primary_url: https://fred.stlouisfed.org/series/WTISPLC
+  name: 'Spot Crude Oil Price: West Texas Intermediate (WTISPLC)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov composite) / FRED terms'
+  size: 'monthly, 1946-01 onward; USD per barrel'
+  access_method: direct
+  auth_required: false
+  citation: 'St. Louis Fed (combines OILPRICE + MCOILWTICO)'
+
+- bibkey: usrec1854fred
+  primary_url: https://fred.stlouisfed.org/series/USREC
+  name: 'NBER-based Recession Indicators for the United States (USREC)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public (NBER) / FRED terms'
+  size: 'monthly binary {0,1}, 1854-12 onward'
+  access_method: direct
+  auth_required: false
+  citation: 'NBER Business Cycle Dating Committee via FRED'
+
+- bibkey: expinf1yr1982fred
+  primary_url: https://fred.stlouisfed.org/series/EXPINF1YR
+  name: '1-Year Expected Inflation (EXPINF1YR, Cleveland Fed model)'
+  source: fred
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) / FRED terms'
+  size: 'monthly, 1982-01 onward; percent (modelled expectation)'
+  access_method: direct
+  auth_required: false
+  citation: 'Federal Reserve Bank of Cleveland'
+
+# ---------------------------------------------------------------------------
+# C. Government statistical agency portals (broader-than-FRED) + intl orgs
+# ---------------------------------------------------------------------------
+
+- bibkey: blsapi2024dataportal
+  primary_url: https://www.bls.gov/developers/
+  name: 'BLS Public Data API (Bureau of Labor Statistics)'
+  source: data_gov
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov) — BLS publishes everything in public domain except some copyrighted photographs'
+  size: 'thousands of CPI/CES/JOLTS/employment series'
+  access_method: API
+  auth_required: true
+  citation: 'U.S. Bureau of Labor Statistics'
+
+- bibkey: bea2024datacatalog
+  primary_url: https://www.bea.gov/data
+  name: 'Bureau of Economic Analysis (BEA) Data Catalog (NIPA, ITAs, Regional)'
+  source: data_gov
+  status: verified
+  task_family: time_series
+  license: 'public domain (US gov)'
+  size: 'thousands of NIPA/GDP/regional/industry series'
+  access_method: API
+  auth_required: true
+  citation: 'U.S. Bureau of Economic Analysis'
+
+- bibkey: censusapi2024dataportal
+  primary_url: https://www.census.gov/data/developers.html
+  name: 'U.S. Census Bureau Data API (data.census.gov)'
+  source: data_gov
+  status: unverified
+  task_family: tabular
+  license: 'public domain (US gov)'
+  size: 'ACS, decennial census, economic census, building permits, etc.'
+  access_method: API
+  auth_required: true
+  citation: 'U.S. Census Bureau'
+
+- bibkey: wdi2024worldbank
+  primary_url: https://datatopics.worldbank.org/world-development-indicators/
+  name: 'World Development Indicators (WDI)'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'CC-BY-4.0'
+  size: '~1,486 indicators x 266 countries/entities; annual 1960 onward'
+  access_method: API
+  auth_required: false
+  citation: 'World Bank Group'
+
+- bibkey: oecdmei2024dataexplorer
+  primary_url: https://data-explorer.oecd.org/
+  name: 'OECD Main Economic Indicators (MEI) — Data Explorer / SDMX'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'OECD Terms and Conditions (free, attribution required)'
+  size: 'short-term indicators across OECD + selected non-members'
+  access_method: API
+  auth_required: false
+  citation: 'Organisation for Economic Co-operation and Development'
+
+- bibkey: imfifs2024data
+  primary_url: https://data.imf.org/ifs
+  name: 'IMF International Financial Statistics (IFS)'
+  source: other
+  status: unverified
+  task_family: time_series
+  license: 'IMF Terms of Use (free download; registration to save/download)'
+  size: 'thousands of monetary/balance-of-payments/exchange series for ~200 countries'
+  access_method: API
+  auth_required: true
+  citation: 'International Monetary Fund'
+
+- bibkey: eurostat2024dataportal
+  primary_url: https://ec.europa.eu/eurostat/web/main/data/database
+  name: 'Eurostat Database (EU statistical office)'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'Commission re-use policy (free re-use with attribution)'
+  size: 'thousands of EU-harmonized series; SDMX API'
+  access_method: API
+  auth_required: false
+  citation: 'European Commission - Eurostat'
+
+- bibkey: pwt11groningen
+  primary_url: https://www.rug.nl/ggdc/productivity/pwt/
+  name: 'Penn World Table (PWT)'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'CC-BY-4.0'
+  size: 'real GDP/TFP/capital across 183 countries, 1950 onward'
+  access_method: direct
+  auth_required: false
+  citation: 'Feenstra, Inklaar & Timmer (2015), American Economic Review 105(10)'
+
+- bibkey: nasdaqdatalink2024economic
+  primary_url: https://data.nasdaq.com/
+  name: 'Nasdaq Data Link (formerly Quandl) — Economic Datasets'
+  source: other
+  status: unverified
+  task_family: time_series
+  license: 'mixed: many free (World Bank/UN/Eurostat/BEA/BLS/FRED mirrors) under publisher terms + paid premium datasets'
+  access_method: API
+  auth_required: true
+  citation: 'Nasdaq, Inc. (Quandl rebrand 2021)'
+
+- bibkey: awmecb2001euroarea
+  primary_url: https://www.ecb.europa.eu/pub/pdf/scpwps/ecbwp042.pdf
+  name: 'Area-Wide Model (AWM) Database for the Euro Area'
+  source: other
+  status: unverified
+  task_family: time_series
+  license: 'ECB working-paper release; redistribution unclear'
+  size: 'quarterly euro-area aggregates, 1970-Q1 onward'
+  access_method: direct
+  auth_required: false
+  citation: 'Fagan, Henry & Mestre (2001), ECB Working Paper 42'
+- bibkey: pvw1995sipp401k
+  primary_url: https://www.nber.org/papers/w5287
+  name: 'Poterba-Venti-Wise 1995 SIPP-derived 401(k) eligibility data (NBER WP 5287)'
+  source: other
+  status: unverified
+  task_family: tabular
+  license: unknown
+  citation: 'Poterba, J., Venti, S., Wise, D. (1995). "Do 401(k) Contributions Crowd Out Other Personal Saving?" NBER WP 5287.'
+  notes: 'Originating 1991 SIPP cross-section of 9,915 households used downstream by Chernozhukov-Hansen (2004) and Belloni et al. (2014). Identification strategy (401(k) eligibility as IV for participation) is the canonical DML demo.'
+
+- bibkey: chernozhukov2018401ksipp
+  primary_url: https://github.com/VC2015/DMLonGitHub/raw/master/sipp1991.dta
+  name: '1991 SIPP 401(k) eligibility data (sipp1991.dta, DML-on-GitHub distribution)'
+  source: github
+  status: verified
+  task_family: tabular
+  license: unknown
+  rows: 9915
+  access_method: direct
+  auth_required: false
+  citation: 'Chernozhukov, V. et al. (2018). "Double/debiased machine learning for treatment and structural parameters," Econometrics Journal 21: C1-C68.'
+  notes: 'Raw .dta file the DoubleML python package downloads. Variables: net_tfa (outcome), e401 (instrument), p401 (treatment), age, inc, educ, fsize, marr, twoearn, db, pira, hown. Same data also shipped as hdm::pension on CRAN.'
+
+- bibkey: hdmpension2014cran
+  primary_url: https://search.r-project.org/CRAN/refmans/hdm/html/pension.html
+  name: 'hdm R package "pension" data set on financial wealth and 401(k) plan participation'
+  source: other
+  status: verified
+  task_family: tabular
+  license: GPL-3
+  rows: 9915
+  access_method: r_package
+  auth_required: false
+  citation: 'Chernozhukov, V., Hansen, C. (2004). "The impact of 401(k) participation on the wealth distribution," Review of Economics and Statistics 86(3): 735-751; Belloni et al. (2014).'
+  notes: 'CRAN distribution of the same 1991 SIPP 401(k) data. 30+ variables. Load with data(pension) after install.packages("hdm").'
+
+- bibkey: doubleml2020pythonfetch401k
+  primary_url: https://github.com/DoubleML/doubleml-for-py/blob/main/doubleml/datasets/fetch_401K.py
+  name: 'DoubleML python package fetch_401K loader (downloads sipp1991.dta)'
+  source: github
+  status: verified
+  task_family: tabular
+  license: BSD-3-Clause
+  access_method: api
+  auth_required: false
+  citation: 'Bach, P., Chernozhukov, V., Kurz, M.S., Spindler, M. (2022). "DoubleML — An Object-Oriented Implementation of Double Machine Learning in Python," JMLR.'
+  notes: 'Defines y_col=net_tfa, d_cols=e401, x_cols=(age, inc, educ, fsize, marr, twoearn, db, pira, hown). Mirror endpoint for the same Chernozhukov-Hansen 401(k) dataset.'
+
+- bibkey: doubleml2020rfetch401k
+  primary_url: https://search.r-project.org/CRAN/refmans/DoubleML/html/fetch_401k.html
+  name: 'DoubleML R package fetch_401k loader function'
+  source: other
+  status: verified
+  task_family: tabular
+  license: MIT
+  access_method: r_package
+  auth_required: false
+  citation: 'Bach, P., Kurz, M.S., Spindler, M., Klaassen, S. (2021). "DoubleML — An Object-Oriented Implementation of Double Machine Learning in R," J. Statistical Software.'
+  notes: 'CRAN-equivalent of the python loader; returns 12 documented variables including outcome net_tfa, treatment e401, instrument p401, demographic covariates.'
+
+# ============================================================
+# Pennsylvania Reemployment Bonus experiment (Bilias 2000;
+# Chernozhukov-Hansen DML application)
+# ============================================================
+
+- bibkey: bilias2000pareempbonus
+  primary_url: https://github.com/VC2015/DMLonGitHub/raw/master/penn_jae.dat
+  name: 'Pennsylvania Reemployment Bonus Experiment (penn_jae.dat, DML-on-GitHub)'
+  source: github
+  status: verified
+  task_family: tabular
+  license: unknown
+  access_method: direct
+  auth_required: false
+  citation: 'Bilias, Y. (2000). "Sequential Testing of Duration Data: The Case of the Pennsylvania Reemployment Bonus Experiment," J. Applied Econometrics 15(6): 575-594.'
+  notes: 'Treatment: tg (bonus amount / qualification window). Outcome: log(inuidur1) weeks of unemployment. Covariates: female, black, othrace, dep1, dep2, q2-q6, agelt35, agegt54, durable, lusd, husd. Loaded by DoubleML fetch_bonus().'
+
+# ============================================================
+# LaLonde / Dehejia-Wahba NSW training-program data
+# ============================================================
+
+- bibkey: lalonde1986nswnber
+  primary_url: https://users.nber.org/~rdehejia/nswdata2.html
+  name: 'LaLonde/Dehejia NSW training-program replication data (NBER canonical host)'
+  source: other
+  status: verified
+  task_family: tabular
+  license: CC-BY-NC-2.0
+  access_method: direct
+  auth_required: false
+  citation: 'LaLonde, R. (1986). "Evaluating the Econometric Evaluations of Training Programs with Experimental Data," AER 76(4); Dehejia & Wahba (1999, 2002).'
+  notes: 'Files: nsw_treated.txt (297), nsw_control.txt (425); Dehejia-Wahba subset nswre74_treated.txt (185) + nswre74_control.txt (260); observational controls psid_controls (2490), psid2 (253), psid3 (128), cps_controls (15992), cps2 (2369), cps3 (429). Available as both ASCII (.txt) and Stata (.dta).'
+
+- bibkey: lalondeR2017chern
+  primary_url: https://github.com/jjchern/lalonde
+  name: 'jjchern/lalonde R data package wrapping the NSW + NSW-DW + PSID/CPS controls'
+  source: github
+  status: verified
+  task_family: tabular
+  license: unknown
+  rows: 722
+  access_method: r_package
+  auth_required: false
+  citation: 'Chern, J. (GitHub data package); wraps LaLonde (1986) + Dehejia-Wahba (1999) files.'
+  notes: 'R datasets nsw (722 male sub-sample), nsw_dw (445 Dehejia-Wahba), psid_controls/2/3, cps_controls/2/3. Pure R / 100% R code per GitHub.'
+
+- bibkey: lalondematchit2014
+  primary_url: https://kosukeimai.github.io/MatchIt/reference/lalonde.html
+  name: 'MatchIt R package lalonde dataset (NSW + PSID composite, Dehejia-Wahba subset)'
+  source: other
+  status: verified
+  task_family: tabular
+  license: GPL-2
+  rows: 614
+  access_method: r_package
+  auth_required: false
+  citation: 'Ho, D.E., Imai, K., King, G., Stuart, E.A. (2011). "MatchIt: Nonparametric Preprocessing for Parametric Causal Inference," J. Statistical Software.'
+  notes: 'Composite of 185 NSW treated + 429 PSID controls (9 variables). The single best-known "LaLonde-style" data file across R causal inference courses. Same data appears in `cobalt` and `WeightIt`.'
+
+# ============================================================
+# Minimum-wage replications (Card-Krueger 1994; Cengiz et al. 2019)
+# ============================================================
+
+- bibkey: cardkrueger1994aer
+  primary_url: https://davidcard.berkeley.edu/data_sets.html
+  name: 'Card-Krueger 1994 NJ-Pennsylvania fast-food minimum-wage difference-in-differences data'
+  source: other
+  status: verified
+  task_family: tabular
+  license: unknown
+  access_method: direct
+  auth_required: false
+  citation: 'Card, D., Krueger, A.B. (1994). "Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania," AER 84(4): 772-793.'
+  notes: 'njmin.zip on David Card faculty page at UC Berkeley. Two waves (1992, before+after the April-1992 NJ min wage hike from $4.25 to $5.05). Survey of 410 fast-food restaurants. Companion readme njmin-readme.txt. Last update of page: Nov 2014.'
+
+- bibkey: cardberkeley1995proximity
+  primary_url: https://davidcard.berkeley.edu/data_sets.html
+  name: 'Card 1995 NLS Young Men college-proximity IV data (proximity.zip)'
+  source: other
+  status: verified
+  task_family: tabular
+  license: unknown
+  access_method: direct
+  auth_required: false
+  citation: 'Card, D. (1995). "Using Geographic Variation in College Proximity to Estimate the Return to Schooling," in Aspects of Labour Market Behaviour, U of Toronto Press.'
+  notes: 'Canonical IV exercise. proximity.zip on same Berkeley page as njmin. Used in textbook IV / DML examples.'
+
+- bibkey: cengiz2019qjebunching
+  primary_url: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/TJCTC7
+  name: "Replication Data for: 'The Effect of Minimum Wages on Low-Wage Jobs' (Cengiz/Dube/Lindner/Zipperer)"
+  source: other
+  status: verified
+  task_family: tabular
+  license: CC0-1.0
+  access_method: direct
+  auth_required: false
+  citation: 'Cengiz, D., Dube, A., Lindner, A., Zipperer, B. (2019). "The Effect of Minimum Wages on Low-Wage Jobs," QJE 134(3): 1405-1454. doi:10.7910/DVN/TJCTC7.'
+  notes: 'Harvard Dataverse, version 2.0 (Sept 2019). 9 files: data1.zip, data2.zip, data3.zip, do-files, estimates, figures, tables, README, shell script. Underlying source: 1979-2016 NBER CPS Merged Outgoing Rotation Group (MORG). 138 state-level min wage changes; bunching estimator.'
+
+# ============================================================
+# Acemoglu / colonial origins / robots / AI replications
+# ============================================================
+
+- bibkey: acemoglu2001ajrcolonial
+  primary_url: https://economics.mit.edu/people/faculty/daron-acemoglu/data-archive
+  name: 'Replication data for "The Colonial Origins of Comparative Development" (AJR 2001)'
+  source: other
+  status: verified
+  task_family: tabular
+  license: unknown
+  access_method: direct
+  auth_required: false
+  citation: 'Acemoglu, D., Johnson, S., Robinson, J.A. (2001). "The Colonial Origins of Comparative Development: An Empirical Investigation," AER 91(5): 1369-1401.'
+  notes: 'MIT-hosted data archive (Dropbox: colonial_origins.zip). Individual table files for Tables 1-8. Stata 9+. AJR is the canonical settler-mortality IV reused by Belloni-Chernozhukov-Hansen (2014) Program Evaluation paper to demonstrate post-double-selection on a small-N high-dimensional macro panel.'
+
+- bibkey: ajr2012colonialreply
+  primary_url: https://www.openicpsr.org/openicpsr/project/112564/version/V1/view
+  name: 'Replication data for: "The Colonial Origins of Comparative Development: Reply" (AER 2012)'
+  source: icpsr
+  status: unverified
+  task_family: tabular
+  license: unknown
+  access_method: direct
+  auth_required: false
+  citation: 'Acemoglu, D., Johnson, S., Robinson, J.A. (2012). "The Colonial Origins of Comparative Development: Reply," AER 102(6): 3077-3110. doi:10.3886/E112564V1.'
+  notes: 'openICPSR project 112564 (Reply) plus companion 112563 (Comment by Albouy). WebFetch hit 403 — openICPSR landing page blocks scripted UAs; DOI is real. Spot-check in /dossier-audit Round 1.'
+
+- bibkey: acemoglurestrepo2020robots
+  primary_url: https://economics.mit.edu/people/faculty/daron-acemoglu/data-archive
+  name: 'Replication materials for "Robots and Jobs: Evidence from US Labor Markets" (Acemoglu-Restrepo 2020 JPE)'
+  source: other
+  status: verified
+  task_family: tabular
+  license: unknown
+  access_method: direct
+  auth_required: false
+  citation: 'Acemoglu, D., Restrepo, P. (2020). "Robots and Jobs: Evidence from US Labor Markets," JPE 128(6): 2188-2244.'
+  notes: 'Dropbox-hosted replication archive linked from MIT Acemoglu data page. Local labor-market panel built from commuting-zone exposure (IFR robot data + ADH-style Bartik). Used as a panel-DML demonstration in 2023+ Chernozhukov teaching materials.'
+
+- bibkey: acemoglu2022aijobs
+  primary_url: https://economics.mit.edu/people/faculty/daron-acemoglu/data-archive
+  name: 'Replication files for "AI and Jobs: Evidence from Online Vacancies" (Acemoglu-Autor-Hazell-Restrepo 2022)'
+  source: other
+  status: verified
+  task_family: tabular
+  license: unknown
+  access_method: direct
+  auth_required: false
+  citation: 'Acemoglu, D., Autor, D., Hazell, J., Restrepo, P. (2022). "AI and Jobs: Evidence from Online Vacancies," J. Labor Economics 40(S1): S293-S340.'
+  notes: 'Dropbox archive on MIT Acemoglu page. Burning Glass online-vacancy panel by establishment + AI exposure measure. Treatment-effect heterogeneity setting that maps directly onto causal-forest / panel-DML applications.'
+
+# ============================================================
+# Banerjee-Duflo + Karlan-Zinman + microcredit RCT replications
+# ============================================================
+
+- bibkey: banerjee2015spandanamicrocredit
+  primary_url: https://doi.org/10.3886/E113599V1
+  name: 'Replication data for: "The Miracle of Microfinance? Evidence from a Randomized Evaluation" (Spandana RCT)'
+  source: icpsr
+  status: verified
+  task_family: tabular
+  license: 'AEA-required (data deposit)'
+  access_method: direct
+  auth_required: false
+  citation: 'Banerjee, A., Duflo, E., Glennerster, R., Kinnan, C. (2015). "The Miracle of Microfinance? Evidence from a Randomized Evaluation," AEJ:Applied 7(1): 22-53. doi:10.3886/E113599V1.'
+  notes: 'AEA replication package on openICPSR (project 113599). Confirmed live + linked from AEA article landing page. ~6,850 household survey (52 treated + 52 control neighborhoods, Hyderabad, India).'
+
+- bibkey: karlanzinman2010microcredit
+  primary_url: https://doi.org/10.3886/E113240V1
+  name: 'Replication data for: "Credit Elasticities in Less-Developed Economies: Implications for Microfinance" (Karlan-Zinman)'
+  source: icpsr
+  status: unverified
+  task_family: tabular
+  license: 'AEA-required'
+  access_method: direct
+  auth_required: false
+  citation: 'Karlan, D., Zinman, J. (2008). "Credit Elasticities in Less-Developed Economies," AER 98(3): 1040-1068. doi:10.3886/E113240V1.'
+  notes: 'openICPSR project 113240. Randomized supply decisions by a South African consumer lender. WebFetch returned 403; DOI corroborated by AEA article entry + search results.'
+
+- bibkey: banerjeekarlanzinman2015sixrct
+  primary_url: https://doi.org/10.3886/E116336V1
+  name: 'Replication data for: "Six Randomized Evaluations of Microcredit: Introduction and Further Steps"'
+  source: icpsr
+  status: unverified
+  task_family: tabular
+  license: 'AEA-required'
+  access_method: direct
+  auth_required: false
+  citation: 'Banerjee, A., Karlan, D., Zinman, J. (2015). "Six Randomized Evaluations of Microcredit," AEJ:Applied 7(1): 1-21. doi:10.3886/E116336V1.'
+  notes: 'openICPSR project 116336. Aggregator of six microcredit RCTs (Mexico, Mongolia, Bosnia, Morocco, Ethiopia, India) — useful for heterogeneity / multi-study DML demos.'
+
+# ============================================================
+# Chetty / Opportunity Insights — neighborhood + mobility data
+# ============================================================
+
+- bibkey: chetty2014landofopp
+  primary_url: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/NALG3E
+  name: 'Replication Data for: "Where is the Land of Opportunity? The Geography of Intergenerational Mobility in the United States"'
+  source: other
+  status: unverified
+  task_family: tabular
+  license: 'Web license (Dataverse)'
+  access_method: direct
+  auth_required: false
+  citation: 'Chetty, R., Hendren, N., Kline, P., Saez, E. (2014). "Where is the Land of Opportunity? The Geography of Intergenerational Mobility in the United States," QJE 129(4): 1553-1623.'
+  notes: 'Harvard Dataverse, doi:10.7910/DVN/NALG3E. STATA + EXCEL formats. WebFetch returned blank body (Dataverse JS-rendered); link itself works in /url-freshness-check headers.'
+
+- bibkey: chetty2018neighborhoods
+  primary_url: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/EI4WE2
+  name: 'Replication Data for: "The Impacts of Neighborhoods on Intergenerational Mobility I & II" (Chetty-Hendren)'
+  source: other
+  status: unverified
+  task_family: tabular
+  license: 'Web license (Dataverse)'
+  access_method: direct
+  auth_required: false
+  citation: 'Chetty, R., Hendren, N. (2018). "The Impacts of Neighborhoods on Intergenerational Mobility I/II," QJE 133(3): 1107-1162 and 1163-1228.'
+  notes: 'Harvard Dataverse, doi:10.7910/DVN/EI4WE2. Causal place effects by commuting zone + county. Companion code package: doi:10.7910/DVN/CEMFTJ.'
+
+- bibkey: chetty2018opportunityatlas
+  primary_url: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/NKCQM1
+  name: 'Replication Data for: "The Opportunity Atlas: Mapping the Childhood Roots of Social Mobility"'
+  source: other
+  status: unverified
+  task_family: tabular
+  license: 'Web license (Dataverse)'
+  access_method: direct
+  auth_required: false
+  citation: 'Chetty, R., Friedman, J.N., Hendren, N., Jones, M.R., Porter, S.R. (2018). "The Opportunity Atlas," NBER WP 25147.'
+  notes: 'Harvard Dataverse, doi:10.7910/DVN/NKCQM1. STATA + EXCEL + CSV. Census-tract / county / commuting-zone outcomes (income, incarceration) by race + sex + parent income.'
+
+- bibkey: chetty2020econtracker
+  primary_url: https://github.com/OpportunityInsights/EconomicTracker
+  name: 'Opportunity Insights Real-Time Economic Tracker (COVID-19 anonymized private-sector data)'
+  source: github
+  status: verified
+  task_family: time_series
+  license: 'custom (attribution required)'
+  access_method: direct
+  auth_required: false
+  citation: 'Chetty, R., Friedman, J.N., Hendren, N., Stepner, M. and the Opportunity Insights Team (2020). "The Economic Impacts of COVID-19," NBER WP 27431.'
+  notes: 'GitHub repo (332 stars, 196 forks). Tracks employment / consumer spending / job postings by county / industry / income group, weekly from 2020. Requires per-series provider credit + cite of tracktherecovery.org.'
+
+# ============================================================
+# Health-policy replications
+# ============================================================
+
+- bibkey: ohie2008oregonpuf
+  primary_url: https://www.nber.org/research/data/oregon-health-insurance-experiment-data
+  name: 'Oregon Health Insurance Experiment public-use data (NBER host)'
+  source: other
+  status: verified
+  task_family: tabular
+  license: 'custom (NBER user agreement)'
+  access_method: direct
+  auth_required: true
+  citation: 'Finkelstein, A. et al. (2012). "The Oregon Health Insurance Experiment: Evidence from the First Year," QJE 127(3): 1057-1106.'
+  notes: 'Free NBER login required; download endpoint oregon_puf.zip on data.nber.org/oregon/. Public-use access agreement: no commercial use, no re-identification. Lottery for Medicaid expansion in Oregon (2008).'
+
+- bibkey: randhie1974icpsr
+  primary_url: https://www.icpsr.umich.edu/web/NACDA/studies/6439
+  name: 'RAND Health Insurance Experiment [in Metropolitan and Non-Metropolitan Areas of the United States], 1974-1982'
+  source: icpsr
+  status: verified
+  task_family: tabular
+  license: 'ICPSR public-use'
+  rows: 26148
+  access_method: direct
+  auth_required: false
+  citation: 'Newhouse, J.P. (2005). RAND Health Insurance Experiment [in Metropolitan and Non-Metropolitan Areas of the United States], 1974-1982. ICPSR06439.v1. doi:10.3886/ICPSR06439.v1.'
+  notes: 'ICPSR public-use file (no member institution needed). Six sites (OH/WA/MA-Fitchburg/MA-Franklin/SC-Charleston/SC-Georgetown). 8,254 insured + 2,483 adjunct + 15,411 baseline-only.'
+
+- bibkey: carddobkin2008medicare65
+  primary_url: https://doi.org/10.3886/E113278V1
+  name: 'Replication data for: "The Impact of Nearly Universal Insurance Coverage on Health Care Utilization: Evidence from Medicare" (Card-Dobkin-Maestas)'
+  source: icpsr
+  status: unverified
+  task_family: tabular
+  license: 'AEA-required'
+  access_method: direct
+  auth_required: false
+  citation: 'Card, D., Dobkin, C., Maestas, N. (2008). "The Impact of Nearly Universal Insurance Coverage on Health Care Utilization: Evidence from Medicare," AER 98(5): 2242-2258. doi:10.3886/E113278V1.'
+  notes: 'openICPSR project 113278. RD-at-65 (Medicare eligibility) on hospital utilization. WebFetch 403; DOI confirmed via AEA article entry + ICPSR study view.'
+
+# ============================================================
+# Mobility / inequality / large public micro panels
+# ============================================================
+
+- bibkey: psid1968isr
+  primary_url: https://psidonline.isr.umich.edu/
+  name: 'Panel Study of Income Dynamics (PSID) — public-release longitudinal household panel, 1968-present'
+  source: other
+  status: unverified
+  task_family: time_series
+  license: 'custom (registration + DUA)'
+  access_method: direct
+  auth_required: true
+  citation: 'Survey Research Center, University of Michigan (1968-present). Panel Study of Income Dynamics.'
+  notes: 'Canonical longest-running US household panel — origin of the PSID controls used in LaLonde/Dehejia-Wahba and Card-Krueger. Free, but requires registration on data center at simba.isr.umich.edu/data/data.aspx.'
+
+- bibkey: cpsasec1962ipums
+  primary_url: https://cps.ipums.org/cps/
+  name: 'IPUMS-CPS — harmonized Current Population Survey ASEC microdata 1962-present'
+  source: other
+  status: verified
+  task_family: tabular
+  license: 'custom (IPUMS user agreement)'
+  access_method: api
+  auth_required: true
+  citation: 'Flood, S., King, M., Rodgers, R., Ruggles, S., Warren, J.R., Westberry, M. (2023). Integrated Public Use Microdata Series, Current Population Survey, Version 11.0.'
+  notes: 'Custom extracts free with registration. Source survey behind Cengiz-Dube-Lindner-Zipperer (2019) MORG sample + the Acemoglu-Restrepo robots panel + most US labor DML applications. IPUMS API extract endpoint available.'
+
+- bibkey: widworld2017piketty
+  primary_url: https://wid.world/data/
+  name: 'World Inequality Database (WID.world) — open inequality + top-income data, 190+ countries'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'custom (academic-consortium)'
+  access_method: direct
+  auth_required: false
+  citation: 'Alvaredo, F., Chancel, L., Piketty, T., Saez, E., Zucman, G. (curators). World Inequality Database, version 11/2025.'
+  notes: 'Bulk download via web UI + get-wid Stata SSC package. National accounts + survey + fiscal data combined. Used for cross-country DID-DML demonstrations of inequality dynamics.'
+
+# ============================================================
+# Heterogeneous-treatment-effect benchmarks (causal forests etc.)
+# ============================================================
+
+- bibkey: nslm2018yeager
+  primary_url: https://www.icpsr.umich.edu/web/ICPSR/studies/37353
+  name: 'The National Study of Learning Mindsets, [United States], 2015-2016 (ICPSR 37353)'
+  source: icpsr
+  status: verified
+  task_family: tabular
+  license: 'ICPSR mixed (public + restricted DUA)'
+  rows: 16000
+  access_method: direct
+  auth_required: true
+  citation: 'Yeager, D.S. (2021). The National Study of Learning Mindsets, [United States], 2015-2016. ICPSR37353.v4. doi:10.3886/ICPSR37353.v4.'
+  notes: '74 high schools across 27 states, 16k+ 9th-grade students. Public-use file is freely downloadable; restricted data requires DUA. Underlies Athey & Wager (2019 Observational Studies) causal-forest demonstration.'
+
+- bibkey: athey2019nslmgrfacic
+  primary_url: https://github.com/grf-labs/grf/tree/master/experiments/acic18
+  name: 'GRF causal-forest application replication (Athey-Wager 2019 / ACIC 2018 synthetic NSLM)'
+  source: github
+  status: verified
+  task_family: tabular
+  license: GPL-3
+  rows: 10000
+  access_method: direct
+  auth_required: false
+  citation: 'Athey, S., Wager, S. (2019). "Estimating Treatment Effects with Causal Forests: An Application," Observational Studies 5: 37-51.'
+  notes: 'experiments/acic18/ in grf-labs/grf. Files: README.md, paper.pdf, script.R, synthetic_data.csv. Simulated observational study modeled on NSLM (10k students, 76 schools, binary treatment + 10 covariates + continuous outcome). Direct DML / causal-forest end-to-end demo.'
+
+# ============================================================
+# DML methodology canonical replication
+# ============================================================
+
+- bibkey: chernozhukov2017aerpp_dml
+  primary_url: https://doi.org/10.3886/E113505V1
+  name: 'Replication data for: "Double/Debiased/Neyman Machine Learning of Treatment Effects" (Chernozhukov et al. 2017 AER P&P)'
+  source: icpsr
+  status: unverified
+  task_family: tabular
+  license: 'AEA-required'
+  access_method: direct
+  auth_required: false
+  citation: 'Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. (2017). "Double/Debiased/Neyman Machine Learning of Treatment Effects," AER P&P 107(5): 261-265. doi:10.3886/E113505V1.'
+  notes: 'AEA replication package on openICPSR (project 113505). Mirrors the application set in the longer EJ 2018 paper (401(k) + Bonus). WebFetch 403; DOI verified via AEA article landing page WebFetch.'
+
+- bibkey: bch2014progeval
+  primary_url: https://www.openicpsr.org/openicpsr/project/113924/version/V1/view
+  name: 'Replication data for: "High-Dimensional Methods and Inference on Structural and Treatment Effects" (Belloni-Chernozhukov-Hansen, JEP 2014)'
+  source: icpsr
+  status: unverified
+  task_family: tabular
+  license: 'AEA-required'
+  access_method: direct
+  auth_required: false
+  citation: 'Belloni, A., Chernozhukov, V., Hansen, C. (2014). "High-Dimensional Methods and Inference on Structural and Treatment Effects," J. Economic Perspectives 28(2): 29-50. doi:10.3886/E113924V1.'
+  notes: 'Companion to the Program-Evaluation Econometrica 2017 paper. Demonstrates post-double-selection LASSO on AJR colonial-origins + Card-Krueger min-wage + 401(k) panel. WebFetch 403; DOI confirmed via the AEA article + openICPSR search result.'
+- bibkey: psid1968umich
+  primary_url: https://psidonline.isr.umich.edu/
+  name: 'Panel Study of Income Dynamics (PSID)'
+  source: other
+  status: unverified
+  task_family: time_series
+  license: 'custom (PSID Conditions of Use; free with registration; restricted geospatial files require IRB)'
+  access_method: signup wall
+  auth_required: true
+  citation: 'Panel Study of Income Dynamics, public use dataset. Produced and distributed by the Survey Research Center, ISR, University of Michigan, Ann Arbor, MI.'
+
+- bibkey: nlsy79blsbureau
+  primary_url: https://www.bls.gov/nls/nlsy79.htm
+  name: 'National Longitudinal Survey of Youth 1979 (NLSY79)'
+  source: other
+  status: unverified
+  task_family: time_series
+  license: 'public domain (U.S. federal government work); access via NLS Investigator'
+  access_method: signup wall
+  auth_required: true
+  citation: 'U.S. Bureau of Labor Statistics. National Longitudinal Survey of Youth 1979 cohort, 1979-2022 (rounds 1-30). Produced and distributed by the Center for Human Resource Research (CHRR), The Ohio State University. Columbus, OH.'
+
+- bibkey: nlsy97blsbureau
+  primary_url: https://www.bls.gov/nls/nlsy97.htm
+  name: 'National Longitudinal Survey of Youth 1997 (NLSY97)'
+  source: other
+  status: unverified
+  task_family: time_series
+  license: 'public domain (U.S. federal government work); access via NLS Investigator'
+  access_method: signup wall
+  auth_required: true
+  citation: 'U.S. Bureau of Labor Statistics. National Longitudinal Survey of Youth 1997 cohort. Produced and distributed by CHRR, The Ohio State University.'
+
+- bibkey: sipp1984census
+  primary_url: https://www.census.gov/sipp/
+  name: 'Survey of Income and Program Participation (SIPP)'
+  source: data_gov
+  status: verified
+  task_family: time_series
+  license: 'public domain (U.S. federal government work)'
+  access_method: direct download
+  auth_required: false
+  citation: 'U.S. Census Bureau. Survey of Income and Program Participation (SIPP). Panels from 1984-present. Most recent: 2018 SIPP Panel (covering 2017-2020).'
+
+- bibkey: meps1996ahrq
+  primary_url: https://meps.ahrq.gov/mepsweb/
+  name: 'Medical Expenditure Panel Survey (MEPS)'
+  source: data_gov
+  status: verified
+  task_family: time_series
+  license: 'public domain (U.S. federal government work); restricted-use files via AHRQ Data Center'
+  access_method: direct download
+  auth_required: false
+  citation: 'Agency for Healthcare Research and Quality (AHRQ). Medical Expenditure Panel Survey (MEPS). U.S. Department of Health & Human Services.'
+
+- bibkey: cps1948census
+  primary_url: https://www.census.gov/programs-surveys/cps.html
+  name: 'Current Population Survey (CPS)'
+  source: data_gov
+  status: verified
+  task_family: time_series
+  license: 'public domain (U.S. federal government work)'
+  access_method: direct download
+  auth_required: false
+  citation: 'U.S. Census Bureau and U.S. Bureau of Labor Statistics. Current Population Survey (CPS).'
+
+- bibkey: acs2005census
+  primary_url: https://www.census.gov/programs-surveys/acs/
+  name: 'American Community Survey (ACS) Public Use Microdata Sample (PUMS)'
+  source: data_gov
+  status: verified
+  task_family: tabular
+  license: 'public domain (U.S. federal government work)'
+  access_method: direct download
+  auth_required: false
+  rows: 'approximately 3 million per year (5-year file ~15 million)'
+  citation: 'U.S. Census Bureau. American Community Survey (ACS), 2005-present. Public Use Microdata Sample (PUMS).'
+
+- bibkey: hrs1992umich
+  primary_url: https://hrs.isr.umich.edu/
+  name: 'Health and Retirement Study (HRS)'
+  source: other
+  status: unverified
+  task_family: time_series
+  license: 'custom (HRS Conditions of Use; free public files with registration; restricted files via DUA)'
+  access_method: signup wall
+  auth_required: true
+  rows: 'approximately 20,000 respondents per wave'
+  citation: 'Health and Retirement Study, sponsored by the National Institute on Aging (NIA U01AG009740) and the Social Security Administration, conducted by the University of Michigan Survey Research Center.'
+
+- bibkey: nhis1957cdc
+  primary_url: https://www.cdc.gov/nchs/nhis/about/index.html
+  name: 'National Health Interview Survey (NHIS)'
+  source: data_gov
+  status: verified
+  task_family: tabular
+  license: 'public domain (U.S. federal government work); restricted files via NCHS RDC'
+  access_method: direct download
+  auth_required: false
+  rows: 'approximately 27,000 adults annually'
+  citation: 'Centers for Disease Control and Prevention (CDC), National Center for Health Statistics. National Health Interview Survey (NHIS), 1957-present.'
+
+- bibkey: nhanes1959cdc
+  primary_url: https://wwwn.cdc.gov/nchs/nhanes/default.aspx
+  name: 'National Health and Nutrition Examination Survey (NHANES)'
+  source: data_gov
+  status: verified
+  task_family: tabular
+  license: 'public domain (U.S. federal government work); user agreement required; restricted-access files via RDC'
+  access_method: signup wall
+  auth_required: true
+  citation: 'CDC, National Center for Health Statistics. National Health and Nutrition Examination Survey (NHANES), continuous 1999-present.'
+
+- bibkey: pisa2000oecd
+  primary_url: https://www.oecd.org/en/about/programmes/pisa/pisa-data.html
+  name: 'Programme for International Student Assessment (PISA)'
+  source: other
+  status: unverified
+  task_family: tabular
+  license: 'OECD terms of use (free for research; attribution required)'
+  access_method: direct download
+  auth_required: false
+  citation: 'OECD. Programme for International Student Assessment (PISA), 2000-2022. Paris: OECD Publishing.'
+
+- bibkey: eusilc2003eurostat
+  primary_url: https://ec.europa.eu/eurostat/web/income-and-living-conditions
+  name: 'European Union Statistics on Income and Living Conditions (EU-SILC)'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'restricted (Scientific Use Files via Eurostat application; Public Use Files limited)'
+  access_method: signup wall
+  auth_required: true
+  citation: 'Eurostat. EU Statistics on Income and Living Conditions (EU-SILC). Luxembourg: European Commission.'
+
+- bibkey: eulfs1983eurostat
+  primary_url: https://ec.europa.eu/eurostat/web/lfs
+  name: 'European Union Labour Force Survey (EU-LFS)'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'restricted microdata (Scientific Use Files via Eurostat application); aggregate data CC-BY'
+  access_method: signup wall
+  auth_required: true
+  citation: 'Eurostat. EU Labour Force Survey (EU-LFS). Luxembourg: European Commission.'
+
+- bibkey: ukhls2009essex
+  primary_url: https://www.understandingsociety.ac.uk/
+  name: 'UK Household Longitudinal Study / Understanding Society (UKHLS)'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'restricted (UK Data Service End User License; free for research with registration; Special License files restricted)'
+  access_method: signup wall
+  auth_required: true
+  citation: 'University of Essex, Institute for Social and Economic Research. Understanding Society: Waves 1-13, 2009-2022. UK Data Service. SN: 6614.'
+
+- bibkey: gsoep1984diw
+  primary_url: https://www.diw.de/en/diw_02.c.222843.en/data_access.html
+  name: 'German Socio-Economic Panel (SOEP / GSOEP)'
+  source: other
+  status: verified
+  task_family: time_series
+  license: 'restricted (Data Distribution Contract with DIW Berlin; scientific use only; institutional affiliation required)'
+  access_method: signup wall
+  auth_required: true
+  citation: 'Socio-Economic Panel (SOEP), data from 1984-2024, version 39, SOEP-Core v39, 2024, doi:10.5684/soep.core.v39eu.'
+
+- bibkey: oecdidd2008oecd
+  primary_url: https://www.oecd.org/en/data/datasets/income-distribution-database.html
+  name: 'OECD Income Distribution Database (IDD)'
+  source: other
+  status: unverified
+  task_family: tabular
+  license: 'OECD terms of use (free with attribution)'
+  access_method: direct download
+  auth_required: false
+  citation: 'OECD. Income Distribution Database (IDD): Gini, poverty, income, methods and concepts. Paris: OECD Publishing.'
+
+- bibkey: lsms1980worldbank
+  primary_url: https://www.worldbank.org/en/programs/lsms
+  name: 'World Bank Living Standards Measurement Study (LSMS)'
+  source: data_gov
+  status: verified
+  task_family: time_series
+  license: 'mixed (most country surveys CC-BY; some require registration)'
+  access_method: signup wall
+  auth_required: true
+  rows: '165 studies across 40+ countries (1995-2022)'
+  citation: 'World Bank. Living Standards Measurement Study (LSMS). Washington, DC: Development Data Group.'
+
+# ============================================================
+# BENCHMARK / METHODOLOGY / DGP DATASETS
+# ============================================================
+
+- bibkey: acic2016competition
+  primary_url: https://github.com/vdorie/aciccomp/tree/master/2016
+  name: 'Atlantic Causal Inference Conference (ACIC) 2016 Competition Data'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'open source (R package aciccomp2016; check LICENSE file)'
+  access_method: direct download
+  auth_required: false
+  rows: '77 simulation settings x 100 replications x 4302 obs'
+  citation: 'Dorie, V., Hill, J., Shalit, U., Scott, M., & Cervone, D. (2019). Automated versus do-it-yourself methods for causal inference: Lessons learned from a data analysis competition. Statistical Science, 34(1), 43-68.'
+
+- bibkey: acic2017competition
+  primary_url: https://github.com/vdorie/aciccomp/tree/master/2017
+  name: 'ACIC 2017 Competition Data (Targeted Selection / CATE Challenge)'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'open source (R package aciccomp2017)'
+  access_method: direct download
+  auth_required: false
+  rows: '32 parameter settings x 250 replications'
+  citation: 'Hahn, P. R., Dorie, V., & Murray, J. S. (2019). Atlantic Causal Inference Conference (ACIC) Data Analysis Challenge 2017. arXiv:1905.09515.'
+
+- bibkey: acic2019competition
+  primary_url: https://sites.google.com/view/acic2019datachallenge/home
+  name: 'ACIC 2019 Data Challenge'
+  source: other
+  status: verified
+  task_family: regression
+  license: 'open access for research'
+  access_method: direct download
+  auth_required: false
+  rows: '3200 datasets per track (low-dim 500x20 and high-dim 1000x200)'
+  citation: 'ACIC 2019 Data Challenge. Atlantic Causal Inference Conference, McGill University.'
+
+- bibkey: acic2022mathematica
+  primary_url: https://acic2022.mathematica.org/
+  name: 'ACIC 2022 Data Challenge (Mathematica)'
+  source: other
+  status: unverified
+  task_family: regression
+  license: 'open access for research'
+  access_method: direct download
+  auth_required: false
+  citation: 'ACIC 2022 Data Challenge. Atlantic Causal Inference Conference, hosted by Mathematica Policy Research.'
+
+- bibkey: ihdp2011hill
+  primary_url: https://www.fredjo.com/files/ihdp_npci_1-1000.train.npz.zip
+  name: 'IHDP (Infant Health and Development Program) Semi-Synthetic Benchmark'
+  source: other
+  status: verified
+  task_family: regression
+  license: 'open access (research use; redistribution by Fredrik Johansson)'
+  access_method: direct download
+  auth_required: false
+  rows: '747 obs per replication x 1000 replications; 25 covariates'
+  citation: 'Hill, J. L. (2011). Bayesian Nonparametric Modeling for Causal Inference. Journal of Computational and Graphical Statistics, 20(1), 217-240. Semi-synthetic IHDP NPCI dataset assembled from Brooks-Gunn et al. IHDP RCT (1990-1991).'
+
+- bibkey: twins2017louizos
+  primary_url: https://github.com/AMLab-Amsterdam/CEVAE/tree/master/datasets/TWINS
+  name: 'Twins Birth-Weight Dataset (Almond-Chay-Lee, augmented by Louizos et al.)'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'open access (research use; original NBER linked birth-infant death data)'
+  access_method: direct download
+  auth_required: false
+  rows: '11,984 twin pairs; 46 covariates'
+  citation: 'Almond, D., Chay, K. Y., & Lee, D. S. (2005). The costs of low birth weight. Quarterly Journal of Economics, 120(3), 1031-1083. Augmented for causal inference by Louizos, C., et al. (2017). Causal Effect Inference with Deep Latent-Variable Models. NeurIPS 2017.'
+
+- bibkey: twins2025zenodo
+  primary_url: https://zenodo.org/records/14674618
+  name: 'Twins Dataset (Zenodo Mirror, Doutreligne 2025)'
+  source: zenodo
+  status: verified
+  task_family: regression
+  license: 'CC0 (Creative Commons Zero v1.0 Universal / public domain)'
+  access_method: direct download
+  auth_required: false
+  size: '4.1 MB'
+  citation: 'Doutreligne, M. (2025). TWINS dataset used for experiment in the paper How to select predictive models for causal inference? Zenodo. DOI: 10.5281/zenodo.14674618.'
+
+- bibkey: lalonde1986nsw
+  primary_url: https://users.nber.org/~rdehejia/nswdata2.html
+  name: 'LaLonde NSW (National Supported Work) Dataset (Dehejia-Wahba 1999 version)'
+  source: other
+  status: verified
+  task_family: regression
+  license: 'CC BY-NC 2.0 (attributable non-commercial use; citation of Dehejia & Wahba 1999/2002 and LaLonde 1986 required)'
+  access_method: direct download
+  auth_required: false
+  rows: '722 treated/control (NSW experimental) + PSID/CPS observational comparison samples'
+  citation: 'LaLonde, R. J. (1986). Evaluating the econometric evaluations of training programs with experimental data. AER, 76(4), 604-620. Dehejia, R. H., & Wahba, S. (1999). Causal effects in nonexperimental studies: Reevaluating the evaluation of training programs. JASA, 94(448), 1053-1062.'
+
+- bibkey: doubleml401k2018github
+  primary_url: https://docs.doubleml.org/stable/api/datasets.html
+  name: 'DoubleML fetch_401K Dataset (SIPP 1991 financial wealth + 401(k) participation)'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'open source (BSD-3, packaged within DoubleML)'
+  access_method: direct download
+  auth_required: false
+  rows: 9915
+  citation: 'Chernozhukov, V., Hansen, C., Spindler, M., & Bach, P. (2018). DoubleML: Double Machine Learning in Python. JMLR (with fetch_401K convenience wrapper). Data source: Survey of Income and Program Participation (SIPP) 1991.'
+
+- bibkey: doubleblebonus2000github
+  primary_url: https://docs.doubleml.org/stable/api/datasets.html
+  name: 'DoubleML fetch_bonus: Pennsylvania Reemployment Bonus Experiment'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'open source (data ships within DoubleML; original from Bilias 2000 JAE Data Archive)'
+  access_method: direct download
+  auth_required: false
+  rows: 13913
+  citation: 'Bilias, Y. (2000). Sequential testing of duration data: The case of the Pennsylvania reemployment bonus experiment. Journal of Applied Econometrics, 15(6), 575-594. Convenience wrapper: doubleml.datasets.fetch_bonus.'
+
+- bibkey: doublemldgp2018github
+  primary_url: https://docs.doubleml.org/stable/api/datasets.html
+  name: 'DoubleML synthetic DGP suite (make_plr_CCDDHNR2018, make_irm_data, make_iivm_data, etc.)'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'open source (BSD-3)'
+  access_method: direct download
+  auth_required: false
+  citation: 'DoubleML team. doubleml.datasets module: synthetic DGP generators including make_plr_CCDDHNR2018 (Chernozhukov-Chetverikov-Demirer-Duflo-Hansen-Newey-Robins 2018), make_plr_turrell2018, make_pliv_CHS2015, make_irm_data, make_iivm_data, make_heterogeneous_data, make_did_SZ2020, make_did_CS2021, make_simple_rdd_data, make_pliv_multiway_cluster_CKMS2021. Implementation in DoubleML-for-py.'
+
+- bibkey: econmlnotebooks2019github
+  primary_url: https://github.com/microsoft/EconML/tree/main/notebooks
+  name: 'EconML Example Notebooks (Customer Scenarios, AutomatedML, Solutions)'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'MIT (EconML repository)'
+  access_method: direct download
+  auth_required: false
+  citation: 'Microsoft Research / PyWhy. EconML: A Python Package for ML-Based Heterogeneous Treatment Effects Estimation. Customer Scenarios (segmentation, multi-investment attribution, AB testing, LaLonde training) and AutomatedML demonstrations.'
+
+- bibkey: causalmldataset2019github
+  primary_url: https://github.com/uber/causalml/tree/master/causalml/dataset
+  name: 'CausalML Dataset Module (synthetic, regression, classification, semi-synthetic generators)'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'Apache-2.0'
+  access_method: direct download
+  auth_required: false
+  citation: 'Chen, H., Harinen, T., Lee, J.-Y., Yung, M., & Zhao, Z. (2020). CausalML: Python package for causal machine learning. arXiv:2002.11631. Module causalml/dataset/ provides synthetic.py, regression.py, classification.py, semiSynthetic.py.'
+
+- bibkey: grftests2018github
+  primary_url: https://github.com/grf-labs/grf/tree/master/r-package/grf/tests/testthat
+  name: 'GRF (Generalized Random Forests) Test Datasets'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'GPL-3'
+  access_method: direct download
+  auth_required: false
+  citation: 'Athey, S., Tibshirani, J., & Wager, S. (2019). Generalized random forests. Annals of Statistics, 47(2), 1148-1178. Test data in grf/r-package/grf/tests/testthat/data/ covers causal_forest, instrumental_forest, multi_arm_causal_forest, survival_forest test cases.'
+
+- bibkey: dowhydatasets2019github
+  primary_url: https://github.com/py-why/dowhy/tree/main/dowhy/datasets
+  name: 'DoWhy Example Datasets (linear_dataset generator, IHDP, hotel-booking case studies)'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'MIT (DoWhy repository)'
+  access_method: direct download
+  auth_required: false
+  citation: 'Sharma, A., & Kiciman, E. (2020). DoWhy: An End-to-End Library for Causal Inference. arXiv:2011.04216. PyWhy organization. Includes dowhy.datasets.linear_dataset() generator with configurable beta, num_common_causes, num_instruments, num_samples.'
+
+- bibkey: catenets2021github
+  primary_url: https://github.com/AliciaCurth/CATENets
+  name: 'CATENets Treatment-Effect Benchmark Suite (ACIC 2016, IHDP, Twins loaders)'
+  source: github
+  status: verified
+  task_family: regression
+  license: 'BSD-3-Clause'
+  access_method: direct download
+  auth_required: false
+  citation: 'Curth, A., & van der Schaar, M. (2021). Nonparametric estimation of heterogeneous treatment effects: From theory to learning algorithms. AISTATS 2021. Also: Really Doing Great at Estimating CATE? A Critical Look at ML Benchmarking Practices in Treatment Effect Estimation (NeurIPS 2021 Datasets & Benchmarks track). Repo includes catenets/datasets/ with dataset_acic2016.py, dataset_ihdp.py, dataset_twins.py.'
+
+- bibkey: csuite2022microsoft
+  primary_url: https://github.com/microsoft/csuite
+  name: 'CSuite: Benchmark Datasets for Causality (Microsoft Research)'
+  source: github
+  status: verified
+  task_family: regression
+  license: MIT
+  access_method: direct download
+  auth_required: false
+  rows: '15 datasets x 4000 train + 2000 test + interventional environments'
+  citation: 'Geffner, T., Antoran, J., Foster, A., Gong, W., Ma, C., Kiciman, E., Sharma, A., Lamb, A., Kukla, M., Pawlowski, N., Allamanis, M., & Zhang, C. (2022). Deep End-to-end Causal Inference. arXiv:2202.02195.'
+
+- bibkey: realcause2020neal
+  primary_url: https://github.com/bradyneal/realcause
+  name: 'RealCause: Realistic Causal Inference Benchmarking (LaLonde PSID/CPS + Twins generative)'
+  source: github
+  status: verified
+  task_family: regression
+  license: MIT
+  access_method: direct download
+  auth_required: false
+  rows: '100 samples per realistic dataset x 3 base datasets (LaLonde PSID, LaLonde CPS, Twins)'
+  citation: 'Neal, B., Huang, C.-W., & Raghupathi, S. (2020). RealCause: Realistic Causal Inference Benchmarking. arXiv:2011.15007.'
+
+- bibkey: jobs1991vinokur
+  primary_url: https://www.icpsr.umich.edu/web/ICPSR/studies/2739
+  name: 'JOBS II Preventive Intervention for Unemployed Job Seekers (Vinokur-Price)'
+  source: icpsr
+  status: verified
+  task_family: regression
+  license: 'ICPSR member-institution access; available via Researcher Passport for non-members'
+  access_method: signup wall
+  auth_required: true
+  rows: '1801 (671 received the JOBS II intervention)'
+  citation: 'Vinokur, A. D., & Price, R. H. (2000). JOBS II Preventive Intervention for Unemployed Job Seekers, 1991-1993: [Southeast Michigan]. ICPSR02739-v1. Ann Arbor, MI: Inter-university Consortium for Political and Social Research.'
+
+- bibkey: knauslechner2021mlhce
+  primary_url: https://arxiv.org/abs/1810.13237
+  name: 'Knaus-Lechner-Strittmatter Empirical Monte Carlo DGP Framework (Swiss UI data)'
+  source: other
+  status: verified
+  task_family: regression
+  license: 'replication code on GitHub; underlying Swiss labor data restricted'
+  access_method: direct download
+  auth_required: false
+  citation: 'Knaus, M. C., Lechner, M., & Strittmatter, A. (2021). Machine learning estimation of heterogeneous causal effects: empirical Monte Carlo evidence. The Econometrics Journal, 24(1), 134-161. 24 DGPs x 11 estimators x 3 aggregation levels.'
+
+- bibkey: huberlechnerwunsch2013emc
+  primary_url: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1696892
+  name: 'Huber-Lechner-Wunsch Empirical Monte Carlo Design (German UI placebo)'
+  source: other
+  status: verified
+  task_family: regression
+  license: 'replication archive; underlying German IAB data restricted'
+  access_method: signup wall
+  auth_required: true
+  citation: 'Huber, M., Lechner, M., & Wunsch, C. (2013). The performance of estimators based on the propensity score. Journal of Econometrics, 175(1), 1-21. Empirical Monte Carlo design using placebo treatments on German jobseeker data.'
