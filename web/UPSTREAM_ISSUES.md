@@ -46,3 +46,73 @@ The remaining error is the scaffolded demo's broken cite, which is expected to b
 - `package/tests/validate-root.test.mjs`: `BOOK_PROFILE env still wins over .env (closes #20)` (priority preserved).
 
 ---
+
+## Issue #22 — `defineBookConfig` doesn't accept consumer KaTeX macros
+
+**Surfaced during:** Commit 3, before the first line of Ch1 MDX was written. The scaffold's strict KaTeX mode (`strict: 'error'`) means a build referencing `\Var` or `\Cov` fails — and `ssmMacros` (the only macro set the scaffold ships) is SSM-focused, not causal-inference.
+
+**Receipt:** Chapter 1 of the manuscript uses `\Var(\cdot)` and `\Cov(\cdot, \cdot)` in dense math (variance reduction theorem, residualized covariance, orthogonal decomposition). Defined in `shared/dml-preamble-tufte.sty:410-411` for LaTeX. The scaffold's `defineBookConfig` (`package/src/config.ts:45`) hardcoded `macros: ssmMacros` with no consumer extension point. `markdown.rehypePlugins` wasn't a viable workaround: it would have meant reconstructing the whole rehype-katex registration internally.
+
+**Root cause:** Missing extension point in `BookConfigOptions`. Every non-SSM academic book hits this (Bertsekas RL would want `\argmin`, `\bellman`; calculus-of-variations would want `\Lag`, `\ham`).
+
+**Severity:** `kind:api-friction`. Not a bug (the scaffold works as designed) but a missing API every non-SSM academic consumer trips over.
+
+**Links:**
+- Issue: https://github.com/brandon-behring/book-scaffold-astro/issues/22
+- PR: https://github.com/brandon-behring/book-scaffold-astro/pull/23 (stacked on PR #21)
+- Branch: `feat/katex-macros-option` (off `fix/validate-env-reading`, which is off `v3.0`)
+- Commit (scaffold): `a281a77`
+- Version: 3.5.2 → 3.6.0 (minor — additive API)
+
+**Consumer-side state:**
+- `web/astro.config.mjs` uses the new `katexMacros` option to add `\Var → \mathrm{Var}` and `\Cov → \mathrm{Cov}`.
+- `web/package.json` continues to consume the scaffold via `file:` dep until 3.6.0 publishes.
+
+**Verification (post-fix, consumer-side):**
+```
+$ cd web && npm run dev
+[...]
+ astro  v6.3.6 ready in 1892 ms
+┃ Local    http://localhost:4321/
+```
+
+Astro dev server starts cleanly with `katexMacros` wired in.
+
+**Tests added upstream:**
+- `package/tests/katex-macros.test.mjs` (4 tests):
+  - omitting `katexMacros` yields exactly `ssmMacros` (backward compat)
+  - consumer macros merged onto `ssmMacros` (the closes-#22 path)
+  - consumer wins on key collision (override semantics)
+  - tools profile does NOT register rehype-katex even when `katexMacros` is supplied (no leak)
+
+**Follow-up signalled upstream:** Extend `ssmMacros` to a registry of named presets (`causalMacros`, `dynamicalSystemsMacros`, etc.) the scaffold ships out of the box, composable by consumers. Out of scope for #22; flagged in the issue.
+
+---
+
+## Issue #24 — `routes.chapters=true` crashes on academic profile
+
+**Surfaced during:** Commit 3, after Chapter 1 MDX was written + Astro build was first attempted. The chapter rendered correctly via the `/print` aggregate page, but enabling `routes: { chapters: true }` to get per-chapter routing crashed the build.
+
+**Receipt:** `package/pages/chapters.astro` is hardcoded to the tools-profile schema. It reads `c.data.volatility`, `c.data.tools_compared`, `c.data.last_verified`, `c.data.chapter` — none of which exist on academic chapters (which use `week`/`part-enum`/no-volatility). When the page tries to iterate academic chapters, `getFreshness(undefined, undefined)` returns null and `.status` throws.
+
+```
+generating static routes
+├─ /chapters/index.html [ERROR] TypeError: Cannot read properties of null (reading 'status')
+    at .../chapters_Bgpge6sw.mjs:193:39
+```
+
+**Severity:** `kind:bug` + `kind:api-friction`. The documented option crashes; the academic profile has no working chapter listing.
+
+**Links:**
+- Issue: https://github.com/brandon-behring/book-scaffold-astro/issues/24
+- PR: **deferred to Phase 2.** This fix requires either (a) a profile-aware split of `chapters.astro` or (b) a unified schema-introspection-based page — too large for inline implementation in this pilot.
+
+**Consumer-side state:**
+- `web/astro.config.mjs` does NOT set `routes: { chapters: true }`. Comment in the config references this issue.
+- Chapter 1 content is reachable via the auto-injected `/print` route (academic profile ships it). For the pilot, that is the chapter access point. Cloudflare deploy will surface `/print` as the canonical Ch1 URL: `https://double-ml-time-series.brandon-m-behring.workers.dev/print/`.
+
+**Tests added upstream:** none yet — defer to the PR that implements the fix.
+
+**Acceptance bar (R3.Q1, functional parity) reached anyway:** the chapter renders with all components — 3 definitions, 1 example, 3 theorems, 3 proofs, 2 remarks, 8 exercises, 15 anchor IDs, no KaTeX strict-mode errors. Functional parity per the chapter content is achieved via `/print`.
+
+---

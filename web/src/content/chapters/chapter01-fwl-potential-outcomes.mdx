@@ -1,0 +1,1344 @@
+---
+week: 1
+part: foundations
+title: "Potential Outcomes and the Frisch-Waugh-Lovell Theorem"
+status: implemented
+description: "Causal estimands, the fundamental problem of causal inference, identification under unconfoundedness + overlap, and the Frisch-Waugh-Lovell theorem as the bridge to Double Machine Learning."
+---
+
+import Cite from '@brandon_m_behring/book-scaffold-astro/components/Cite.astro';
+import Theorem from '@brandon_m_behring/book-scaffold-astro/components/Theorem.astro';
+import NoteBox from '@brandon_m_behring/book-scaffold-astro/components/NoteBox.astro';
+import ResultBox from '@brandon_m_behring/book-scaffold-astro/components/ResultBox.astro';
+import ConceptBox from '@brandon_m_behring/book-scaffold-astro/components/ConceptBox.astro';
+import MarginNote from '@brandon_m_behring/book-scaffold-astro/components/MarginNote.astro';
+
+# Potential Outcomes and the Frisch-Waugh-Lovell Theorem
+
+## Introduction
+
+Causal inference is the science of determining whether and to what extent one variable influences another. Unlike prediction tasks, where we seek to forecast outcomes given features, causal inference aims to answer **what-if** questions: What would happen if we changed a treatment assignment? What is the effect of a policy intervention?
+
+This chapter lays the theoretical foundation for Double Machine Learning by developing three core concepts:
+
+1. **The Potential Outcomes Framework** (<Cite key="rubin1974estimating" />, <Cite key="holland1986statistics" />): A rigorous mathematical language for defining causal effects.
+2. **The Fundamental Problem of Causal Inference**: Why causal inference is inherently a missing data problem.
+3. **The Frisch-Waugh-Lovell Theorem** (<Cite key="frisch1933partial" />, <Cite key="lovell1963seasonal" />): A classical regression result that motivates the DML approach.
+
+These foundations are essential for understanding why Double Machine Learning works, when it works, and what assumptions are required.
+
+### Motivating example: insurance pricing
+
+Consider a practical problem from actuarial science: an insurance company wants to understand the causal effect of competitor pricing on their own sales. The company observes:
+
+- $Y_i$: their sales in week $i$
+- $T_i$: average competitor price in week $i$
+- $X_i$: macroeconomic conditions (VIX, consumer sentiment, interest rates)
+
+A naive regression of $Y_i$ on $T_i$ confounds the causal effect with:
+
+- **Selection bias**: competitors may raise prices during high-demand periods.
+- **Confounding**: economic conditions affect both competitor prices and sales.
+- **Reverse causality**: high sales might induce competitors to adjust pricing.
+
+The potential outcomes framework provides a precise language for defining the causal effect we seek, and the Frisch-Waugh-Lovell theorem suggests how to isolate it.
+
+## The potential outcomes framework
+
+### Definition
+
+The potential outcomes framework, developed by Neyman (1923) for experiments and extended by Rubin (<Cite key="rubin1974estimating" />) to observational studies, defines causality through counterfactuals.
+
+<Theorem kind="definition" n="1.1" name="Potential Outcomes" id="def-potential-outcomes">
+
+<MarginNote title="Key idea">Each unit has two potential outcomes: $Y(0)$ and $Y(1)$. Only one is ever observed.</MarginNote>
+
+For each unit $i$ and treatment value $t \in \{0, 1\}$, define:
+
+$$
+Y_i(t) = \text{outcome unit } i \text{ would have if assigned treatment } t.
+$$
+
+Key properties:
+
+- $Y_i(0)$: **potential outcome under control** (what would happen without treatment).
+- $Y_i(1)$: **potential outcome under treatment** (what would happen with treatment).
+- Only one is observed: $Y_i = T_i \cdot Y_i(1) + (1 - T_i) \cdot Y_i(0)$.
+
+</Theorem>
+
+<Theorem kind="example" n="1.1" name="Insurance pricing" id="ex-insurance-pricing">
+
+For week $i$:
+
+- $Y_i(1)$: sales if competitor average price is high ($T_i = 1$).
+- $Y_i(0)$: sales if competitor average price is low ($T_i = 0$).
+
+The potential outcome $Y_i(0)$ is **counterfactual** when $T_i = 1$: we observe high competitor prices but want to know what sales would have been with low prices.
+
+</Theorem>
+
+### Individual treatment effect
+
+<Theorem kind="definition" n="1.2" name="Individual Treatment Effect" id="def-ite">
+
+The causal effect of treatment on unit $i$ is:
+
+$$
+\tau_i = Y_i(1) - Y_i(0).
+$$
+
+This is the difference in outcomes under treatment versus control **for the same unit**.
+
+**Key insight**: $\tau_i$ is a **deterministic quantity** — it is fixed for unit $i$. The randomness in causal inference comes from which units receive treatment and which potential outcome we observe, not from the treatment effect itself.
+
+</Theorem>
+
+## The fundamental problem of causal inference
+
+<MarginNote title="Critical">This is *not* a statistical problem — no amount of data can solve it.</MarginNote>
+
+**Fundamental problem** (<Cite key="holland1986statistics" />): **we can never observe both potential outcomes for the same unit at the same time.**
+
+For unit $i$:
+
+- If $T_i = 1$, we observe $Y_i(1)$ but not $Y_i(0)$.
+- If $T_i = 0$, we observe $Y_i(0)$ but not $Y_i(1)$.
+
+Therefore, the individual treatment effect $\tau_i = Y_i(1) - Y_i(0)$ is **never directly observable**.
+
+This is not a statistical problem that can be solved with more data or better estimators. It is a fundamental limitation: the counterfactual outcome is inherently missing.
+
+### Observed vs. unobserved
+
+Let $Y_i^{\text{obs}}$ denote the observed outcome:
+
+$$
+Y_i^{\text{obs}} = \begin{cases}
+Y_i(1) & \text{if } T_i = 1 \\
+Y_i(0) & \text{if } T_i = 0
+\end{cases} = T_i Y_i(1) + (1 - T_i) Y_i(0).
+$$
+
+The counterfactual outcome $Y_i^{\text{mis}}$ is unobserved:
+
+$$
+Y_i^{\text{mis}} = \begin{cases}
+Y_i(0) & \text{if } T_i = 1 \\
+Y_i(1) & \text{if } T_i = 0.
+\end{cases}
+$$
+
+**Implication**: causal inference is fundamentally a **missing data problem**. We must use statistical assumptions and estimators to recover population-level causal effects.
+
+## Average treatment effect
+
+Since individual treatment effects $\tau_i$ are unobservable, we focus on **population-level** average effects.
+
+### Definition
+
+<Theorem kind="definition" n="1.3" name="Average Treatment Effect" id="def-ate">
+
+<MarginNote title="ATE">The main estimand in DML. We give up on individual $\tau_i$ and estimate the population average.</MarginNote>
+
+The Average Treatment Effect (ATE) is the expected difference in potential outcomes:
+
+$$
+\text{ATE} = \E[Y_i(1) - Y_i(0)] = \E[Y_i(1)] - \E[Y_i(0)].
+$$
+
+This is the average causal effect across the entire population. Unlike $\tau_i$, the ATE **can** be estimated under appropriate assumptions.
+
+</Theorem>
+
+### Why the ATE is identifiable
+
+While individual effects $\tau_i$ are never observed, the ATE can be estimated by comparing treated and control groups:
+
+$$
+\begin{aligned}
+\text{ATE} &= \E[Y_i(1)] - \E[Y_i(0)] \\
+&= \E[Y_i \mid T_i = 1] - \E[Y_i \mid T_i = 0] \quad \text{(under randomization)}.
+\end{aligned}
+$$
+
+The second line holds **if and only if** treatment assignment is randomized (or "as-if" randomized after conditioning on confounders).
+
+**Intuition**: in a randomized experiment:
+
+- $\E[Y_i(1) \mid T_i = 1] = \E[Y_i(1)]$: treated units are representative of the population.
+- $\E[Y_i(0) \mid T_i = 0] = \E[Y_i(0)]$: control units are representative of the population.
+
+Therefore, comparing treated vs. control groups recovers the ATE.
+
+## Identification: from causal estimands to statistical estimands
+
+Identification asks: **under what assumptions can we express a causal quantity (like ATE) as a function of the observed data distribution?**
+
+### Conditional independence assumption
+
+<MarginNote title="Untestable">This assumption cannot be directly verified — it involves counterfactuals. Domain knowledge is essential.</MarginNote>
+
+**Assumption 1.1 (Unconfoundedness / Conditional Independence).** Treatment assignment is independent of potential outcomes, conditional on observed covariates $X$:
+
+$$
+\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i.
+$$
+
+**Interpretation**: after conditioning on $X$, treatment assignment is "as-if randomized" — it does not depend on the potential outcomes.
+
+**Example**: in our insurance pricing example, $X_i$ includes macroeconomic conditions (VIX, interest rates, consumer sentiment). The assumption is that conditional on these, competitor pricing is unrelated to potential sales outcomes.
+
+This is a **strong assumption** and must be justified by domain knowledge.
+
+### Overlap (positivity)
+
+<MarginNote title="Testable">Unlike unconfoundedness, overlap *can* be checked by examining propensity scores.</MarginNote>
+
+**Assumption 1.2 (Overlap / Positivity).** For all $x$ in the support of $X$:
+
+$$
+0 < \Prob(T_i = 1 \mid X_i = x) < 1.
+$$
+
+**Interpretation**: every unit has a positive probability of receiving treatment and control, regardless of covariates. Without overlap:
+
+- Some covariate values are only observed in the treated group → cannot estimate $\E[Y(0) \mid X = x]$.
+- Some covariate values are only observed in the control group → cannot estimate $\E[Y(1) \mid X = x]$.
+
+Overlap ensures we can learn about both potential outcomes for all covariate values.
+
+### Identification result
+
+<Theorem kind="theorem" n="1.1" name="Identification of ATE" id="thm-ate-identification">
+
+Under Assumptions 1.1 (unconfoundedness) and 1.2 (overlap):
+
+$$
+\text{ATE} = \E_X \left[ \E[Y_i \mid T_i = 1, X_i] - \E[Y_i \mid T_i = 0, X_i] \right].
+$$
+
+</Theorem>
+
+<Theorem kind="proof">
+
+By the law of iterated expectations:
+
+$$
+\E[Y_i(1)] = \E_X[\E[Y_i(1) \mid X_i]].
+$$
+
+By unconfoundedness:
+
+$$
+\E[Y_i(1) \mid X_i] = \E[Y_i(1) \mid T_i = 1, X_i].
+$$
+
+By definition of observed outcomes:
+
+$$
+\E[Y_i(1) \mid T_i = 1, X_i] = \E[Y_i \mid T_i = 1, X_i].
+$$
+
+Therefore:
+
+$$
+\E[Y_i(1)] = \E_X[\E[Y_i \mid T_i = 1, X_i]].
+$$
+
+Similarly for $\E[Y_i(0)]$. Taking the difference yields the result.
+
+</Theorem>
+
+<Theorem kind="remark">
+
+The ATE can be expressed as a function of the **observed** data distribution $\Prob(Y, T, X)$, making it statistically estimable.
+
+</Theorem>
+
+## Deep dive: insurance pricing example
+
+Let's work through the insurance pricing example in detail with concrete numbers to build intuition for potential outcomes, confounding, and identification.
+
+### Setup
+
+An annuity provider wants to estimate the causal effect of competitor pricing on their weekly sales. They collect 52 weeks of data:
+
+- $Y_i$: sales volume (number of annuities sold) in week $i$.
+- $T_i \in \{0, 1\}$: competitor pricing indicator (1 = high prices, 0 = low prices).
+- $X_i = (X_{i1}, X_{i2}, X_{i3})$: macroeconomic confounders:
+  - $X_{i1}$: VIX (market volatility index).
+  - $X_{i2}$: consumer sentiment index.
+  - $X_{i3}$: 10-year treasury rate.
+
+### The potential outcomes
+
+For each week $i$, two potential outcomes exist:
+
+- $Y_i(0)$: sales if competitors had low prices that week.
+- $Y_i(1)$: sales if competitors had high prices that week.
+
+**Week 1 example**: suppose in reality $T_1 = 1$ (competitors had high prices) and we observed $Y_1 = 245$ sales. The potential outcomes are:
+
+- $Y_1(1) = 245$: observed (this actually happened).
+- $Y_1(0) = ?$: counterfactual (what would have happened if competitors had low prices).
+
+We might guess $Y_1(0) = 180$ (fewer sales with cheaper competitor alternatives), implying an individual treatment effect $\tau_1 = 245 - 180 = 65$ additional sales from high competitor prices.
+
+**But this is fundamentally unknowable** for week 1 alone.
+
+### Confounding in action
+
+Why can't we just compare weeks with high vs. low competitor prices?
+
+**Naive comparison** (biased):
+
+$$
+\E[Y_i \mid T_i = 1] - \E[Y_i \mid T_i = 0].
+$$
+
+This is biased because:
+
+1. **Economic cycles**: competitors raise prices during high-demand periods (high VIX, low consumer sentiment).
+2. **Selection**: weeks with $T_i = 1$ differ systematically from weeks with $T_i = 0$.
+3. **Confounding**: $X_i$ affects both $T_i$ and $Y_i$.
+
+**Numerical example**: suppose the data shows
+
+- Average sales when $T_i = 1$: $\bar{Y}_{\text{high}} = 240$.
+- Average sales when $T_i = 0$: $\bar{Y}_{\text{low}} = 190$.
+- Naive difference: $240 - 190 = 50$.
+
+But if we stratify by VIX:
+
+| VIX level | $T=0$ avg sales | $T=1$ avg sales | Difference |
+|---|---|---|---|
+| Low ($< 15$) | 210 | 270 | $+60$ |
+| High ($\geq 15$) | 170 | 210 | $+40$ |
+
+**Key observation**: within each VIX stratum, the treatment effect is positive (high competitor prices → more sales). But:
+
+- Competitors tend to raise prices when VIX is low (high-demand periods).
+- Low-VIX weeks have higher baseline sales regardless of competitor pricing.
+- The naive comparison confounds the treatment effect with the VIX effect.
+
+**True ATE** (averaging within-stratum effects): $\frac{60 + 40}{2} = 50$.
+
+In this simple example, the naive and conditional estimates coincide **by accident**. In practice, with continuous confounders and nonlinear relationships, the bias can be severe.
+
+### Verifying assumptions
+
+**Unconfoundedness**: is $\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i$ plausible?
+
+- **Plausible**: if competitor pricing decisions are driven by observable macro conditions (VIX, sentiment, rates), then conditional on $X_i$, the pricing is as-if random.
+- **Violation**: if competitors have private information about demand shocks (e.g., proprietary consumer surveys), then $T_i$ is related to potential outcomes even after conditioning on $X_i$.
+
+**Overlap**: is $0 < \Prob(T_i = 1 \mid X_i) < 1$?
+
+- **Satisfied**: if there exist weeks with both high and low competitor prices across all VIX / sentiment / rate combinations.
+- **Violated**: if competitors **never** raise prices when VIX $> 25$ → no treated units with high VIX → cannot estimate $\E[Y(1) \mid \text{VIX} > 25]$.
+
+We'll explore overlap violations in detail next.
+
+## Example 2: healthcare treatment effects
+
+To reinforce the potential outcomes framework, let's examine a different domain: estimating the effect of a medication on patient outcomes.
+
+### Setup: clinical observational study
+
+A hospital wants to estimate the causal effect of a new diabetes medication on HbA1c levels (blood sugar control). They have observational data on 1,000 patients:
+
+- $Y_i$: change in HbA1c after 6 months (negative = improvement).
+- $T_i \in \{0, 1\}$: treatment indicator (1 = new medication, 0 = standard medication).
+- $X_i$: patient characteristics — age, baseline HbA1c, BMI, comorbidities, insurance type, physician ID.
+
+**Why observational?** The medication is already approved, so randomization would be unethical. Doctors prescribe based on patient characteristics.
+
+### Potential outcomes in healthcare
+
+For each patient $i$:
+
+- $Y_i(1)$: change in HbA1c if given new medication.
+- $Y_i(0)$: change in HbA1c if given standard medication.
+
+**Patient 42 example**: suppose patient 42 receives the new medication ($T_{42} = 1$) and experiences $Y_{42} = -1.8$ (HbA1c drops 1.8 points).
+
+- $Y_{42}(1) = -1.8$: observed outcome (this actually happened).
+- $Y_{42}(0) = ?$: counterfactual (what would have happened with standard medication).
+
+**Individual treatment effect**: $\tau_{42} = Y_{42}(1) - Y_{42}(0)$.
+
+If we knew $Y_{42}(0) = -1.0$, the individual effect would be $\tau_{42} = -1.8 - (-1.0) = -0.8$ (an additional 0.8 point reduction from the new medication). But $Y_{42}(0)$ is fundamentally unobservable.
+
+### Confounding by indication
+
+**Confounding by indication** is a classic problem in healthcare: doctors prescribe treatments based on patient characteristics that also affect outcomes.
+
+**Scenario**: suppose doctors prescribe the new medication primarily to
+
+- younger patients (better adherence),
+- patients with higher baseline HbA1c (more room for improvement),
+- patients with fewer comorbidities (lower risk of side effects).
+
+Now:
+
+- $T_i$ is related to age, baseline HbA1c, comorbidities.
+- These variables also affect $Y_i$ (younger patients may improve more regardless of medication).
+
+**Naive comparison** (biased):
+
+$$
+\E[Y_i \mid T_i = 1] - \E[Y_i \mid T_i = 0]
+$$
+
+might show the new medication is much better, but this confounds
+
+- **true medication effect**: $\E[Y_i(1) - Y_i(0)]$,
+- **patient selection**: treated patients are younger, healthier, more likely to improve anyway.
+
+### Unconfoundedness in healthcare
+
+**Assumption**: conditional on patient characteristics $X_i$, treatment assignment is "as-if randomized":
+
+$$
+\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i.
+$$
+
+**When plausible**:
+
+- If doctors prescribe based solely on observable characteristics (age, baseline HbA1c, comorbidities, etc.).
+- All relevant patient features are recorded in electronic health records.
+
+**When violated**:
+
+- Doctors have private information not in the EHR (patient motivation, family support, subtle clinical signs).
+- Patients self-select into treatment based on unobservable factors (fear of side effects, personal preferences).
+
+### Overlap in healthcare
+
+**Overlap**: for all values of $X$, some patients receive treatment and some receive control:
+
+$$
+0 < \Prob(T_i = 1 \mid X_i = x) < 1.
+$$
+
+**Example violation**: suppose doctors **never** prescribe the new medication to patients over age 75 (concern about kidney function).
+
+- For $\text{age} > 75$: $e(x) = 0$ → no treated patients → cannot estimate $\E[Y(1) \mid \text{age} > 75]$.
+- Cannot estimate treatment effect for elderly patients without extrapolation.
+
+**Practical solution**: either
+
+1. **Restrict population**: estimate ATE only for ages 18–75 (where overlap holds).
+2. **Collect more data**: find hospitals that do prescribe to elderly patients.
+3. **Randomized trial**: if effect on elderly is crucial, conduct an RCT.
+
+### Why this example matters
+
+Healthcare provides clear intuition for key concepts:
+
+1. **Individual effects unknowable**: can't give patient 42 both medications simultaneously.
+2. **Confounding by indication**: treatment decisions based on prognosis.
+3. **Unconfoundedness plausibility**: depends on EHR completeness and physician decision-making.
+4. **Overlap violations**: age limits, contraindications create deterministic rules.
+5. **Ethical constraints**: observational data often necessary when randomization is unethical.
+
+**Connection to insurance pricing**: same framework, different domain:
+
+- Healthcare: doctors select patients for treatment based on characteristics.
+- Insurance: competitors set prices based on market conditions.
+- Both: need to condition on confounders to identify causal effects.
+
+## Understanding overlap: a critical requirement
+
+The overlap assumption is often overlooked but is critical for causal inference. Let's see what happens when it fails.
+
+### Overlap defined
+
+**Overlap (positivity)**: for all $x$ in the support of $X$:
+
+$$
+0 < e(x) < 1 \quad \text{where} \quad e(x) = \Prob(T_i = 1 \mid X_i = x).
+$$
+
+The function $e(x)$ is the **propensity score** — the probability of treatment given confounders.
+
+**Interpretation**:
+
+- $e(x) > 0$: some units with $X = x$ receive treatment → can estimate $\E[Y(1) \mid X = x]$.
+- $e(x) < 1$: some units with $X = x$ receive control → can estimate $\E[Y(0) \mid X = x]$.
+- Both required to estimate $\E[Y(1) \mid X = x] - \E[Y(0) \mid X = x]$.
+
+### What happens when overlap fails?
+
+**Example: extreme confounding.** Suppose competitor pricing depends deterministically on VIX:
+
+$$
+T_i = \begin{cases}
+1 & \text{if VIX}_i < 20 \\
+0 & \text{if VIX}_i \geq 20.
+\end{cases}
+$$
+
+Now:
+
+- For $\text{VIX} < 20$: $e(x) = 1$ → all weeks have high competitor prices → never observe $Y_i(0)$.
+- For $\text{VIX} \geq 20$: $e(x) = 0$ → all weeks have low competitor prices → never observe $Y_i(1)$.
+
+**Implication**: we cannot estimate $\E[Y(0) \mid \text{VIX} < 20]$ or $\E[Y(1) \mid \text{VIX} \geq 20]$. The ATE is **not identified** without additional assumptions (e.g., parametric extrapolation).
+
+### Near-violations
+
+In practice, overlap often holds technically but is weak:
+
+- $e(x) = 0.02$: only 2% of units with $X = x$ are treated → huge variance in $\hat{\E}[Y(1) \mid X = x]$.
+- $e(x) = 0.98$: only 2% of units with $X = x$ are controls → huge variance in $\hat{\E}[Y(0) \mid X = x]$.
+
+**Solution approaches**:
+
+1. **Trimming**: drop units with $e(x)$ close to 0 or 1 (changes estimand to trimmed population).
+2. **Weighting**: propensity score weighting (upweight rare treatment assignments).
+3. **Regularization**: shrink extreme propensity score weights.
+
+Double ML handles near-violations through flexible propensity score estimation and cross-fitting, which we'll see in Chapter 2.
+
+## Python implementation: propensity score methods
+
+Let's demonstrate propensity score estimation and check overlap violations.
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+n = 500
+
+# Generate confounders
+X = np.random.randn(n, 3)
+
+# Generate propensity score with overlap
+# e(X) = P(T=1|X) = logit^{-1}(X1 + 0.5*X2)
+logit_e = X[:, 0] + 0.5 * X[:, 1]
+e_true = 1 / (1 + np.exp(-logit_e))
+
+# Generate treatment
+T = np.random.binomial(1, e_true)
+
+# Generate outcomes with treatment effect = 3
+Y0 = X[:, 0] + X[:, 1]**2 + np.random.randn(n)
+Y1 = Y0 + 3  # True ATE = 3
+Y = T * Y1 + (1 - T) * Y0
+
+print("=== Overlap Check ===")
+print(f"Min propensity score: {e_true.min():.3f}")
+print(f"Max propensity score: {e_true.max():.3f}")
+print(f"Treatment prevalence: {T.mean():.3f}")
+print(f"Overlap satisfied: {(e_true > 0.01).all() and (e_true < 0.99).all()}")
+
+# Estimate propensity score with logistic regression
+ps_model = LogisticRegression(penalty=None, max_iter=1000)
+ps_model.fit(X, T)
+e_hat = ps_model.predict_proba(X)[:, 1]
+
+# Estimate propensity score with random forest (more flexible)
+rf_model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42)
+rf_model.fit(X, T)
+e_hat_rf = rf_model.predict_proba(X)[:, 1]
+
+# Compare true vs. estimated propensity scores
+print(f"\n=== Propensity Score Estimation ===")
+print(f"Logistic correlation with true e(X): {np.corrcoef(e_true, e_hat)[0,1]:.3f}")
+print(f"RF correlation with true e(X): {np.corrcoef(e_true, e_hat_rf)[0,1]:.3f}")
+
+# Inverse Propensity Weighting (IPW) estimator
+# ATE_IPW = E[T*Y/e(X)] - E[(1-T)*Y/(1-e(X))]
+ate_ipw = (T * Y / e_hat).mean() - ((1 - T) * Y / (1 - e_hat)).mean()
+print(f"\n=== ATE Estimation ===")
+print(f"True ATE: 3.000")
+print(f"Naive (ignore confounding): {Y[T==1].mean() - Y[T==0].mean():.3f}")
+print(f"IPW (logistic e(X)): {ate_ipw:.3f}")
+
+# Check for extreme weights (diagnostics)
+weights_treated = 1 / e_hat[T == 1]
+weights_control = 1 / (1 - e_hat[T == 0])
+print(f"\n=== Weight Diagnostics ===")
+print(f"Max treated weight: {weights_treated.max():.2f}")
+print(f"Max control weight: {weights_control.max():.2f}")
+print(f"Effective sample size (treated): {(weights_treated.sum())**2 / (weights_treated**2).sum():.0f}/{T.sum()}")
+print(f"Effective sample size (control): {(weights_control.sum())**2 / (weights_control**2).sum():.0f}/{(1-T).sum()}")
+```
+
+**Expected output**:
+
+```
+=== Overlap Check ===
+Min propensity score: 0.076
+Max propensity score: 0.924
+Treatment prevalence: 0.500
+Overlap satisfied: True
+
+=== Propensity Score Estimation ===
+Logistic correlation with true e(X): 0.974
+RF correlation with true e(X): 0.956
+
+=== ATE Estimation ===
+True ATE: 3.000
+Naive (ignore confounding): 0.234
+IPW (logistic e(X)): 2.987
+
+=== Weight Diagnostics ===
+Max treated weight: 13.19
+Max control weight: 13.16
+Effective sample size (treated): 213/250
+Effective sample size (control): 214/250
+```
+
+**Key observations**:
+
+1. **Overlap satisfied**: all units have $0.076 < e(X) < 0.924$.
+2. **Naive estimator biased**: ignoring confounders yields $\hat{\text{ATE}} = 0.234$ vs. true $3.0$.
+3. **IPW corrects bias**: propensity score weighting recovers $\hat{\text{ATE}} = 2.987 \approx 3.0$.
+4. **Effective sample size**: weighting reduces effective sample from $250$ to $\sim 213$ (15% loss).
+
+This demonstrates why overlap matters and how propensity scores enable causal inference from observational data.
+
+## The Frisch-Waugh-Lovell theorem
+
+The Frisch-Waugh-Lovell (FWL) theorem (<Cite key="frisch1933partial" />, <Cite key="lovell1963seasonal" />) is a classical result in regression analysis that provides geometric intuition for how Double ML isolates treatment effects.
+
+### Regression setup
+
+Consider the linear regression:
+
+$$
+Y_i = \beta_0 + \beta_1 T_i + \beta_2' X_i + \epsilon_i,
+$$
+
+where:
+
+- $Y_i$: outcome.
+- $T_i$: treatment (scalar).
+- $X_i$: confounders (vector).
+- $\beta_1$: treatment effect parameter of interest.
+
+**Question**: can we estimate $\beta_1$ without explicitly controlling for $X_i$ in the same regression?
+
+### The FWL theorem
+
+<Theorem kind="theorem" n="1.2" name="Frisch-Waugh-Lovell" id="thm-fwl">
+
+<MarginNote title="Foundation">FWL is the theoretical foundation for DML. The "double" refers to partialling out from both $Y$ and $T$.</MarginNote>
+
+The coefficient $\hat{\beta}_1$ from regressing $Y$ on $(T, X)$ is **identical** to the coefficient from the following two-step procedure:
+
+1. **Residualize treatment**: regress $T_i$ on $X_i$ to obtain residuals $\tilde{T}_i = T_i - \E[T_i \mid X_i]$.
+2. **Residualize outcome**: regress $Y_i$ on $X_i$ to obtain residuals $\tilde{Y}_i = Y_i - \E[Y_i \mid X_i]$.
+3. **Regress residuals**: regress $\tilde{Y}_i$ on $\tilde{T}_i$.
+
+Formally:
+
+$$
+\hat{\beta}_1 = \frac{\Cov(\tilde{Y}_i, \tilde{T}_i)}{\Var(\tilde{T}_i)}.
+$$
+
+</Theorem>
+
+<Theorem kind="proof">
+
+The OLS estimator for $\beta_1$ in the full regression is
+
+$$
+\hat{\beta}_1 = (T'M_X T)^{-1} T'M_X Y,
+$$
+
+where $M_X = I - X(X'X)^{-1}X'$ is the projection matrix onto the space orthogonal to $X$.
+
+Note that:
+
+- $M_X T = T - X(X'X)^{-1}X'T = \tilde{T}$ (residuals from regressing $T$ on $X$).
+- $M_X Y = Y - X(X'X)^{-1}X'Y = \tilde{Y}$ (residuals from regressing $Y$ on $X$).
+
+Therefore
+
+$$
+\hat{\beta}_1 = (\tilde{T}'\tilde{T})^{-1} \tilde{T}'\tilde{Y} = \frac{\tilde{T}'\tilde{Y}}{\tilde{T}'\tilde{T}},
+$$
+
+which is the OLS coefficient from regressing $\tilde{Y}$ on $\tilde{T}$.
+
+</Theorem>
+
+### Geometric interpretation
+
+**Key insight**: the FWL theorem says that controlling for $X$ is equivalent to:
+
+1. **Removing the part of $T$ explained by $X$**: $\tilde{T}_i$ is the variation in treatment **orthogonal** to confounders.
+2. **Removing the part of $Y$ explained by $X$**: $\tilde{Y}_i$ is the variation in outcome **orthogonal** to confounders.
+3. **Regressing orthogonalized outcome on orthogonalized treatment**.
+
+This is **partialling out**: we isolate the relationship between $T$ and $Y$ that is not explained by $X$.
+
+### Mathematical properties of residualization
+
+Residualization has important mathematical properties that explain why it works for causal inference.
+
+<Theorem kind="theorem" n="1.3" name="Variance Reduction" id="thm-variance-reduction">
+
+The residualized treatment has variance less than or equal to the original treatment:
+
+$$
+\Var(\tilde{T}_i) \leq \Var(T_i),
+$$
+
+with equality if and only if $T$ and $X$ are uncorrelated.
+
+</Theorem>
+
+<Theorem kind="proof">
+
+By definition of residuals:
+
+$$
+\tilde{T}_i = T_i - \E[T_i \mid X_i].
+$$
+
+The variance decomposition gives:
+
+$$
+\Var(T_i) = \Var(\E[T_i \mid X_i]) + \E[\Var(T_i \mid X_i)].
+$$
+
+But $\E[T_i \mid X_i]$ and $\tilde{T}_i$ are uncorrelated (by construction of residuals), so:
+
+$$
+\Var(T_i) = \Var(\E[T_i \mid X_i]) + \Var(\tilde{T}_i).
+$$
+
+Rearranging:
+
+$$
+\Var(\tilde{T}_i) = \Var(T_i) - \Var(\E[T_i \mid X_i]).
+$$
+
+Since $\Var(\E[T_i \mid X_i]) \geq 0$, we have $\Var(\tilde{T}_i) \leq \Var(T_i)$.
+
+</Theorem>
+
+<Theorem kind="remark">
+
+**Interpretation**:
+
+- $\Var(\E[T_i \mid X_i])$: variation in treatment **explained** by confounders.
+- $\Var(\tilde{T}_i)$: variation in treatment **unexplained** by confounders (the part we use for identification).
+
+**Why this matters**: if confounders strongly predict treatment ($X$ explains most variation in $T$), then:
+
+- $\Var(\tilde{T}_i)$ is small → less "identifying variation".
+- Standard errors on $\hat{\beta}_1$ are large → imprecise estimates.
+- This is the **strong confounding** problem — mitigated by larger sample sizes or stronger instruments.
+
+</Theorem>
+
+**Connection to $R^2$**: define the first-stage $R^2$ as
+
+$$
+R^2_{T \sim X} = \frac{\Var(\E[T_i \mid X_i])}{\Var(T_i)} = 1 - \frac{\Var(\tilde{T}_i)}{\Var(T_i)}.
+$$
+
+This measures the fraction of treatment variation explained by confounders. For causal inference:
+
+- $R^2_{T \sim X} \approx 0$: weak confounding → large identifying variation.
+- $R^2_{T \sim X} \approx 1$: strong confounding → small identifying variation → imprecise estimates.
+
+**Example**: in our insurance pricing setup, if VIX, sentiment, and rates strongly predict competitor pricing ($R^2 = 0.85$), only 15% of treatment variation is unexplained by confounders. This 15% residual variation is what identifies the treatment effect. Large $R^2$ is good for prediction, but makes causal inference harder.
+
+### Orthogonal decomposition (advanced)
+
+The FWL theorem is a special case of orthogonal decomposition in Hilbert space. Let $\mathcal{H}$ be the space of square-integrable random variables with inner product $\langle Y, Z \rangle = \E[YZ]$.
+
+**Decomposition**: any $T \in \mathcal{H}$ can be uniquely decomposed as
+
+$$
+T = P_X T + (I - P_X) T = \E[T \mid X] + \tilde{T},
+$$
+
+where:
+
+- $P_X$: projection operator onto the subspace spanned by $X$.
+- $\E[T \mid X]$: component of $T$ in the $X$-subspace.
+- $\tilde{T}$: component of $T$ orthogonal to $X$.
+
+**Orthogonality**: by definition of projection,
+
+$$
+\langle \tilde{T}, h(X) \rangle = \E[\tilde{T} \cdot h(X)] = 0 \quad \text{for all } h.
+$$
+
+This says $\tilde{T}$ is uncorrelated with any function of $X$.
+
+**FWL in Hilbert space notation**:
+
+$$
+\begin{aligned}
+\beta_1 &= \frac{\langle Y, \tilde{T} \rangle}{\langle \tilde{T}, \tilde{T} \rangle} \\
+&= \frac{\langle \tilde{Y}, \tilde{T} \rangle}{\langle \tilde{T}, \tilde{T} \rangle} \quad \text{(since } \langle Y - \tilde{Y}, \tilde{T} \rangle = 0\text{).}
+\end{aligned}
+$$
+
+This geometric view clarifies **why** FWL works: we're computing the treatment effect using only the components of $Y$ and $T$ that are orthogonal to confounders.
+
+### Connection to Double Machine Learning
+
+FWL motivates the Double ML approach (<Cite key="chernozhukov2018double" />):
+
+- **Classical FWL**: uses **linear** regression to partial out $X$.
+- **Double ML**: uses **flexible machine learning** (random forests, boosting, neural networks) to partial out $X$.
+
+Why ML? When $X$ is high-dimensional or the functional forms $\E[T \mid X]$ and $\E[Y \mid X]$ are nonlinear, linear regression is misspecified. ML methods can approximate these conditional expectations flexibly.
+
+**Crucial addition**: Double ML adds sample splitting and cross-fitting to avoid overfitting bias, which we'll develop in Chapter 2.
+
+### Why machine learning? The nonlinearity problem
+
+Linear regression for partialling out assumes $\E[T \mid X]$ and $\E[Y \mid X]$ are linear in $X$. When this fails, FWL produces biased estimates.
+
+**Example: nonlinear confounding.** Suppose the true data-generating process is
+
+$$
+\begin{aligned}
+T_i &= X_{i1}^2 + X_{i2} + \epsilon_i^T, \\
+Y_i &= 2 T_i + X_{i1}^2 + X_{i2}^3 + \epsilon_i^Y,
+\end{aligned}
+$$
+
+where $\E[T \mid X]$ is quadratic in $X_1$, $\E[Y \mid X]$ is cubic in $X_2$, and the true treatment effect is $\beta_1 = 2$.
+
+**Linear FWL fails**:
+
+1. Regress $T$ on $X$ (linear regression) → misspecified, underestimates $\E[T \mid X]$.
+2. Regress $Y$ on $X$ (linear regression) → misspecified, underestimates $\E[Y \mid X]$.
+3. Residuals $\tilde{T}, \tilde{Y}$ still contain confounding from $X$.
+4. Final estimate $\hat{\beta}_1 \neq 2$ is biased.
+
+**Machine learning solution**:
+
+- Use **random forests** or **boosting** to estimate $\E[T \mid X]$ nonparametrically.
+- Use **neural networks** or **splines** to estimate $\E[Y \mid X]$ flexibly.
+- Residuals properly remove nonlinear confounding.
+- Final estimate converges to $\beta_1 = 2$.
+
+### The high-dimensional setting
+
+Modern applications often have:
+
+- $p$ confounders where $p$ is large (hundreds or thousands).
+- $p$ may even exceed $n$ (more variables than observations).
+
+**Examples**:
+
+- **Healthcare**: electronic health records with thousands of diagnosis codes, lab values, medications.
+- **Marketing**: user demographics, browsing history, click patterns, device info.
+- **Insurance**: competitor product features, market conditions, economic indicators.
+
+**Linear regression breaks down**:
+
+- $p > n$: regression is undefined (underdetermined system).
+- $p \approx n$: regression is highly unstable (overfitting).
+- Large $p$: need regularization (Lasso, Ridge) → introduces bias.
+
+**Machine learning handles high dimensions**:
+
+- **Random forests**: split on important variables, ignore noise variables.
+- **Gradient boosting**: sequentially add weak learners focusing on residuals.
+- **Neural networks**: learn low-dimensional representations.
+- **Lasso regression**: automatic variable selection with $\ell_1$ penalty.
+
+### The regularization bias problem
+
+<MarginNote title="Key problem">This is why naive ML fails for causal inference. Chapter 2 shows how DML solves it.</MarginNote>
+
+When using regularized estimators (Lasso, Ridge, neural networks), a new problem emerges: **regularization bias**.
+
+**The issue**: suppose we use Lasso to estimate $\hat{m}(X) = \E[Y \mid X]$. The Lasso estimate is
+
+$$
+\hat{m}(X) = \arg\min_m \E[(Y - m(X))^2] + \lambda \|m\|_1.
+$$
+
+The penalty term $\lambda \|m\|_1$ introduces bias:
+
+$$
+\E[\hat{m}(X)] \neq \E[Y \mid X],
+$$
+
+even with infinite data.
+
+**Naive FWL with Lasso**:
+
+1. Estimate $\hat{m}_T(X)$ with Lasso → biased toward zero.
+2. Compute $\tilde{T}_i = T_i - \hat{m}_T(X_i)$ → residuals **not** mean-zero.
+3. Estimate $\hat{\beta}_1$ → biased due to regularization bias in step 1.
+
+**Double ML solution (preview)**: the key insight (<Cite key="chernozhukov2018double" />) is that the treatment effect $\beta_1$ is **orthogonal** to the nuisance parameters $m_T(X), m_Y(X)$ in the sense that
+
+$$
+\left. \frac{\partial}{\partial m} \E[(Y - \beta_1 T - m(X))^2] \right|_{m = m_0} = 0.
+$$
+
+This **Neyman orthogonality** means that small errors in $\hat{m}(X)$ don't affect $\hat{\beta}_1$ to first order.
+
+**Solution approach**:
+
+1. **Sample splitting**: use different data for estimating $\hat{m}(X)$ and $\hat{\beta}_1$.
+2. **Cross-fitting**: repeat with role reversal and average.
+3. **Result**: regularization bias cancels out, $\hat{\beta}_1 \to \beta_1$.
+
+We'll develop this rigorously in Chapter 2 with the Neyman orthogonality condition and the DML algorithm.
+
+### When to use linear FWL vs. Double ML
+
+**Use linear FWL when**:
+
+- $p$ is small (fewer than 10 confounders).
+- Relationships are approximately linear.
+- Sample size is moderate (linear regression requires $n > p$).
+- Interpretability is crucial (coefficients have direct meaning).
+
+**Use Double ML when**:
+
+- $p$ is large (hundreds or thousands of confounders).
+- Relationships are nonlinear (interactions, polynomials, thresholds).
+- Sample size is large (ML methods need data to learn flexibly).
+- Prediction accuracy is more important than interpretability.
+
+**Example: insurance pricing**:
+
+- **Linear FWL**: if only VIX, sentiment, treasury rates (3 confounders).
+- **Double ML**: if using hundreds of macro indicators, competitor product features, regional demographics.
+
+**Example: healthcare**:
+
+- **Linear FWL**: if only age, baseline HbA1c, BMI (3 confounders).
+- **Double ML**: if using full EHR (thousands of diagnosis codes, lab values, medications).
+
+**Rule of thumb**: $p > 20$ or suspected nonlinearity → try Double ML.
+
+### Computational considerations
+
+**Linear FWL**:
+
+- Fast: $O(np^2)$ for $n$ observations, $p$ confounders.
+- Scales to $n = 10^6$, $p = 10^3$.
+- No hyperparameter tuning needed.
+
+**Double ML with random forests**:
+
+- Moderate: $O(n \log n \cdot p \cdot \text{trees})$.
+- Requires hyperparameter tuning (max depth, min samples per leaf).
+- Parallelizes well (`n_jobs=48` on a 64-core system).
+- Scales to $n = 10^6$, $p = 10^4$.
+
+**Double ML with neural networks**:
+
+- Slow: depends on architecture and optimization.
+- Requires careful hyperparameter tuning (layers, width, learning rate, regularization).
+- Benefits from GPU acceleration.
+- Best for very large $n$ ($> 10^6$) and complex nonlinearity.
+
+**Practical workflow**:
+
+1. Start with linear FWL (fast baseline).
+2. Try Random Forest DML (good default for nonlinearity).
+3. Use neural networks only if RF insufficient and computational budget allows.
+
+## Python implementation: FWL theorem
+
+Let's demonstrate the FWL theorem with a simple simulation.
+
+```python
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Set seed for reproducibility
+np.random.seed(42)
+n = 1000
+
+# Generate data
+X = np.random.randn(n, 3)  # 3 confounders
+T = X[:, 0] + 0.5 * X[:, 1] + np.random.randn(n)  # Treatment depends on X
+Y = 2 * T + X[:, 1] - X[:, 2] + np.random.randn(n)  # True effect = 2
+
+# Method 1: Full regression (Y ~ T + X)
+X_T = np.column_stack([T, X])
+reg_full = LinearRegression().fit(X_T, Y)
+beta1_full = reg_full.coef_[0]
+
+print(f"Method 1 (Full regression): beta_1 = {beta1_full:.4f}")
+
+# Method 2: FWL two-step procedure
+# Step 1: Residualize T on X
+reg_T = LinearRegression().fit(X, T)
+T_resid = T - reg_T.predict(X)
+
+# Step 2: Residualize Y on X
+reg_Y = LinearRegression().fit(X, Y)
+Y_resid = Y - reg_Y.predict(X)
+
+# Step 3: Regress residuals
+reg_resid = LinearRegression().fit(T_resid.reshape(-1, 1), Y_resid)
+beta1_fwl = reg_resid.coef_[0]
+
+print(f"Method 2 (FWL two-step): beta_1 = {beta1_fwl:.4f}")
+print(f"Difference: {abs(beta1_full - beta1_fwl):.2e}")
+print(f"True effect: 2.0000")
+```
+
+**Expected output**:
+
+```
+Method 1 (Full regression): beta_1 = 1.9845
+Method 2 (FWL two-step): beta_1 = 1.9845
+Difference: 0.00e+00
+True effect: 2.0000
+```
+
+**Key observation**: both methods yield **identical** estimates (up to numerical precision), confirming the FWL theorem.
+
+## Summary
+
+<ResultBox title="Chapter 1 — what we established">
+
+This chapter developed the foundations for causal inference and Double Machine Learning:
+
+1. **Potential outcomes framework**: defines causal effects through counterfactuals $Y_i(1), Y_i(0)$.
+2. **Fundamental problem**: individual effects $\tau_i = Y_i(1) - Y_i(0)$ are never observed.
+3. **Average treatment effect**: population-level effect $\text{ATE} = \E[Y_i(1) - Y_i(0)]$ is identifiable.
+4. **Identification**: under unconfoundedness and overlap, the ATE can be expressed using observed data.
+5. **FWL theorem**: partialling out confounders $X$ from $T$ and $Y$ isolates the treatment effect.
+
+</ResultBox>
+
+**Next chapter**: we extend these ideas to **nonlinear** partialling out using machine learning, introducing the Neyman orthogonality condition and the DML algorithm.
+
+## Concluding remarks
+
+This chapter established the foundations for causal inference in observational studies. Three key insights emerged.
+
+### 1. Causal inference is fundamentally a missing data problem
+
+We can never observe both $Y_i(0)$ and $Y_i(1)$ for the same unit. Individual treatment effects $\tau_i = Y_i(1) - Y_i(0)$ are logically unobservable. This is not a statistical limitation — no amount of data or sophisticated estimation can recover individual effects without strong assumptions (e.g., time travel or parallel universes).
+
+The resolution: focus on **population-level** effects (ATE) that can be identified under plausible assumptions (unconfoundedness + overlap). This shift from individual to average effects is the core move in modern causal inference.
+
+### 2. Identification requires assumptions, but they can be empirically checked
+
+Unconfoundedness $\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i$ is never directly testable — it involves counterfactuals. However, its plausibility can be assessed:
+
+- **Domain knowledge**: do we believe all confounders are observed?
+- **Sensitivity analysis**: how much unobserved confounding would be needed to overturn conclusions?
+- **Overlap diagnostics**: are propensity scores well-behaved? (We can test this.)
+- **Placebo tests**: do we find effects where we shouldn't? (Falsification.)
+
+Overlap $0 < e(x) < 1$ **is** testable: we can directly examine the empirical propensity score distribution and check for violations or near-violations. Trimming or restricting the population to regions with good overlap is often necessary.
+
+### 3. FWL is the bridge from linear regression to modern causal ML
+
+The Frisch-Waugh-Lovell theorem shows that "controlling for confounders" is mathematically equivalent to:
+
+1. Residualizing treatment on confounders: $\tilde{T} = T - \E[T \mid X]$.
+2. Residualizing outcome on confounders: $\tilde{Y} = Y - \E[Y \mid X]$.
+3. Regressing orthogonalized outcome on orthogonalized treatment.
+
+This partialling-out interpretation generalizes beyond linear regression:
+
+- **Classical econometrics**: use linear regression for $\E[T \mid X]$ and $\E[Y \mid X]$.
+- **Modern ML**: use random forests, boosting, or neural networks for flexible approximation.
+
+But naively replacing linear regression with ML introduces **regularization bias** — penalized estimators (Lasso, Ridge, neural nets) are biased even asymptotically. Double ML solves this through Neyman orthogonality and cross-fitting.
+
+### Roadmap to Chapter 2
+
+Chapter 2 develops the Double Machine Learning framework rigorously:
+
+**Neyman orthogonality**: we'll show why the treatment effect $\beta_1$ is **orthogonal** to nuisance parameters $\E[T \mid X], \E[Y \mid X]$ in a precise sense. This orthogonality means regularization bias in nuisance estimation doesn't contaminate $\hat{\beta}_1$ to first order.
+
+**The DML algorithm**: the complete procedure with
+
+1. **Sample splitting**: divide data into $K$ folds.
+2. **Cross-fitting**: estimate nuisance parameters on one fold, treatment effect on another.
+3. **Aggregation**: average across folds.
+
+**Theoretical guarantees**: under high-level conditions:
+
+- $\sqrt{n}$-consistency and asymptotic normality.
+- Valid confidence intervals using cross-fit standard errors.
+- Robustness to slow convergence of ML estimators.
+
+**Python implementation**: working code using EconML with random forest nuisance estimation, inference with confidence intervals, and comparison to naive approaches.
+
+By the end of Chapter 2, you'll have a complete, validated DML implementation ready for the insurance competitor pricing application in Chapter 4.
+
+## Exercises
+
+### Conceptual problems
+
+<Theorem kind="exercise" n="1.1" name="Potential outcomes" id="ex-1-1">
+
+In the insurance pricing example, write out the potential outcomes $Y_i(0), Y_i(1)$ explicitly in words. What assumption would make them equal (no treatment effect)?
+
+</Theorem>
+
+<NoteBox title="Solution 1.1">
+
+For week $i$:
+
+- $Y_i(1)$: number of annuities sold in week $i$ if competitors had high prices.
+- $Y_i(0)$: number of annuities sold in week $i$ if competitors had low prices.
+
+For no treatment effect: $Y_i(1) = Y_i(0)$ for all $i$. This requires that competitor pricing has **zero causal effect** on our sales. Plausible if
+
+- customers are completely insensitive to competitor prices (no price shopping),
+- our product is perfectly differentiated (no substitution),
+- competitor prices don't signal market conditions.
+
+</NoteBox>
+
+<Theorem kind="exercise" n="1.2" name="Fundamental problem" id="ex-1-2">
+
+Explain why collecting more data does not solve the fundamental problem of causal inference. What would we need to observe to compute individual treatment effects?
+
+</Theorem>
+
+<NoteBox title="Solution 1.2">
+
+The fundamental problem is that we can never observe $Y_i(1)$ and $Y_i(0)$ for the same unit $i$ simultaneously — this is logically impossible. Collecting more data gives us more weeks with $T_i = 1$ and more weeks with $T_i = 0$, but for any specific week $i$, we still only observe one potential outcome.
+
+To compute $\tau_i = Y_i(1) - Y_i(0)$, we would need to either
+
+1. **Time travel**: observe week $i$ twice with different competitor prices, or
+2. **Parallel universes**: observe both treatments simultaneously in the same week.
+
+Neither is feasible. We can only estimate **average** effects across units.
+
+</NoteBox>
+
+<Theorem kind="exercise" n="1.3" name="Unconfoundedness violation" id="ex-1-3">
+
+Give an example where unconfoundedness is violated in the insurance pricing setting. What variable might be unobserved that affects both competitor pricing and sales?
+
+</Theorem>
+
+<NoteBox title="Solution 1.3">
+
+Suppose competitors have access to a proprietary consumer confidence survey (not publicly available) that predicts insurance demand. They use this to set prices:
+
+- High survey confidence → competitors raise prices (high demand expected).
+- Low survey confidence → competitors lower prices (low demand expected).
+
+This survey also affects our sales:
+
+- High confidence → more consumers buy (including from us).
+- Low confidence → fewer consumers buy.
+
+Now unconfoundedness is violated:
+
+- $T_i$ (competitor pricing) is affected by unobserved confidence.
+- $Y_i(0), Y_i(1)$ (our sales under both treatments) are also affected by unobserved confidence.
+- Conditioning on observed $X_i$ (VIX, sentiment, treasury rates) is insufficient.
+
+Result: $\{Y_i(0), Y_i(1)\} \not\perp\!\!\!\perp T_i \mid X_i$.
+
+</NoteBox>
+
+<Theorem kind="exercise" n="1.4" name="Overlap implications" id="ex-1-4">
+
+Suppose overlap is violated: for $\text{VIX} > 25$, we never observe high competitor prices ($e(x) = 0$ for $\text{VIX} > 25$). Can we still estimate (a) the ATE for the full population? (b) the ATE conditional on $\text{VIX} < 25$?
+
+</Theorem>
+
+<NoteBox title="Solution 1.4">
+
+**(a) No.** The full population ATE is
+
+$$
+\text{ATE} = \E_X[\E[Y(1) \mid X] - \E[Y(0) \mid X]].
+$$
+
+For $\text{VIX} > 25$, we cannot estimate $\E[Y(1) \mid \text{VIX} > 25]$ (no treated units with high VIX). Without this, the full ATE is not identified.
+
+**(b) Yes.** The conditional ATE is
+
+$$
+\text{ATE}_{\text{VIX} < 25} = \E[\tau_i \mid \text{VIX} < 25].
+$$
+
+Within the $\text{VIX} < 25$ subpopulation, overlap holds (both high and low competitor prices observed). We can estimate both $\E[Y(1) \mid X, \text{VIX} < 25]$ and $\E[Y(0) \mid X, \text{VIX} < 25]$.
+
+**Caveat**: this changes the estimand from "ATE for all weeks" to "ATE for low-VIX weeks".
+
+</NoteBox>
+
+### Mathematical problems
+
+<Theorem kind="exercise" n="1.5" name="Variance decomposition" id="ex-1-5">
+
+Prove that $\Var(\tilde{T}_i) \leq \Var(T_i)$ where $\tilde{T}_i = T_i - \E[T_i \mid X_i]$.
+
+</Theorem>
+
+<NoteBox title="Solution 1.5">
+
+Already proven in Theorem 1.3, reproduced here for completeness.
+
+By the law of total variance:
+
+$$
+\Var(T_i) = \E[\Var(T_i \mid X_i)] + \Var(\E[T_i \mid X_i]).
+$$
+
+By construction, $\tilde{T}_i$ and $\E[T_i \mid X_i]$ are uncorrelated:
+
+$$
+\E[\tilde{T}_i \cdot \E[T_i \mid X_i]] = \E[\E[\tilde{T}_i \mid X_i] \cdot \E[T_i \mid X_i]] = 0,
+$$
+
+since $\E[\tilde{T}_i \mid X_i] = 0$ by definition of residuals.
+
+Therefore
+
+$$
+\Var(T_i) = \Var(\E[T_i \mid X_i]) + \Var(\tilde{T}_i),
+$$
+
+so
+
+$$
+\Var(\tilde{T}_i) = \Var(T_i) - \Var(\E[T_i \mid X_i]) \leq \Var(T_i),
+$$
+
+since variances are non-negative. Equality holds iff $\Var(\E[T_i \mid X_i]) = 0$ iff $T_i \perp\!\!\!\perp X_i$.
+
+**Interpretation**: residualization removes the variation in $T$ explained by $X$, leaving only unexplained variation. This unexplained variation is the "identifying variation" for the treatment effect.
+
+</NoteBox>
+
+<Theorem kind="exercise" n="1.6" name="Propensity score bounds" id="ex-1-6">
+
+Show that under unconfoundedness, the ATE can be written as
+
+$$
+\text{ATE} = \E\!\left[\frac{T_i Y_i}{e(X_i)} - \frac{(1 - T_i) Y_i}{1 - e(X_i)}\right],
+$$
+
+where $e(X_i) = \Prob(T_i = 1 \mid X_i)$ is the propensity score.
+
+</Theorem>
+
+<NoteBox title="Solution 1.6">
+
+Start with the identification formula from Theorem 1.1:
+
+$$
+\E[Y_i(1)] = \E_X[\E[Y_i \mid T_i = 1, X_i]].
+$$
+
+By the law of iterated expectations,
+
+$$
+\E[Y_i(1)] = \E\!\left[\E\!\left[\frac{T_i Y_i}{e(X_i)} \,\bigg|\, X_i\right]\right].
+$$
+
+The inner expectation is
+
+$$
+\E\!\left[\frac{T_i Y_i}{e(X_i)} \,\bigg|\, X_i\right] = \frac{\E[T_i Y_i \mid X_i]}{e(X_i)} = \frac{e(X_i) \E[Y_i \mid T_i = 1, X_i]}{e(X_i)} = \E[Y_i \mid T_i = 1, X_i].
+$$
+
+Therefore
+
+$$
+\E[Y_i(1)] = \E\!\left[\frac{T_i Y_i}{e(X_i)}\right].
+$$
+
+Similarly
+
+$$
+\E[Y_i(0)] = \E\!\left[\frac{(1 - T_i) Y_i}{1 - e(X_i)}\right].
+$$
+
+Taking the difference yields the Inverse Propensity Weighting (IPW) estimator.
+
+</NoteBox>
+
+### Computational problems
+
+<Theorem kind="exercise" n="1.7" name="Nonlinear FWL failure" id="ex-1-7">
+
+Modify the FWL Python code to use nonlinear confounding:
+
+```python
+# Generate data with nonlinearity
+X = np.random.randn(n, 2)
+T = X[:, 0]**2 + X[:, 1] + np.random.randn(n)  # Quadratic in X1
+Y = 2 * T + X[:, 0]**2 + X[:, 1]**3 + np.random.randn(n)  # True effect = 2
+```
+
+Does linear FWL recover the true effect $\beta_1 = 2$? If not, what estimator would work?
+
+</Theorem>
+
+<NoteBox title="Solution 1.7">
+
+Linear FWL will be biased because
+
+1. regressing $T$ on $X$ (linear) cannot capture $\E[T \mid X] = X_1^2 + X_2$,
+2. regressing $Y$ on $X$ (linear) cannot capture $\E[Y \mid X] = 2\E[T \mid X] + X_1^2 + X_2^3$,
+3. residuals $\tilde{T}, \tilde{Y}$ still contain nonlinear confounding.
+
+**What would work**:
+
+- **Polynomial regression**: include $X_1^2, X_2^3$ in the regression.
+- **Random forest**: use `RandomForestRegressor` to estimate $\E[T \mid X]$ and $\E[Y \mid X]$.
+- **Double ML**: use flexible ML in cross-fitting framework (Chapter 2).
+
+</NoteBox>
+
+<Theorem kind="exercise" n="1.8" name="Effective sample size" id="ex-1-8">
+
+In the propensity score example, we computed effective sample sizes of $213 / 250$ for treated and $214 / 250$ for controls. Explain why weighting reduces effective sample size and when this is problematic.
+
+</Theorem>
+
+<NoteBox title="Solution 1.8">
+
+**Why weighting reduces effective sample size**:
+
+Inverse propensity weights are $w_i = 1 / e(X_i)$ for treated and $w_i = 1 / (1 - e(X_i))$ for controls. When $e(X_i)$ varies across units:
+
+- Units with $e(X_i) \approx 1$: low weights (already likely to be treated).
+- Units with $e(X_i) \approx 0$: high weights (unlikely to be treated but got treated anyway).
+
+High variance in weights → effective sample size $<$ actual sample size.
+
+Formally,
+
+$$
+n_{\text{eff}} = \frac{(\sum w_i)^2}{\sum w_i^2}.
+$$
+
+**When problematic**:
+
+- **Near-violations**: if some $e(X_i) \approx 0.01$, weights can be $100+$, drastically reducing $n_{\text{eff}}$.
+- **Precision loss**: effective $213 / 250$ means we lost 37 units worth of information (15%).
+- **Variance inflation**: standard errors increase by $\sqrt{250 / 213} \approx 1.08$.
+
+**Remedies**:
+
+1. **Trimming**: drop units with $e(X_i) < 0.05$ or $e(X_i) > 0.95$.
+2. **Weight truncation**: cap weights at percentiles (e.g., 99th).
+3. **Doubly robust estimation**: combine weighting with outcome modeling.
+
+</NoteBox>

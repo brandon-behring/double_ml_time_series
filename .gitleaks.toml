@@ -1,0 +1,25 @@
+# gitleaks configuration for double_ml_time_series
+#
+# The default gitleaks ruleset flags BibTeX citation keys
+# (e.g. "chernozhukov2018double", "frisch1933partial") inside
+# <Cite key="..." /> MDX components and at `@article{key,` in
+# bibliography.bib as generic-api-key matches due to their entropy.
+# These are not secrets — they are standard author-year citation
+# keys. Allowlist by path.
+#
+# Uses the v8.21+ singular [allowlist] form for compatibility with
+# the pre-commit-installed gitleaks. The newer plural [[allowlists]]
+# syntax is not honored by older versions.
+
+title = "double_ml_time_series"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Human-authored chapter MDX and the BibTeX bibliography; not paths that carry real secrets."
+paths = [
+  '''web/src/content/.*\.mdx$''',
+  '''^bibliography\.bib$''',
+  '''^web/.*\.bib$''',
+]
