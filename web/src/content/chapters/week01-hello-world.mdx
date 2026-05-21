@@ -1,0 +1,36 @@
+---
+week: 1
+part: foundations
+title: Hello world
+status: scaffolded
+description: First chapter scaffolded by create-book — demonstrates frontmatter shape, KaTeX, and the academic callout family.
+---
+
+import NoteBox from '@brandon_m_behring/book-scaffold-astro/components/NoteBox.astro';
+import Theorem from '@brandon_m_behring/book-scaffold-astro/components/Theorem.astro';
+import Cite from '@brandon_m_behring/book-scaffold-astro/components/Cite.astro';
+
+# Hello world
+
+<NoteBox title="Welcome">
+  This chapter was scaffolded by `create-book`. Edit it (or rename it) to start authoring.
+</NoteBox>
+
+## A first theorem
+
+<Theorem id="w1:thm:hello" type="theorem">
+  For any greeting $g \in G$, there exists a response $r \in R$ such that $r$ replies to $g$.
+</Theorem>
+
+KaTeX is wired by `defineBookConfig` when `BOOK_PROFILE=academic` (this book's setting in `.env`). Inline math: $f(x) = e^{i\pi x}$. Display math:
+
+$$\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$$
+
+To cite the bibliography (once `bibliography.bib` has entries and `npm run build:bib` has run): <Cite key="example-key2024" />.
+
+## What's next
+
+- Run `npm run dev` to preview live.
+- Add chapters under `src/content/chapters/` — see this file's shape.
+- Edit `bibliography.bib` and rebuild for citations.
+- Tag headings/theorems with `id="…"` and run `npm run build:labels` to enable `<XRef>`.

@@ -1,0 +1,9 @@
+# wrangler.toml — Cloudflare Workers + Static Assets deploy.
+# Run: npx wrangler deploy
+# Set up: https://developers.cloudflare.com/workers/static-assets/
+
+name = "double-ml-time-series"
+compatibility_date = "2026-05-18"
+
+[assets]
+directory = "./dist/"
