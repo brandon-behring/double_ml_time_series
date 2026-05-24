@@ -15,6 +15,33 @@ All filed issues are **RESOLVED**. The consumer is on the published `@brandon_m_
 
 The v4.0.0 release introduced a breaking `preset:` → `styles:[…]` API migration; this consumer migrated in the same change that promoted the dependency from `file:` to npm. See `MIGRATION-v3-to-v4.md` in the scaffold for the 2-line shape.
 
+One new issue is open from the v4.2.0 deploy work; see Open section.
+
+---
+
+## Open
+
+### Issue #69 — academic style: `/chapters/` index links to per-chapter routes the scaffold doesn't ship
+
+**Status:** OPEN. Filed during Phase 1 of the Cloudflare deploy wiring.
+
+**Surfaced during:** First post-migration `npm run build` against `^4.2.0` with `routes: { chapters: true }`. The scaffold-shipped `/chapters/` index rendered cleanly, but every chapter card linked to `/chapters/<slug>/` — a route the scaffold doesn't generate. All links 404.
+
+**Root cause:** The scaffold ships `pages/chapters.astro` (the index, with the v3.7.0 `academicChaptersRenderer` fix from #24) but no `pages/chapters/[...slug].astro`. Compare with the `frontmatter` collection, which ships both halves: `pages/frontmatter/[...slug].astro` exists, providing dynamic per-slug routes for any frontmatter MDX the consumer drops.
+
+**Severity:** `kind:api-friction`. The scaffold's own `CLAUDE.md` "Add a new chapter" section instructs authors to preview at `/chapters/<slug>/` — which only works if the consumer has already added the dynamic route. Every academic consumer hits this and writes the same shim.
+
+**Consumer-side workaround (in place):**
+- `web/src/pages/chapters/[...slug].astro` mirrors the canonical pattern from `post_transformers/guides/web/`: `getCollection('chapters', !draft)`, `<Chapter entry={entry} headings={headings}><Content /></Chapter>` using the scaffold's `Chapter` layout.
+
+**Proposed fixes** (in the issue):
+- (a) Ship `package/pages/chapters/[...slug].astro` in the scaffold, gated on `routes.chapters: true`.
+- (b) Document the consumer responsibility explicitly (CLAUDE.md + a recipe) and have `book-scaffold validate` warn when the shim is missing.
+
+**Links:**
+- Issue: https://github.com/brandon-behring/book-scaffold-astro/issues/69
+- Consumer-side workaround commit (this repo): `deae877` (`feat(web): migrate scaffold to v4.2.0 + add per-chapter route`).
+
 ---
 
 ## Closed
