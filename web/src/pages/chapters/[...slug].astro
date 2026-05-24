@@ -1,0 +1,40 @@
+---
+/**
+ * /chapters/<slug>/ — dynamic per-chapter route.
+ *
+ * Slug = MDX filename in src/content/chapters/ without extension. E.g.
+ * `chapter01-fwl-potential-outcomes.mdx` → `/chapters/chapter01-fwl-potential-outcomes/`.
+ *
+ * Why this lives in the consumer (not the scaffold): the scaffold ships
+ * `pages/chapters.astro` (the /chapters/ index, which renders cards
+ * linking here) plus the `Chapter` layout, but per-chapter routes are
+ * consumer-owned so each book can pick the layout/frontmatter shape.
+ * Pattern mirrored from
+ * `~/Claude/post_transformers/guides/web/src/pages/chapters/[...slug].astro`.
+ *
+ * Draft filter: only non-draft chapters get static routes. Drafts can
+ * still be previewed via `npm run dev` (Astro dev mode resolves all
+ * collection entries).
+ *
+ * TODO: file upstream issue asking the scaffold to either ship a default
+ * `pages/chapters/[...slug].astro` for the academic style or document
+ * this consumer responsibility explicitly in CLAUDE.md.
+ */
+import { getCollection, render } from 'astro:content';
+import Chapter from '@brandon_m_behring/book-scaffold-astro/layouts/Chapter.astro';
+
+export async function getStaticPaths() {
+  const chapters = await getCollection('chapters', (entry) => !entry.data.draft);
+  return chapters.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<Chapter entry={entry} headings={headings}>
+  <Content />
+</Chapter>

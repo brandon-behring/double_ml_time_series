@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "predev": "npm run build:bib && npm run build:labels --if-present",
-    "prebuild": "npm run build:bib && npm run build:labels --if-present && npm run validate --if-present",
+    "prebuild": "npm run build:bib && npm run build:labels --if-present && npm run validate",
     "build:bib": "BOOK_BIB_PATH=../bibliography.bib book-scaffold build-bib",
     "build:labels": "book-scaffold build-labels",
     "build:figures": "book-scaffold build-figures",
@@ -17,7 +17,7 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@brandon_m_behring/book-scaffold-astro": "file:../../book-scaffold-astro/package",
+    "@brandon_m_behring/book-scaffold-astro": "^4.2.0",
     "@astrojs/mdx": "^5.0.3",
     "@astrojs/preact": "^5.1.1",
     "astro": "^6.1.7",
