@@ -1,6 +1,6 @@
 # Upstream issues filed during the double_ml_time_series pilot
 
-Running log of friction surfaced while porting LaTeX chapters to the Astro `book-scaffold-astro` academic profile. Per [the pilot plan](https://github.com/brandon-behring/double_ml_time_series/issues/1) (R2.Q1 + R3.Q2), each entry follows the inline-upstream-PR loop:
+Running log of friction surfaced while porting LaTeX chapters to the Astro `book-scaffold-astro` academic style. Per [the pilot plan](https://github.com/brandon-behring/double_ml_time_series/issues/1) (R2.Q1 + R3.Q2), each entry follows the inline-upstream-PR loop:
 
 1. Stop the port on friction.
 2. File issue at `brandon-behring/book-scaffold-astro` with receipt (LaTeX snippet + scaffold gap + proposed API).
@@ -9,9 +9,21 @@ Running log of friction surfaced while porting LaTeX chapters to the Astro `book
 5. Append entry below with issue link, PR link, version bumped, and the original receipt.
 6. Resume the port; delete any consumer-side workaround the upstream fix superseded.
 
+## Status — 2026-05-22
+
+All filed issues are **RESOLVED**. The consumer is on the published `@brandon_m_behring/book-scaffold-astro@^4.2.0` from npm (no more `file:` dependency).
+
+The v4.0.0 release introduced a breaking `preset:` → `styles:[…]` API migration; this consumer migrated in the same change that promoted the dependency from `file:` to npm. See `MIGRATION-v3-to-v4.md` in the scaffold for the 2-line shape.
+
 ---
 
-## Issue #20 — `book-scaffold validate` ignores `.env BOOK_PROFILE`; defaults to minimal
+## Closed
+
+
+
+### Issue #20 — `book-scaffold validate` ignores `.env BOOK_PROFILE`; defaults to minimal
+
+**Status:** **RESOLVED** in v3.5.2.
 
 **Surfaced during:** Commit 2 (bootstrap + bib smoke test) — running `npm run validate` after `npm install` and `npm run build:bib`.
 
@@ -47,7 +59,9 @@ The remaining error is the scaffolded demo's broken cite, which is expected to b
 
 ---
 
-## Issue #22 — `defineBookConfig` doesn't accept consumer KaTeX macros
+### Issue #22 — `defineBookConfig` doesn't accept consumer KaTeX macros
+
+**Status:** **RESOLVED** in v3.6.0; shipped on npm.
 
 **Surfaced during:** Commit 3, before the first line of Ch1 MDX was written. The scaffold's strict KaTeX mode (`strict: 'error'`) means a build referencing `\Var` or `\Cov` fails — and `ssmMacros` (the only macro set the scaffold ships) is SSM-focused, not causal-inference.
 
@@ -65,8 +79,8 @@ The remaining error is the scaffolded demo's broken cite, which is expected to b
 - Version: 3.5.2 → 3.6.0 (minor — additive API)
 
 **Consumer-side state:**
-- `web/astro.config.mjs` uses the new `katexMacros` option to add `\Var → \mathrm{Var}` and `\Cov → \mathrm{Cov}`.
-- `web/package.json` continues to consume the scaffold via `file:` dep until 3.6.0 publishes.
+- `web/astro.config.mjs` uses the `katexMacros` option to add `\Var → \mathrm{Var}` and `\Cov → \mathrm{Cov}`.
+- `web/package.json` consumes `@brandon_m_behring/book-scaffold-astro@^4.2.0` from npm (was `file:` during PR review).
 
 **Verification (post-fix, consumer-side):**
 ```
@@ -89,7 +103,9 @@ Astro dev server starts cleanly with `katexMacros` wired in.
 
 ---
 
-## Issue #24 — `routes.chapters=true` crashes on academic profile
+### Issue #24 — `routes.chapters=true` crashes on academic profile
+
+**Status:** **RESOLVED** in v3.7.0 via per-profile `chaptersRenderer` dispatch (academic / tools / fallback). Visual-regression baseline `fixture-academic-chapters` (5 chapters across 4 parts, 4 viewports = 16 PNGs) passes at AE=0.
 
 **Surfaced during:** Commit 3, after Chapter 1 MDX was written + Astro build was first attempted. The chapter rendered correctly via the `/print` aggregate page, but enabling `routes: { chapters: true }` to get per-chapter routing crashed the build.
 
@@ -105,14 +121,12 @@ generating static routes
 
 **Links:**
 - Issue: https://github.com/brandon-behring/book-scaffold-astro/issues/24
-- PR: **deferred to Phase 2.** This fix requires either (a) a profile-aware split of `chapters.astro` or (b) a unified schema-introspection-based page — too large for inline implementation in this pilot.
+- Resolved in scaffold v3.7.0 (per-profile `chaptersRenderer`).
 
 **Consumer-side state:**
-- `web/astro.config.mjs` does NOT set `routes: { chapters: true }`. Comment in the config references this issue.
-- Chapter 1 content is reachable via the auto-injected `/print` route (academic profile ships it). For the pilot, that is the chapter access point. Cloudflare deploy will surface `/print` as the canonical Ch1 URL: `https://double-ml-time-series.brandon-m-behring.workers.dev/print/`.
+- `web/astro.config.mjs` now sets `routes: { chapters: true }`. Per-chapter URLs (e.g., `/chapters/01-fwl-potential-outcomes/`) are the canonical access pattern; `/print` remains available as the aggregate route.
+- The earlier workaround that pointed Cloudflare deploys at `/print/` is removed.
 
-**Tests added upstream:** none yet — defer to the PR that implements the fix.
-
-**Acceptance bar (R3.Q1, functional parity) reached anyway:** the chapter renders with all components — 3 definitions, 1 example, 3 theorems, 3 proofs, 2 remarks, 8 exercises, 15 anchor IDs, no KaTeX strict-mode errors. Functional parity per the chapter content is achieved via `/print`.
+**Tests added upstream:** visual-regression `fixture-academic-chapters` (16 baseline PNGs at AE=0).
 
 ---

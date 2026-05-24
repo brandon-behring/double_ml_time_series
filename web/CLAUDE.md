@@ -1,6 +1,6 @@
 # double-ml-time-series-web — AI authoring guide
 
-Web companion to the Double Machine Learning for Time Series manuscript. Built with `@brandon_m_behring/book-scaffold-astro` (academic profile, v3.5.0+).
+Web companion to the Double Machine Learning for Time Series manuscript. Built with `@brandon_m_behring/book-scaffold-astro` (academic style, v4.2.0+ from npm).
 
 **Project context:**
 
