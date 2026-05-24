@@ -1,0 +1,11 @@
+// wrangler.jsonc — Cloudflare Workers + Static Assets deploy.
+// Format mirrors brandon-behring.dev's apex Worker config; person-prefixed
+// name follows the portfolio convention (brandon-behring, brandon-behring-...).
+// Deploy: `npx wrangler deploy` (run from web/).
+// Custom domain dml.brandon-behring.dev is bound in the Cloudflare dashboard
+// after the first deploy lands (Workers → this worker → Settings → Domains).
+{
+  "name": "brandon-behring-double-ml-time-series",
+  "compatibility_date": "2026-05-22",
+  "assets": { "directory": "./dist" }
+}
