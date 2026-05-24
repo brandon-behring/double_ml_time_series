@@ -36,6 +36,10 @@ jobs:
     secrets: inherit
     with:
       working-directory: web
+      # Strict gate — fails the production deploy on a broken cite key,
+      # missing XRef, or duplicate anchor ID. Requires brandon-behring/deploy-workflows#1
+      # to be merged (adds the validate-command input).
+      validate-command: validate
 
   deploy-preview:
     if: github.event_name == 'pull_request'
