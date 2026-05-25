@@ -34,4 +34,4 @@ Production and preview deploys are wired through `.github/workflows/deploy-web.y
 
 Both jobs run `npm run validate` ahead of the build, so a broken `<Cite>` key or duplicate anchor fails CI.
 
-For the one-time Cloudflare dashboard setup (project connect, repo secrets, custom-domain binding), see `~/Claude/brandon-behring.dev/docs/cloudflare-setup.md`. Worker config lives in `wrangler.jsonc`.
+For the one-time Cloudflare dashboard setup (API token, repo secrets, first deploy, custom-domain binding, Pass-2 site URL flip), see [`docs/cloudflare-setup.md`](docs/cloudflare-setup.md) — every step is project-specific (Worker name, URL, smoke-test commands). Worker config lives in `wrangler.jsonc`.
