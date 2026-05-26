@@ -27,6 +27,13 @@ import { defineBookConfig, academicStyle } from '@brandon_m_behring/book-scaffol
 
 export default await defineBookConfig({
   site: 'https://brandon-behring-double-ml-time-series.brandon-m-behring.workers.dev',
+  // v4.5.0: title + description feed the auto-injected `/` landing's H1 + lead.
+  // Voice matches the projects.json summary on brandon-behring.dev so the
+  // landing reads consistently with the portfolio entry. Portfolio backlink
+  // (footer "Part of brandon-behring.dev") is inherited from the scaffold's
+  // BRANDON_PORTFOLIO_DEFAULT — no `portfolio:` override needed here.
+  title: 'Double Machine Learning for Time Series',
+  description: 'Companion code + manuscript-style material for temporal partially-linear DML, cross-fitting, HAC inference, and synthetic examples.',
   styles: [academicStyle],
   output: 'static',
   routes: { chapters: true },
