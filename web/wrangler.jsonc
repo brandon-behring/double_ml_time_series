@@ -5,6 +5,7 @@
 // Custom domain dml.brandon-behring.dev is bound in the Cloudflare dashboard
 // after the first deploy lands (Workers → this worker → Settings → Domains).
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "brandon-behring-double-ml-time-series",
   "compatibility_date": "2026-05-22",
   "assets": { "directory": "./dist" }

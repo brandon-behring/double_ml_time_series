@@ -14,7 +14,9 @@
     "validate": "book-scaffold validate",
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "dev:cf": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@brandon_m_behring/book-scaffold-astro": "^4.2.0",
@@ -25,5 +27,8 @@
     "katex": "^0.16.11",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.93.1"
   }
 }

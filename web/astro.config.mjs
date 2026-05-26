@@ -28,6 +28,7 @@ import { defineBookConfig, academicStyle } from '@brandon_m_behring/book-scaffol
 export default await defineBookConfig({
   site: 'https://brandon-behring-double-ml-time-series.brandon-m-behring.workers.dev',
   styles: [academicStyle],
+  output: 'static',
   routes: { chapters: true },
   katexMacros: {
     // From shared/dml-preamble-tufte.sty:410-411. Used in Chapter 1
