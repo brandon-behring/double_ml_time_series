@@ -12,10 +12,12 @@
  * academicChaptersRenderer that closes upstream issue #24 (visual baseline
  * AE=0); the old workaround of relying on /print is no longer needed.
  *
- * site: Pass 1 of the two-pass staging — points at the new person-prefixed
- * Worker subdomain so the first deploy validates against a URL that exists
- * at push-time. Pass 2 (after the dml.brandon-behring.dev custom domain is
- * bound in the Cloudflare dashboard) flips this to https://dml.brandon-behring.dev.
+ * site: Pass 2 — canonical custom domain. dml.brandon-behring.dev was
+ * bound to the Worker `brandon-behring-double-ml-time-series` in the
+ * Cloudflare dashboard on 2026-05-26; this URL is now what OG metadata,
+ * sitemaps, canonical links, and Pagefind index against. The workers.dev
+ * URL still serves the same content but should be considered the staging
+ * URL, not the public one.
  *
  * katexMacros: causal/DML notation the LaTeX preamble defines via
  * \newcommand. Merges on top of the scaffold's ssmMacros (consumer API
@@ -26,7 +28,7 @@
 import { defineBookConfig, academicStyle } from '@brandon_m_behring/book-scaffold-astro';
 
 export default await defineBookConfig({
-  site: 'https://brandon-behring-double-ml-time-series.brandon-m-behring.workers.dev',
+  site: 'https://dml.brandon-behring.dev',
   // v4.5.0: title + description feed the auto-injected `/` landing's H1 + lead.
   // Voice matches the projects.json summary on brandon-behring.dev so the
   // landing reads consistently with the portfolio entry. Portfolio backlink
