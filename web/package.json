@@ -12,6 +12,7 @@
     "build:figures": "book-scaffold build-figures",
     "build:notebooks": "book-scaffold render-notebooks",
     "validate": "book-scaffold validate",
+    "ci:validate": "BOOK_PROFILE=academic npm run build:bib && BOOK_PROFILE=academic npm run build:labels --if-present && BOOK_PROFILE=academic npm run validate",
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",

@@ -39,7 +39,16 @@ jobs:
       # Strict gate — fails the production deploy on a broken cite key,
       # missing XRef, or duplicate anchor ID. Requires brandon-behring/deploy-workflows#1
       # to be merged (adds the validate-command input).
-      validate-command: validate
+      #
+      # ci:validate (not bare `validate`) wraps validate with `npm run
+      # build:bib && npm run build:labels --if-present` so the gitignored
+      # src/data/references.json + labels.json artifacts are regenerated
+      # before book-scaffold validate runs. Without this prefix, validate
+      # was silently no-op'ing in CI because web/.env was untracked →
+      # BOOK_PROFILE unset → minimal profile → no bibkey enforcement.
+      # Discovered during ssm-foundations Phase 1c (2026-05-26); see
+      # ~/Claude/ssm-foundations/audits/2026-05-26_first-deploy.md.
+      validate-command: ci:validate
 
   deploy-preview:
     if: github.event_name == 'pull_request'
