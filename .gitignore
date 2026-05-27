@@ -92,6 +92,14 @@ logs/
 *.key
 credentials.json
 
+# v4.6 prevalidate migration (2026-05-27): explicit exception for web/.env,
+# which carries BOOK_PROFILE=academic only (non-sensitive — same convention as
+# ssm-foundations which tracks its .env). Required for CI to pick up the
+# profile without per-script BOOK_PROFILE prefixes after migrating from
+# ci:validate to the npm prevalidate lifecycle hook. See book-scaffold-astro
+# recipe 19 + ~/.claude/projects/.../memory/dogfood-loop.md.
+!web/.env
+
 # Large files
 *.db
 *.sqlite

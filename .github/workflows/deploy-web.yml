@@ -42,13 +42,13 @@ jobs:
     secrets: inherit
     with:
       working-directory: web
-      # ci:validate (not bare `validate`) wraps validate with `npm run
-      # build:bib && npm run build:labels --if-present` so the gitignored
-      # src/data/references.json + labels.json artifacts are regenerated
-      # before book-scaffold validate runs. Without this prefix, validate
-      # silently no-ops in CI because web/.env is untracked →
-      # BOOK_PROFILE unset → minimal profile → no bibkey enforcement.
-      # Discovered during ssm-foundations Phase 1c (2026-05-26); see
-      # ~/Claude/ssm-foundations/audits/2026-05-26_first-deploy.md.
-      validate-command: ci:validate
+      # v4.6.0 migration (2026-05-27): reverted ci:validate → validate.
+      # The book-scaffold-astro v4.6 release introduces the prevalidate
+      # npm-lifecycle hook convention (see recipes/19-prevalidate-hook.md):
+      # `npm run validate` now auto-runs the `prevalidate` hook first,
+      # which regenerates references.json + labels.json. Combined with
+      # tracking web/.env (BOOK_PROFILE=academic, non-sensitive) via the
+      # `!web/.env` gitignore exception, validate picks up the academic
+      # profile correctly in CI without explicit env prefixes.
+      validate-command: validate
       enable-pr-previews: true
