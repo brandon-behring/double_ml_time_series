@@ -1,13 +1,20 @@
 name: Deploy web
 
-# Deploys the Astro consumer at web/ to Cloudflare Workers + Static Assets.
-# - push to main → production deploy via the reusable workflow at
-#   brandon-behring/deploy-workflows (depends on the upstream working-directory
-#   input PR landing; see web/UPSTREAM_ISSUES.md).
-# - pull_request → inline preview deploy via `wrangler versions upload`;
-#   posts the preview URL as a PR comment.
-# Both paths run `npm run validate` ahead of `npm run build` (strict — broken
-# cite key or duplicate anchor ID fails the workflow).
+# Deploys the Astro consumer at web/ to Cloudflare Workers + Static Assets
+# via the reusable workflow at brandon-behring/deploy-workflows@v2.
+#
+# - push to main → production deploy (deploy-production job inside the
+#   reusable workflow runs `wrangler deploy`).
+# - pull_request → preview deploy via `wrangler versions upload` + PR
+#   comment with the preview URL (deploy-preview job inside the reusable
+#   workflow runs only when enable-pr-previews: true).
+#
+# Both paths run `npm run ci:validate` ahead of `npm run build` (strict —
+# broken cite key, missing XRef, or duplicate anchor ID fails the
+# workflow). v2 adoption deleted the inline preview block; previews now
+# use the same validate-command as production, closing the latent
+# bare-validate gap on the preview path that was flagged in the Phase 1d
+# memory.
 
 on:
   push:
@@ -27,74 +34,21 @@ permissions:
   contents: read
   deployments: write
   actions: read
-  pull-requests: write
+  pull-requests: write   # required for enable-pr-previews (PR comment posting)
 
 jobs:
-  deploy-production:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    uses: brandon-behring/deploy-workflows/.github/workflows/deploy-astro-worker.yml@v1
+  deploy:
+    uses: brandon-behring/deploy-workflows/.github/workflows/deploy-astro-worker.yml@v2
     secrets: inherit
     with:
       working-directory: web
-      # Strict gate — fails the production deploy on a broken cite key,
-      # missing XRef, or duplicate anchor ID. Requires brandon-behring/deploy-workflows#1
-      # to be merged (adds the validate-command input).
-      #
       # ci:validate (not bare `validate`) wraps validate with `npm run
       # build:bib && npm run build:labels --if-present` so the gitignored
       # src/data/references.json + labels.json artifacts are regenerated
       # before book-scaffold validate runs. Without this prefix, validate
-      # was silently no-op'ing in CI because web/.env was untracked →
+      # silently no-ops in CI because web/.env is untracked →
       # BOOK_PROFILE unset → minimal profile → no bibkey enforcement.
       # Discovered during ssm-foundations Phase 1c (2026-05-26); see
       # ~/Claude/ssm-foundations/audits/2026-05-26_first-deploy.md.
       validate-command: ci:validate
-
-  deploy-preview:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Validate (academic schema + bibliography + anchors)
-        run: npm run validate
-
-      - name: Build
-        run: npm run build
-
-      - name: Upload preview version
-        id: deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: web
-          command: versions upload
-
-      - name: Comment preview URL on PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const url = '${{ steps.deploy.outputs.deployment-url }}';
-            if (!url) {
-              core.setFailed('wrangler-action did not return a deployment-url');
-              return;
-            }
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `Preview deploy: ${url}`,
-            });
+      enable-pr-previews: true
