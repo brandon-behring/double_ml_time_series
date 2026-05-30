@@ -884,7 +884,7 @@
 
         <span class="c1"># Filter to date range</span>
         <span class="k">if</span> <span class="n">start_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">end_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">start_date</span><span class="p">:</span><span class="n">end_date</span><span class="p">]</span>  <span class="c1"># type: ignore[misc]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">start_date</span><span class="p">:</span><span class="n">end_date</span><span class="p">]</span>
 
         <span class="c1"># Fill missing values</span>
         <span class="k">if</span> <span class="n">fill_method</span> <span class="o">==</span> <span class="s2">&quot;ffill&quot;</span><span class="p">:</span>
