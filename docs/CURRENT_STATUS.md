@@ -42,8 +42,10 @@ deployed to Cloudflare Workers at `dml.brandon-behring.dev` (PR previews enabled
 - **Port coverage: 1 of 10 chapters.** Only Chapter 1 (Potential Outcomes + FWL) is
   ported. A 2026-05-30 parity check confirmed the web Ch1 is structurally faithful to
   `chapters/chapter_01.tex` (1:1 section coverage) — no drift yet.
-- **Drift baseline (W3):** the Ch1 MDX provenance records `source_sha256` of
-  `chapters/chapter_01.tex`; an *enforcing* drift hook is still a roadmap item.
+- **Drift guard (W3) — enforced:** each ported chapter's MDX records `source_file` +
+  `source_sha256` of its LaTeX source; `scripts/check_tex_mdx_drift.py` recomputes and
+  fails on mismatch, wired into pre-commit and the `tests.yml` CI lint job. Re-stamp
+  after an intentional re-port with `--update`.
 - **Known web risk (W4):** open upstream `book-scaffold-astro#69` keeps the
   `web/src/pages/chapters/[...slug].astro` route shim load-bearing. See `web/UPSTREAM_ISSUES.md`.
 
@@ -63,6 +65,8 @@ Every gate below was re-run in this pass (Python via repo venv, 3.13.5):
 - Book: forced clean rebuild → **205 pages, 0 fatal errors**, 257 overfull /
   12 underfull boxes (LuaTeX 1.22.0). Boxes are non-blocking report items.
 - Web: `npm run validate` ✓ 0 errors (academic profile); `npm run build` ✓.
+- Drift guard: `scripts/check_tex_mdx_drift.py` ✓ exit 0 (Ch1 MDX `source_sha256`
+  matches `chapters/chapter_01.tex`); 7 tier1 tests; enforced in pre-commit + CI.
 
 CI gates the full stack: `tests.yml` (black + mypy + collect + tier1 + tier1/2 +
 an examples job), `book.yml` (LuaLaTeX+biber), `docs.yml` (Sphinx `-W` + Pages),
@@ -86,8 +90,9 @@ in-suite contract tests.
 ### Track 2 — Web pilot
 
 - Port chapters 2–10 from LaTeX to MDX (currently 1/10).
-- Add an *enforcing* LaTeX↔MDX drift guard (W3) — a pre-commit/CI check that fails when
-  a `chapters/*.tex` changes without its MDX `source_sha256` (baseline hash now recorded).
+- ~~Add an *enforcing* LaTeX↔MDX drift guard (W3).~~ **Done 2026-05-30** —
+  `scripts/check_tex_mdx_drift.py` fails when a `chapters/*.tex` changes without its MDX
+  `source_sha256` being re-stamped (`--update`); enforced in pre-commit + the CI lint job.
 - Resolve or keep the `#69` route shim per upstream; keep the scaffold current.
 
 ### Track 3 — Deferred methodology (post-gates)

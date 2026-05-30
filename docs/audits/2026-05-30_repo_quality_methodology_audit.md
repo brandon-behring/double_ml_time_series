@@ -46,11 +46,23 @@ state, each closure verified live and shipped in one commit. After this pass the
 | F15 | PARTIAL | **CLOSED** | Coverage gate raised `30 → 70` (`pyproject.toml` + `--cov-fail-under` in `tests.yml`/`nightly.yml`); measured tier1+2 coverage = **74.89%**, so the gate is protective with margin. Snippet half was already covered by `test/docs/test_public_snippets.py`. |
 | F5 | CLOSED-in-code | **CLOSED + tested** | Added `tier1` test `test_temporal_cross_fit_trains_only_on_past` (`test/dml/test_temporal_plr_dml.py`) asserting `max(train) < min(test)` per fold, complementing the pre-existing `test_temporal_cross_fit_does_not_backfill_early_rows`. Suite 621 → 622. |
 | R1 | Info (local drift) | **CLOSED** | Modernized-forward + pinned: `mypy==2.1.0` + `python_version="3.13"` (`pyproject.toml`); pre-commit `mirrors-mypy` `v1.7.0 → v2.1.0`; CI Python `3.11 → 3.13` (`tests`/`docs`/`nightly`); removed the now-unused `# type: ignore[misc]` on `fred_loader.py:555`. `mypy src/` and `pre-commit run mypy` both green on 2.1.0. |
-| W3 | Medium (latent) | **CLOSED (baseline)** | Recorded `source_file` + `source_sha256` of `chapters/chapter_01.tex` in the Ch1 MDX provenance (web `validate` accepts it). An *enforcing* drift hook remains a roadmap item. |
+| W3 | Medium (latent) | **CLOSED (enforced)** | Recorded `source_file` + `source_sha256` of `chapters/chapter_01.tex` in the Ch1 MDX frontmatter (top level; web `validate` + `build` both green); a same-day follow-up added the *enforcing* guard `scripts/check_tex_mdx_drift.py` (pre-commit + `tests.yml` CI) that recomputes each ported chapter's hash and fails on mismatch. See the enforcement note below. |
 | F10 | High | **ACCEPTED** | `src/production/dml_pipeline.py:1-13` labels it non-deployment pedagogical code; correct for a book companion. |
 | W4 | Medium | **ACCEPTED** | Upstream `book-scaffold-astro#69`; working consumer shim; tracked in `web/UPSTREAM_ISSUES.md`. |
 | W5 | Low | **ACCEPTED** | CI is comprehensive (incl. an `examples` job); snippet contract tests suffice. A doctest job stays optional. |
 | W2 / Track 3 | Status/—| **DEFERRED** | Port chapters 2–10; true dynamic g-estimation; namespace migration; blocking diagnostic gates — roadmap in `docs/CURRENT_STATUS.md`. |
+
+**W3 enforcement follow-up (2026-05-30).** The baseline became *enforcing*: a stateless,
+stdlib-only `scripts/check_tex_mdx_drift.py` scans each ported MDX's top-level
+`source_file`/`source_sha256` frontmatter keys, recomputes `sha256(.tex)`, and fails on
+mismatch (with `--update` to re-stamp after an intentional re-port). Unported chapters
+(no MDX) are skipped; half-declared provenance is a hard error. (The two keys live at
+the **top level**, not under the scaffold's `.strict()` `provenance:` block, which
+rejected them at `astro build` — a pre-existing `npm run build` break this pass also
+found and fixed; logged upstream in `web/UPSTREAM_ISSUES.md`.) Wired into the
+pre-commit hooks and the `tests.yml` CI lint job; covered by 7 `tier1` tests in
+`test/docs/test_tex_mdx_drift.py`. Verified live: clean `exit 0` today, and a simulated
+`chapter_01.tex` edit makes the hook fail closed (then `git checkout` restores green).
 
 ## Live Verification Summary
 
@@ -121,7 +133,7 @@ in GitHub issue #1).
 |---|---|---|---|
 | W1 | Blocker (source-of-truth) | `docs/CURRENT_STATUS.md` and root `CLAUDE.md` never mentioned `web/`, the most active workstream. | **Fixed this pass** — `CURRENT_STATUS.md` gains a Web companion section; `CLAUDE.md` gains a `web/` pointer. |
 | W2 | Status | Chapter port coverage is **1 of 10**: only `web/src/content/chapters/chapter01-fwl-potential-outcomes.mdx` exists; LaTeX has `chapters/chapter_01..10.tex`. | Expected — pilot. Tracked in roadmap track 2. |
-| W3 | Medium (latent process) | LaTeX and MDX chapter bodies are independent hand-maintained copies. Only `bibliography.bib` is single-source (`BOOK_BIB_PATH=../bibliography.bib`). | **CLOSED (baseline)** — Ch1 parity verified (below); `source_file` + `source_sha256` of `chapters/chapter_01.tex` now recorded in the MDX provenance (web `validate` accepts it). An *enforcing* drift hook is deferred to roadmap. |
+| W3 | Medium (latent process) | LaTeX and MDX chapter bodies are independent hand-maintained copies. Only `bibliography.bib` is single-source (`BOOK_BIB_PATH=../bibliography.bib`). | **CLOSED (enforced)** — Ch1 parity verified (below); `source_file` + `source_sha256` of `chapters/chapter_01.tex` recorded in the MDX frontmatter (top level; web `validate` + `build` green). The *enforcing* guard `scripts/check_tex_mdx_drift.py` (pre-commit + CI) now fails on hash mismatch — see the Reconciliation enforcement note. |
 | W4 | Medium | Open upstream `book-scaffold-astro#69`: the academic `/chapters/` index links to per-chapter routes the scaffold does not ship, so the consumer-side shim `web/src/pages/chapters/[...slug].astro` is load-bearing. | Logged in `web/UPSTREAM_ISSUES.md`; keep shim until upstream ships the route. |
 | W5 | Low | Prior audit implied weak CI; in reality CI is comprehensive (table above). Residual: no dedicated doctest job for README/Sphinx fenced snippets beyond the in-suite contract tests; `web/` has only `validate` (no component tests). | Minor; optional roadmap hardening. |
 
@@ -140,7 +152,8 @@ Structural diff of `chapters/chapter_01.tex` (1605 lines) vs
   generic `<Theorem>` callouts; LaTeX uses 3 `theorem` + 3 `definition` + 1
   `example`. The line-count gap reflects LaTeX preamble/labels and exercise verbosity.
 - **Verdict: the ported web Ch1 is faithful — no drift.** The `chapter_01.tex` sha256
-  is now recorded in the Ch1 provenance as a drift baseline (W3 reconciliation).
+  is recorded in the Ch1 provenance and enforced by `scripts/check_tex_mdx_drift.py`
+  (W3 reconciliation + enforcement).
 
 ## Source-Of-Truth Map (updated)
 
@@ -161,6 +174,6 @@ Structural diff of `chapters/chapter_01.tex` (1605 lines) vs
 Keep going as-is. The methodology contract is honest, the gates are green and
 CI-enforced, and the web-companion source-of-truth gap is closed. After the 2026-05-30
 reconciliation there are **no open or partial findings**: F14, F15, F5, R1, and W3 are
-CLOSED; F10/W4/W5 ACCEPTED. Remaining work is the web-port pilot (chapters 2–10, an
-enforcing drift guard) and the deferred methodology track — the consolidated roadmap
-lives in `docs/CURRENT_STATUS.md`.
+CLOSED (W3 now *enforced* by `scripts/check_tex_mdx_drift.py`); F10/W4/W5 ACCEPTED.
+Remaining work is the web-port pilot (chapters 2–10) and the deferred methodology track —
+the consolidated roadmap lives in `docs/CURRENT_STATUS.md`.

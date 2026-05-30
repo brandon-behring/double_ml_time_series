@@ -4,14 +4,18 @@ part: foundations
 title: "Potential Outcomes and the Frisch-Waugh-Lovell Theorem"
 status: implemented
 description: "Causal estimands, the fundamental problem of causal inference, identification under unconfoundedness + overlap, and the Frisch-Waugh-Lovell theorem as the bridge to Double Machine Learning."
+# LaTeX->MDX drift provenance (W3). These two keys live at the top level, not under
+# `provenance:`, because the scaffold's provenance schema is `.strict()` and rejects
+# unknown keys at `astro build`; Astro strips these top-level extras instead. They are
+# enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
+source_file: chapters/chapter_01.tex
+source_sha256: a5c0bf8b85fcbda22c5773cbe980623f36b07e46857a0ba39a917438cdcf9f2e
 # v4.8.0 provenance — references only files that exist in this repo. DML's audit
 # substrate is a single repo-quality + methodology pass; no DECISIONS.md / sessions
 # / research-kb here, so citation_backstop / prompts_archive / decisions_log are omitted.
 provenance:
   ai_tools:
     - Claude Code
-  source_file: chapters/chapter_01.tex
-  source_sha256: a5c0bf8b85fcbda22c5773cbe980623f36b07e46857a0ba39a917438cdcf9f2e
   audit_history:
     - { date: 2026-05-02, type: repo-quality-methodology, file: docs/audits/2026-05-02_repo_quality_methodology_audit.md }
     - { date: 2026-05-30, type: audit-reconciliation, file: docs/audits/2026-05-30_repo_quality_methodology_audit.md }

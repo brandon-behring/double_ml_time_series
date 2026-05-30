@@ -44,6 +44,48 @@ One new issue is open from the v4.2.0 deploy work; see Open section.
 
 ---
 
+### Provenance schema: `.strict()` rejects `source_file` / `source_sha256` drift keys
+
+**Status:** OPEN — to file. Consumer-side resolution already in place; non-blocking.
+
+**Surfaced during:** W3 drift-guard work (2026-05-30). The LaTeX↔MDX drift guard
+(`scripts/check_tex_mdx_drift.py`) records, per ported chapter, the canonical `.tex`
+path and its `sha256`. The Ch1 reconciliation first placed `source_file` +
+`source_sha256` under the frontmatter `provenance:` block. `npm run validate` accepted
+it, but `npm run build` (Astro content-sync Zod parse) failed:
+
+```
+[InvalidContentEntryDataError] provenance: Unrecognized keys: "source_file", "source_sha256"
+```
+
+**Root cause:** `provenanceObject` is declared `.strict()` (`package/src/schemas.ts`), so
+any key outside `{ai_tools, prompts_archive, decisions_log, audit_history,
+citation_backstop}` hard-fails the build. The outer `academicChapterSchema` is *not*
+strict (it strips unknown top-level keys), so the friction is specific to the nested
+`provenance` block. Net effect: there is no schema-blessed place to record a
+source-of-truth hash for LaTeX→MDX drift tracking.
+
+**Severity:** `kind:api-friction`. Recording which canonical file an MDX was ported
+from, at what hash, is exactly the "process-as-artifact" the v4.8.0 provenance feature
+is for — yet the strict schema has no field for it.
+
+**Consumer-side resolution (in place):** moved `source_file` + `source_sha256` to the
+**top level** of the Ch1 frontmatter (Astro strips unknown top-level keys; `build`
+passes). The drift guard reads them by frontmatter regex, so nesting is irrelevant to
+enforcement. An inline comment in the MDX documents why; future ported chapters follow
+the same top-level placement.
+
+**Proposed upstream fix:** add an optional `source` object to `provenanceObject`
+(e.g. `source: { file: string, sha256: string }`), or relax provenance to passthrough,
+so consumers can record port provenance in the semantically correct block — and have
+`Provenance.astro` render a small "ported from `<file>` @ `<sha8>`" line.
+
+**Links:**
+- Issue: _to file_ at `brandon-behring/book-scaffold-astro` (`consumer:double-ml-time-series` + `kind:api-friction`).
+- Consumer resolution commit (this repo): _pending_ — W3 drift-guard pass.
+
+---
+
 ## Closed
 
 

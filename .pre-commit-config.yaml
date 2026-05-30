@@ -47,6 +47,16 @@ repos:
         pass_filenames: false
         files: ^templates/.*\.py$
 
+      # Enforce LaTeX <-> MDX provenance: a chapters/*.tex change must be
+      # accompanied by a re-stamped source_sha256 in its ported MDX (W3).
+      - id: tex-mdx-drift-guard
+        name: LaTeX <-> MDX drift guard
+        entry: venv/bin/python scripts/check_tex_mdx_drift.py
+        language: system
+        pass_filenames: false
+        files: ^(chapters/chapter_\d+\.tex|web/src/content/chapters/.*\.mdx)$
+        stages: [pre-commit]
+
       # Large commit warning
       - id: large-commit-warning
         name: Large commit plan document check

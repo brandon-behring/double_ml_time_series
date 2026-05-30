@@ -32,6 +32,9 @@ jobs:
       - name: Collect tests
         run: python -m pytest --collect-only -q
 
+      - name: Check LaTeX-MDX provenance drift
+        run: python scripts/check_tex_mdx_drift.py
+
   tier1:
     runs-on: ubuntu-latest
     timeout-minutes: 5
