@@ -83,7 +83,14 @@ _minted-*/
 
 # Test results and logs
 test_results*.txt
-results/
+# Frozen audit/validation evidence (2025-11 runs) is intentionally tracked as
+# audit artifacts, referenced by docs/archive/* and the audit trail. New ad-hoc
+# dumps under results/ stay ignored; the four evidence subdirs below are kept.
+results/*
+!results/impact_analysis/
+!results/lasso_diagnostic/
+!results/method_comparison/
+!results/simulations/
 logs/
 
 # Sensitive

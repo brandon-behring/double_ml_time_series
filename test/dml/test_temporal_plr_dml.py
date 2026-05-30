@@ -203,6 +203,40 @@ class TestHelperFunctions:
         assert np.isfinite(Y_hat[first_predicted:]).all()
         assert np.isfinite(T_hat[first_predicted:]).all()
 
+    @pytest.mark.tier1
+    def test_temporal_cross_fit_trains_only_on_past(self):
+        """No fold trains on future rows: max(train) < min(test) per split.
+
+        Regression guard for audit finding F5 (temporal leakage). Complements
+        test_temporal_cross_fit_does_not_backfill_early_rows: that test checks the
+        *output* (early rows stay NaN); this checks the *input* — every cross-fitted
+        prediction came from a model trained only on strictly-earlier indices.
+        """
+        n = 120
+        X = np.random.RandomState(0).randn(n, 2)
+        Y = np.random.RandomState(1).randn(n)
+        T = np.random.RandomState(2).randn(n)
+        cv = TimeSeriesCrossValidator(n_splits=5, gap=2)
+
+        predicted_by_fold = np.full(n, -1, dtype=int)
+        for fold, (train_idx, test_idx) in enumerate(cv.split(X, Y)):
+            assert (
+                train_idx.max() < test_idx.min()
+            ), f"Fold {fold}: train max {train_idx.max()} >= test min {test_idx.min()}"
+            predicted_by_fold[test_idx] = fold
+
+        Y_hat, T_hat = _cross_fit_nuisance_time_series(
+            X=X,
+            Y=Y,
+            T=T,
+            cv=cv,
+            outcome_model=DummyRegressor(strategy="mean"),
+            treatment_model=DummyRegressor(strategy="mean"),
+        )
+        finite = np.isfinite(Y_hat)
+        assert (predicted_by_fold[finite] >= 0).all()
+        assert np.isfinite(T_hat[finite]).all()
+
 
 # ============================================================================
 # TemporalPLRDMLResult Tests

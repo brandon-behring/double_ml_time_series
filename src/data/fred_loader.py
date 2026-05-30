@@ -552,7 +552,7 @@ class FREDLoader:
 
         # Filter to date range
         if start_date is not None or end_date is not None:
-            df = df.loc[start_date:end_date]  # type: ignore[misc]
+            df = df.loc[start_date:end_date]
 
         # Fill missing values
         if fill_method == "ffill":

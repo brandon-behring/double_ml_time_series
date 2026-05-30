@@ -42,21 +42,22 @@ deployed to Cloudflare Workers at `dml.brandon-behring.dev` (PR previews enabled
 - **Port coverage: 1 of 10 chapters.** Only Chapter 1 (Potential Outcomes + FWL) is
   ported. A 2026-05-30 parity check confirmed the web Ch1 is structurally faithful to
   `chapters/chapter_01.tex` (1:1 section coverage) — no drift yet.
-- **Known web risks:** chapter content has no automated LaTeX↔MDX drift guard (W3);
-  open upstream `book-scaffold-astro#69` keeps the `web/src/pages/chapters/[...slug].astro`
-  route shim load-bearing (W4). See `web/UPSTREAM_ISSUES.md`.
+- **Drift baseline (W3):** the Ch1 MDX provenance records `source_sha256` of
+  `chapters/chapter_01.tex`; an *enforcing* drift hook is still a roadmap item.
+- **Known web risk (W4):** open upstream `book-scaffold-astro#69` keeps the
+  `web/src/pages/chapters/[...slug].astro` route shim load-bearing. See `web/UPSTREAM_ISSUES.md`.
 
 ## Verified Baseline (live, 2026-05-30)
 
 Every gate below was re-run in this pass (Python via repo venv, 3.13.5):
 
-- Test collection: **802 collected**.
-- Tier 1: **320 passed**, 482 deselected.
-- Tier 1 + Tier 2: **621 passed**, 181 deselected, 23 warnings.
+- Test collection: **803 collected** (+1 leakage regression test, F5).
+- Tier 1: **321 passed**, 482 deselected.
+- Tier 1 + Tier 2: **622 passed**, 181 deselected, 23 warnings.
 - Black: pass, 82 files unchanged.
-- Mypy: **pass** under the pinned toolchain (pre-commit `mirrors-mypy` v1.7.0 + CI
-  `.[dev]`). A locally-drifted mypy 2.1.0 flags the `fred_loader.py:555` `type: ignore`
-  as unused — finding R1, **local venv drift, not a repo defect; no code change**.
+- Mypy: **pass** — `Success: no issues found in 37 source files`. After the R1
+  reconciliation, local venv, pre-commit hook, and CI all run mypy 2.1.0 on Python 3.13.
+- Coverage: tier1+2 = **74.89%**; gate raised to `fail_under = 70` (F15).
 - Examples: all 5 `examples/*.py` execute.
 - Sphinx: `-W --keep-going` build succeeded (Sphinx 9.1.0).
 - Book: forced clean rebuild → **205 pages, 0 fatal errors**, 257 overfull /
@@ -74,20 +75,19 @@ recorded in the superseded audit; the numbers above are the current live values.
 
 Three tracks. Track 3 stays deferred until tracks 1–2 are comfortable.
 
-### Track 1 — Truth & gates tail (small, finite)
+### Track 1 — Truth & gates tail — RECONCILED 2026-05-30
 
-- **F14:** decide freeze-vs-untrack for the 11 tracked `results/*` artifacts
-  (`git ls-files results/` = 11); `main.bbl` is already untracked.
-- **F5 residual:** add an explicit leakage regression test asserting no temporal
-  prediction is trained on future indices (the fix is in code; the test is missing).
-- **F15:** decide whether to raise coverage above `fail_under = 30`; optionally add
-  a doctest gate for README/Sphinx fenced snippets beyond the in-suite contract tests.
+Closed in the 2026-05-30 reconciliation (see the audit's Reconciliation section):
+F14 (`results/` frozen in `.gitignore`), F5 (leakage regression test added), F15
+(coverage gate `30 → 70`), R1 (toolchain pinned to mypy 2.1.0 / Python 3.13).
+Remaining optional: a doctest gate for README/Sphinx fenced snippets beyond the
+in-suite contract tests.
 
 ### Track 2 — Web pilot
 
 - Port chapters 2–10 from LaTeX to MDX (currently 1/10).
-- Add a LaTeX↔MDX drift guard (W3) — e.g. a source-hash in provenance frontmatter or
-  a CI warning when a `chapters/*.tex` changes without its MDX.
+- Add an *enforcing* LaTeX↔MDX drift guard (W3) — a pre-commit/CI check that fails when
+  a `chapters/*.tex` changes without its MDX `source_sha256` (baseline hash now recorded).
 - Resolve or keep the `#69` route shim per upstream; keep the scaffold current.
 
 ### Track 3 — Deferred methodology (post-gates)
