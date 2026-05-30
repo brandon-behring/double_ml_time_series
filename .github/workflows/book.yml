@@ -6,15 +6,20 @@ on:
     paths:
       - 'main.tex'
       - 'chapters/**'
+      - 'shared/**'
       - 'Makefile'
       - 'pyproject.toml'
+      - '.github/workflows/book.yml'
   pull_request:
     branches: [main]
     paths:
       - 'main.tex'
       - 'chapters/**'
+      - 'shared/**'
       - 'Makefile'
       - 'pyproject.toml'
+      - '.github/workflows/book.yml'
+  workflow_dispatch:
 
 jobs:
   book:
@@ -31,6 +36,7 @@ jobs:
             biber \
             python3-pygments \
             texlive-bibtex-extra \
+            texlive-fonts-extra \
             texlive-fonts-recommended \
             texlive-latex-extra \
             texlive-luatex \
