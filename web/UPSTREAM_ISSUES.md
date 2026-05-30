@@ -81,8 +81,8 @@ so consumers can record port provenance in the semantically correct block — an
 `Provenance.astro` render a small "ported from `<file>` @ `<sha8>`" line.
 
 **Links:**
-- Issue: _to file_ at `brandon-behring/book-scaffold-astro` (`consumer:double-ml-time-series` + `kind:api-friction`).
-- Consumer resolution commit (this repo): _pending_ — W3 drift-guard pass.
+- Issue: _to file (deferred — not filed this session)_ at `brandon-behring/book-scaffold-astro` (`consumer:double-ml-time-series` + `kind:api-friction`).
+- Consumer resolution commit (this repo): `4a989e0` (W3 drift-guard pass) — moved `source_file`/`source_sha256` to top-level frontmatter so `astro build` (strict provenance) accepts them.
 
 ---
 
