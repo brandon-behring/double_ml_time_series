@@ -1,5 +1,12 @@
 # Repo Quality And Methodology Audit
 
+> **SUPERSEDED (2026-05-30)** by
+> [`2026-05-30_repo_quality_methodology_audit.md`](2026-05-30_repo_quality_methodology_audit.md).
+> Kept in place as historical evidence — its path is referenced by web Chapter 1
+> provenance, so it is intentionally not moved. Of the 16 findings below, 13 are now
+> CLOSED, F10 is accepted within scope, and F14 / F15-coverage remain open. See the
+> 2026-05-30 audit for current, live-verified status.
+
 Date: 2026-05-02
 
 Repo: `double_ml_time_series`

@@ -12,6 +12,10 @@ Use [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md) as the only current status 
 Older reports and roadmaps live under
 [docs/archive/superseded_2026-05-02](docs/archive/superseded_2026-05-02/ARCHIVE_INDEX.md).
 
+A `web/` Astro companion (consumer of `book-scaffold-astro`, deployed at
+`dml.brandon-behring.dev`) renders the book online; LaTeX `chapters/*.tex` stays
+canonical and the MDX is a parallel port. See [web/CLAUDE.md](web/CLAUDE.md).
+
 Current core:
 
 - FWL, Robinson, and cross-sectional/i.i.d.-style `double_ml`
