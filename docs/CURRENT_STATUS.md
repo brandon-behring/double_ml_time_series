@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-05-30
+Last updated: 2026-06-01
 
 This file is the canonical project-status source. Historical reports and roadmaps
 were moved to `docs/archive/superseded_2026-05-02/` during the 2026-05-02 truth-first
@@ -39,9 +39,13 @@ deployed to Cloudflare Workers at `dml.brandon-behring.dev` (PR previews enabled
   parallel hand-port.
 - **Bibliography is single-source:** `web` reads `../bibliography.bib` via
   `BOOK_BIB_PATH`, so LaTeX and web cite from the same file (no drift).
-- **Port coverage: 1 of 10 chapters.** Only Chapter 1 (Potential Outcomes + FWL) is
-  ported. A 2026-05-30 parity check confirmed the web Ch1 is structurally faithful to
-  `chapters/chapter_01.tex` (1:1 section coverage) — no drift yet.
+- **Port coverage: 10 of 10 chapters (2026-06-01).** All chapters are hand-ported to MDX
+  (`chapter01`–`chapter10`). `npm run validate` checks 10 chapters with 0 errors; `npm run
+  build` indexes 15 pages; the drift guard passes (exit 0) with every chapter's
+  `source_sha256` matching its `chapters/chapter_NN.tex`. Parts use the scaffold's existing
+  generic academic slots — `foundations` (1–3), `integration` (4–7), `synthesis` (8–10) —
+  rather than modifying the in-flight `book-scaffold-astro` release; a consumer-configurable
+  `parts` option is a deferred nicety (re-stampable in one line per chapter if it ships).
 - **Drift guard (W3) — enforced:** each ported chapter's MDX records `source_file` +
   `source_sha256` of its LaTeX source; `scripts/check_tex_mdx_drift.py` recomputes and
   fails on mismatch, wired into pre-commit and the `tests.yml` CI lint job. Re-stamp
@@ -89,7 +93,8 @@ in-suite contract tests.
 
 ### Track 2 — Web pilot
 
-- Port chapters 2–10 from LaTeX to MDX (currently 1/10).
+- ~~Port chapters 2–10 from LaTeX to MDX.~~ **Done 2026-06-01** — all 10 chapters hand-ported
+  (validate ✓ 10 chapters, build ✓ 15 pages, drift guard exit 0, 7 W3 tier1 tests pass).
 - ~~Add an *enforcing* LaTeX↔MDX drift guard (W3).~~ **Done 2026-05-30** —
   `scripts/check_tex_mdx_drift.py` fails when a `chapters/*.tex` changes without its MDX
   `source_sha256` being re-stamped (`--update`); enforced in pre-commit + the CI lint job.
