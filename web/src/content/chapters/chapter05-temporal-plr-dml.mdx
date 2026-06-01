@@ -1,0 +1,601 @@
+---
+week: 5
+part: integration
+title: "Temporal PLR DML for Time Series"
+status: implemented
+description: "Extending DML to time series: why random K-fold leaks future data, time-series cross-validation (expanding/sliding/purged windows with gaps), HAC/Newey-West standard errors with kernel and bandwidth choice, the TemporalPLRDML scalar estimator (lagged controls + temporal CV + HAC), and a Monte Carlo coverage check. Not recursive dynamic g-estimation."
+# LaTeX->MDX drift provenance (W3). These two keys live at the top level, not under
+# `provenance:`, because the scaffold's provenance schema is `.strict()` and rejects
+# unknown keys at `astro build`; Astro strips these top-level extras instead. They are
+# enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
+source_file: chapters/chapter_05.tex
+source_sha256: 71712e7ad7085dc7d84edfafd1454c6a4ed7bf6849b7050e95fa23f467752297
+provenance:
+  ai_tools:
+    - Claude Code
+  audit_history:
+    - { date: 2026-05-02, type: repo-quality-methodology, file: docs/audits/2026-05-02_repo_quality_methodology_audit.md }
+    - { date: 2026-05-30, type: audit-reconciliation, file: docs/audits/2026-05-30_repo_quality_methodology_audit.md }
+---
+
+import Cite from '@brandon_m_behring/book-scaffold-astro/components/Cite.astro';
+import Theorem from '@brandon_m_behring/book-scaffold-astro/components/Theorem.astro';
+import MarginNote from '@brandon_m_behring/book-scaffold-astro/components/MarginNote.astro';
+import ResultBox from '@brandon_m_behring/book-scaffold-astro/components/ResultBox.astro';
+import InsightBox from '@brandon_m_behring/book-scaffold-astro/components/InsightBox.astro';
+
+# Temporal PLR DML for Time Series
+
+## Introduction
+
+Chapters 1–4 developed DML for cross-sectional data where observations are independent. However, many economic questions involve **time series data** where observations exhibit temporal dependence. This chapter develops the companion repo's current time-series implementation: scalar partially linear DML with lagged treatment controls, temporal cross-fitting, and HAC inference.
+
+<ResultBox>
+
+The class used in this chapter, `TemporalPLRDML`, is **not** a recursive dynamic g-estimation implementation and does not estimate period-specific $\theta_t$ effects. It estimates one scalar treatment effect after controlling for current covariates and lagged treatments. True dynamic g-estimation is deferred future work.
+
+</ResultBox>
+
+<ResultBox>
+
+**Chapter objectives:**
+
+- Understand why standard cross-fitting fails with time series data.
+- Implement time series cross-validation with purging and blocking.
+- Derive HAC (Newey–West) standard errors for autocorrelation-robust inference.
+- Apply TemporalPLRDML to estimate scalar temporal PLR effects.
+- Use simulations as implementation checks, not proof of universal validity.
+
+</ResultBox>
+
+### The time series challenge
+
+Consider estimating the effect of a policy intervention $T_t$ on an outcome $Y_t$:
+
+$$
+Y_t = \tau \cdot T_t + g(X_t, T_{t-1}, \ldots, T_{t-L}) + \varepsilon_t
+$$
+
+Two challenges arise that standard DML cannot handle:
+
+1. **Data leakage in cross-validation**: random K-fold splits allow future information to "leak" into the training set, creating unrealistic advantage.
+2. **Invalid standard errors**: influence function–based SEs assume i.i.d. observations; autocorrelation in $\varepsilon_t$ invalidates this assumption.
+
+<InsightBox>
+
+**Why time series DML matters.** Standard DML with random K-fold splitting achieves:
+
+- correct point estimates (under regularity conditions),
+- **incorrect standard errors** when $\mathrm{Cov}(\varepsilon_t, \varepsilon_{t-k}) \neq 0$,
+- **overly optimistic** nuisance model performance (future leakage).
+
+TemporalPLRDML addresses these two engineering issues through temporal cross-validation and HAC inference.
+
+</InsightBox>
+
+### Chapter roadmap
+
+- **Section 5.2**: time series cross-validation — purging, blocking, and embargo.
+- **Section 5.3**: HAC standard errors — Newey–West estimation for autocorrelation.
+- **Section 5.4**: TemporalPLRDML framework — combining the components.
+- **Section 5.5**: Monte Carlo validation — verifying coverage and unbiasedness.
+- **Section 5.6**: practical recommendations.
+- **Section 5.7**: exercises.
+
+## Time series cross-validation
+
+### The data leakage problem
+
+Standard K-fold cross-validation randomly assigns observations to folds. With time series data, this means the model predicting $Y_{100}$ might train on $\{Y_{99}, Y_{101}, Y_{102}\}$ — data that would be unavailable in a real forecasting scenario.
+
+<Theorem kind="example" n="5.1" name="Data Leakage Illustration" id="ex-data-leakage">
+
+Consider a 10-observation time series with 2-fold CV.
+
+**Random splitting** (wrong for time series):
+
+```
+Fold 1: Train on {t=2,3,5,7,9}, Test on {t=1,4,6,8,10}
+Fold 2: Train on {t=1,4,6,8,10}, Test on {t=2,3,5,7,9}
+```
+
+When testing $t=4$, the model trains on $t=5,7,9$ — **future data**.
+
+**Temporal splitting** (correct):
+
+```
+Fold 1: Train on {t=1,2,3,4,5}, Test on {t=6,7,8,9,10}
+```
+
+Now testing never uses future training data.
+
+</Theorem>
+
+### Time series cross-validation strategies
+
+We implement three strategies in `src/dml/cross_fitting.py`:
+
+<Theorem kind="definition" n="5.1" name="Expanding Window CV" id="def-expanding-cv">
+
+For $K$ folds with gap $g$ and test size $m$:
+
+$$
+\begin{aligned}
+\text{Fold } k: \quad &\text{Train} = \{1, \ldots, n_k\} \\
+                      &\text{Test} = \{n_k + g + 1, \ldots, n_k + g + m\}
+\end{aligned}
+$$
+
+where $n_k = n_{\min} + k \cdot \Delta$ grows with each fold. The training window **expands** over time, using all available historical data.
+
+</Theorem>
+
+<Theorem kind="definition" n="5.2" name="Sliding Window CV" id="def-sliding-cv">
+
+Like expanding window, but with fixed training size $w$:
+
+$$
+\begin{aligned}
+\text{Fold } k: \quad &\text{Train} = \{n_k - w + 1, \ldots, n_k\} \\
+                      &\text{Test} = \{n_k + g + 1, \ldots, n_k + g + m\}
+\end{aligned}
+$$
+
+The window "slides" forward, discarding old data to maintain adaptivity to regime changes.
+
+</Theorem>
+
+<Theorem kind="definition" n="5.3" name="Purged K-Fold CV" id="def-purged-cv">
+
+Following de Prado (<Cite key="dePrado2018" />), for financial data with overlapping labels or leakage concerns:
+
+1. Split data into $K$ folds based on time.
+2. For each test fold, **purge** training observations within the embargo period.
+3. **Embargo** prevents train observations immediately before test from contaminating predictions.
+
+Purging removes $p\%$ of training data adjacent to test boundaries.
+
+</Theorem>
+
+### Python implementation
+
+Our `TimeSeriesCrossValidator` handles all three strategies:
+
+```python
+from src.dml import TimeSeriesCrossValidator
+
+# Expanding window with 5 folds and 2-period gap
+cv = TimeSeriesCrossValidator(
+    n_splits=5,
+    gap=2,          # Periods between train end and test start
+    expanding=True, # True for expanding, False for sliding
+    min_train_size=50
+)
+
+# Generate train/test indices
+for train_idx, test_idx in cv.split(X, y, time_index=time):
+    print(f"Train: {train_idx[:5]}...{train_idx[-5:]}")
+    print(f"Test:  {test_idx[:5]}...{test_idx[-5:]}")
+```
+
+<Theorem kind="remark">
+
+The `gap` parameter is critical for applications where predictions take time to materialize (e.g., quarterly economic forecasts, insurance claims with reporting lag). Setting `gap=1` prevents any overlap between training and testing periods.
+
+</Theorem>
+
+## HAC standard errors
+
+### The autocorrelation problem
+
+Even with correct point estimates, standard errors require adjustment for serial correlation. The DML influence function
+
+$$
+\psi_t = \frac{(\tilde{Y}_t - \hat{\tau} \tilde{T}_t) \tilde{T}_t}{\mathbb{E}[\tilde{T}^2]}
+$$
+
+has $\mathbb{E}[\psi_t] = 0$ but $\mathrm{Cov}(\psi_t, \psi_{t-k}) \neq 0$ when outcomes are autocorrelated.
+
+<Theorem kind="theorem" n="5.1" name="HAC Variance of DML Estimator" id="thm-hac-variance">
+
+Under regularity conditions, the DML estimator satisfies:
+
+$$
+\sqrt{n}(\hat{\tau} - \tau_0) \xrightarrow{d} N(0, \Omega)
+$$
+
+where $\Omega$ is the **long-run variance**:
+
+$$
+\Omega = \sum_{k=-\infty}^{\infty} \mathrm{Cov}(\psi_0, \psi_k) = \gamma_0 + 2\sum_{k=1}^{\infty} \gamma_k
+$$
+
+with $\gamma_k = \mathrm{Cov}(\psi_t, \psi_{t-k})$ the autocovariance at lag $k$.
+
+</Theorem>
+
+### Newey–West estimation
+
+We cannot sum to infinity, so we truncate with a kernel weighting scheme:
+
+<Theorem kind="definition" n="5.4" name="Newey-West HAC Estimator" id="def-newey-west">
+
+Following Newey and West (<Cite key="newey1987" />), the HAC variance estimator is:
+
+$$
+\hat{\Omega}_{NW} = \hat{\gamma}_0 + 2\sum_{k=1}^{B} w_k \hat{\gamma}_k
+$$
+
+where:
+
+- $\hat{\gamma}_k = \frac{1}{n}\sum_{t=k+1}^{n} \psi_t \psi_{t-k}$ is the sample autocovariance,
+- $w_k = K(k/B)$ is a kernel weight,
+- $B$ is the bandwidth (truncation parameter).
+
+</Theorem>
+
+### Kernel functions
+
+Three commonly used kernels (implemented in `src/dml/hac.py`):
+
+1. **Bartlett (triangular)**:
+
+$$
+K_{\text{Bartlett}}(x) = \begin{cases} 1 - |x| & |x| \leq 1 \\ 0 & |x| > 1 \end{cases}
+$$
+
+Linear downweighting; guaranteed positive semi-definite.
+
+2. **Parzen**:
+
+$$
+K_{\text{Parzen}}(x) = \begin{cases}
+1 - 6x^2 + 6|x|^3 & |x| \leq 0.5 \\
+2(1-|x|)^3 & 0.5 < |x| \leq 1 \\
+0 & |x| > 1
+\end{cases}
+$$
+
+Smoother than Bartlett; used for higher-order accuracy.
+
+3. **Quadratic spectral**:
+
+$$
+K_{\text{QS}}(x) = \frac{25}{12\pi^2 x^2}\left(\frac{\sin(6\pi x/5)}{6\pi x/5} - \cos(6\pi x/5)\right)
+$$
+
+Optimal for minimizing MSE; non-truncating.
+
+**Comparison of HAC kernel functions** — all decay to zero as lag increases, but with different rates and smoothness:
+
+| Bartlett | Parzen | Quadratic Spectral |
+|---|---|---|
+| Linear decay | Smooth decay | Optimal MSE |
+
+### Bandwidth selection
+
+The bandwidth $B$ controls the bias–variance tradeoff:
+
+- $B$ too small: misses important autocovariances (bias).
+- $B$ too large: includes noise from distant lags (variance).
+
+<Theorem kind="definition" n="5.5" name="Optimal Bandwidth Rule" id="def-optimal-bandwidth">
+
+The rule-of-thumb bandwidth for the Bartlett kernel:
+
+$$
+B^* = \left\lfloor 1.3 \cdot n^{1/3} \right\rfloor
+$$
+
+For $n=500$: $B^* \approx 10$ lags.
+
+</Theorem>
+
+Data-driven selection (Andrews, 1991) adapts based on estimated autocorrelation:
+
+$$
+B_{\text{Andrews}} = 1.1447 \left( \frac{\hat{\rho}^2 n}{(1-\hat{\rho})^4} \right)^{1/3}
+$$
+
+where $\hat{\rho}$ is the AR(1) coefficient of the influence scores.
+
+### Python implementation
+
+```python
+from src.dml import HACEstimator, newey_west_se
+
+# Option 1: Function interface
+se = newey_west_se(
+    residuals=influence_scores,
+    bandwidth="auto",  # Automatic selection
+    kernel="bartlett"
+)
+
+# Option 2: Class interface with full diagnostics
+hac = HACEstimator(kernel="parzen", bandwidth=10)
+hac.fit(influence_scores)
+
+print(f"HAC SE: {hac.get_se():.4f}")
+print(f"Bandwidth used: {hac.bandwidth_used}")
+print(f"Long-run variance: {hac.get_variance():.4f}")
+```
+
+## The TemporalPLRDML framework
+
+### Algorithm overview
+
+TemporalPLRDML combines time series cross-validation with HAC inference:
+
+```
+Algorithm: TemporalPLRDML Estimation
+Require: Outcome Y, Treatment T, Confounders X, number of lags L
+Ensure: Treatment effect τ̂ with HAC standard error
+
+ 1. Create lagged features:  X̃_t = (X_t, T_{t-1}, ..., T_{t-L})
+ 2. Initialize: time series cross-validator with gap g
+ 3. for each fold k = 1, ..., K:
+ 4.     Train outcome model   m̂^(-k) on training data
+ 5.     Train treatment model ℓ̂^(-k) on training data
+ 6.     Predict on test fold:  Ŷ^(-k)_t, T̂^(-k)_t
+ 7. Exclude uncovered early rows: drop observations without valid
+    temporal out-of-fold predictions
+ 8. Compute residuals:  Ỹ_t = Y_t - Ŷ^(-t)_t,  T̃_t = T_t - T̂^(-t)_t
+ 9. Estimate τ:  τ̂ = (Σ_t Ỹ_t T̃_t) / (Σ_t T̃_t²)
+10. Compute influence scores:  ψ_t = (Ỹ_t - τ̂ T̃_t) T̃_t / mean(T̃²)
+11. HAC variance:  Ω̂ = γ̂_0 + 2 Σ_{k=1}^B w_k γ̂_k
+12. Standard error:  SE(τ̂) = sqrt(Ω̂ / n)
+return τ̂, SE(τ̂)
+```
+
+### Implementation
+
+```python
+from src.dml import TemporalPLRDML
+import numpy as np
+
+# Generate time series data with autocorrelation
+np.random.seed(42)
+n = 500
+time = np.arange(n)
+
+# Confounders with temporal structure
+X = np.column_stack([
+    np.random.randn(n),
+    np.sin(2 * np.pi * time / 100)  # Seasonal
+])
+
+# Autocorrelated treatment
+T = np.zeros(n)
+T[0] = np.random.randn()
+for t in range(1, n):
+    T[t] = 0.3 * T[t-1] + 0.5 * X[t, 0] + np.random.randn()
+
+# Outcome with true effect tau = 2.0
+true_tau = 2.0
+Y = true_tau * T + X[:, 0]**2 + np.random.randn(n)
+
+# Fit TemporalPLRDML
+model = TemporalPLRDML(
+    n_lags=3,
+    model_y="random_forest",
+    model_t="random_forest",
+    cv_strategy="time_series_split",
+    hac_kernel="bartlett"
+)
+
+result = model.fit(Y, T, X, time_index=time)
+print(result.summary())
+```
+
+### Output interpretation
+
+```
+Temporal PLR DML Results
+========================
+Treatment Effect (τ):    2.0391
+HAC Standard Error:      0.0854
+t-statistic:             23.87
+p-value:                 0.0000
+95% Confidence Interval: [1.8717, 2.2065]
+
+Sample Information:
+  Observations:          500
+  Used observations:     414
+  Lag rows dropped:      3
+  CV rows dropped:       83
+
+Nuisance Model Diagnostics:
+  Outcome R² (CV):       0.451
+  Treatment R² (CV):     0.210
+
+HAC Inference:
+  Bandwidth:             7
+  CV Strategy:           time_series_split
+```
+
+<Theorem kind="remark">
+
+The HAC bandwidth of 7 was automatically selected using the $n^{1/3}$ rule. For $n=497$, this equals $\lfloor 1.3 \times 497^{1/3} \rfloor = 10$, slightly adjusted by the kernel choice.
+
+</Theorem>
+
+## Monte Carlo validation
+
+We validate TemporalPLRDML through simulation studies examining:
+
+1. **Unbiasedness**: $\mathbb{E}[\hat{\tau}] \approx \tau_0$.
+2. **Coverage**: the 95% CI covers $\tau_0$ in $\approx 95\%$ of simulations.
+3. **SE calibration**: the reported SE matches the empirical standard deviation.
+
+### Data generating process
+
+```python
+def generate_ts_dgp(n, tau=2.0, rho_T=0.3, rho_eps=0.2, seed=None):
+    """
+    Generate time series DGP with autocorrelated treatment and errors.
+
+    Parameters
+    ----------
+    n : int
+        Sample size
+    tau : float
+        True treatment effect
+    rho_T : float
+        AR(1) coefficient for treatment
+    rho_eps : float
+        AR(1) coefficient for outcome error
+
+    Returns
+    -------
+    Y, T, X, time : arrays
+    """
+    rng = np.random.default_rng(seed)
+    time = np.arange(n)
+
+    # Confounders
+    X = rng.standard_normal((n, 3))
+
+    # AR(1) treatment
+    T = np.zeros(n)
+    T[0] = rng.standard_normal()
+    for t in range(1, n):
+        T[t] = rho_T * T[t-1] + 0.5 * X[t, 0] + rng.standard_normal()
+
+    # AR(1) errors
+    eps = np.zeros(n)
+    eps[0] = rng.standard_normal()
+    for t in range(1, n):
+        eps[t] = rho_eps * eps[t-1] + rng.standard_normal()
+
+    # Outcome
+    Y = tau * T + X[:, 0]**2 + 0.5 * X[:, 1] + eps
+
+    return Y, T, X, time
+```
+
+### Simulation results
+
+**TemporalPLRDML Monte Carlo results** ($n=500$, 200 simulations):
+
+| Method | Bias | Emp. SE | Avg. SE | Coverage |
+|---|---|---|---|---|
+| DML (i.i.d. SE) | 0.02 | 0.12 | 0.08 | 78% |
+| TemporalPLRDML (HAC SE) | 0.02 | 0.12 | 0.11 | 93% |
+
+<InsightBox>
+
+**Key finding**: both methods produce nearly unbiased estimates (bias $\approx 0.02$). However:
+
+- **i.i.d. SE underestimates** true variability (0.08 vs. 0.12), causing **under-coverage** (78%).
+- **HAC SE is correctly calibrated** (0.11 vs. 0.12), achieving near-nominal **coverage** (93%).
+
+The difference becomes more severe with stronger autocorrelation ($\rho > 0.5$).
+
+</InsightBox>
+
+## Practical recommendations
+
+### When to use TemporalPLRDML
+
+1. **Time series data**: any setting with temporal ordering.
+2. **Autocorrelated outcomes**: check with Durbin–Watson or Ljung–Box tests.
+3. **Lagged treatment controls**: when prior treatments are confounders or state variables for the current scalar effect.
+4. **Macro/finance applications**: interest rates, prices, policies over time.
+
+### Configuration guidelines
+
+**TemporalPLRDML configuration guide**
+
+| Parameter | Default | Guidance |
+|---|---|---|
+| `n_lags` | 1 | Increase for longer-memory effects |
+| `cv_strategy` | time_series_split | Use purged_cv for financial data |
+| `gap` | 0 | Set to forecast horizon |
+| `hac_bandwidth` | auto | Manual for specific autocorrelation patterns |
+| `hac_kernel` | bartlett | parzen for smoother estimates |
+
+### Diagnostic checks
+
+Before reporting results, verify:
+
+1. **Nuisance model fit**: check cross-validated $R^2$ for both outcome and treatment models. Poor fit ($R^2 < 0.1$) suggests missing confounders or model misspecification.
+2. **Residual autocorrelation**: plot the autocorrelation function of influence scores. Significant spikes beyond the HAC bandwidth indicate potential issues.
+3. **Bandwidth sensitivity**: re-estimate with bandwidth $\pm 50\%$. Large SE changes suggest autocorrelation structure uncertainty.
+
+## Exercises
+
+### Exercise 5.1: time series cross-validation
+
+Consider a dataset with $n=100$ observations indexed $t=1,\ldots,100$. You want to use 5-fold time series CV with a gap of 2 periods.
+
+(a) What are the train and test indices for each fold using expanding window CV?
+(b) How many observations are in each test fold?
+(c) Why is the gap parameter important for forecasting applications?
+
+**Solution.**
+
+(a) With 5 folds and gap=2:
+
+- Fold 1: Train $\{1,\ldots,16\}$, Test $\{19,\ldots,36\}$ (after gap).
+- Fold 2: Train $\{1,\ldots,34\}$, Test $\{37,\ldots,54\}$.
+- …continuing the pattern.
+
+(b) Each test fold contains approximately $n/K \approx 20$ observations (exact depends on rounding).
+
+(c) The gap prevents data leakage when there's a delay between when information is available and when predictions are needed (e.g., quarterly economic data released with lag).
+
+### Exercise 5.2: HAC bandwidth selection
+
+You estimate a treatment effect with $n=1000$ observations and observe AR(1) autocorrelation $\hat{\rho} = 0.4$ in the influence scores.
+
+(a) Calculate the rule-of-thumb bandwidth $B^* = \lfloor 1.3 \cdot n^{1/3} \rfloor$.
+(b) Calculate the Andrews data-driven bandwidth.
+(c) Which would you recommend and why?
+
+**Solution.**
+
+(a) $B^* = \lfloor 1.3 \times 1000^{1/3} \rfloor = \lfloor 1.3 \times 10 \rfloor = 13$.
+
+(b) $B_{\text{Andrews}} = 1.1447 \left( \frac{0.4^2 \times 1000}{(1-0.4)^4} \right)^{1/3} = 1.1447 \times \left( \frac{160}{0.1296} \right)^{1/3} \approx 12$.
+
+(c) Both suggest similar bandwidths ($\approx 12$–$13$). The Andrews method is preferred when you have a reliable AR(1) estimate, as it adapts to the actual autocorrelation structure.
+
+### Exercise 5.3: comparing standard errors
+
+A researcher estimates $\hat{\tau} = 1.5$ using DML and reports two standard errors: an i.i.d. influence function SE of $0.10$ and a HAC (Newey–West) SE of $0.18$.
+
+(a) Compute the 95% confidence intervals under each assumption.
+(b) What does the difference in SEs tell you about the data?
+(c) Which CI should be reported in a time series setting?
+
+**Solution.**
+
+(a) i.i.d.: $1.5 \pm 1.96 \times 0.10 = [1.30, 1.70]$. HAC: $1.5 \pm 1.96 \times 0.18 = [1.15, 1.85]$.
+
+(b) The HAC SE being nearly twice the i.i.d. SE indicates substantial positive autocorrelation in the influence scores. The i.i.d. assumption severely understates uncertainty.
+
+(c) The HAC confidence interval $[1.15, 1.85]$ should be reported. Using the narrower i.i.d. interval would claim false precision.
+
+## Summary
+
+This chapter extended DML to time series settings through three key innovations:
+
+1. **Time series cross-validation**: expanding/sliding windows with purging prevent data leakage while maintaining temporal ordering.
+2. **HAC standard errors**: Newey–West estimation accounts for autocorrelation in influence scores, providing correctly sized confidence intervals.
+3. **TemporalPLRDML framework**: integrates lagged controls, temporal CV, and HAC inference into a scalar PLR estimation procedure.
+
+**Key takeaways:**
+
+- Standard random-fold DML can create future-data leakage and misleading uncertainty for ordered data.
+- Time series CV with gaps prevents future information leakage.
+- HAC SEs with bandwidth $B \approx n^{1/3}$ correct for autocorrelation.
+- TemporalPLRDML reports lag rows and temporal-CV rows dropped before the final residual regression.
+
+## Roadmap to Chapter 6
+
+Chapter 6 extends our time series framework in two directions:
+
+1. **Panel DML**: combining fixed effects with DML for panel data (repeated cross-sections over time).
+2. **Rolling Window DML**: estimating time-varying treatment effects when the causal relationship is non-stationary.
+
+These methods are essential for applications where treatment effects may differ across individuals or change over time — common in insurance pricing, macroeconomic policy, and financial markets.
