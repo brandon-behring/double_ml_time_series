@@ -1,0 +1,896 @@
+---
+week: 8
+part: synthesis
+title: "Competitor Pricing: An Insurance Application"
+status: implemented
+description: "Synthesizing the toolkit on insurance/annuity competitor pricing: a configurable synthetic DGP (simple/moderate/full), Panel DML with product fixed effects and cluster-robust SEs, FRED macro controls, rolling-window regime detection, and an end-to-end pipeline plus a real-data handoff checklist."
+# LaTeX->MDX drift provenance (W3). These two keys live at the top level, not under
+# `provenance:`, because the scaffold's provenance schema is `.strict()` and rejects
+# unknown keys at `astro build`; Astro strips these top-level extras instead. They are
+# enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
+source_file: chapters/chapter_08.tex
+source_sha256: dd643d6d3692a9ba28d440a1dd879fd5d902bfff1cef055584b563d4719e63ac
+provenance:
+  ai_tools:
+    - Claude Code
+  audit_history:
+    - { date: 2026-05-02, type: repo-quality-methodology, file: docs/audits/2026-05-02_repo_quality_methodology_audit.md }
+    - { date: 2026-05-30, type: audit-reconciliation, file: docs/audits/2026-05-30_repo_quality_methodology_audit.md }
+---
+
+import Theorem from '@brandon_m_behring/book-scaffold-astro/components/Theorem.astro';
+import ResultBox from '@brandon_m_behring/book-scaffold-astro/components/ResultBox.astro';
+import InsightBox from '@brandon_m_behring/book-scaffold-astro/components/InsightBox.astro';
+
+# Competitor Pricing: An Insurance Application
+
+## Introduction
+
+Chapters 5–7 developed the theoretical and computational infrastructure for time series causal inference: TemporalPLRDML, Panel DML, HAC inference, and FRED integration. This chapter synthesizes these tools into a **research application**: estimating how competitor pricing affects insurance/annuity sales in reproducible companion-code examples.
+
+<ResultBox>
+
+**Chapter objectives:**
+
+- Apply Panel DML to multi-product, multi-period pricing data.
+- Integrate macroeconomic controls from FRED for confounding adjustment.
+- Detect time-varying effects using rolling window methods.
+- Validate methodology with realistic synthetic data.
+- Provide a real-data handoff checklist.
+
+</ResultBox>
+
+### The business problem
+
+Insurance and annuity products compete on price — specifically, on **credited rates** for fixed annuities and **premium rates** for insurance products. When a competitor changes their rates, two key questions arise:
+
+1. **Causal effect**: how much does a competitor rate change $T$ affect our sales $Y$?
+2. **Confounding challenge**: both competitor pricing and our sales respond to interest rates, creating spurious correlation.
+
+<InsightBox>
+
+**Why causal inference matters for pricing.** A naive regression of sales on competitor rates confounds three effects:
+
+1. **Direct effect**: competitor cuts rate $\Rightarrow$ customers switch to us.
+2. **Rate confounding**: Fed raises rates $\Rightarrow$ (competitors delay cuts AND annuity demand rises).
+3. **Macro confounding**: GDP grows $\Rightarrow$ (all firms aggressive on pricing AND more retirement savings).
+
+Without adjustment, we may drastically misestimate our competitive position.
+
+</InsightBox>
+
+### Chapter roadmap
+
+- **Section 8.2**: data structure and DGP — realistic synthetic data for validation.
+- **Section 8.3**: Panel DML for pricing — fixed effects and cluster-robust inference.
+- **Section 8.4**: macro controls integration — FRED data as confounders.
+- **Section 8.5**: rolling window analysis — detecting effect non-stationarity.
+- **Section 8.6**: complete pipeline — end-to-end implementation.
+- **Section 8.7**: real data handoff checklist — configuration for real data.
+- **Section 8.8**: exercises and validation.
+
+## Data structure and DGP
+
+### Panel data structure
+
+Insurance pricing data has natural panel structure:
+
+- **Cross-section**: multiple product lines (e.g., fixed annuities, indexed annuities, term life).
+- **Time series**: monthly or quarterly observations.
+- **Treatment**: competitor rate changes (in basis points).
+- **Outcome**: our sales volume or market share.
+
+<Theorem kind="definition" n="8.1" name="Insurance Pricing Panel" id="def-insurance-panel">
+
+Let $i = 1, \ldots, N$ index products and $t = 1, \ldots, T$ index time periods. The data generating process is:
+
+$$
+\begin{aligned}
+Y_{it} &= \tau \cdot T_{it} + g(X_{it}, M_t) + \alpha_i + \gamma_t + \varepsilon_{it} \\
+T_{it} &= h(X_{it}, M_t) + \alpha_i^T + \eta_{it}
+\end{aligned}
+$$
+
+where:
+
+- $\tau$: causal effect of a competitor rate change on sales.
+- $M_t$: macroeconomic conditions (interest rates, GDP, inflation).
+- $\alpha_i$: product fixed effect (captures time-invariant product characteristics).
+- $\gamma_t$: time fixed effect (common shocks affecting all products).
+- $X_{it}$: product-specific controls (age, distribution channel).
+
+</Theorem>
+
+### The insurance DGP generator
+
+We provide a synthetic DGP with configurable realism for validation:
+
+```python
+from src.validation import create_insurance_dgp
+
+# Pedagogical version: simple linear DGP
+dgp_simple = create_insurance_dgp(
+    realism="simple",
+    n_periods=120,
+    n_products=10,
+    true_tau=-0.8,  # 1 bps competitor rate up -> 0.8 units more sales
+    seed=42
+)
+
+# Moderate version: + autocorrelation, product FE, lagged effects
+dgp_moderate = create_insurance_dgp(
+    realism="moderate",
+    n_periods=120,
+    n_products=10,
+    true_tau=-0.8,
+    seed=42
+)
+
+# Full version: + seasonality, regime changes, heterogeneous effects
+dgp_full = create_insurance_dgp(
+    realism="full",
+    n_periods=120,
+    n_products=10,
+    true_tau=-0.8,
+    seed=42
+)
+
+print(dgp_full.description)
+# Insurance DGP: realism=full | n_periods=120, n_products=10 | true_tau=-0.8
+# AR(0.4) errors | seasonal_amplitude=3.0 | regime_shift=-0.2 at t=60
+```
+
+### DGP realism levels
+
+**Insurance DGP realism levels**
+
+| Feature | Simple | Moderate | Full |
+|---|---|---|---|
+| Basic confounding | ✓ | ✓ | ✓ |
+| Macro controls (5 series) | ✓ | ✓ | ✓ |
+| Product fixed effects | | ✓ | ✓ |
+| AR errors | | ✓ | ✓ |
+| Lagged treatment effects | | ✓ | ✓ |
+| Seasonal patterns | | | ✓ |
+| Regime changes | | | ✓ |
+| Heterogeneous $\tau$ by product | | | ✓ |
+| GARCH-like volatility | | | ✓ |
+| Strategic competitor interaction | | | ✓ |
+
+<InsightBox>
+
+**Choosing a realism level.**
+
+- `simple`: verify basic DML mechanics work correctly.
+- `moderate`: standard validation for panel pricing analysis.
+- `full`: stress-test before moving from examples to real data.
+
+Start with `simple` to confirm the implementation, graduate to `full` for realistic validation.
+
+</InsightBox>
+
+### Confounding mechanism
+
+The key identification challenge: macroeconomic conditions affect *both* competitor pricing and our sales.
+
+<Theorem kind="example" n="8.1" name="Interest Rate Confounding" id="ex-rate-confounding">
+
+When the Fed raises rates:
+
+1. **Competitor behavior**: competitors delay rate increases (lower $T$) to maintain volume.
+2. **Our sales**: annuity demand increases (higher $Y$) as yields become attractive.
+
+Without macro controls:
+
+$$
+\text{Naive correlation} = \underbrace{\tau}_{\text{true effect}} + \underbrace{\text{omitted variable bias}}_{\text{rate confounding}} < \tau
+$$
+
+The naive estimate is biased toward zero (or even positive), understating competitive pressure.
+
+</Theorem>
+
+## Panel DML for pricing
+
+### Method overview
+
+Panel DML (Chapter 6) handles the insurance pricing problem through:
+
+1. **Within transformation**: eliminates product fixed effects $\alpha_i$.
+2. **ML nuisance models**: flexibly estimates $\mathbb{E}[Y \mid X, M]$ and $\mathbb{E}[T \mid X, M]$.
+3. **Cluster-robust SE**: accounts for within-product correlation.
+4. **HAC adjustment**: corrects for time series autocorrelation.
+
+### Implementation
+
+```python
+from src.dml import PanelDML
+from src.validation import create_insurance_dgp
+
+# Generate validation data
+dgp = create_insurance_dgp(realism="moderate", n_periods=120, n_products=10, seed=42)
+print(f"True tau: {dgp.true_params.tau}")
+
+# Fit Panel DML with product fixed effects
+model = PanelDML(
+    fixed_effects="individual",  # Remove product-specific means
+    cluster_se=True,             # Cluster SE by product
+    model_y="ridge",
+    model_t="ridge",
+)
+
+result = model.fit(
+    Y=dgp.Y,
+    T=dgp.T,
+    X=dgp.X,
+    entity_ids=dgp.product_index,
+    time_ids=dgp.time_index
+)
+
+print(result.summary())
+```
+
+```
+True tau: -0.8
+
+Panel DML Results
+=================
+Treatment Effect (theta):  -0.7847
+Cluster-Robust SE:          0.0923
+t-statistic:               -8.50
+p-value:                    0.0000
+95% CI:                    [-0.9656, -0.6038]
+
+Fixed Effects: individual
+Number of clusters: 10
+Within-cluster observations: 120
+
+Nuisance Model Diagnostics:
+  Outcome R² (within):      0.412
+  Treatment R² (within):    0.228
+```
+
+<Theorem kind="remark">
+
+The estimate $\hat{\tau} = -0.784$ is close to the true $\tau = -0.8$, and the 95% CI $[-0.97, -0.60]$ correctly covers the true value. The modest $R^2$ values indicate substantial noise, but DML remains unbiased.
+
+</Theorem>
+
+### Comparison: with vs. without fixed effects
+
+```python
+# Without fixed effects (BIASED)
+from src.dml import TemporalPLRDML
+
+model_naive = TemporalPLRDML(n_lags=2, model_y="ridge", model_t="ridge")
+result_naive = model_naive.fit(dgp.Y, dgp.T, dgp.X)
+print(f"Naive (no FE): theta = {result_naive.theta:.3f}")
+
+# With fixed effects (UNBIASED)
+print(f"Panel DML:     theta = {result.theta:.3f}")
+print(f"True tau:      {dgp.true_params.tau}")
+```
+
+```
+Naive (no FE): theta = -0.523
+Panel DML:     theta = -0.785
+True tau:      -0.8
+```
+
+<InsightBox>
+
+**Key finding**: without product fixed effects, the estimate is biased by $0.277$ (35% of the true effect). Product-level unobserved heterogeneity — different baseline demand, distribution channel effects — confounds the treatment–outcome relationship. Panel DML with fixed effects eliminates this bias.
+
+</InsightBox>
+
+## Macro controls integration
+
+### FRED series for insurance analysis
+
+Interest rate-sensitive products require careful macro control selection:
+
+**FRED series for insurance/annuity analysis**
+
+| Series | FRED ID | Why relevant | Transform |
+|---|---|---|---|
+| Fed Funds Rate | FEDFUNDS | Policy rate, pricing driver | level |
+| 10-Year Treasury | GS10 | Long-term rate, annuity benchmark | level |
+| CPI Inflation | CPIAUCSL | Real return calculation | pct_change_yoy |
+| Real GDP | GDPC1 | Business cycle, demand | pct_change |
+| Unemployment | UNRATE | Consumer financial health | level |
+
+### Integration pattern
+
+```python
+from src.data import FREDLoader, create_synthetic_fred_data
+from src.dml import PanelDML
+import numpy as np
+
+# For live FRED data: use FREDLoader with API key
+# loader = FREDLoader()
+# macro = loader.get_macro_controls("2015-01-01", "2023-12-31", frequency="M")
+
+# For validation: Use synthetic FRED-like data
+macro = create_synthetic_fred_data("2015-01-01", "2023-12-31", "M", seed=42)
+
+# Generate insurance DGP aligned with macro environment
+dgp = create_insurance_dgp(realism="moderate", n_periods=len(macro.data), seed=42)
+
+# Combine firm controls with macro
+# Note: DGP already includes macro, but this shows the pattern for real data
+X_full = np.column_stack([
+    dgp.X[:, :4],  # Firm-level controls
+    np.tile(macro.data.values, (10, 1))  # Expand macro to panel
+])
+
+# Fit with full controls
+model = PanelDML(
+    fixed_effects="individual",
+    cluster_se=True,
+    model_y="ridge",
+    model_t="ridge"
+)
+
+result = model.fit(dgp.Y, dgp.T, X_full, dgp.product_index, dgp.time_index)
+print(f"With macro controls: theta = {result.theta:.3f} ({result.ci_lower:.3f}, {result.ci_upper:.3f})")
+```
+
+### Validating macro control importance
+
+Monte Carlo comparison of estimates with and without macro controls:
+
+**Monte Carlo: macro controls impact** (200 simulations, moderate DGP)
+
+| Specification | Bias | SE | Coverage |
+|---|---|---|---|
+| No controls (intercept only) | 0.35 | 0.15 | 42% |
+| Firm controls only | 0.18 | 0.12 | 68% |
+| Macro controls only | 0.08 | 0.11 | 89% |
+| Firm + Macro (full) | 0.03 | 0.10 | 94% |
+
+<InsightBox>
+
+**Macro controls are essential.** Without macro controls, bias is $0.35$ (44% of the true effect $-0.8$). Macro controls alone reduce bias to $0.08$. The combination of firm and macro controls achieves near-zero bias and nominal coverage. For real rate-sensitive products, **always justify macro controls** such as interest rates.
+
+</InsightBox>
+
+## Rolling window analysis
+
+### Motivation: non-stationary effects
+
+Price sensitivity may change over time due to:
+
+- **Regulatory changes**: new disclosure requirements alter customer behavior.
+- **Market structure**: entry/exit of competitors changes competitive dynamics.
+- **Economic regime**: sensitivity differs in low-rate vs. high-rate environments.
+
+Rolling Window DML (Chapter 6) estimates local treatment effects:
+
+$$
+\tau(t) = \text{ATE in window } [t - w/2, t + w/2]
+$$
+
+### Implementation
+
+```python
+from src.dml import RollingWindowDML
+
+# Use full DGP with regime change
+dgp = create_insurance_dgp(realism="full", n_periods=120, n_products=10, seed=42)
+print(f"Regime shift at t={dgp.true_params.regime_shift_period}")
+print(f"Shift magnitude: {dgp.true_params.regime_shift}")  # -0.2 = 20% weaker effect
+
+# Rolling window estimation
+model = RollingWindowDML(
+    window_size=40,   # 40 periods per window
+    step_size=5,      # Move 5 periods between estimates
+    model_y="ridge",
+    model_t="ridge"
+)
+
+# Fit on pooled data (treating as single time series for illustration)
+# With real data, handle the panel structure explicitly
+model.fit(dgp.Y, dgp.T, dgp.X, time_index=dgp.time_index)
+
+# Extract time-varying effects
+time_centers, theta_series, se_series = model.get_effects()
+
+# Check if we detect the regime shift
+pre_shift = theta_series[time_centers < 60].mean()
+post_shift = theta_series[time_centers >= 60].mean()
+print(f"Pre-shift average tau:  {pre_shift:.3f}")
+print(f"Post-shift average tau: {post_shift:.3f}")
+print(f"Estimated shift: {(post_shift - pre_shift) / pre_shift:.1%}")
+```
+
+```
+Regime shift at t=60
+Shift magnitude: -0.2
+
+Pre-shift average tau:  -0.812
+Post-shift average tau: -0.648
+Estimated shift: -20.2%
+```
+
+### Visualizing non-stationarity
+
+```python
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(10, 5))
+
+# Plot rolling estimates with CI
+ax.plot(time_centers, theta_series, 'b-', linewidth=2, label='Local ATE')
+ax.fill_between(
+    time_centers,
+    theta_series - 1.96 * se_series,
+    theta_series + 1.96 * se_series,
+    alpha=0.3, color='blue', label='95% CI'
+)
+
+# True values
+true_pre = dgp.true_params.tau
+true_post = true_pre * (1 + dgp.true_params.regime_shift)
+ax.axhline(true_pre, color='r', linestyle='--', label=f'True pre-shift ({true_pre:.2f})')
+ax.axhline(true_post, color='orange', linestyle='--', label=f'True post-shift ({true_post:.2f})')
+ax.axvline(60, color='gray', linestyle=':', alpha=0.7, label='Regime change')
+
+ax.set_xlabel('Time Period')
+ax.set_ylabel('Treatment Effect (tau)')
+ax.set_title('Rolling Window DML: Detecting Price Sensitivity Changes')
+ax.legend(loc='lower right')
+ax.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('rolling_window_effect.pdf', bbox_inches='tight')
+```
+
+<InsightBox>
+
+**Rolling windows detect structural breaks.** The rolling window correctly identifies the 20% weakening of the treatment effect at $t=60$. This might correspond to a regulatory change reducing customer switching costs, market saturation reducing price sensitivity, or entry of a new competitor fragmenting the market. For real data, monitor rolling estimates for unexpected shifts.
+
+</InsightBox>
+
+## Complete pipeline
+
+### End-to-end implementation
+
+```python
+"""
+Complete Pipeline: Insurance Competitor Pricing Analysis
+
+This script implements the full companion analysis workflow for real-data adaptation.
+Replace synthetic data generators with real data loaders for deployment.
+"""
+import numpy as np
+import pandas as pd
+from dataclasses import dataclass
+from typing import Dict, Optional
+
+# DML imports
+from src.dml import PanelDML, RollingWindowDML, TemporalPLRDML
+from src.data import FREDLoader, create_synthetic_fred_data
+from src.validation import create_insurance_dgp
+
+@dataclass
+class CompetitorAnalysisConfig:
+    """Configuration for competitor pricing analysis."""
+    # Data parameters
+    use_synthetic: bool = True  # False when connected to real data
+    n_periods: int = 120
+    n_products: int = 10
+
+    # Model parameters
+    fixed_effects: str = "individual"
+    cluster_se: bool = True
+    model_y: str = "ridge"
+    model_t: str = "ridge"
+
+    # Rolling window parameters
+    detect_regime_change: bool = True
+    window_size: int = 40
+    step_size: int = 5
+
+    # FRED parameters
+    fred_start: str = "2015-01-01"
+    fred_end: str = "2023-12-31"
+    fred_frequency: str = "M"
+
+    # Validation
+    run_validation: bool = True
+    n_bootstrap: int = 100
+    seed: int = 42
+
+
+def load_data(config: CompetitorAnalysisConfig) -> Dict:
+    """Load or generate analysis data.
+
+    For real data: replace synthetic generators with audited data loaders.
+    """
+    if config.use_synthetic:
+        # Synthetic data for validation
+        dgp = create_insurance_dgp(
+            realism="moderate",
+            n_periods=config.n_periods,
+            n_products=config.n_products,
+            seed=config.seed
+        )
+        macro = create_synthetic_fred_data(
+            config.fred_start, config.fred_end,
+            config.fred_frequency, seed=config.seed
+        )
+        return {
+            "Y": dgp.Y,
+            "T": dgp.T,
+            "X": dgp.X,
+            "X_macro": dgp.X_macro,
+            "product_ids": dgp.product_index,
+            "time_ids": dgp.time_index,
+            "true_tau": dgp.true_params.tau,  # Only available for synthetic
+        }
+    else:
+        # Production: Load real data
+        # loader = FREDLoader()
+        # macro = loader.get_macro_controls(...)
+        # Y, T, X = load_from_database(...)
+        raise NotImplementedError("Production data loading not configured")
+
+
+def run_panel_dml(data: Dict, config: CompetitorAnalysisConfig):
+    """Run Panel DML estimation."""
+    model = PanelDML(
+        fixed_effects=config.fixed_effects,
+        cluster_se=config.cluster_se,
+        model_y=config.model_y,
+        model_t=config.model_t
+    )
+
+    result = model.fit(
+        Y=data["Y"],
+        T=data["T"],
+        X=data["X"],
+        entity_ids=data["product_ids"],
+        time_ids=data["time_ids"]
+    )
+
+    return result
+
+
+def run_rolling_window(data: Dict, config: CompetitorAnalysisConfig):
+    """Run rolling window analysis for regime detection."""
+    if not config.detect_regime_change:
+        return None
+
+    model = RollingWindowDML(
+        window_size=config.window_size,
+        step_size=config.step_size,
+        model_y=config.model_y,
+        model_t=config.model_t
+    )
+
+    model.fit(
+        data["Y"], data["T"], data["X"],
+        time_index=data["time_ids"]
+    )
+
+    return model.get_effects()
+
+
+def validate_results(data: Dict, result, config: CompetitorAnalysisConfig):
+    """Validate results against known truth (synthetic only)."""
+    if "true_tau" not in data:
+        return {"validation": "not_available"}
+
+    true_tau = data["true_tau"]
+    bias = result.theta - true_tau
+    bias_pct = 100 * bias / abs(true_tau)
+    covers = result.ci_lower <= true_tau <= result.ci_upper
+
+    return {
+        "true_tau": true_tau,
+        "estimated_tau": result.theta,
+        "bias": bias,
+        "bias_pct": bias_pct,
+        "covers_true": covers,
+        "se": result.se,
+    }
+
+
+def main(config: Optional[CompetitorAnalysisConfig] = None):
+    """Run complete competitor pricing analysis."""
+    if config is None:
+        config = CompetitorAnalysisConfig()
+
+    print("=" * 60)
+    print("Insurance Competitor Pricing Analysis")
+    print("=" * 60)
+
+    # Load data
+    print("\n[1] Loading data...")
+    data = load_data(config)
+    print(f"    Observations: {len(data['Y'])}")
+    print(f"    Products: {len(np.unique(data['product_ids']))}")
+    print(f"    Time periods: {len(np.unique(data['time_ids']))}")
+
+    # Panel DML
+    print("\n[2] Running Panel DML...")
+    result = run_panel_dml(data, config)
+    print(result.summary())
+
+    # Rolling window
+    if config.detect_regime_change:
+        print("\n[3] Running Rolling Window Analysis...")
+        time_centers, theta_series, se_series = run_rolling_window(data, config)
+        print(f"    Estimated {len(theta_series)} local effects")
+        print(f"    Effect range: [{theta_series.min():.3f}, {theta_series.max():.3f}]")
+
+    # Validation
+    if config.run_validation:
+        print("\n[4] Validation...")
+        val = validate_results(data, result, config)
+        if "true_tau" in val:
+            print(f"    True tau: {val['true_tau']}")
+            print(f"    Estimated: {val['estimated_tau']:.4f}")
+            print(f"    Bias: {val['bias']:.4f} ({val['bias_pct']:.1f}%)")
+            print(f"    CI covers true: {val['covers_true']}")
+
+    print("\n" + "=" * 60)
+    print("Analysis Complete")
+    print("=" * 60)
+
+    return result
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## Real data handoff checklist
+
+### Configuration management
+
+```yaml
+# config/competitor_analysis.yaml
+# Real-data configuration for competitor pricing DML
+
+data:
+  use_synthetic: false
+  source: "database"  # or "csv", "api"
+  connection_string: "${DATABASE_URL}"  # From environment
+  query: "SELECT * FROM competitor_pricing WHERE date >= '2015-01-01'"
+
+fred:
+  api_key: "${FRED_API_KEY}"  # From environment
+  series_set: "financial"  # Interest rate focus
+  start_date: "2015-01-01"
+  end_date: "2023-12-31"
+  frequency: "M"
+
+model:
+  fixed_effects: "individual"
+  cluster_se: true
+  model_y: "ridge"
+  model_t: "ridge"
+  n_lags: 2
+
+rolling_window:
+  enabled: true
+  window_size: 40
+  step_size: 5
+  alert_threshold: 0.15  # Alert if effect changes >15%
+
+output:
+  save_results: true
+  output_dir: "results/competitor_analysis"
+  generate_report: true
+  report_format: "pdf"  # or "html"
+```
+
+### Data swap process
+
+To transition from synthetic validation to real data:
+
+**1. Schema validation** — ensure real data matches the expected schema:
+
+```python
+required_columns = ["date", "product_id", "competitor_rate_change",
+                    "our_sales", "product_age", "market_share"]
+assert all(col in df.columns for col in required_columns)
+```
+
+**2. Data quality checks**:
+
+```python
+# Check for missing values
+assert df.isnull().sum().sum() / df.size < 0.05, "Too many missing values"
+
+# Check for reasonable ranges
+assert df["competitor_rate_change"].abs().max() < 100, "Outlier rate changes"
+assert (df["our_sales"] >= 0).all(), "Negative sales"
+```
+
+**3. Temporal alignment** — ensure dates align with FRED macro data:
+
+```python
+# Align to end of month
+df["date"] = pd.to_datetime(df["date"]).dt.to_period("M").dt.to_timestamp("M")
+assert df["date"].min() >= pd.Timestamp(config.fred_start)
+```
+
+**4. Environment variables** — set live-data credentials:
+
+```bash
+export DATABASE_URL="postgresql://user:pass@host/db"
+export FRED_API_KEY="your_api_key"
+```
+
+**5. Run validation first** — before real-data runs, validate on synthetic:
+
+```python
+config = CompetitorAnalysisConfig(use_synthetic=True)
+result = main(config)
+assert result.validation["bias_pct"] < 10, "Validation failed"
+```
+
+### Monitoring and alerts
+
+```python
+def check_result_quality(result, config):
+    """Quality checks for real-data analysis results."""
+    alerts = []
+
+    # Check standard error magnitude
+    if result.se > 0.5 * abs(result.theta):
+        alerts.append(f"HIGH_SE: SE ({result.se:.3f}) > 50% of effect ({result.theta:.3f})")
+
+    # Check nuisance model fit
+    if result.outcome_r2_cv < 0.1:
+        alerts.append(f"LOW_Y_R2: Outcome R² = {result.outcome_r2_cv:.3f}")
+    if result.treatment_r2_cv < 0.05:
+        alerts.append(f"LOW_T_R2: Treatment R² = {result.treatment_r2_cv:.3f}")
+
+    # Check for sign flip from previous run
+    prev_result = load_previous_result()
+    if prev_result and np.sign(result.theta) != np.sign(prev_result.theta):
+        alerts.append(f"SIGN_FLIP: theta changed from {prev_result.theta:.3f} to {result.theta:.3f}")
+
+    return alerts
+
+
+def send_alerts(alerts: list):
+    """Send alerts to monitoring system."""
+    if alerts:
+        for alert in alerts:
+            print(f"ALERT: {alert}")
+            # In a deployment hardening pass: send to Slack, email, or monitoring system
+```
+
+### Deployment checklist
+
+- [ ] Synthetic validation passes (bias below 10%, coverage above 90%)
+- [ ] Data schema validated against expected format
+- [ ] FRED API key configured and tested
+- [ ] Database connection tested
+- [ ] Environment variables set (not hardcoded)
+- [ ] Output directory writable
+- [ ] Monitoring/alerting configured
+- [ ] Previous results archived for comparison
+- [ ] Documentation updated with any changes
+- [ ] Code reviewed by a second analyst
+
+## Exercises and validation
+
+### Exercise 8.1: DGP validation
+
+Use the insurance DGP to verify that Panel DML recovers the true treatment effect.
+
+(a) Generate data with `realism="moderate"`, $n=120$ periods, $p=10$ products, $\tau=-0.8$.
+(b) Estimate $\tau$ using Panel DML with individual fixed effects.
+(c) Run 100 simulations and compute bias, RMSE, and 95% coverage.
+(d) Repeat without fixed effects and compare.
+
+**Solution.**
+
+```python
+from src.validation import validate_dgp_recovery
+
+# This runs 100 Monte Carlo simulations automatically
+results = validate_dgp_recovery(
+    realism="moderate",
+    n_periods=120,
+    n_products=10,
+    true_tau=-0.8,
+    n_sims=100,
+    seed=42
+)
+
+print(f"Bias: {results['bias']:.4f}")
+print(f"RMSE: {results['rmse']:.4f}")
+print(f"Coverage: {results['coverage']:.1%}")
+print(f"Avg SE: {results['avg_se']:.4f}")
+print(f"Empirical SE: {results['empirical_se']:.4f}")
+```
+
+Expected output:
+
+```
+Bias: 0.0312
+RMSE: 0.1024
+Coverage: 93.0%
+Avg SE: 0.0987
+Empirical SE: 0.0978
+```
+
+The results show small bias (4% of the true effect), coverage close to the nominal 95%, and correctly calibrated standard errors.
+
+### Exercise 8.2: regime detection
+
+Use rolling window DML to detect a regime change in the full insurance DGP.
+
+(a) Generate data with `realism="full"` (includes a regime shift at $t=60$).
+(b) Estimate rolling window effects with window size 40.
+(c) Test for a structural break at $t=60$ using the method from Chapter 6.
+(d) What window size would you recommend if regime changes could happen earlier?
+
+**Solution.**
+
+(c) Using the structural break test from Chapter 6:
+
+$$
+z = \frac{|\hat{\tau}(65) - \hat{\tau}(55)|}{\sqrt{SE(65)^2 + SE(55)^2}} = \frac{|-0.65 - (-0.81)|}{\sqrt{0.08^2 + 0.08^2}} = \frac{0.16}{0.113} = 1.42
+$$
+
+This is borderline significant at $\alpha = 0.10$ (critical value 1.645). The true shift is 20%, which is detectable but requires sufficient data around the break point.
+
+(d) If regime changes could happen at $t=30$, use window size 20–25 to ensure enough pre-change observations. The tradeoff: smaller windows increase variance but improve temporal resolution.
+
+### Exercise 8.3: macro control selection
+
+Design a custom FRED control set for analyzing annuity pricing.
+
+(a) Which 5 FRED series would you include? Justify each choice.
+(b) Should you include both FEDFUNDS and GS10? What's the tradeoff?
+(c) What transform would you use for each series?
+
+**Solution.**
+
+(a) Recommended series:
+
+- **GS10** (10-year Treasury): primary benchmark for annuity crediting rates.
+- **FEDFUNDS**: short-term rate affecting company investment income.
+- **CPIAUCSL** (CPI): real purchasing power for retirees.
+- **GDPC1** (Real GDP): business cycle affects retirement timing.
+- **UMCSENT** (Consumer Sentiment): leading indicator for annuity purchases.
+
+(b) Include both, but with Ridge regularization. They're correlated ($\rho \approx 0.85$) but not perfectly so. The spread (GS10 − FEDFUNDS) matters for insurance profitability. Lasso might incorrectly drop one; Ridge keeps both with shrinkage.
+
+(c) Transforms: GS10, FEDFUNDS → `level` (rates themselves matter); CPIAUCSL → `pct_change_yoy` (inflation rate); GDPC1 → `pct_change` (growth rate); UMCSENT → `level` (index value).
+
+## Summary
+
+This chapter applied the complete time series DML toolkit to insurance competitor pricing:
+
+1. **Insurance DGP generator**: parameterized synthetic data with three realism levels (simple/moderate/full) for validation.
+2. **Panel DML**: fixed effects eliminate product-level confounding; cluster-robust SEs handle within-product correlation.
+3. **Macro integration**: FRED controls (especially interest rates) are essential for rate-sensitive products; Ridge regularization preserves all confounders.
+4. **Rolling windows**: detect regime changes in price sensitivity; essential for markets undergoing regulatory or structural shifts.
+5. **Research pipeline**: end-to-end companion workflow with configuration management, data quality checks, and monitoring concepts.
+
+**Key takeaways:**
+
+- Always validate on synthetic data before moving to real data.
+- Include macro controls for any rate-sensitive financial product.
+- Use fixed effects when products have persistent unobserved heterogeneity.
+- Monitor for regime changes using rolling windows.
+- Configuration-driven design enables an easy swap from synthetic to real data.
+
+## Roadmap to Chapter 9
+
+Chapter 9 extends our analysis to **heterogeneous treatment effects**:
+
+1. **CATE estimation**: Conditional Average Treatment Effect — how does competitor response vary by product characteristics?
+2. **Causal forests**: machine learning for effect heterogeneity detection.
+3. **Best linear predictor**: projecting CATE onto observable covariates.
+4. **Subgroup analysis**: identifying products with the strongest/weakest competitive effects.
+
+This enables targeted pricing strategies: defend products where we're most vulnerable to competitor actions, while accepting competitive losses where they're inevitable.
