@@ -86,6 +86,40 @@ so consumers can record port provenance in the semantically correct block — an
 
 ---
 
+### Academic sidebar: `siteTitle` / `siteSubtitle` hardcoded; not derived from `defineBookConfig({ title })`
+
+**Status:** OPEN — to file. No consumer-side workaround short of shadowing the scaffold component; non-blocking (cosmetic, but site-wide).
+
+**Surfaced during:** Visual-polish proof of the 10 ported chapters (2026-06-01), reviewing rendered pages in a browser via Playwright against `npm run preview`.
+
+**Receipt:** Every page's sidebar header renders the literal placeholder **"Book" / "A scaffold-astro book"** instead of the configured book title. The landing `/` H1 correctly uses `defineBookConfig({ title: 'Double Machine Learning for Time Series' })`, but the sidebar brand does not. Source: `package/components/Sidebar.astro:23-24` hardcodes `const siteTitle = 'Book'; const siteSubtitle = 'A scaffold-astro book';`. The component's own comment (`:17-18`) says "Customize: edit the strings below or pass them in as `Astro.props` from `Base.astro`" — neither is reachable by an npm consumer without forking or shadowing the component.
+
+**Root cause:** `Sidebar.astro` doesn't read `title` / `description` from the resolved book config, nor accept a `brand` override. Every academic consumer therefore ships the scaffold's placeholder brand on every page.
+
+**Severity:** `kind:api-friction`. Cosmetic but pervasive — appears on every route, including the deployed `dml.brandon-behring.dev`.
+
+**Related (same component):** `Sidebar.astro:33-39` `ACADEMIC_PART_LABEL` hardcodes "Part I … Part V" by slot, so a consumer using only `foundations` / `integration` / `synthesis` (the generic slots this pilot chose) renders a numbering gap **Part I → IV → V**. This is the cosmetic cost of the deferred consumer-configurable `parts` nicety (see `track2-status` memory + `docs/CURRENT_STATUS.md`); a `defineBookSchemas({ parts })` option would resolve both the labels and the numbering.
+
+**Consumer-side state:** No workaround applied. Fixing the brand would require shadowing `Sidebar.astro` (re-vendoring the component) — deliberately avoided to keep the consumer inside the scaffold's public contract (same rationale as the part-labels decision). Logged here pending an upstream fix.
+
+**Proposed upstream fix:** derive `siteTitle` from the resolved config `title` (fall back to `'Book'`) and `siteSubtitle` from `description`, or add an optional `brand: { title, subtitle }` to `defineBookConfig`.
+
+**Links:**
+- Issue: _to file_ at `brandon-behring/book-scaffold-astro` (`consumer:double-ml-time-series` + `kind:api-friction`).
+- Surfaced in the visual-polish commit (this repo).
+
+---
+
+### Consumer favicon: scaffold `<head>` references `/favicon.svg`, none shipped → site-wide 404
+
+**Status:** RESOLVED consumer-side (2026-06-01). Minor; arguably a scaffold doc-gap, but the standard Astro pattern is consumer-supplied `public/favicon.svg`, so no upstream issue filed.
+
+**Surfaced during:** the same visual-polish proof — `browser_console_messages` reported `GET /favicon.svg 404` on the landing page (the scaffold's shared head links `/favicon.svg`, which the consumer had not provided).
+
+**Consumer-side resolution (in place):** added `web/public/favicon.svg` (a themed θ monogram in the academic accent blue). Astro serves `public/` at the site root, so `/favicon.svg` now resolves and the console 404 is gone.
+
+---
+
 ## Closed
 
 
