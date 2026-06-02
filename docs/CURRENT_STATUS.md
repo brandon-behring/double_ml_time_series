@@ -102,7 +102,11 @@ in-suite contract tests.
 
 ### Track 3 — Deferred methodology (post-gates)
 
-- True Lewis-Syrgkanis recursive dynamic g-estimation (separate, honestly-named class).
+- ~~True Lewis-Syrgkanis recursive dynamic g-estimation (separate, honestly-named class).~~
+  **Done 2026-06-01** — `DynamicGEstimationDML` recovers period-specific blips for a linear
+  SNMM via recursive peeling (panel + single-series), with a joint coupled-stage sandwich
+  variance and a gated EconML `DynamicDML` cross-check; validated against a known-blip DGP
+  (`DynamicTreatmentDGP`). Heterogeneous `theta_t(X)` remains future work.
 - ~~Public package namespace migration away from `src.*`.~~ **Done 2026-06-01** — code
   installs and imports as the `dml_ts` package (`from dml_ts import TemporalPLRDML`); the
   four headline estimators are hoisted to the package root, loaders/DGPs/sensitivity/

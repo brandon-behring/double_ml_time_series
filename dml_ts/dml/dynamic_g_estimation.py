@@ -13,15 +13,15 @@ Reference:
   Dynamic Treatment Effects via g-Estimation.* NeurIPS. arXiv:2002.07285.
 
 Algorithm (panel of n i.i.d. trajectories x m periods), recursive backward
-peeling -- "a dynamic version of Robinson's partial linear model":
+peeling -- a dynamic version of Robinson's partial linear model::
 
     for tau = m-1 ... 0:
-        H_tau = history available before T_tau  (states X_{0..tau}, treatments T_{0..tau-1})
+        H_tau = history available before T_tau  (states X_0..tau, treatments T_0..tau-1)
         cross-fit (over units) the residual-maker M_tau, residualize on H_tau:
-            R_tau   = M_tau Y_final          (residualized final outcome)
-            T~_s    = M_tau T_s   for all s  (residualized treatments)
+            R_tau = M_tau Y_final          (residualized final outcome)
+            T~_s  = M_tau T_s   for all s  (residualized treatments)
         peeled residual outcome:  Y~^(tau) = R_tau - sum_{s>tau} theta_s T~_s
-        orthogonal moment (linear, scalar):  theta_tau = <T~_tau, Y~^(tau)> / <T~_tau, T~_tau>
+        orthogonal moment:        theta_tau = <T~_tau, Y~^(tau)> / <T~_tau, T~_tau>
 
 Inference is the joint M-estimation sandwich over the stacked moments
 ``g_{i,tau} = T~_tau,i (R_tau,i - sum_{s>=tau} theta_s T~_s,i)``, whose Jacobian

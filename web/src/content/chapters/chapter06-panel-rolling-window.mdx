@@ -9,7 +9,7 @@ description: "DML for panel data: the within (fixed-effects) transformation, Pan
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_06.tex
-source_sha256: d76c446d519aca57f06260bb894e6fd3c873c6ee8007ef3700cc9fbc21caab0d
+source_sha256: 55884b77a4ad325b22693f291213864e1c0d202999eb343166261af9cf6588a1
 provenance:
   ai_tools:
     - Claude Code
@@ -458,6 +458,72 @@ $$
 (b) $\widehat{SE} = \sqrt{0.0756/4} = \sqrt{0.0189} = 0.137$.
 
 (c) $1.5 \pm 1.96 \times 0.137 = [1.23, 1.77]$.
+
+## Recursive Dynamic G-Estimation
+
+The estimators so far return a _single_ scalar effect. Many dynamic problems instead ask for a _sequence_ of period-specific effects: when a treatment is applied over $m$ periods and can alter both the outcome and the future state of the treated unit, what is the effect of the period-$\tau$ treatment? This is the dynamic treatment-effect setting of Lewis and Syrgkanis (2021), and the companion class `DynamicGEstimationDML` implements their recursive g-estimation.
+
+<ResultBox>
+
+`DynamicGEstimationDML` is the recursive dynamic g-estimator that the previous chapter's scalar `TemporalPLRDML` is **not**: it recovers period-specific blips $\theta_1,\dots,\theta_m$ for a linear structural nested mean model, with valid inference. The constant (homogeneous) blip is implemented; heterogeneous blips $\theta_\tau(X)$ remain future work.
+
+</ResultBox>
+
+### Structural Nested Mean Models and the Blip
+
+Consider $n$ i.i.d. trajectories, each observed over $m$ periods, with treatment $T_\tau$, evolving controls (state) $X_\tau$, and a final outcome $Y$. Crucially, the state may depend on past treatment,
+
+$$
+X_\tau = A X_{\tau-1} + b\,T_{\tau-1} + \varepsilon_\tau,
+$$
+
+so that past treatment confounds both future treatment and the outcome — the _time-varying confounding_ that ordinary adjustment for $X$ mishandles (conditioning on a post-treatment state blocks part of the effect and opens collider paths). A _linear structural nested mean model_ writes the effect of the period-$\tau$ treatment on the final outcome as a constant _blip_ $\theta_\tau$:
+
+$$
+Y = \sum_{\tau=1}^{m} \theta_\tau\, T_\tau + g(X) + U,
+\qquad \mathbb{E}[U \mid H_\tau, T_\tau] = \mathbb{E}[U \mid H_\tau],
+$$
+
+where $H_\tau = (X_{1:\tau}, T_{1:\tau-1})$ is the history available before $T_\tau$. Sequential conditional exchangeability given $H_\tau$ identifies $\theta_\tau$.
+
+### Neyman-Orthogonal Recursive Peeling
+
+Lewis and Syrgkanis give a cross-fitted, Neyman-orthogonal g-estimator — a dynamic generalization of Robinson's partially linear model — that peels the blips off the outcome from the last period backward. Let $M_\tau$ denote the residual-maker that partials out $H_\tau$, with the conditional means $\mathbb{E}[\,\cdot \mid H_\tau]$ estimated by cross-fitting arbitrary machine-learning nuisances. For $\tau = m, m-1, \dots, 1$:
+
+1. **Residualize** on $H_\tau$: $\tilde{Y}^{(\tau)} = M_\tau(Y - \sum_{s>\tau} \theta_s T_s)$ and $\tilde{T}_\tau = M_\tau T_\tau$.
+2. **Solve** the orthogonal moment: $\theta_\tau = \langle \tilde{T}_\tau, \tilde{Y}^{(\tau)} \rangle / \langle \tilde{T}_\tau, \tilde{T}_\tau \rangle$.
+3. **Peel** period $\tau$ off the outcome and recurse to $\tau-1$.
+
+Inference uses the joint sandwich variance over the stacked moments. Because later-stage estimates enter earlier stages, Neyman orthogonality does _not_ hold _across_ the structural parameters: the Jacobian is triangular and the per-period variances are coupled. The implementation forms the full joint covariance rather than treating each period in isolation, with the sandwich "meat" clustered by unit (panel) or HAC/Newey–West (single series).
+
+### Implementation
+
+```python
+from dml_ts import DynamicGEstimationDML
+from dml_ts.validation import DynamicTreatmentDGP
+
+# Known per-period blips with treatment-dependent state (time-varying confounding)
+dgp = DynamicTreatmentDGP(
+    n_periods=3, theta_t=[1.0, 0.5, 1.5], n_units=1500, p=3,
+    state_feedback=True, treatment_state_coef=0.8, random_state=7,
+)
+data = dgp.generate()  # data.theta_t == [1.96, 2.90, 1.50] (total blips)
+
+# Linear confounding here, so ridge nuisances are correctly specified
+est = DynamicGEstimationDML(model_y="ridge", model_t="ridge", random_state=0)
+result = est.fit(data.Y, data.T, data.X, groups=data.groups)
+print(result.summary())
+```
+
+The estimator recovers the true _total_ blips $(1.96, 2.90, 1.50)$ — the direct coefficients plus the indirect path through the treatment-dependent state — to within Monte Carlo error, whereas a naive pooled regression that ignores the sequential structure is badly biased. A reference path, `fit_econml_reference`, wraps EconML's `DynamicDML` (the reference Lewis–Syrgkanis implementation, optional via the `full` extra) and agrees with the native estimator to within sampling error — a custom-versus-reference numerical cross-check.
+
+<ResultBox>
+
+**Match the nuisance learner to the confounding.** Recursive peeling amplifies nuisance approximation error, so a flexible learner on a simple linear DGP can be _worse_ than a correctly specified linear one. Use `ridge` or linear nuisances for linear confounding, and `random_forest` or `gradient_boosting` only when the confounding is genuinely nonlinear.
+
+</ResultBox>
+
+A single long, stationary series is also supported (the `series` mode), where the blips become distributed-lag effects $Y_t = \sum_k \theta_{k+1}\, T_{t-k} + g(X_t) + U_t$ estimated with HAC inference.
 
 ## Summary
 

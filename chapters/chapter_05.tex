@@ -15,7 +15,7 @@
 Chapters 1--4 developed DML for cross-sectional data where observations are independent. However, many economic questions involve \textbf{time series data} where observations exhibit temporal dependence. This chapter develops the companion repo's current time-series implementation: scalar partially linear DML with lagged treatment controls, temporal cross-fitting, and HAC inference.
 
 \keyresult{
-The class used in this chapter, \texttt{TemporalPLRDML}, is not a recursive dynamic g-estimation implementation and does not estimate period-specific $\theta_t$ effects. It estimates one scalar treatment effect after controlling for current covariates and lagged treatments. True dynamic g-estimation is deferred future work.
+The class used in this chapter, \texttt{TemporalPLRDML}, is a \emph{scalar} partially linear estimator: it estimates one treatment effect after controlling for current covariates and lagged treatments, and does not estimate period-specific $\theta_t$ effects. Recursive dynamic g-estimation with period-specific blips is implemented separately as \texttt{DynamicGEstimationDML} in the next chapter (\cref{sec:ch06_dynamic_g}).
 }
 
 \keyresult{

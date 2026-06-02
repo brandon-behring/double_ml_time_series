@@ -9,7 +9,7 @@ description: "Extending DML to time series: why random K-fold leaks future data,
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_05.tex
-source_sha256: d55c912bbe3ef17781acc9722c6c7737ddfc969e28e506f54cc7947c5aa2faa3
+source_sha256: 9dbab79dd43c4961e97d115729ec538526cf4fbb98fa33ee95d15083839dd348
 provenance:
   ai_tools:
     - Claude Code
@@ -32,7 +32,7 @@ Chapters 1–4 developed DML for cross-sectional data where observations are ind
 
 <ResultBox>
 
-The class used in this chapter, `TemporalPLRDML`, is **not** a recursive dynamic g-estimation implementation and does not estimate period-specific $\theta_t$ effects. It estimates one scalar treatment effect after controlling for current covariates and lagged treatments. True dynamic g-estimation is deferred future work.
+The class used in this chapter, `TemporalPLRDML`, is a _scalar_ partially linear estimator: it estimates one treatment effect after controlling for current covariates and lagged treatments, and does not estimate period-specific $\theta_t$ effects. Recursive dynamic g-estimation with period-specific blips is implemented separately as `DynamicGEstimationDML` in the next chapter.
 
 </ResultBox>
 

@@ -22,12 +22,18 @@ Current core:
 - `TemporalPLRDML`: scalar temporal PLR DML with lagged treatment controls,
   temporal cross-fitting, and HAC inference
 - `RollingWindowDML` and `PanelDML` as companion estimators
+- `DynamicGEstimationDML`: recursive dynamic g-estimation (Lewis-Syrgkanis) recovering
+  period-specific blips `theta_1..theta_m` for a linear SNMM, panel + single-series, with
+  a joint sandwich variance and a gated EconML `DynamicDML` cross-check
 - Time-series CV, HAC/Newey-West, synthetic macro controls, and validation helpers
 
-Do not describe this repo as production-grade. Do not describe `TemporalPLRDML` as true
-Lewis-Syrgkanis dynamic g-estimation, period-specific `theta_t`, recursive
-g-estimation, CausalForestDML/BLP/policy-tree implementation, automatic stationarity
-enforcement, or deployment readiness unless the code path being discussed proves it.
+Do not describe this repo as production-grade. Do not describe `TemporalPLRDML` as
+recursive dynamic g-estimation or as estimating period-specific `theta_t` — it is a
+scalar estimator. The recursive dynamic g-estimator is the separate
+`DynamicGEstimationDML` (constant-blip linear SNMM; heterogeneous `theta_t(X)` remains
+future work). Do not claim CausalForestDML/BLP/policy-tree implementation, automatic
+stationarity enforcement, or deployment readiness unless the code path being discussed
+proves it.
 
 ## Required Commands
 

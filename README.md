@@ -11,12 +11,13 @@ The current verified core is:
 - Time-series cross-validation helpers and HAC/Newey-West inference utilities
 - Synthetic data generators, stationarity diagnostics, and book examples
 
-The current temporal estimator is intentionally named `TemporalPLRDML`: it estimates a
-scalar partially linear treatment effect with lagged treatment controls, temporal
-cross-fitting, and HAC inference. True Lewis-Syrgkanis dynamic g-estimation,
-period-specific `theta_t` effects, causal forests, BLP/policy-tree workflows, blocking
-stationarity gates, and production deployment are deferred work unless a specific module
-or example proves otherwise.
+The temporal estimator `TemporalPLRDML` estimates a scalar partially linear treatment
+effect with lagged treatment controls, temporal cross-fitting, and HAC inference. True
+Lewis-Syrgkanis recursive dynamic g-estimation with period-specific `theta_t` blips is
+implemented separately as `DynamicGEstimationDML` (constant-blip linear SNMM, panel +
+single-series, with a gated EconML cross-check). Heterogeneous `theta_t(X)`, causal
+forests, BLP/policy-tree workflows, blocking stationarity gates, and production
+deployment remain deferred work unless a specific module or example proves otherwise.
 
 ## Current Status
 
