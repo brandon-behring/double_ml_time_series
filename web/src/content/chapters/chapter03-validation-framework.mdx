@@ -9,7 +9,7 @@ description: "A seven-method validation battery on synthetic DGPs with known gro
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_03.tex
-source_sha256: d71f0095da4f67decff8e8a8fe7b6713efc58ec9744b32dcf39ed062f4cfa2d5
+source_sha256: d055b77bc81eea7fb53b65ca64a9f88eb7d1ae1fd456e413b6f3b926f031d717
 provenance:
   ai_tools:
     - Claude Code
@@ -116,7 +116,7 @@ Throughout this chapter, we use the `DGPGenerator` class to create controlled sy
 
 ```python
 import numpy as np
-from src.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.dgp_generator import DGPGenerator
 
 # Set seed for reproducibility
 np.random.seed(42)
@@ -191,8 +191,8 @@ Our first experiment varies confounding strength $\gamma \in \{0, 0.5, 1.0, 1.5,
 <MarginNote title="Design rationale">At $\gamma=0$, even NaiveOLS should work. As $\gamma$ increases, methods that fail to properly adjust for confounding will show increasing bias.</MarginNote>
 
 ```python
-from src.validation.baseline_comparison import BaselineComparison
-from src.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.baseline_comparison import BaselineComparison
+from dml_ts.validation.dgp_generator import DGPGenerator
 import pandas as pd
 
 # Configure experiment
@@ -317,7 +317,7 @@ Cross-fitting is DML's key innovation. We examine how the number of folds $K \in
 <MarginNote title="Trade-off">More folds means more data for nuisance estimation (better first-stage), but more computational cost.</MarginNote>
 
 ```python
-from src.dml.double_ml import double_ml
+from dml_ts import double_ml
 import numpy as np
 
 # Test different fold counts
@@ -583,7 +583,7 @@ Practical deployment requires understanding computational costs. We benchmark al
 
 ```python
 import time
-from src.validation.baseline_comparison import BaselineComparison
+from dml_ts.validation.baseline_comparison import BaselineComparison
 
 # Benchmark configuration
 n = 2000

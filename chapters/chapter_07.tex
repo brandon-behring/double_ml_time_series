@@ -132,7 +132,7 @@ the DML estimator with augmented controls $\tilde{X}_t = (X_t, M_t)$ is consiste
 \section{FRED Data Architecture}\label{sec:fred_architecture}
 % ============================================================================
 
-The Federal Reserve Bank of St.\ Louis maintains FRED (Federal Reserve Economic Data), containing over 800,000 time series. Our \texttt{FREDLoader} class in \texttt{src/data/fred\_loader.py} provides standardized access.
+The Federal Reserve Bank of St.\ Louis maintains FRED (Federal Reserve Economic Data), containing over 800,000 time series. Our \texttt{FREDLoader} class in \texttt{dml\_ts/data/fred\_loader.py} provides standardized access.
 
 \subsection{Core Classes}
 
@@ -235,7 +235,7 @@ Start with \texttt{basic}; add series if domain knowledge suggests relevance.
 \subsection{FREDLoader Class}
 
 \begin{minted}[fontsize=\small]{python}
-from src.data import FREDLoader
+from dml_ts.data import FREDLoader
 
 # Initialize (API key from environment or parameter)
 loader = FREDLoader(api_key="your_api_key")  # or FRED_API_KEY env var
@@ -388,8 +388,8 @@ Combining macro controls with TemporalPLRDML:
 
 \begin{minted}[fontsize=\small]{python}
 import numpy as np
-from src.data import FREDLoader, create_synthetic_fred_data
-from src.dml import TemporalPLRDML
+from dml_ts.data import FREDLoader, create_synthetic_fred_data
+from dml_ts import TemporalPLRDML
 
 # Get macro controls (or use synthetic for testing)
 # For production: loader = FREDLoader(); macro = loader.get_macro_controls(...)
@@ -460,7 +460,7 @@ For causal inference, Ridge's ``keep everything'' approach is typically safer th
 Macro variables are highly persistent (autocorrelated), which affects standard errors:
 
 \begin{minted}[fontsize=\small]{python}
-from src.dml import TemporalPLRDML
+from dml_ts import TemporalPLRDML
 
 # Longer bandwidth for persistent macro controls
 model = TemporalPLRDML(
@@ -496,8 +496,8 @@ The optimal HAC bandwidth often increases when macro controls are included, refl
 \textbf{Confounding mechanism}: When rates rise, competitors may delay rate increases (lower $T_t$), while higher rates attract more annuity buyers (higher $Y_t$). Without controlling for rates, we underestimate the causal effect.
 
 \begin{minted}[fontsize=\small]{python}
-from src.data import create_synthetic_fred_data
-from src.dml import TemporalPLRDML, PanelDML
+from dml_ts.data import create_synthetic_fred_data
+from dml_ts import TemporalPLRDML, PanelDML
 import numpy as np
 
 # Macro environment
@@ -639,8 +639,8 @@ Use \texttt{create\_synthetic\_fred\_data} to validate that macro controls elimi
 
 \begin{minted}[fontsize=\small]{python}
 import numpy as np
-from src.data import create_synthetic_fred_data
-from src.dml import TemporalPLRDML
+from dml_ts.data import create_synthetic_fred_data
+from dml_ts import TemporalPLRDML
 
 # Monte Carlo validation
 n_sims = 200

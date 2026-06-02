@@ -162,7 +162,7 @@ Throughout this chapter, we use the \texttt{DGPGenerator} class to create contro
 
 \begin{minted}{python}
 import numpy as np
-from src.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.dgp_generator import DGPGenerator
 
 # Set seed for reproducibility
 np.random.seed(42)
@@ -241,8 +241,8 @@ Our first experiment varies confounding strength $\gamma \in \{0, 0.5, 1.0, 1.5,
 \marginnote[Design Rationale]{At $\gamma=0$, even NaiveOLS should work. As $\gamma$ increases, methods that fail to properly adjust for confounding will show increasing bias.}%
 
 \begin{minted}{python}
-from src.validation.baseline_comparison import BaselineComparison
-from src.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.baseline_comparison import BaselineComparison
+from dml_ts.validation.dgp_generator import DGPGenerator
 import pandas as pd
 
 # Configure experiment
@@ -395,7 +395,7 @@ Cross-fitting is DML's key innovation. We examine how the number of folds $K \in
 \marginnote[Trade-off]{More folds $\Rightarrow$ more data for nuisance estimation (better first-stage), but more computational cost.}%
 
 \begin{minted}{python}
-from src.dml.double_ml import double_ml
+from dml_ts import double_ml
 import numpy as np
 
 # Test different fold counts
@@ -698,7 +698,7 @@ Practical deployment requires understanding computational costs. We benchmark al
 
 \begin{minted}{python}
 import time
-from src.validation.baseline_comparison import BaselineComparison
+from dml_ts.validation.baseline_comparison import BaselineComparison
 
 # Benchmark configuration
 n = 2000

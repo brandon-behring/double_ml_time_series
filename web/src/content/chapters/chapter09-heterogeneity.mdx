@@ -9,7 +9,7 @@ description: "Conditional Average Treatment Effects: CATE identification and the
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_09.tex
-source_sha256: 097ed3bcf6ada705b3f72560e1f361a3416d9c8c47d230cf55566fdabdd2c172
+source_sha256: c15eff7a1314266f39528d16f4a40df2dda252d272f1f05afba9b91d1952da95
 provenance:
   ai_tools:
     - Claude Code
@@ -581,7 +581,7 @@ plt.tight_layout()
 Let's apply heterogeneity analysis to the insurance pricing context from Chapter 8.
 
 ```python
-from src.validation import create_insurance_dgp
+from dml_ts.validation import create_insurance_dgp
 from econml.dml import CausalForestDML
 
 # Generate insurance DGP with heterogeneous effects

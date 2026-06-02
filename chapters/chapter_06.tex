@@ -155,7 +155,7 @@ DML relaxes the linearity assumption, but combining ML with fixed effects requir
 \subsection{Implementation}
 
 \begin{minted}[fontsize=\small]{python}
-from src.dml import PanelDML
+from dml_ts import PanelDML
 import numpy as np
 
 # Generate panel data
@@ -181,7 +181,7 @@ true_tau = 2.0
 Y = true_tau * T + X[:, 0]**2 + alpha_expanded + np.random.randn(n_total)
 
 # Without fixed effects: BIASED
-from src.dml import TemporalPLRDML
+from dml_ts import TemporalPLRDML
 naive_model = TemporalPLRDML(n_lags=0, model_y="ridge", model_t="ridge")
 naive_result = naive_model.fit(Y, T, X)
 print(f"Naive (no FE): theta = {naive_result.theta:.3f}")  # Biased!
@@ -319,7 +319,7 @@ For window size $w$ and step size $s$:
 \subsection{Implementation}
 
 \begin{minted}[fontsize=\small]{python}
-from src.dml import RollingWindowDML
+from dml_ts import RollingWindowDML
 
 # Fit rolling window DML
 model = RollingWindowDML(

@@ -715,7 +715,7 @@ An insurance company wants to estimate how competitor pricing affects policy ret
 % Insurance pipeline configuration
 \begin{minted}[fontsize=\small]{python}
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
-from src.production import InsuranceDMLPipeline, PipelineConfig
+from dml_ts.production import InsuranceDMLPipeline, PipelineConfig
 
 config = PipelineConfig(
     n_folds=5,
@@ -855,7 +855,7 @@ This chapter developed research/demo infrastructure patterns for causal inferenc
 \end{itemize}
 }
 
-The companion ``src.production`` module currently provides demo utilities:
+The companion ``dml\_ts.production`` module currently provides demo utilities:
 \begin{itemize}
     \item \texttt{DMLModelVersion}, \texttt{DMLModelRegistry}: Model versioning
     \item \texttt{CausalMonitor}: Overlap, treatment shift, nuisance, effect monitoring

@@ -9,7 +9,7 @@ description: "Synthesizing the toolkit on insurance/annuity competitor pricing: 
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_08.tex
-source_sha256: dd643d6d3692a9ba28d440a1dd879fd5d902bfff1cef055584b563d4719e63ac
+source_sha256: f13d35946546b2147c975b408378213247a700abfc4a899070e0a14a9e594bb0
 provenance:
   ai_tools:
     - Claude Code
@@ -106,7 +106,7 @@ where:
 We provide a synthetic DGP with configurable realism for validation:
 
 ```python
-from src.validation import create_insurance_dgp
+from dml_ts.validation import create_insurance_dgp
 
 # Pedagogical version: simple linear DGP
 dgp_simple = create_insurance_dgp(
@@ -204,8 +204,8 @@ Panel DML (Chapter 6) handles the insurance pricing problem through:
 ### Implementation
 
 ```python
-from src.dml import PanelDML
-from src.validation import create_insurance_dgp
+from dml_ts import PanelDML
+from dml_ts.validation import create_insurance_dgp
 
 # Generate validation data
 dgp = create_insurance_dgp(realism="moderate", n_periods=120, n_products=10, seed=42)
@@ -260,7 +260,7 @@ The estimate $\hat{\tau} = -0.784$ is close to the true $\tau = -0.8$, and the 9
 
 ```python
 # Without fixed effects (BIASED)
-from src.dml import TemporalPLRDML
+from dml_ts import TemporalPLRDML
 
 model_naive = TemporalPLRDML(n_lags=2, model_y="ridge", model_t="ridge")
 result_naive = model_naive.fit(dgp.Y, dgp.T, dgp.X)
@@ -302,8 +302,8 @@ Interest rate-sensitive products require careful macro control selection:
 ### Integration pattern
 
 ```python
-from src.data import FREDLoader, create_synthetic_fred_data
-from src.dml import PanelDML
+from dml_ts.data import FREDLoader, create_synthetic_fred_data
+from dml_ts import PanelDML
 import numpy as np
 
 # For live FRED data: use FREDLoader with API key
@@ -373,7 +373,7 @@ $$
 ### Implementation
 
 ```python
-from src.dml import RollingWindowDML
+from dml_ts import RollingWindowDML
 
 # Use full DGP with regime change
 dgp = create_insurance_dgp(realism="full", n_periods=120, n_products=10, seed=42)
@@ -468,9 +468,9 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 # DML imports
-from src.dml import PanelDML, RollingWindowDML, TemporalPLRDML
-from src.data import FREDLoader, create_synthetic_fred_data
-from src.validation import create_insurance_dgp
+from dml_ts import PanelDML, RollingWindowDML, TemporalPLRDML
+from dml_ts.data import FREDLoader, create_synthetic_fred_data
+from dml_ts.validation import create_insurance_dgp
 
 @dataclass
 class CompetitorAnalysisConfig:
@@ -792,7 +792,7 @@ Use the insurance DGP to verify that Panel DML recovers the true treatment effec
 **Solution.**
 
 ```python
-from src.validation import validate_dgp_recovery
+from dml_ts.validation import validate_dgp_recovery
 
 # This runs 100 Monte Carlo simulations automatically
 results = validate_dgp_recovery(

@@ -9,7 +9,7 @@ description: "Integrating FRED macroeconomic controls into time-series DML: the 
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_07.tex
-source_sha256: c2dfc970f38ece01416c361d288889a900ec2090858333876e3b80aac415e986
+source_sha256: 465c46912056f596d830578d71166d2d33930e4c42b3e6adad00117caf63d876
 provenance:
   ai_tools:
     - Claude Code
@@ -154,7 +154,7 @@ $$
 
 ## FRED data architecture
 
-The Federal Reserve Bank of St. Louis maintains FRED (Federal Reserve Economic Data), containing over 800,000 time series. Our `FREDLoader` class in `src/data/fred_loader.py` provides standardized access.
+The Federal Reserve Bank of St. Louis maintains FRED (Federal Reserve Economic Data), containing over 800,000 time series. Our `FREDLoader` class in `dml_ts/data/fred_loader.py` provides standardized access.
 
 ### Core classes
 
@@ -246,7 +246,7 @@ Start with `basic`; add series if domain knowledge suggests relevance.
 ### FREDLoader class
 
 ```python
-from src.data import FREDLoader
+from dml_ts.data import FREDLoader
 
 # Initialize (API key from environment or parameter)
 loader = FREDLoader(api_key="your_api_key")  # or FRED_API_KEY env var
@@ -391,8 +391,8 @@ Combining macro controls with TemporalPLRDML:
 
 ```python
 import numpy as np
-from src.data import FREDLoader, create_synthetic_fred_data
-from src.dml import TemporalPLRDML
+from dml_ts.data import FREDLoader, create_synthetic_fred_data
+from dml_ts import TemporalPLRDML
 
 # Get macro controls (or use synthetic for testing)
 # For production: loader = FREDLoader(); macro = loader.get_macro_controls(...)
@@ -463,7 +463,7 @@ For causal inference, Ridge's "keep everything" approach is typically safer than
 Macro variables are highly persistent (autocorrelated), which affects standard errors:
 
 ```python
-from src.dml import TemporalPLRDML
+from dml_ts import TemporalPLRDML
 
 # Longer bandwidth for persistent macro controls
 model = TemporalPLRDML(
@@ -497,8 +497,8 @@ The optimal HAC bandwidth often increases when macro controls are included, refl
 **Confounding mechanism**: when rates rise, competitors may delay rate increases (lower $T_t$), while higher rates attract more annuity buyers (higher $Y_t$). Without controlling for rates, we underestimate the causal effect.
 
 ```python
-from src.data import create_synthetic_fred_data
-from src.dml import TemporalPLRDML, PanelDML
+from dml_ts.data import create_synthetic_fred_data
+from dml_ts import TemporalPLRDML, PanelDML
 import numpy as np
 
 # Macro environment
@@ -607,8 +607,8 @@ Use `create_synthetic_fred_data` to validate that macro controls eliminate bias.
 
 ```python
 import numpy as np
-from src.data import create_synthetic_fred_data
-from src.dml import TemporalPLRDML
+from dml_ts.data import create_synthetic_fred_data
+from dml_ts import TemporalPLRDML
 
 # Monte Carlo validation
 n_sims = 200

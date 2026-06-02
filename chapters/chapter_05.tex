@@ -98,7 +98,7 @@ Now testing never uses future training data.
 
 \subsection{Time Series Cross-Validation Strategies}
 
-We implement three strategies in \texttt{src/dml/cross\_fitting.py}:
+We implement three strategies in \texttt{dml\_ts/dml/cross\_fitting.py}:
 
 \begin{definition}[Expanding Window CV]
 \label{def:expanding_cv}
@@ -140,7 +140,7 @@ Purging removes $p\%$ of training data adjacent to test boundaries.
 Our \texttt{TimeSeriesCrossValidator} handles all three strategies:
 
 \begin{minted}[fontsize=\small]{python}
-from src.dml import TimeSeriesCrossValidator
+from dml_ts.dml import TimeSeriesCrossValidator
 
 # Expanding window with 5 folds and 2-period gap
 cv = TimeSeriesCrossValidator(
@@ -205,7 +205,7 @@ where:
 
 \subsection{Kernel Functions}
 
-Three commonly used kernels (implemented in \texttt{src/dml/hac.py}):
+Three commonly used kernels (implemented in \texttt{dml\_ts/dml/hac.py}):
 
 \begin{enumerate}
     \item \textbf{Bartlett (Triangular)}:
@@ -269,7 +269,7 @@ where $\hat{\rho}$ is the AR(1) coefficient of the influence scores.
 \subsection{Python Implementation}
 
 \begin{minted}[fontsize=\small]{python}
-from src.dml import HACEstimator, newey_west_se
+from dml_ts.dml import HACEstimator, newey_west_se
 
 # Option 1: Function interface
 se = newey_west_se(
@@ -325,7 +325,7 @@ TemporalPLRDML combines time series cross-validation with HAC inference:
 \subsection{Implementation}
 
 \begin{minted}[fontsize=\small]{python}
-from src.dml import TemporalPLRDML
+from dml_ts import TemporalPLRDML
 import numpy as np
 
 # Generate time series data with autocorrelation

@@ -9,7 +9,7 @@ description: "DML for panel data: the within (fixed-effects) transformation, Pan
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_06.tex
-source_sha256: c799c75fd69e860f11a0440b78c7ac442082d48dd3d242b1038e2efa645329cc
+source_sha256: d76c446d519aca57f06260bb894e6fd3c873c6ee8007ef3700cc9fbc21caab0d
 provenance:
   ai_tools:
     - Claude Code
@@ -166,7 +166,7 @@ return τ̂, SE
 ### Implementation
 
 ```python
-from src.dml import PanelDML
+from dml_ts import PanelDML
 import numpy as np
 
 # Generate panel data
@@ -192,7 +192,7 @@ true_tau = 2.0
 Y = true_tau * T + X[:, 0]**2 + alpha_expanded + np.random.randn(n_total)
 
 # Without fixed effects: BIASED
-from src.dml import TemporalPLRDML
+from dml_ts import TemporalPLRDML
 naive_model = TemporalPLRDML(n_lags=0, model_y="ridge", model_t="ridge")
 naive_result = naive_model.fit(Y, T, X)
 print(f"Naive (no FE): theta = {naive_result.theta:.3f}")  # Biased!
@@ -330,7 +330,7 @@ For window size $w$ and step size $s$:
 ### Implementation
 
 ```python
-from src.dml import RollingWindowDML
+from dml_ts import RollingWindowDML
 
 # Fit rolling window DML
 model = RollingWindowDML(

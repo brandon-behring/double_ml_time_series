@@ -9,7 +9,7 @@ description: "Extending DML to time series: why random K-fold leaks future data,
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_05.tex
-source_sha256: 71712e7ad7085dc7d84edfafd1454c6a4ed7bf6849b7050e95fa23f467752297
+source_sha256: d55c912bbe3ef17781acc9722c6c7737ddfc969e28e506f54cc7947c5aa2faa3
 provenance:
   ai_tools:
     - Claude Code
@@ -113,7 +113,7 @@ Now testing never uses future training data.
 
 ### Time series cross-validation strategies
 
-We implement three strategies in `src/dml/cross_fitting.py`:
+We implement three strategies in `dml_ts/dml/cross_fitting.py`:
 
 <Theorem kind="definition" n="5.1" name="Expanding Window CV" id="def-expanding-cv">
 
@@ -162,7 +162,7 @@ Purging removes $p\%$ of training data adjacent to test boundaries.
 Our `TimeSeriesCrossValidator` handles all three strategies:
 
 ```python
-from src.dml import TimeSeriesCrossValidator
+from dml_ts.dml import TimeSeriesCrossValidator
 
 # Expanding window with 5 folds and 2-period gap
 cv = TimeSeriesCrossValidator(
@@ -236,7 +236,7 @@ where:
 
 ### Kernel functions
 
-Three commonly used kernels (implemented in `src/dml/hac.py`):
+Three commonly used kernels (implemented in `dml_ts/dml/hac.py`):
 
 1. **Bartlett (triangular)**:
 
@@ -302,7 +302,7 @@ where $\hat{\rho}$ is the AR(1) coefficient of the influence scores.
 ### Python implementation
 
 ```python
-from src.dml import HACEstimator, newey_west_se
+from dml_ts.dml import HACEstimator, newey_west_se
 
 # Option 1: Function interface
 se = newey_west_se(
@@ -350,7 +350,7 @@ return τ̂, SE(τ̂)
 ### Implementation
 
 ```python
-from src.dml import TemporalPLRDML
+from dml_ts import TemporalPLRDML
 import numpy as np
 
 # Generate time series data with autocorrelation

@@ -9,7 +9,7 @@ description: "DML on the Dominick's orange-juice data: price-elasticity estimati
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_04.tex
-source_sha256: e914424245acea2818ae27d5cb90c069b1ada3336a02c6e7ac42d0fabad81571
+source_sha256: 4150b713835d048ddb85727f882be42baa56f4e830059d53d75214ead3e2a6a3
 provenance:
   ai_tools:
     - Claude Code
@@ -105,7 +105,7 @@ where $\tau$ is the price elasticity (expected to be negative by the law of dema
 Our implementation provides a clean interface for loading the OJ dataset:
 
 ```python
-from src.data import OJDataLoader
+from dml_ts.data import OJDataLoader
 
 # Load with default confounders
 loader = OJDataLoader()
@@ -166,7 +166,7 @@ We now apply the DML methodology developed in Chapter 2 to estimate price elasti
 ### Implementation
 
 ```python
-from src.dml import double_ml
+from dml_ts import double_ml
 
 # Run DML estimation
 result = double_ml(
@@ -380,7 +380,7 @@ An ESS ratio of 0.81 means that 81% of the treatment variation remains after rem
 Even with good aggregate overlap, local violations can destabilize estimates. We borrow a production diagnostic from Chapter 10's `CausalMonitor` to check for extreme treatment residuals:
 
 ```python
-from src.production.causal_monitor import CausalMonitor
+from dml_ts.production.causal_monitor import CausalMonitor
 
 monitor = CausalMonitor()
 
@@ -511,7 +511,7 @@ $$
 \Gamma_{\text{crit}} = \frac{1 + \delta}{1 - \delta}, \quad \delta = \frac{|\hat{\theta}|/\widehat{SE} - z_\alpha}{\sqrt{n \cdot \widehat{\mathrm{Var}}(\tilde{T})}}
 $$
 
-This formula is implemented in `src/sensitivity/rosenbaum.py:303-333`.
+This formula is implemented in `dml_ts/sensitivity/rosenbaum.py:303-333`.
 
 #### E-value framework
 
@@ -606,7 +606,7 @@ Even under $\Gamma = 3.0$ — meaning an unmeasured confounder triples the odds 
 ### Applying sensitivity analysis to OJ results
 
 ```python
-from src.sensitivity import compute_sensitivity_for_dml
+from dml_ts.sensitivity import compute_sensitivity_for_dml
 
 sensitivity = compute_sensitivity_for_dml(
     theta=result.theta,
@@ -653,7 +653,7 @@ The OJ price elasticity estimate is robust to substantial unmeasured confounding
 ### Interpreting the sensitivity plot
 
 ```python
-from src.sensitivity import RosenbaumBounds
+from dml_ts.sensitivity import RosenbaumBounds
 import matplotlib.pyplot as plt
 
 bounds = RosenbaumBounds(gamma_max=3.0)
@@ -745,7 +745,7 @@ The design embeds a specific vulnerability: crude oil prices drive both the trea
 ### DML estimation
 
 ```python
-from src.dml import double_ml
+from dml_ts import double_ml
 
 result_gas = double_ml(
     Y=Y_gas, T=T_gas, X=X_gas,
@@ -777,7 +777,7 @@ The gasoline estimate is biased by $-0.13$ (overstating price sensitivity by 37%
 ### Sensitivity reveals fragility
 
 ```python
-from src.sensitivity import compute_sensitivity_for_dml
+from dml_ts.sensitivity import compute_sensitivity_for_dml
 
 sensitivity_gas = compute_sensitivity_for_dml(
     theta=result_gas.theta,
@@ -837,9 +837,9 @@ Consider: a premium brand in high-income areas may have pricing driven by differ
 We estimate DML and sensitivity separately for each brand:
 
 ```python
-from src.data import OJDataLoader
-from src.dml import double_ml
-from src.sensitivity import compute_sensitivity_for_dml
+from dml_ts.data import OJDataLoader
+from dml_ts import double_ml
+from dml_ts.sensitivity import compute_sensitivity_for_dml
 
 brands = ["dominicks", "minute.maid", "tropicana"]
 brand_results = {}

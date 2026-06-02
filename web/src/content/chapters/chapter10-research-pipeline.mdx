@@ -9,7 +9,7 @@ description: "Research-pipeline patterns for deployed causal inference (book-com
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_10.tex
-source_sha256: 590f4743daba0d429809d84006ca2dff5428193de527c6182a50c07813d4aceb
+source_sha256: c3c41ddca0f39a4dad55966f272fa571aa999cf14480e5b3a524ae69c57a8274
 provenance:
   ai_tools:
     - Claude Code
@@ -664,7 +664,7 @@ An insurance company wants to estimate how competitor pricing affects policy ret
 
 ```python
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
-from src.production import InsuranceDMLPipeline, PipelineConfig
+from dml_ts.production import InsuranceDMLPipeline, PipelineConfig
 
 config = PipelineConfig(
     n_folds=5,
@@ -797,7 +797,7 @@ This chapter developed research/demo infrastructure patterns for causal inferenc
 
 </ResultBox>
 
-The companion `src.production` module currently provides demo utilities:
+The companion `dml_ts.production` module currently provides demo utilities:
 
 - `DMLModelVersion`, `DMLModelRegistry`: model versioning.
 - `CausalMonitor`: overlap, treatment shift, nuisance, effect monitoring.
