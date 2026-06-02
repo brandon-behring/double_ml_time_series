@@ -12,7 +12,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_allclose
 
-from src.data.fred_loader import (
+from dml_ts.data.fred_loader import (
     FREDLoader,
     FREDSeries,
     MacroControlsResult,
@@ -262,7 +262,7 @@ class TestFREDDMLIntegration:
 
     def test_synthetic_data_with_temporal_plr_dml(self):
         """Test synthetic FRED data with TemporalPLRDML."""
-        from src.dml import TemporalPLRDML
+        from dml_ts.dml import TemporalPLRDML
 
         # Get synthetic macro data
         fred_result = create_synthetic_fred_data(

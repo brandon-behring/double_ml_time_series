@@ -9,7 +9,7 @@ import pytest
 from pathlib import Path
 import tempfile
 
-from src.data.oj_loader import OJDataset, OJDataLoader
+from dml_ts.data.oj_loader import OJDataset, OJDataLoader
 
 
 @pytest.mark.tier2

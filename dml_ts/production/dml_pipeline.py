@@ -30,19 +30,19 @@ from sklearn.preprocessing import StandardScaler
 
 # Import our DML components
 try:
-    from src.dml.double_ml import double_ml  # noqa: F401
-    from src.dml.cross_fitting import TimeSeriesCrossValidator  # noqa: F401
-    from src.dml.hac import newey_west_se
-    from src.dml.temporal_plr_dml import TemporalPLRDML  # noqa: F401
+    from dml_ts.dml.double_ml import double_ml  # noqa: F401
+    from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator  # noqa: F401
+    from dml_ts.dml.hac import newey_west_se
+    from dml_ts.dml.temporal_plr_dml import TemporalPLRDML  # noqa: F401
 
     DML_AVAILABLE = True
 except ImportError:
     DML_AVAILABLE = False
 
 # Import registry and monitoring components
-from src.production.model_registry import DMLModelVersion, DMLModelRegistry
-from src.production.causal_monitor import CausalMonitor, MonitoringResult
-from src.production.retrain_pipeline import RetrainScheduler, RetrainTrigger
+from dml_ts.production.model_registry import DMLModelVersion, DMLModelRegistry
+from dml_ts.production.causal_monitor import CausalMonitor, MonitoringResult
+from dml_ts.production.retrain_pipeline import RetrainScheduler, RetrainTrigger
 
 
 @dataclass

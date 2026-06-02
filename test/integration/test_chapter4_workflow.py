@@ -8,9 +8,9 @@ together correctly.
 import numpy as np
 import pytest
 
-from src.data import OJDataLoader, OJDataset
-from src.dml import double_ml, DMLResult
-from src.sensitivity import RosenbaumBounds, SensitivityResult, compute_sensitivity_for_dml
+from dml_ts.data import OJDataLoader, OJDataset
+from dml_ts.dml import double_ml, DMLResult
+from dml_ts.sensitivity import RosenbaumBounds, SensitivityResult, compute_sensitivity_for_dml
 
 
 class TestChapter4Workflow:

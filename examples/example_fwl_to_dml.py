@@ -17,9 +17,9 @@ Usage:
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 
-from src.dml.fwl import fwl_estimate, fwl_vs_ols_comparison
-from src.dml.robinson import robinson_estimator
-from src.dml import double_ml
+from dml_ts.dml.fwl import fwl_estimate, fwl_vs_ols_comparison
+from dml_ts.dml.robinson import robinson_estimator
+from dml_ts.dml import double_ml
 
 
 def main() -> None:

@@ -14,8 +14,8 @@ import json
 import pickle
 import hashlib
 
-from src.validation.validation_result import ValidationResult
-from src.validation.dgp_generator import DGPResult
+from dml_ts.validation.validation_result import ValidationResult
+from dml_ts.validation.dgp_generator import DGPResult
 
 
 class ResultStorage:

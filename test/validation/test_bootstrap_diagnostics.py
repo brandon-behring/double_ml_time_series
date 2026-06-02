@@ -12,12 +12,12 @@ import numpy as np
 import pytest
 from typing import List
 
-from src.validation.bootstrap_diagnostics import (
+from dml_ts.validation.bootstrap_diagnostics import (
     BootstrapDiagnostics,
     ConvergenceDiagnostic,
     DistributionDiagnostic,
 )
-from src.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.dgp_generator import DGPGenerator
 
 # =============================================================================
 # Test Class 1: Basic Functionality

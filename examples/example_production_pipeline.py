@@ -17,13 +17,13 @@ import tempfile
 import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 
-from src.dml import double_ml
-from src.production import (
+from dml_ts.dml import double_ml
+from dml_ts.production import (
     CausalMonitor,
     DMLModelRegistry,
     DMLModelVersion,
 )
-from src.validation import create_insurance_dgp
+from dml_ts.validation import create_insurance_dgp
 
 
 def main() -> None:

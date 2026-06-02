@@ -9,7 +9,7 @@ All tests in this module are unit tests (data generation, no estimation).
 
 import pytest
 import numpy as np
-from src.validation.enhanced_dgp import EnhancedDGPGenerator, EnhancedDGPResult
+from dml_ts.validation.enhanced_dgp import EnhancedDGPGenerator, EnhancedDGPResult
 
 # Mark all tests in this module as unit tests
 pytestmark = pytest.mark.tier1

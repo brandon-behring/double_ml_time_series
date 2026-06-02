@@ -28,9 +28,9 @@ Verify Installation
 
 .. code-block:: bash
 
-   venv/bin/python -c "from src.dml import double_ml, TemporalPLRDML, RollingWindowDML; print('OK')"
-   venv/bin/python -c "from src.data import FREDLoader, create_synthetic_fred_data; print('OK')"
-   venv/bin/python -c "from src.validation import create_insurance_dgp; print('OK')"
+   venv/bin/python -c "from dml_ts.dml import double_ml, TemporalPLRDML, RollingWindowDML; print('OK')"
+   venv/bin/python -c "from dml_ts.data import FREDLoader, create_synthetic_fred_data; print('OK')"
+   venv/bin/python -c "from dml_ts.validation import create_insurance_dgp; print('OK')"
 
 Optional: FRED API Key
 ----------------------
@@ -41,7 +41,7 @@ Live FRED access requires an API key:
 
    export FRED_API_KEY="your_key_here"
 
-Use :func:`~src.data.fred_loader.create_synthetic_fred_data` for offline examples and
+Use :func:`~dml_ts.data.fred_loader.create_synthetic_fred_data` for offline examples and
 tests that should not depend on network access.
 
 Building Documentation

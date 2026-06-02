@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 import pytest
 
-from src.validation.validation_result import ValidationResult
+from dml_ts.validation.validation_result import ValidationResult
 
 # Mark all tests in this module as unit tests
 pytestmark = pytest.mark.tier1

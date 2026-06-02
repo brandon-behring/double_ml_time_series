@@ -12,11 +12,11 @@ Tests how baseline methods and DML perform when model assumptions are violated:
 import numpy as np
 import pytest
 
-from src.validation.dgp_generator import DGPGenerator
-from src.validation.ols_baseline import NaiveOLS, OLSWithControls
-from src.validation.ipw_baseline import IPWEstimator, AugmentedIPW
-from src.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
-from src.validation.bias_validation import BiasValidation
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
+from dml_ts.validation.ipw_baseline import IPWEstimator, AugmentedIPW
+from dml_ts.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
+from dml_ts.validation.bias_validation import BiasValidation
 
 
 class MisspecifiedDGPGenerator:
@@ -173,7 +173,7 @@ class TestInteractionEffects:
         )
 
         # AIPW should run without errors
-        from src.validation.dgp_generator import DGPGenerator
+        from dml_ts.validation.dgp_generator import DGPGenerator
 
         # Create wrapper to use AIPW
         dml_dgp = DGPGenerator(n=600, p=5, true_effect=2.0, random_state=42)
@@ -224,7 +224,7 @@ class TestPoorOverlap:
         )
 
         # Run RF and XGB (which don't depend on propensity weighting)
-        from src.validation.dgp_generator import DGPGenerator
+        from dml_ts.validation.dgp_generator import DGPGenerator
 
         dml_dgp = DGPGenerator(n=300, p=5, true_effect=2.0, random_state=42)
 

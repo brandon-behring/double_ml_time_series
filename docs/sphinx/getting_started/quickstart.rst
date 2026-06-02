@@ -14,7 +14,7 @@ i.i.d.-style helper, not a temporal-CV estimator.
 
    import numpy as np
 
-   from src.dml import double_ml
+   from dml_ts import double_ml
 
    rng = np.random.default_rng(42)
    n = 500
@@ -38,7 +38,7 @@ period-specific ``theta_t`` effects.
 
    import numpy as np
 
-   from src.dml import TemporalPLRDML
+   from dml_ts import TemporalPLRDML
 
    rng = np.random.default_rng(42)
    n = 240
@@ -71,7 +71,7 @@ Use temporal blocking and purging directly when inspecting train/test geometry.
 
    import numpy as np
 
-   from src.dml import TimeSeriesCrossValidator
+   from dml_ts.dml import TimeSeriesCrossValidator
 
    X = np.arange(100).reshape(-1, 1)
    cv = TimeSeriesCrossValidator(n_splits=5, gap=3, purge_length=2)
@@ -84,7 +84,7 @@ Synthetic Macro Controls
 
 .. code-block:: python
 
-   from src.data import create_synthetic_fred_data
+   from dml_ts.data import create_synthetic_fred_data
 
    macro = create_synthetic_fred_data(
        start_date="2018-01-01",
@@ -101,7 +101,7 @@ Insurance DGP
 
 .. code-block:: python
 
-   from src.validation import create_insurance_dgp
+   from dml_ts.validation import create_insurance_dgp
 
    data = create_insurance_dgp(
        realism="moderate",

@@ -25,7 +25,7 @@ from typing import Literal
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.dgp_generator import DGPGenerator
 from econml.dml import LinearDML
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 

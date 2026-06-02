@@ -18,7 +18,7 @@ import pytest
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression, Ridge
 
-from src.production.dml_pipeline import (
+from dml_ts.production.dml_pipeline import (
     InsuranceDMLPipeline,
     PipelineConfig,
     PipelineResult,

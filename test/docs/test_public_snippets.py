@@ -3,9 +3,9 @@
 import numpy as np
 import pytest
 
-from src.data import create_synthetic_fred_data
-from src.dml import TemporalPLRDML, TimeSeriesCrossValidator, double_ml
-from src.validation import create_insurance_dgp
+from dml_ts.data import create_synthetic_fred_data
+from dml_ts.dml import TemporalPLRDML, TimeSeriesCrossValidator, double_ml
+from dml_ts.validation import create_insurance_dgp
 
 pytestmark = pytest.mark.tier1
 

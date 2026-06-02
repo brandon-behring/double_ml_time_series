@@ -11,8 +11,8 @@ Usage:
     python scripts/verify_coverage_fix.py
 """
 
-from src.validation.dgp_generator import DGPGenerator
-from src.validation.bias_validation import BiasValidation
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.bias_validation import BiasValidation
 
 print("=" * 80)
 print("COVERAGE BUG FIX VERIFICATION")

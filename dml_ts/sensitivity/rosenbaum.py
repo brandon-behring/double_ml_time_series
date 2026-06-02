@@ -152,8 +152,8 @@ class RosenbaumBounds:
 
     Examples
     --------
-    >>> from src.sensitivity import RosenbaumBounds
-    >>> from src.dml import double_ml
+    >>> from dml_ts.sensitivity import RosenbaumBounds
+    >>> from dml_ts.dml import double_ml
     >>>
     >>> # Run DML
     >>> result = double_ml(Y, T, X)
@@ -485,8 +485,8 @@ def compute_sensitivity_for_dml(
 
     Examples
     --------
-    >>> from src.dml import double_ml
-    >>> from src.sensitivity import compute_sensitivity_for_dml
+    >>> from dml_ts.dml import double_ml
+    >>> from dml_ts.sensitivity import compute_sensitivity_for_dml
     >>>
     >>> result = double_ml(Y, T, X)
     >>> sensitivity = compute_sensitivity_for_dml(

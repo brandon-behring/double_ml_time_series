@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import matplotlib.pyplot as plt
 
-from src.sensitivity.rosenbaum import (
+from dml_ts.sensitivity.rosenbaum import (
     RosenbaumBounds,
     SensitivityResult,
     compute_sensitivity_for_dml,

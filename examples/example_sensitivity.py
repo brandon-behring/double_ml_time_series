@@ -17,8 +17,8 @@ Usage:
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 
-from src.dml import double_ml
-from src.sensitivity import RosenbaumBounds
+from dml_ts.dml import double_ml
+from dml_ts.sensitivity import RosenbaumBounds
 
 
 def main() -> None:

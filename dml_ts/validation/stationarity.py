@@ -39,7 +39,7 @@ References:
   regression. Biometrika 75, 335-346.
 
 Usage:
-    >>> from src.validation.stationarity import StationarityDiagnostic
+    >>> from dml_ts.validation.stationarity import StationarityDiagnostic
     >>> diag = StationarityDiagnostic()
     >>> result = diag.test(Y, method="adf")
     >>> print(f"Stationary: {result.is_stationary}")

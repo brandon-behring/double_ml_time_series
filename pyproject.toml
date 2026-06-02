@@ -3,7 +3,7 @@ requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "double_ml_time_series"
+name = "dml_ts"
 version = "0.1.0"
 description = "Book companion code for Double Machine Learning with temporal PLR examples"
 authors = [{name = "Brandon Behring"}]
@@ -57,7 +57,7 @@ Documentation = "https://brandon-behring.github.io/double_ml_time_series/"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*"]
+include = ["dml_ts*"]
 
 [tool.setuptools.package-dir]
 "" = "."
@@ -107,8 +107,8 @@ testpaths = ["test"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v"
-# Don't collect tests from src directory (test_stationarity function is not a test)
-norecursedirs = ["src", ".git", "venv", "__pycache__"]
+# Don't collect tests from the package directory (test_stationarity is not a test)
+norecursedirs = ["dml_ts", ".git", "venv", "__pycache__"]
 markers = [
     "tier1: Unit tests - no estimation, <100ms each, pure logic",
     "tier2: Integration - light estimation, multi-component, <60s each",
@@ -120,7 +120,7 @@ markers = [
 # Do NOT set a global timeout here — it conflicts with tier3 (300s) and tier4 (1800s).
 
 [tool.coverage.run]
-source = ["src"]
+source = ["dml_ts"]
 omit = [
     "*/tests/*",
     "*/test_*.py",

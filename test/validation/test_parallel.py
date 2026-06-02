@@ -9,7 +9,7 @@ import numpy as np
 from typing import List
 import time
 
-from src.validation.parallel import (
+from dml_ts.validation.parallel import (
     get_optimal_n_jobs,
     parallel_map,
     parallel_monte_carlo,

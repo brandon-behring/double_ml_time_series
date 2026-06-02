@@ -12,8 +12,8 @@ import pytest
 from numpy.testing import assert_allclose
 from sklearn.dummy import DummyRegressor
 
-from src.dml.cross_fitting import TimeSeriesCrossValidator
-from src.dml.temporal_plr_dml import (
+from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator
+from dml_ts.dml.temporal_plr_dml import (
     TemporalPLRDML,
     TemporalPLRDMLResult,
     PanelDML,

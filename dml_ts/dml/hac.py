@@ -20,7 +20,7 @@ References:
   covariance matrix estimation. Review of Economic Studies, 61(4).
 
 Usage:
-    >>> from src.dml.hac import newey_west_se, HACEstimator
+    >>> from dml_ts.dml.hac import newey_west_se, HACEstimator
     >>> # Simple usage for single coefficient
     >>> se = newey_west_se(residuals, bandwidth=10)
     >>> # Full covariance matrix

@@ -15,9 +15,9 @@ from scipy import stats
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
 
-from src.validation.dgp_generator import DGPGenerator, DGPResult
-from src.validation.validation_result import ValidationResult
-from src.validation.bootstrap_config import BootstrapConfig, DEFAULT_BOOTSTRAP_CONFIG
+from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
+from dml_ts.validation.validation_result import ValidationResult
+from dml_ts.validation.bootstrap_config import BootstrapConfig, DEFAULT_BOOTSTRAP_CONFIG
 
 
 class RandomForestEstimator:

@@ -16,8 +16,8 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from src.dml.fwl import fwl_estimate, fwl_vs_ols_comparison
-from src.dml.robinson import robinson_estimator, compare_fwl_vs_robinson
+from dml_ts.dml.fwl import fwl_estimate, fwl_vs_ols_comparison
+from dml_ts.dml.robinson import robinson_estimator, compare_fwl_vs_robinson
 
 
 @pytest.mark.tier2
@@ -26,7 +26,7 @@ class TestFWLBasic:
 
     def test_fwl_imports(self):
         """Verify FWL module imports correctly."""
-        from src.dml import fwl_estimate, fwl_residualize, fwl_vs_ols_comparison
+        from dml_ts.dml import fwl_estimate, fwl_residualize, fwl_vs_ols_comparison
 
         assert callable(fwl_estimate)
         assert callable(fwl_residualize)
@@ -132,7 +132,7 @@ class TestRobinsonBasic:
 
     def test_robinson_imports(self):
         """Verify Robinson module imports correctly."""
-        from src.dml import robinson_estimator
+        from dml_ts.dml import robinson_estimator
 
         assert callable(robinson_estimator)
 

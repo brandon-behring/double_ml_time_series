@@ -185,7 +185,7 @@ test-watch:
 # Coverage report (generates HTML report in htmlcov/)
 test-coverage:
 	@echo "Running tests with coverage..."
-	$(PYTHON) -m pytest --cov=src --cov-report=html --cov-report=term-missing
+	$(PYTHON) -m pytest --cov=dml_ts --cov-report=html --cov-report=term-missing
 	@echo "Coverage report generated: htmlcov/index.html"
 
 docs:

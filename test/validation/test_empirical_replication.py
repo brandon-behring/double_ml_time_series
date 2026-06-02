@@ -12,7 +12,7 @@ Tier assignments:
 import pytest
 import numpy as np
 import pandas as pd
-from src.validation.empirical_replication import (
+from dml_ts.validation.empirical_replication import (
     FourZeroOneKReplication,
     ReplicationResult,
 )

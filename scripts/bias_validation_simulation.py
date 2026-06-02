@@ -18,8 +18,8 @@ from pathlib import Path
 import json
 from joblib import Parallel, delayed
 
-from src.validation.dgp_generator import DGPGenerator
-from src.validation.bias_validation import BiasValidation
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.bias_validation import BiasValidation
 
 
 # =============================================================================

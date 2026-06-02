@@ -15,9 +15,9 @@ import numpy as np
 import pytest
 from datetime import datetime
 
-from src.validation.bias_validation import BiasValidation
-from src.validation.dgp_generator import DGPGenerator
-from src.validation.validation_result import ValidationResult
+from dml_ts.validation.bias_validation import BiasValidation
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.validation_result import ValidationResult
 
 # =============================================================================
 # Test Class 1: Basic Functionality

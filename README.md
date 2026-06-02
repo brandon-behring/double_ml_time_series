@@ -49,7 +49,7 @@ venv/bin/python -m pip install -e ".[dev,docs]"
 Quick import check:
 
 ```bash
-venv/bin/python -c "from src.dml import double_ml, TemporalPLRDML, RollingWindowDML; print('OK')"
+venv/bin/python -c "from dml_ts.dml import double_ml, TemporalPLRDML, RollingWindowDML; print('OK')"
 ```
 
 ## Quick Starts
@@ -62,7 +62,7 @@ cross-validation in this remediation milestone.
 ```python
 import numpy as np
 
-from src.dml import double_ml
+from dml_ts import double_ml
 
 rng = np.random.default_rng(42)
 n = 500
@@ -84,7 +84,7 @@ cross-fitting, and HAC standard errors are part of the chapter claim.
 ```python
 import numpy as np
 
-from src.dml import TemporalPLRDML
+from dml_ts import TemporalPLRDML
 
 rng = np.random.default_rng(42)
 n = 240
@@ -114,7 +114,7 @@ print(f"temporal CV rows dropped: {result.dropped_initial_rows}")
 ```python
 import numpy as np
 
-from src.dml import TimeSeriesCrossValidator
+from dml_ts.dml import TimeSeriesCrossValidator
 
 X = np.arange(100).reshape(-1, 1)
 cv = TimeSeriesCrossValidator(n_splits=5, gap=3, purge_length=2)
@@ -126,7 +126,7 @@ for train_idx, test_idx in cv.split(X):
 ### Synthetic Macro Controls
 
 ```python
-from src.data import create_synthetic_fred_data
+from dml_ts.data import create_synthetic_fred_data
 
 macro = create_synthetic_fred_data(
     start_date="2018-01-01",
@@ -145,7 +145,7 @@ API key.
 ## Repository Map
 
 ```text
-src/dml/
+dml_ts/dml/
   fwl.py                 Linear residualization baseline
   robinson.py            Robinson partially linear estimator
   double_ml.py           Cross-fitted i.i.d.-style PLR DML
@@ -153,9 +153,9 @@ src/dml/
   hac.py                 HAC/Newey-West inference
   temporal_plr_dml.py    TemporalPLRDML, RollingWindowDML, PanelDML
 
-src/data/                FRED loader, OJ loader, synthetic macro data
-src/validation/          DGPs, diagnostics, validation helpers
-src/production/          Research/demo pipeline utilities, not deployment guarantees
+dml_ts/data/                FRED loader, OJ loader, synthetic macro data
+dml_ts/validation/          DGPs, diagnostics, validation helpers
+dml_ts/production/          Research/demo pipeline utilities, not deployment guarantees
 examples/                Runnable companion examples
 chapters/                LaTeX manuscript chapters
 docs/sphinx/             Sphinx API/user docs
@@ -169,8 +169,8 @@ docs/archive/            Superseded reports and roadmaps
 venv/bin/python -m pytest --collect-only -q
 venv/bin/python -m pytest -m tier1 --no-cov -q
 venv/bin/python -m pytest -m "tier1 or tier2" --no-cov -q
-venv/bin/python -m black --check src/ test/ examples/
-venv/bin/python -m mypy src/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
+venv/bin/python -m black --check dml_ts/ test/ examples/
+venv/bin/python -m mypy dml_ts/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
 ```
 
 Examples:

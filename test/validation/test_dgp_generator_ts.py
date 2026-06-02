@@ -15,7 +15,7 @@ from numpy.testing import assert_allclose
 
 pytestmark = pytest.mark.tier2
 
-from src.validation.dgp_generator_ts import (
+from dml_ts.validation.dgp_generator_ts import (
     TimeSeriesDGPGenerator,
     TimeSeriesDGPResult,
     BreakDGPGenerator,
@@ -636,7 +636,7 @@ class TestDMLIntegration:
 
     def test_single_series_with_temporal_plr_dml(self):
         """Test single series DGP with TemporalPLRDML."""
-        from src.dml import TemporalPLRDML
+        from dml_ts.dml import TemporalPLRDML
 
         result = create_ar_dgp(
             n=300,
@@ -676,7 +676,7 @@ class TestDMLIntegration:
 
     def test_break_dgp_with_rolling_dml(self):
         """Test break DGP with RollingWindowDML."""
-        from src.dml import RollingWindowDML
+        from dml_ts.dml import RollingWindowDML
 
         result = create_break_dgp(
             n=400,

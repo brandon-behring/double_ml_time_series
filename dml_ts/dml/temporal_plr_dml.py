@@ -20,7 +20,7 @@ Key components:
 3. PanelDML - Fixed effects + DML for panel data structures
 
 Usage:
-    >>> from src.dml import TemporalPLRDML
+    >>> from dml_ts.dml import TemporalPLRDML
     >>> model = TemporalPLRDML(
     ...     n_lags=5,
     ...     model_y="random_forest",

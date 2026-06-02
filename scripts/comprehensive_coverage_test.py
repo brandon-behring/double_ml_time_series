@@ -17,8 +17,8 @@ from datetime import datetime
 from pathlib import Path
 
 from typing import Any
-from src.validation.dgp_generator import DGPGenerator
-from src.validation.bias_validation import BiasValidation
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.bias_validation import BiasValidation
 
 
 def create_test_scenarios() -> list[dict[str, Any]]:

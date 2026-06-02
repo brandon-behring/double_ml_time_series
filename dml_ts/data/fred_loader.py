@@ -20,7 +20,7 @@ References:
 - FRED API: https://fred.stlouisfed.org/docs/api/fred/
 
 Usage:
-    >>> from src.data import FREDLoader
+    >>> from dml_ts.data import FREDLoader
     >>> loader = FREDLoader(api_key="your_api_key")  # or from env
     >>> macro_data = loader.get_macro_controls(
     ...     start_date="2010-01-01",

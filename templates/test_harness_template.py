@@ -16,8 +16,8 @@ import pytest
 from datetime import datetime
 
 # TODO: Replace with your actual imports
-# from src.validation.my_method import MyValidationMethod
-from src.validation.dgp_generator import DGPGenerator
+# from dml_ts.validation.my_method import MyValidationMethod
+from dml_ts.validation.dgp_generator import DGPGenerator
 
 # =============================================================================
 # Test Class 1: Basic Functionality

@@ -18,12 +18,12 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from src.validation.dgp_generator import DGPGenerator
-from src.validation.bias_validation import BiasValidation
-from src.validation.ols_baseline import NaiveOLS, OLSWithControls
-from src.validation.ipw_baseline import IPWEstimator, AugmentedIPW
-from src.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
-from src.validation.validation_result import ValidationResult
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.bias_validation import BiasValidation
+from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
+from dml_ts.validation.ipw_baseline import IPWEstimator, AugmentedIPW
+from dml_ts.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
+from dml_ts.validation.validation_result import ValidationResult
 
 
 class _Validatable(Protocol):

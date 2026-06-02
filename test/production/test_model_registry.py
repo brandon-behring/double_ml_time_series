@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
-from src.production.model_registry import DMLModelVersion, DMLModelRegistry
+from dml_ts.production.model_registry import DMLModelVersion, DMLModelRegistry
 
 pytestmark = pytest.mark.tier2
 

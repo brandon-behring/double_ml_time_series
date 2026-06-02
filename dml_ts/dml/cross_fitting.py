@@ -16,7 +16,7 @@ References:
 - de Prado, M. L. (2018). Advances in Financial Machine Learning. Chapter 7.
 
 Usage:
-    >>> from src.dml.cross_fitting import TimeSeriesCrossValidator
+    >>> from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator
     >>> cv = TimeSeriesCrossValidator(n_splits=5, gap=10, purge_length=5)
     >>> for train_idx, test_idx in cv.split(X):
     ...     model.fit(X[train_idx], Y[train_idx])

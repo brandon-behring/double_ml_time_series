@@ -17,7 +17,7 @@ Diagnostic Goals:
     4. Implementation configuration comparison with published paper
 
 Usage:
-    >>> from src.validation.lasso_diagnostic import LassoDiagnostic
+    >>> from dml_ts.validation.lasso_diagnostic import LassoDiagnostic
     >>> diagnostic = LassoDiagnostic(random_state=42)
     >>> results = diagnostic.run_comprehensive_diagnostic()
     >>> print(f"Bootstrap convergence: {results.bootstrap_converged}")

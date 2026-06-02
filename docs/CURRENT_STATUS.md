@@ -103,7 +103,10 @@ in-suite contract tests.
 ### Track 3 — Deferred methodology (post-gates)
 
 - True Lewis-Syrgkanis recursive dynamic g-estimation (separate, honestly-named class).
-- Public package namespace migration away from `src.*`.
+- ~~Public package namespace migration away from `src.*`.~~ **Done 2026-06-01** — code
+  installs and imports as the `dml_ts` package (`from dml_ts import TemporalPLRDML`); the
+  four headline estimators are hoisted to the package root, loaders/DGPs/sensitivity/
+  production stay namespaced under their subpackages.
 - Optional EconML heterogeneity examples as runnable, tested features.
 - Blocking stationarity, cointegration, and overlap gates (currently diagnostics only).
 - Book content expansion (see `docs/plans/active/2026-03-01_22-00_content_expansion.md`,

@@ -14,8 +14,8 @@ import numpy as np
 from datetime import datetime
 from pathlib import Path
 
-from src.validation.dgp_generator import DGPGenerator
-from src.validation.baseline_comparison import BaselineComparison
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.baseline_comparison import BaselineComparison
 
 
 def run_comprehensive_comparison(

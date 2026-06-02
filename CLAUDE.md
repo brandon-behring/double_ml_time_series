@@ -37,8 +37,8 @@ Use the repo venv explicitly:
 venv/bin/python -m pytest --collect-only -q
 venv/bin/python -m pytest -m tier1 --no-cov -q
 venv/bin/python -m pytest -m "tier1 or tier2" --no-cov -q
-venv/bin/python -m black --check src/ test/ examples/
-venv/bin/python -m mypy src/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
+venv/bin/python -m black --check dml_ts/ test/ examples/
+venv/bin/python -m mypy dml_ts/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
 ```
 
 Examples:
@@ -81,7 +81,7 @@ Audit baseline from 2026-05-02:
 ## Source Layout
 
 ```text
-src/dml/
+dml_ts/dml/
   fwl.py                 FWL residualization baseline
   robinson.py            Robinson partially linear estimator
   double_ml.py           Cross-fitted i.i.d.-style PLR DML
@@ -89,9 +89,9 @@ src/dml/
   hac.py                 HAC/Newey-West inference
   temporal_plr_dml.py    TemporalPLRDML, RollingWindowDML, PanelDML
 
-src/data/                FRED loader, OJ loader, synthetic macro controls
-src/validation/          DGPs, stationarity diagnostics, validation helpers
-src/production/          Research/demo utilities only
+dml_ts/data/                FRED loader, OJ loader, synthetic macro controls
+dml_ts/validation/          DGPs, stationarity diagnostics, validation helpers
+dml_ts/production/          Research/demo utilities only
 examples/                Runnable public examples
 docs/sphinx/             Sphinx docs
 docs/audits/             Current audit evidence
@@ -108,8 +108,10 @@ chapters/                LaTeX manuscript
 - Stationarity, cointegration, overlap, and weak treatment residual variation are
   documented risks. This milestone may warn but should not block estimation on those
   diagnostics.
-- Keep imports under the staged `src.*` namespace until the documentation/API cleanup
-  has passed.
+- Imports use the `dml_ts` package namespace (migrated from the former staged `src.*`
+  namespace, 2026-06-01). Use `from dml_ts.<subpkg> import …`, or `from dml_ts import …`
+  for the four hoisted headline estimators (`double_ml`, `TemporalPLRDML`,
+  `RollingWindowDML`, `PanelDML`). Do not reintroduce `src.*` imports.
 
 ## Editing Rules
 

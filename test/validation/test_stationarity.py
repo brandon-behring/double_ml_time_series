@@ -16,7 +16,7 @@ from numpy.testing import assert_allclose
 
 pytestmark = pytest.mark.tier2
 
-from src.validation.stationarity import (
+from dml_ts.validation.stationarity import (
     StationarityDiagnostic,
     StationarityResult,
     ComprehensiveStationarityResult,

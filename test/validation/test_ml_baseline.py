@@ -11,10 +11,10 @@ Tests RandomForestEstimator and XGBoostEstimator to ensure they:
 import numpy as np
 import pytest
 
-from src.validation.bootstrap_config import BootstrapConfig
-from src.validation.dgp_generator import DGPGenerator
-from src.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
-from src.validation.validation_result import ValidationResult
+from dml_ts.validation.bootstrap_config import BootstrapConfig
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
+from dml_ts.validation.validation_result import ValidationResult
 
 # Tier3 bootstrap config: 5 CI, 5 bias iterations (fast)
 _TIER3_BOOT = BootstrapConfig.tier2()
@@ -58,7 +58,7 @@ class TestRandomForestEstimator:
 
     def test_less_biased_than_naive_ols(self):
         """Test that RF has lower bias than NaiveOLS with confounding."""
-        from src.validation.ols_baseline import NaiveOLS
+        from dml_ts.validation.ols_baseline import NaiveOLS
 
         # Create DGP with confounding
         dgp = DGPGenerator(
@@ -226,7 +226,7 @@ class TestXGBoostEstimator:
 
     def test_less_biased_than_naive_ols(self):
         """Test that XGBoost has lower bias than NaiveOLS with confounding."""
-        from src.validation.ols_baseline import NaiveOLS
+        from dml_ts.validation.ols_baseline import NaiveOLS
 
         # Create DGP with confounding
         dgp = DGPGenerator(
@@ -419,7 +419,7 @@ class TestMLMethodsComparison:
 
     def test_both_methods_integrate_with_framework(self):
         """Test that both methods work with BaselineComparison framework."""
-        from src.validation.baseline_comparison import BaselineComparison
+        from dml_ts.validation.baseline_comparison import BaselineComparison
 
         # Create comparison with DML disabled to avoid long-running tests
         comp = BaselineComparison(n_simulations=5, include_dml=False, random_state=42)

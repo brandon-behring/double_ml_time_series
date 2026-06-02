@@ -77,7 +77,7 @@ class OJDataset:
     >>> data = loader.load()
     >>> print(f"Samples: {data.n_samples}, Features: {data.n_features}")
     Samples: 28947, Features: 3
-    >>> from src.dml import double_ml
+    >>> from dml_ts.dml import double_ml
     >>> result = double_ml(data.Y, data.T, data.X)
     """
 

@@ -10,9 +10,9 @@ Tests NaiveOLS and OLSWithControls to ensure they:
 import numpy as np
 import pytest
 
-from src.validation.dgp_generator import DGPGenerator
-from src.validation.ols_baseline import NaiveOLS, OLSWithControls
-from src.validation.validation_result import ValidationResult
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
+from dml_ts.validation.validation_result import ValidationResult
 
 
 @pytest.mark.tier3

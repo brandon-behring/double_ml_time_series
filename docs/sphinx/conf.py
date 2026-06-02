@@ -4,7 +4,7 @@ import os
 import sys
 
 # -- Path setup ---------------------------------------------------------------
-# Add repo root to sys.path so autodoc can import src.*
+# Add repo root to sys.path so autodoc can import dml_ts.*
 sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information ------------------------------------------------------

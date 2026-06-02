@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 from sklearn.model_selection import TimeSeriesSplit
 
-from src.dml.cross_fitting import (
+from dml_ts.dml.cross_fitting import (
     TimeSeriesCrossValidator,
     BlockedTimeSeriesCV,
     PurgedGroupTimeSeriesCV,

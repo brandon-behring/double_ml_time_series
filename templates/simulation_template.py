@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 import json
 
-from src.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.dgp_generator import DGPGenerator
 
 # =============================================================================
 # Simulation Parameters

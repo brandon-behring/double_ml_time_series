@@ -12,7 +12,7 @@ Tests cover:
 import numpy as np
 import pytest
 
-from src.production.causal_monitor import (
+from dml_ts.production.causal_monitor import (
     AlertLevel,
     CausalMonitor,
     CausalMonitorConfig,

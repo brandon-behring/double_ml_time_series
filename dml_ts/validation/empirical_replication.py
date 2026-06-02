@@ -21,7 +21,7 @@ Dataset:
     - Controls: 11 covariates (age, inc, fsize, educ, db, marr, twoearn, pira, hown, etc.)
 
 Usage:
-    >>> from src.validation.empirical_replication import FourZeroOneKReplication
+    >>> from dml_ts.validation.empirical_replication import FourZeroOneKReplication
     >>> replicator = FourZeroOneKReplication(random_state=42)
     >>> result = replicator.replicate_plr_rf()
     >>> print(f"ATE: ${result.ate_estimate:.2f} (Published: ${result.published_ate:.2f})")

@@ -23,7 +23,7 @@ References:
 - Macroeconomic controls for financial services
 
 Usage:
-    >>> from src.validation import create_insurance_dgp
+    >>> from dml_ts.validation import create_insurance_dgp
     >>> dgp = create_insurance_dgp(
     ...     realism="moderate",
     ...     n_periods=120,
@@ -619,7 +619,7 @@ def validate_dgp_recovery(
     """
     # Import here to avoid circular dependency
     try:
-        from src.dml import PanelDML
+        from dml_ts.dml import PanelDML
     except ImportError:
         raise ImportError("PanelDML required for validation")
 

@@ -12,9 +12,9 @@ Usage:
 
 import numpy as np
 
-from src.dml import TemporalPLRDML
-from src.dml.cross_fitting import TimeSeriesCrossValidator
-from src.validation import TimeSeriesDGPGenerator
+from dml_ts.dml import TemporalPLRDML
+from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator
+from dml_ts.validation import TimeSeriesDGPGenerator
 
 
 def main() -> None:

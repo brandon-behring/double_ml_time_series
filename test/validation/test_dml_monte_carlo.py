@@ -16,8 +16,8 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from src.dml.double_ml import double_ml, compare_robinson_vs_dml, DMLResult
-from src.dml.robinson import robinson_estimator
+from dml_ts.dml.double_ml import double_ml, compare_robinson_vs_dml, DMLResult
+from dml_ts.dml.robinson import robinson_estimator
 
 
 @pytest.mark.tier2
@@ -26,7 +26,7 @@ class TestDMLBasic:
 
     def test_dml_imports(self):
         """Verify DML module imports correctly."""
-        from src.dml import double_ml, DMLResult
+        from dml_ts.dml import double_ml, DMLResult
 
         assert callable(double_ml)
         assert DMLResult is not None

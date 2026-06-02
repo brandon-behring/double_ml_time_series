@@ -16,7 +16,7 @@ from typing import Literal
 
 import numpy as np
 
-from src.validation import create_insurance_dgp
+from dml_ts.validation import create_insurance_dgp
 
 RealismLevel = Literal["simple", "moderate", "full"]
 

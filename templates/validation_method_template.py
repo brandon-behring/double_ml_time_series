@@ -16,8 +16,8 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 import numpy as np
 
-from src.validation.dgp_generator import DGPGenerator, DGPResult
-from src.validation.validation_result import ValidationResult
+from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
+from dml_ts.validation.validation_result import ValidationResult
 
 
 class TEMPLATEValidation:

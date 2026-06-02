@@ -8,8 +8,8 @@ Provides tools to validate bootstrap procedures used in DML validation:
 - Recommendations for appropriate n_bootstrap values
 
 Usage:
-    >>> from src.validation.bootstrap_diagnostics import BootstrapDiagnostics
-    >>> from src.validation.dgp_generator import DGPGenerator
+    >>> from dml_ts.validation.bootstrap_diagnostics import BootstrapDiagnostics
+    >>> from dml_ts.validation.dgp_generator import DGPGenerator
     >>>
     >>> dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)
     >>> data = dgp.generate()
@@ -30,7 +30,7 @@ import numpy as np
 from scipy import stats
 from dataclasses import dataclass
 
-from src.validation.dgp_generator import DGPResult
+from dml_ts.validation.dgp_generator import DGPResult
 
 
 @dataclass

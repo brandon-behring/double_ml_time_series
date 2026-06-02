@@ -1,28 +1,29 @@
 """
-OLS baseline estimators for causal inference.
+IPW baseline estimators for causal inference.
 
 Two variants:
-1. NaiveOLS: Y ~ T only (no confounders) - shows confounding bias
-2. OLSWithControls: Y ~ T + X - standard econometrics approach
+1. IPWEstimator: Inverse propensity weighting (IPW)
+2. AugmentedIPW: Augmented IPW / Doubly Robust estimator
 """
 
 from typing import Tuple, Optional, Literal
 from datetime import datetime
 import numpy as np
 from scipy import stats
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression
 
-from src.validation.dgp_generator import DGPGenerator, DGPResult
-from src.validation.validation_result import ValidationResult
-from src.validation.bootstrap_config import BootstrapConfig, DEFAULT_BOOTSTRAP_CONFIG
+from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
+from dml_ts.validation.validation_result import ValidationResult
+from dml_ts.validation.bootstrap_config import BootstrapConfig, DEFAULT_BOOTSTRAP_CONFIG
 
 
-class NaiveOLS:
+class IPWEstimator:
     """
-    Naive OLS estimator: Y ~ T (no controls).
+    Inverse propensity weighting estimator.
 
-    Provides a baseline for the cost of ignoring confounding.
-    Expected to be severely biased when confounding_strength > 0.
+    Estimates treatment effect by weighting observations by inverse propensity scores.
+    Provides consistent estimation when propensity score model is correct.
+    Sensitive to overlap violations (extreme propensity scores).
 
     Args:
         n_simulations: Number of Monte Carlo simulations
@@ -30,11 +31,10 @@ class NaiveOLS:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> naive = NaiveOLS(n_simulations=100, random_state=42)
-        >>> dgp = DGPGenerator(n=1000, p=5, confounding_strength=1.0)
-        >>> result = naive.validate(dgp)
-        >>> result.status  # Likely 'FAIL' due to confounding bias
-        'FAIL'
+        >>> ipw = IPWEstimator(n_simulations=100, random_state=42)
+        >>> dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)
+        >>> result = ipw.validate(dgp)
+        >>> result.status  # Status depends on confounding and overlap
     """
 
     def __init__(
@@ -44,7 +44,7 @@ class NaiveOLS:
         bootstrap_config: Optional[BootstrapConfig] = None,
         random_state: Optional[int] = None,
     ):
-        """Initialize naive OLS estimator."""
+        """Initialize IPW estimator."""
         self.n_simulations = n_simulations
         self.alpha = alpha
         self.bootstrap_config = bootstrap_config or DEFAULT_BOOTSTRAP_CONFIG
@@ -53,7 +53,7 @@ class NaiveOLS:
 
     def validate(self, dgp: DGPGenerator) -> ValidationResult:
         """
-        Run validation on DGP using naive OLS (Y ~ T only).
+        Run validation on DGP using IPW estimator.
 
         Args:
             dgp: Data generating process to validate
@@ -68,27 +68,25 @@ class NaiveOLS:
         for _ in range(self.n_simulations):
             data = dgp.generate()
 
-            # Naive OLS: Y ~ T (no X controls)
-            model = LinearRegression()
-            T_reshaped = data.T.reshape(-1, 1)
-            model.fit(T_reshaped, data.Y)
+            # Step 1: Estimate propensity score P(T=1|X)
+            ps_model = LogisticRegression(max_iter=1000, random_state=self.random_state)
+            ps_model.fit(data.X, data.T)
+            propensity_scores = ps_model.predict_proba(data.X)[:, 1]
 
-            # Point estimate
-            ate = float(model.coef_[0])
+            # Clip propensity scores to avoid division by zero
+            propensity_scores = np.clip(propensity_scores, 1e-6, 1 - 1e-6)
 
-            # Calculate residuals and standard error
-            y_pred = model.predict(T_reshaped)
-            residuals = data.Y - y_pred
-            n = len(data.Y)
-            mse_residuals = np.sum(residuals**2) / (n - 2)
+            # Step 2: IPW estimator
+            # E[Y * T / P(T=1|X)] - E[Y * (1-T) / (1-P(T=1|X))]
+            weights_t = data.T / propensity_scores
+            weights_0 = (1 - data.T) / (1 - propensity_scores)
 
-            # SE for slope = sqrt(mse / sum((T - mean(T))^2))
-            T_var = np.sum((data.T - np.mean(data.T)) ** 2)
-            se = np.sqrt(mse_residuals / T_var) if T_var > 0 else np.inf
+            ate = np.mean(data.Y * weights_t) - np.mean(data.Y * weights_0)
 
-            # Confidence interval
-            ci_lower = ate - 1.96 * se
-            ci_upper = ate + 1.96 * se
+            # Step 3: Approximate CI via bootstrap
+            ci_lower, ci_upper = self._calculate_ci_bootstrap(
+                data.Y, data.T, propensity_scores, ate
+            )
 
             estimates.append(ate)
             ci_bounds.append((ci_lower, ci_upper))
@@ -104,7 +102,7 @@ class NaiveOLS:
         status, bias_p_value = self._determine_status(bias_samples)
 
         return ValidationResult(
-            method="NaiveOLS",
+            method="IPWEstimator",
             status=status,
             bias=bias,
             mse=mse,
@@ -119,11 +117,48 @@ class NaiveOLS:
                 "dgp_true_effect": dgp.true_effect,
                 "dgp_confounding": dgp.confounding_strength,
                 "alpha": self.alpha,
-                "estimator": "NaiveOLS",
-                "controls_used": False,
+                "estimator": "IPWEstimator",
+                "propensity_model": "LogisticRegression",
             },
             bias_p_value=bias_p_value,
         )
+
+    def _calculate_ci_bootstrap(
+        self, Y: np.ndarray, T: np.ndarray, ps: np.ndarray, ate: float
+    ) -> Tuple[float, float]:
+        """
+        Calculate confidence interval via bootstrap.
+
+        Args:
+            Y: Outcome variable
+            T: Treatment indicator
+            ps: Propensity scores
+            ate: Point estimate of ATE
+            n_bootstrap: Number of bootstrap samples
+
+        Returns:
+            (ci_lower, ci_upper) tuple
+        """
+        n_bootstrap = self.bootstrap_config.n_bootstrap_ci
+        bootstrap_estimates = np.zeros(n_bootstrap)
+
+        for i in range(n_bootstrap):
+            # Resample with replacement
+            indices = self._rng.choice(len(Y), size=len(Y), replace=True)
+            Y_boot = Y[indices]
+            T_boot = T[indices]
+            ps_boot = ps[indices]
+
+            # Calculate IPW estimator on bootstrap sample
+            weights_t = T_boot / ps_boot
+            weights_0 = (1 - T_boot) / (1 - ps_boot)
+            bootstrap_estimates[i] = np.mean(Y_boot * weights_t) - np.mean(Y_boot * weights_0)
+
+        # Calculate percentile CI
+        ci_lower = np.percentile(bootstrap_estimates, 2.5)
+        ci_upper = np.percentile(bootstrap_estimates, 97.5)
+
+        return float(ci_lower), float(ci_upper)
 
     def _calculate_bias(self, estimates: np.ndarray, true_effect: float) -> float:
         """Calculate bias: E[θ̂] - θ₀"""
@@ -172,12 +207,13 @@ class NaiveOLS:
         return status, bias_p_value
 
 
-class OLSWithControls:
+class AugmentedIPW:
     """
-    OLS estimator with controls: Y ~ T + X.
+    Augmented inverse propensity weighting (doubly robust estimator).
 
-    Standard econometrics approach that controls for observed confounders.
-    Should have less bias than NaiveOLS but more than DML (less efficient).
+    Combines outcome regression with IPW for double robustness.
+    Consistent if EITHER outcome or propensity model is correct (not necessarily both).
+    More robust to model misspecification than pure IPW or regression alone.
 
     Args:
         n_simulations: Number of Monte Carlo simulations
@@ -186,10 +222,10 @@ class OLSWithControls:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> ols_controls = OLSWithControls(n_simulations=100, random_state=42)
-        >>> dgp = DGPGenerator(n=1000, p=5, confounding_strength=1.0)
-        >>> result = ols_controls.validate(dgp)
-        >>> result.bias  # Much smaller than NaiveOLS
+        >>> aipw = AugmentedIPW(n_simulations=100, random_state=42)
+        >>> dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)
+        >>> result = aipw.validate(dgp)
+        >>> result.status  # Usually PASS due to double robustness
     """
 
     def __init__(
@@ -199,7 +235,7 @@ class OLSWithControls:
         bootstrap_config: Optional[BootstrapConfig] = None,
         random_state: Optional[int] = None,
     ):
-        """Initialize OLS with controls estimator."""
+        """Initialize augmented IPW estimator."""
         self.n_simulations = n_simulations
         self.alpha = alpha
         self.bootstrap_config = bootstrap_config or DEFAULT_BOOTSTRAP_CONFIG
@@ -208,7 +244,7 @@ class OLSWithControls:
 
     def validate(self, dgp: DGPGenerator) -> ValidationResult:
         """
-        Run validation on DGP using OLS with controls (Y ~ T + X).
+        Run validation on DGP using augmented IPW estimator.
 
         Args:
             dgp: Data generating process to validate
@@ -223,31 +259,40 @@ class OLSWithControls:
         for _ in range(self.n_simulations):
             data = dgp.generate()
 
-            # OLS with controls: Y ~ T + X
-            X_with_T = np.column_stack([data.T, data.X])
-            model = LinearRegression()
-            model.fit(X_with_T, data.Y)
+            # Step 1: Estimate outcome models separately for T=1 and T=0
+            y1_model = LinearRegression()
+            y0_model = LinearRegression()
 
-            # ATE = coefficient on T (first column)
-            ate = float(model.coef_[0])
+            # Fit on treated and control subgroups
+            if np.sum(data.T == 1) > 0:
+                y1_model.fit(data.X[data.T == 1], data.Y[data.T == 1])
+            if np.sum(data.T == 0) > 0:
+                y0_model.fit(data.X[data.T == 0], data.Y[data.T == 0])
 
-            # Calculate residuals and standard error
-            y_pred = model.predict(X_with_T)
-            residuals = data.Y - y_pred
-            n = len(data.Y)
-            k = X_with_T.shape[1]
-            mse_residuals = np.sum(residuals**2) / (n - k)
+            # Predict potential outcomes for all units
+            y1_pred = y1_model.predict(data.X)
+            y0_pred = y0_model.predict(data.X)
 
-            # SE for slope: sqrt(mse * (X'X)^(-1)[0,0])
-            try:
-                XtX_inv = np.linalg.inv(X_with_T.T @ X_with_T)
-                se = np.sqrt(mse_residuals * XtX_inv[0, 0])
-            except np.linalg.LinAlgError:
-                se = np.inf
+            # Step 2: Estimate propensity score P(T=1|X)
+            ps_model = LogisticRegression(max_iter=1000, random_state=self.random_state)
+            ps_model.fit(data.X, data.T)
+            propensity_scores = ps_model.predict_proba(data.X)[:, 1]
 
-            # Confidence interval
-            ci_lower = ate - 1.96 * se
-            ci_upper = ate + 1.96 * se
+            # Clip propensity scores to avoid division by zero
+            propensity_scores = np.clip(propensity_scores, 1e-6, 1 - 1e-6)
+
+            # Step 3: Doubly robust combination
+            # ATE = E[Y1 - Y0] + E[T * (Y - Y1) / P] - E[(1-T) * (Y - Y0) / (1-P)]
+            ate = (
+                np.mean(y1_pred - y0_pred)
+                + np.mean(data.T * (data.Y - y1_pred) / propensity_scores)
+                - np.mean((1 - data.T) * (data.Y - y0_pred) / (1 - propensity_scores))
+            )
+
+            # Step 4: Approximate CI via bootstrap
+            ci_lower, ci_upper = self._calculate_ci_bootstrap(
+                data.Y, data.T, data.X, y1_pred, y0_pred, propensity_scores, ate
+            )
 
             estimates.append(ate)
             ci_bounds.append((ci_lower, ci_upper))
@@ -263,7 +308,7 @@ class OLSWithControls:
         status, bias_p_value = self._determine_status(bias_samples)
 
         return ValidationResult(
-            method="OLSWithControls",
+            method="AugmentedIPW",
             status=status,
             bias=bias,
             mse=mse,
@@ -278,11 +323,65 @@ class OLSWithControls:
                 "dgp_true_effect": dgp.true_effect,
                 "dgp_confounding": dgp.confounding_strength,
                 "alpha": self.alpha,
-                "estimator": "OLSWithControls",
-                "controls_used": True,
+                "estimator": "AugmentedIPW",
+                "outcome_model": "LinearRegression",
+                "propensity_model": "LogisticRegression",
+                "doubly_robust": True,
             },
             bias_p_value=bias_p_value,
         )
+
+    def _calculate_ci_bootstrap(
+        self,
+        Y: np.ndarray,
+        T: np.ndarray,
+        X: np.ndarray,
+        y1_pred: np.ndarray,
+        y0_pred: np.ndarray,
+        ps: np.ndarray,
+        ate: float,
+    ) -> Tuple[float, float]:
+        """
+        Calculate confidence interval via bootstrap.
+
+        Args:
+            Y: Outcome variable
+            T: Treatment indicator
+            X: Covariates
+            y1_pred: Predicted Y when T=1
+            y0_pred: Predicted Y when T=0
+            ps: Propensity scores
+            ate: Point estimate of ATE
+            n_bootstrap: Number of bootstrap samples
+
+        Returns:
+            (ci_lower, ci_upper) tuple
+        """
+        n_bootstrap = self.bootstrap_config.n_bootstrap_ci
+        bootstrap_estimates = np.zeros(n_bootstrap)
+
+        for i in range(n_bootstrap):
+            # Resample with replacement
+            indices = self._rng.choice(len(Y), size=len(Y), replace=True)
+            Y_boot = Y[indices]
+            T_boot = T[indices]
+            X_boot = X[indices]
+            y1_pred_boot = y1_pred[indices]
+            y0_pred_boot = y0_pred[indices]
+            ps_boot = ps[indices]
+
+            # Calculate doubly robust estimator on bootstrap sample
+            bootstrap_estimates[i] = (
+                np.mean(y1_pred_boot - y0_pred_boot)
+                + np.mean(T_boot * (Y_boot - y1_pred_boot) / ps_boot)
+                - np.mean((1 - T_boot) * (Y_boot - y0_pred_boot) / (1 - ps_boot))
+            )
+
+        # Calculate percentile CI
+        ci_lower = np.percentile(bootstrap_estimates, 2.5)
+        ci_upper = np.percentile(bootstrap_estimates, 97.5)
+
+        return float(ci_lower), float(ci_upper)
 
     def _calculate_bias(self, estimates: np.ndarray, true_effect: float) -> float:
         """Calculate bias: E[θ̂] - θ₀"""

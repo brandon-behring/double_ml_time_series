@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.validation.bootstrap_config import BootstrapConfig
+from dml_ts.validation.bootstrap_config import BootstrapConfig
 
 # ---------------------------------------------------------------------------
 # Tier-specific parameter configurations

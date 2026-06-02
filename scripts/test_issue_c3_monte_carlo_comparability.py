@@ -27,10 +27,10 @@ from copy import deepcopy
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.validation.dgp_generator import DGPGenerator, DGPResult
-from src.validation.bias_validation import BiasValidation
-from src.validation.ols_baseline import NaiveOLS, OLSWithControls
-from src.validation.ipw_baseline import IPWEstimator, AugmentedIPW
+from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
+from dml_ts.validation.bias_validation import BiasValidation
+from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
+from dml_ts.validation.ipw_baseline import IPWEstimator, AugmentedIPW
 
 
 def run_comparison_current(dgp: DGPGenerator, methods: Dict, n_simulations: int) -> Dict:

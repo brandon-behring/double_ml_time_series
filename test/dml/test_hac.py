@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from src.dml.hac import (
+from dml_ts.dml.hac import (
     bartlett_kernel,
     parzen_kernel,
     quadratic_spectral_kernel,

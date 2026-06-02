@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from src.validation.insurance_dgp import (
+from dml_ts.validation.insurance_dgp import (
     InsuranceDGPParams,
     InsuranceDGPResult,
     create_insurance_dgp,
@@ -358,7 +358,7 @@ class TestValidateDGPRecovery:
 
     def test_recovery_too_many_failures_raises(self) -> None:
         """RuntimeError when >50% of simulations fail."""
-        with patch("src.dml.PanelDML") as mock_panel:
+        with patch("dml_ts.dml.PanelDML") as mock_panel:
             # Force all fits to raise
             mock_panel.return_value.fit.side_effect = RuntimeError("forced failure")
 

@@ -28,7 +28,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import numpy as np
 
-from src.production.causal_monitor import AlertLevel, CausalMonitor, MonitoringResult
+from dml_ts.production.causal_monitor import AlertLevel, CausalMonitor, MonitoringResult
 
 
 class TriggerType(Enum):
