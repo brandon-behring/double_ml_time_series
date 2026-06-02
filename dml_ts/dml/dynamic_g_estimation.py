@@ -241,6 +241,7 @@ class DynamicGEstimationDML:
         self.n_folds = int(n_folds)
         self.gap = int(gap)
         self.random_state = random_state
+        self.result_: Optional[DynamicGEstimationResult] = None
 
     def fit(
         self,
@@ -260,17 +261,19 @@ class DynamicGEstimationDML:
             T: Treatment, same stacking.
             X: Confounders/state, ``(n_rows, p)``.
             W: Optional extra controls appended to ``X`` (same stacking).
-            groups: Unit id per row (panel). Required for ``mode="panel"``; each
-                group must contribute the same number of consecutive periods.
+            groups: Unit id per row (panel). Required for ``mode="panel"``. Rows must
+                be unit-major: each unit's ``m`` periods form one contiguous,
+                time-ordered block (the layout from ``np.repeat(unit_ids, m)``, as
+                EconML expects). Non-contiguous groups raise ``ValueError``.
             mode: ``"panel"`` (default when ``groups`` is given) or ``"series"``.
             alpha: Significance level for confidence intervals.
 
         Returns:
-            A :class:`DynamicGEstimationResult`.
+            A :class:`DynamicGEstimationResult` (also stored on ``self.result_``).
 
         Raises:
-            ValueError: On inconsistent shapes, ragged panels, or missing
-                ``groups`` for the panel mode.
+            ValueError: On inconsistent shapes, ragged or non-contiguous panels, or
+                missing ``groups`` for the panel mode.
         """
         Y = np.asarray(Y, dtype=float).ravel()
         T = np.asarray(T, dtype=float).ravel()
@@ -291,24 +294,53 @@ class DynamicGEstimationDML:
         if resolved_mode == "panel":
             if groups is None:
                 raise ValueError("mode='panel' requires groups (unit ids per row).")
-            return self._fit_panel(Y, T, X, np.asarray(groups), alpha)
-        return self._fit_series(Y, T, X, alpha)
+            result = self._fit_panel(Y, T, X, np.asarray(groups), alpha)
+        else:
+            result = self._fit_series(Y, T, X, alpha)
+        self.result_ = result
+        return result
+
+    def effect_by_period(self) -> NDArray[np.float64]:
+        """Return the fitted per-period blips ``theta_t`` (call ``fit`` first)."""
+        return self._fitted().theta_t
+
+    def cumulative_effect(self) -> float:
+        """Return the fitted cumulative effect ``sum(theta_t)`` (call ``fit`` first)."""
+        return self._fitted().cumulative_effect
+
+    def _fitted(self) -> DynamicGEstimationResult:
+        """Return the stored fit result, or raise if ``fit`` has not been called."""
+        if self.result_ is None:
+            raise RuntimeError("This estimator is not fitted yet; call fit() first.")
+        return self.result_
 
     # ------------------------------------------------------------------ panel
     def _reshape_panel(
         self, Y: NDArray, T: NDArray, X: NDArray, groups: NDArray
     ) -> tuple[NDArray, NDArray, NDArray]:
-        """Reshape stacked rows into (n_units, m) / (n_units, m, p), validating regularity."""
+        """Reshape stacked rows into (n_units, m) / (n_units, m, p), validating layout.
+
+        Rows must be unit-major: each unit's m periods form one contiguous,
+        time-ordered block. Non-contiguous groups would reshape into the wrong
+        trajectories, so they are rejected rather than silently mis-handled.
+        """
         uniq, counts = np.unique(groups, return_counts=True)
         m = int(counts[0])
         if not np.all(counts == m):
             raise ValueError("Panel is ragged: every group must have the same number of periods.")
         if m < 2:
             raise ValueError(f"Need m >= 2 periods per unit, got {m}.")
+        # Each unit must be a single contiguous block (one run in row order); otherwise
+        # reshape(n, m) would silently mix periods across units.
+        n_runs = 1 + int(np.count_nonzero(groups[1:] != groups[:-1]))
+        if n_runs != len(uniq):
+            raise ValueError(
+                "Panel rows are not unit-major contiguous: each unit's periods must form one "
+                "contiguous, time-ordered block (the layout from np.repeat(unit_ids, m), as "
+                "EconML expects). Sort rows by unit (stably, preserving time order) first."
+            )
         n = len(uniq)
         p = X.shape[1]
-        order = np.argsort(np.argsort(groups, kind="stable"), kind="stable")  # noqa: F841
-        # Rows are assumed unit-major and time-ordered within unit (the standard layout).
         Yp = Y.reshape(n, m)
         Tp = T.reshape(n, m)
         Xp = X.reshape(n, m, p)
@@ -410,7 +442,7 @@ class DynamicGEstimationDML:
         bread = np.linalg.inv(gram / lk)
         cov = (bread @ s_hac @ bread.T) / lk
 
-        nuis_r2 = np.full(m, _r2(Yv[keep] if keep.shape[0] == len(Yv) else Ytil, Ytil))
+        nuis_r2 = np.full(m, _r2(Yv[keep], Ytil))
         return self._package(theta, cov, alpha, n_units=1, m=m, nuis_r2=nuis_r2, mode="series")
 
     # ---------------------------------------------------------------- shared

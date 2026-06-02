@@ -26,6 +26,9 @@ jobs:
           pip install -e ".[dev,full]"
 
       - name: Run tier1 + tier2 + tier3 tests with coverage
+        # .[full] installs econml, so tier3 runs the gated custom<->EconML DynamicDML
+        # cross-check (the headline validation of the dynamic g-estimator). PR CI installs
+        # only .[dev] and runs tier1+tier2, so it skips the heavy econml dependency.
         run: python -m pytest -m "tier1 or tier2 or tier3" --cov=dml_ts --cov-report=xml --cov-fail-under=70 -v
 
       - name: Upload coverage artifact

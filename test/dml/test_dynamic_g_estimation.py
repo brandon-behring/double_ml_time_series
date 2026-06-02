@@ -82,6 +82,26 @@ class TestResultAndValidation:
         text = res.summary()
         assert "Dynamic G-Estimation" in text and "Cumulative" in text
 
+    def test_effect_accessor_methods(self, deterministic_panel):
+        d = deterministic_panel
+        est = _linear_estimator()
+        with pytest.raises(RuntimeError, match="not fitted"):
+            est.effect_by_period()
+        res = est.fit(d.Y, d.T, d.X, groups=d.groups)
+        np.testing.assert_array_equal(est.effect_by_period(), res.theta_t)
+        assert est.cumulative_effect() == res.cumulative_effect
+
+    def test_non_contiguous_groups_raise(self):
+        # interleaved (round-robin) groups are non-contiguous -> must fail loud, not
+        # silently reshape periods across units.
+        n, m, p = 4, 3, 2
+        groups = np.tile(np.arange(n), m)  # [0,1,2,3, 0,1,2,3, 0,1,2,3]
+        Y = np.zeros(n * m)
+        T = np.zeros(n * m)
+        X = np.zeros((n * m, p))
+        with pytest.raises(ValueError, match="contiguous"):
+            _linear_estimator().fit(Y, T, X, groups=groups)
+
 
 @pytest.mark.tier2
 class TestRecovery:
@@ -172,3 +192,57 @@ class TestInferenceAndReference:
         np.testing.assert_allclose(custom.theta_t, d.theta_t, atol=0.15)
         np.testing.assert_allclose(reference.theta_t, d.theta_t, atol=0.15)
         np.testing.assert_allclose(custom.theta_t, reference.theta_t, atol=0.12)
+
+    def test_series_mode_coverage(self):
+        truth = np.array([1.0, 0.5])
+        m, reps = 2, 80
+        ests = np.zeros((reps, m))
+        covered = np.zeros((reps, m), dtype=bool)
+        est = DynamicGEstimationDML(
+            n_periods=2, model_y="ridge", model_t="ridge", n_folds=5, random_state=0
+        )
+        for r in range(reps):
+            s = DynamicTreatmentDGP(
+                n_periods=2,
+                theta_t=truth,
+                p=2,
+                mode="series",
+                series_length=1500,
+                noise_level=1.0,
+                treatment_noise=1.0,
+                random_state=2000 + r,
+            ).generate()
+            res = est.fit(s.Y, s.T, s.X, mode="series")
+            ests[r] = res.theta_t
+            covered[r] = (res.ci_lower_t <= truth) & (truth <= res.ci_upper_t)
+        bias = ests.mean(axis=0) - truth
+        coverage = covered.mean(axis=0)
+        assert np.abs(bias).max() < 0.05, f"series bias too large: {bias}"
+        assert (np.abs(coverage - 0.95) < 0.08).all(), f"series coverage off nominal: {coverage}"
+
+    @pytest.mark.skipif(
+        not econml_available(), reason="econml not installed (optional '.[full]' extra)"
+    )
+    def test_feedback_agreement_with_econml(self):
+        # Time-varying confounding (state depends on past treatment): both implementations
+        # must recover the closed-form TOTAL blip and agree.
+        d = DynamicTreatmentDGP(
+            n_periods=3,
+            theta_t=[1.0, 0.5, 1.5],
+            n_units=2000,
+            p=2,
+            state_feedback=True,
+            state_transition=0.5,
+            treatment_state_coef=0.8,
+            confounding_coef=1.0,
+            treatment_noise=1.0,
+            outcome_noise=1.0,
+            random_state=5,
+        ).generate()
+        custom = DynamicGEstimationDML(
+            model_y="ridge", model_t="ridge", n_folds=5, random_state=0
+        ).fit(d.Y, d.T, d.X, groups=d.groups)
+        reference = fit_econml_reference(d.Y, d.T, d.X, groups=d.groups, cv=5, random_state=0)
+        np.testing.assert_allclose(custom.theta_t, d.theta_t, atol=0.2)
+        np.testing.assert_allclose(reference.theta_t, d.theta_t, atol=0.2)
+        np.testing.assert_allclose(custom.theta_t, reference.theta_t, atol=0.15)
