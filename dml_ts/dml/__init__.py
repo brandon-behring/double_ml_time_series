@@ -32,6 +32,8 @@ from .cross_fitting import (
     PurgedGroupTimeSeriesCV,
 )
 from .hac import newey_west_se, newey_west_covariance, HACEstimator
+from .dynamic_g_estimation import DynamicGEstimationDML, DynamicGEstimationResult
+from ._dynamic_econml import fit_econml_reference, econml_available
 
 __all__ = [
     "fwl_estimate",
@@ -50,4 +52,8 @@ __all__ = [
     "newey_west_se",
     "newey_west_covariance",
     "HACEstimator",
+    "DynamicGEstimationDML",
+    "DynamicGEstimationResult",
+    "fit_econml_reference",
+    "econml_available",
 ]

@@ -10,6 +10,7 @@ from .dgp_generator_ts import (
     create_panel_dgp,
     create_break_dgp,
 )
+from .dynamic_dgp import DynamicTreatmentDGP, DynamicTreatmentDGPResult
 from .validation_result import ValidationResult
 from .storage import ResultStorage
 from . import plotting
@@ -48,6 +49,9 @@ __all__ = [
     "create_ar_dgp",
     "create_panel_dgp",
     "create_break_dgp",
+    # Dynamic-treatment DGP (known per-period blips, for g-estimation)
+    "DynamicTreatmentDGP",
+    "DynamicTreatmentDGPResult",
     # Other
     "ValidationResult",
     "ResultStorage",

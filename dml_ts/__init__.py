@@ -9,7 +9,13 @@ importing the package eagerly pulls in only ``dml`` and ``validation``.
 
 from . import dml
 from . import validation
-from .dml import double_ml, TemporalPLRDML, RollingWindowDML, PanelDML
+from .dml import (
+    double_ml,
+    TemporalPLRDML,
+    RollingWindowDML,
+    PanelDML,
+    DynamicGEstimationDML,
+)
 
 __all__ = [
     "dml",
@@ -18,4 +24,5 @@ __all__ = [
     "TemporalPLRDML",
     "RollingWindowDML",
     "PanelDML",
+    "DynamicGEstimationDML",
 ]
