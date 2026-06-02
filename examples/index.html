@@ -364,9 +364,9 @@ Robinson overfits without cross-fitting, DML recovers the true effect.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml.fwl</span><span class="w"> </span><span class="kn">import</span> <span class="n">fwl_estimate</span><span class="p">,</span> <span class="n">fwl_vs_ols_comparison</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml.robinson</span><span class="w"> </span><span class="kn">import</span> <span class="n">robinson_estimator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.fwl</span><span class="w"> </span><span class="kn">import</span> <span class="n">fwl_estimate</span><span class="p">,</span> <span class="n">fwl_vs_ols_comparison</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.robinson</span><span class="w"> </span><span class="kn">import</span> <span class="n">robinson_estimator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -469,9 +469,9 @@ on autocorrelated data.</p>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesDGPGenerator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesDGPGenerator</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -583,7 +583,7 @@ to fully nonlinear with temporal dynamics.</p>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_insurance_dgp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_insurance_dgp</span>
 
 <span class="n">RealismLevel</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;simple&quot;</span><span class="p">,</span> <span class="s2">&quot;moderate&quot;</span><span class="p">,</span> <span class="s2">&quot;full&quot;</span><span class="p">]</span>
 
@@ -661,8 +661,8 @@ to fully nonlinear with temporal dynamics.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.sensitivity</span><span class="w"> </span><span class="kn">import</span> <span class="n">RosenbaumBounds</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.sensitivity</span><span class="w"> </span><span class="kn">import</span> <span class="n">RosenbaumBounds</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -763,13 +763,13 @@ code. This example is not a production deployment claim.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.production</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.production</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CausalMonitor</span><span class="p">,</span>
     <span class="n">DMLModelRegistry</span><span class="p">,</span>
     <span class="n">DMLModelVersion</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_insurance_dgp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_insurance_dgp</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

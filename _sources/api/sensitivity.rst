@@ -10,13 +10,13 @@ of identifying assumptions.
 
 ----
 
-Rosenbaum Bounds (``src.sensitivity.rosenbaum``)
--------------------------------------------------
+Rosenbaum Bounds (``dml_ts.sensitivity.rosenbaum``)
+---------------------------------------------------
 
 Sensitivity analysis via Rosenbaum bounds — quantifies how strong
 unmeasured confounding would need to be to overturn causal conclusions.
 
-.. automodule:: src.sensitivity.rosenbaum
+.. automodule:: dml_ts.sensitivity.rosenbaum
    :members:
    :undoc-members: False
    :show-inheritance:

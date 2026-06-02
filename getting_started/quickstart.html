@@ -336,7 +336,7 @@ cross-fitting. In this remediation milestone it should be treated as an
 i.i.d.-style helper, not a temporal-CV estimator.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">n</span> <span class="o">=</span> <span class="mi">500</span>
@@ -358,7 +358,7 @@ controls, temporal cross-fitting, and HAC inference. It does not estimate
 period-specific <code class="docutils literal notranslate"><span class="pre">theta_t</span></code> effects.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">n</span> <span class="o">=</span> <span class="mi">240</span>
@@ -389,7 +389,7 @@ period-specific <code class="docutils literal notranslate"><span class="pre">the
 <p>Use temporal blocking and purging directly when inspecting train/test geometry.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
 
 <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">gap</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">purge_length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -401,7 +401,7 @@ period-specific <code class="docutils literal notranslate"><span class="pre">the
 </section>
 <section id="synthetic-macro-controls">
 <h2>Synthetic Macro Controls<a class="headerlink" href="#synthetic-macro-controls" title="Link to this heading">#</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_synthetic_fred_data</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_synthetic_fred_data</span>
 
 <span class="n">macro</span> <span class="o">=</span> <span class="n">create_synthetic_fred_data</span><span class="p">(</span>
     <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2018-01-01&quot;</span><span class="p">,</span>
@@ -417,7 +417,7 @@ period-specific <code class="docutils literal notranslate"><span class="pre">the
 </section>
 <section id="insurance-dgp">
 <h2>Insurance DGP<a class="headerlink" href="#insurance-dgp" title="Link to this heading">#</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_insurance_dgp</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_insurance_dgp</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">create_insurance_dgp</span><span class="p">(</span>
     <span class="n">realism</span><span class="o">=</span><span class="s2">&quot;moderate&quot;</span><span class="p">,</span>

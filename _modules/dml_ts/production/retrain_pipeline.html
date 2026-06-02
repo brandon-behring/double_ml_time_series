@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.production.retrain_pipeline &#8212; Double ML Time Series</title>
+    <title>dml_ts.production.retrain_pipeline &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/production/retrain_pipeline';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/production/retrain_pipeline';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/production/retrain_pipeline.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/production/retrain_pipeline.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.production.retrain_pipeline</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.production.retrain_pipeline</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Retraining triggers and scheduling for DML pipelines.</span>
 
@@ -341,11 +341,11 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.production.causal_monitor</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlertLevel</span><span class="p">,</span> <span class="n">CausalMonitor</span><span class="p">,</span> <span class="n">MonitoringResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.production.causal_monitor</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlertLevel</span><span class="p">,</span> <span class="n">CausalMonitor</span><span class="p">,</span> <span class="n">MonitoringResult</span>
 
 
 <div class="viewcode-block" id="TriggerType">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.TriggerType">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.TriggerType">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TriggerType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Types of retraining triggers.&quot;&quot;&quot;</span>
 
@@ -360,7 +360,7 @@
 
 
 <div class="viewcode-block" id="RetrainTrigger">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainTrigger">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainTrigger">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">RetrainTrigger</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -383,7 +383,7 @@
     <span class="n">model_version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="RetrainTrigger.to_dict">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainTrigger.to_dict">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainTrigger.to_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to dictionary for serialization.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
@@ -399,7 +399,7 @@
 
 
 <div class="viewcode-block" id="RetrainSchedulerConfig">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainSchedulerConfig">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainSchedulerConfig">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">RetrainSchedulerConfig</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -431,7 +431,7 @@
 
 
 <div class="viewcode-block" id="RetrainScheduler">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RetrainScheduler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Intelligent retraining scheduler for DML pipelines.</span>
@@ -453,7 +453,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RetrainScheduler.__init__">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RetrainSchedulerConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -476,14 +476,14 @@
 
 
 <div class="viewcode-block" id="RetrainScheduler.set_current_model">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.set_current_model">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.set_current_model">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_current_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the current production model version.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_model_version</span> <span class="o">=</span> <span class="n">version_id</span></div>
 
 
 <div class="viewcode-block" id="RetrainScheduler.record_retrain">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.record_retrain">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.record_retrain">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">record_retrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger</span><span class="p">:</span> <span class="n">RetrainTrigger</span><span class="p">,</span> <span class="n">new_version_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Record that retraining occurred.</span>
@@ -498,7 +498,7 @@
 
 
 <div class="viewcode-block" id="RetrainScheduler.is_in_cooldown">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.is_in_cooldown">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.is_in_cooldown">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_in_cooldown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if scheduler is in cooldown period.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_retrain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -508,7 +508,7 @@
 
 
 <div class="viewcode-block" id="RetrainScheduler.check_scheduled_retrain">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.check_scheduled_retrain">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.check_scheduled_retrain">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">check_scheduled_retrain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RetrainTrigger</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if scheduled retraining is due.</span>
@@ -551,7 +551,7 @@
 
 
 <div class="viewcode-block" id="RetrainScheduler.evaluate_monitoring_results">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.evaluate_monitoring_results">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.evaluate_monitoring_results">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_monitoring_results</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MonitoringResult</span><span class="p">],</span>
@@ -618,7 +618,7 @@
 
 
 <div class="viewcode-block" id="RetrainScheduler.evaluate_and_monitor">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.evaluate_and_monitor">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.evaluate_and_monitor">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_and_monitor</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">propensity_scores</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -682,7 +682,7 @@
 
 
 <div class="viewcode-block" id="RetrainScheduler.create_manual_trigger">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.create_manual_trigger">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.create_manual_trigger">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_manual_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RetrainTrigger</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a manual retraining trigger.</span>
@@ -703,14 +703,14 @@
 
 
 <div class="viewcode-block" id="RetrainScheduler.get_trigger_history">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.get_trigger_history">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.get_trigger_history">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_trigger_history</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return history of retraining triggers as dicts.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_history</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="RetrainScheduler.get_status">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.RetrainScheduler.get_status">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.get_status">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get current scheduler status.</span>
@@ -748,7 +748,7 @@
 
 
 <div class="viewcode-block" id="create_airflow_dag_config">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.create_airflow_dag_config">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.create_airflow_dag_config">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_airflow_dag_config</span><span class="p">(</span>
     <span class="n">scheduler</span><span class="p">:</span> <span class="n">RetrainScheduler</span><span class="p">,</span>
     <span class="n">dag_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;dml_retrain_pipeline&quot;</span><span class="p">,</span>
@@ -815,7 +815,7 @@
 
 
 <div class="viewcode-block" id="create_prefect_flow_config">
-<a class="viewcode-back" href="../../../api/production.html#src.production.retrain_pipeline.create_prefect_flow_config">[docs]</a>
+<a class="viewcode-back" href="../../../api/production.html#dml_ts.production.retrain_pipeline.create_prefect_flow_config">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_prefect_flow_config</span><span class="p">(</span>
     <span class="n">scheduler</span><span class="p">:</span> <span class="n">RetrainScheduler</span><span class="p">,</span>
     <span class="n">flow_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;dml-retrain&quot;</span><span class="p">,</span>

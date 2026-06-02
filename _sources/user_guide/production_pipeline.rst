@@ -1,7 +1,7 @@
 Research Pipeline Utilities
 ===========================
 
-The ``src.production`` package contains research/demo utilities for registry,
+The ``dml_ts.production`` package contains research/demo utilities for registry,
 monitoring, and retraining examples used in the book companion. It should not be
 described as production deployment infrastructure without a separate hardening pass.
 
@@ -10,11 +10,11 @@ Current Scope
 
 Implemented companion utilities include:
 
-- :class:`~src.production.model_registry.DMLModelRegistry`
-- :class:`~src.production.model_registry.DMLModelVersion`
-- :class:`~src.production.causal_monitor.CausalMonitor`
-- :class:`~src.production.retrain_pipeline.RetrainScheduler`
-- :class:`~src.production.dml_pipeline.InsuranceDMLPipeline`
+- :class:`~dml_ts.production.model_registry.DMLModelRegistry`
+- :class:`~dml_ts.production.model_registry.DMLModelVersion`
+- :class:`~dml_ts.production.causal_monitor.CausalMonitor`
+- :class:`~dml_ts.production.retrain_pipeline.RetrainScheduler`
+- :class:`~dml_ts.production.dml_pipeline.InsuranceDMLPipeline`
 
 These utilities are useful for demonstrating how causal diagnostics might be
 organized. They do not establish service reliability, model governance, security,
@@ -30,7 +30,7 @@ Registry Example
    import numpy as np
    from sklearn.linear_model import Ridge
 
-   from src.production import DMLModelRegistry, DMLModelVersion
+   from dml_ts.production import DMLModelRegistry, DMLModelVersion
 
    rng = np.random.default_rng(42)
    X = rng.normal(size=(100, 3))
@@ -70,7 +70,7 @@ Use monitoring helpers as diagnostics, not as proof that a model is deployment-r
 
    import numpy as np
 
-   from src.production import CausalMonitor
+   from dml_ts.production import CausalMonitor
 
    rng = np.random.default_rng(42)
    treatment_train = rng.normal(size=200)

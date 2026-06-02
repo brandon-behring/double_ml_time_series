@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.validation.stationarity &#8212; Double ML Time Series</title>
+    <title>dml_ts.validation.stationarity &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/validation/stationarity';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/validation/stationarity';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/validation/stationarity.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/validation/stationarity.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.validation.stationarity</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.validation.stationarity</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Stationarity Tests for Time Series DML Validation.</span>
 
@@ -352,7 +352,7 @@
 <span class="sd">  regression. Biometrika 75, 335-346.</span>
 
 <span class="sd">Usage:</span>
-<span class="sd">    &gt;&gt;&gt; from src.validation.stationarity import StationarityDiagnostic</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.validation.stationarity import StationarityDiagnostic</span>
 <span class="sd">    &gt;&gt;&gt; diag = StationarityDiagnostic()</span>
 <span class="sd">    &gt;&gt;&gt; result = diag.test(Y, method=&quot;adf&quot;)</span>
 <span class="sd">    &gt;&gt;&gt; print(f&quot;Stationary: {result.is_stationary}&quot;)</span>
@@ -440,7 +440,7 @@
 
 
 <div class="viewcode-block" id="StationarityResult">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.StationarityResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">StationarityResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for stationarity tests.</span>
@@ -474,7 +474,7 @@
 
 
 <div class="viewcode-block" id="ComprehensiveStationarityResult">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.ComprehensiveStationarityResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.ComprehensiveStationarityResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ComprehensiveStationarityResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for comprehensive stationarity analysis.</span>
@@ -831,7 +831,7 @@
 
 
 <div class="viewcode-block" id="StationarityDiagnostic">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.StationarityDiagnostic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StationarityDiagnostic</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stationarity diagnostic tool for time series DML.</span>
 
@@ -851,7 +851,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="StationarityDiagnostic.__init__">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.StationarityDiagnostic.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">significance_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
@@ -876,7 +876,7 @@
 
 
 <div class="viewcode-block" id="StationarityDiagnostic.test_adf">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.test_adf">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.StationarityDiagnostic.test_adf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">test_adf</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -947,7 +947,7 @@
 
 
 <div class="viewcode-block" id="StationarityDiagnostic.test_kpss">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.test_kpss">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.StationarityDiagnostic.test_kpss">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">test_kpss</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -1025,7 +1025,7 @@
 
 
 <div class="viewcode-block" id="StationarityDiagnostic.test_phillips_perron">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.test_phillips_perron">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.StationarityDiagnostic.test_phillips_perron">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">test_phillips_perron</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -1093,7 +1093,7 @@
 
 
 <div class="viewcode-block" id="StationarityDiagnostic.test">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.test">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.StationarityDiagnostic.test">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -1121,7 +1121,7 @@
 
 
 <div class="viewcode-block" id="StationarityDiagnostic.comprehensive_test">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.StationarityDiagnostic.comprehensive_test">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.StationarityDiagnostic.comprehensive_test">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">comprehensive_test</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -1187,7 +1187,7 @@
 
 
 <div class="viewcode-block" id="run_stationarity_test">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.run_stationarity_test">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.run_stationarity_test">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_stationarity_test</span><span class="p">(</span>
     <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">method</span><span class="p">:</span> <span class="n">TestMethod</span> <span class="o">=</span> <span class="s2">&quot;adf&quot;</span><span class="p">,</span>
@@ -1215,7 +1215,7 @@
 
 
 <div class="viewcode-block" id="suggest_differencing_order">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.stationarity.suggest_differencing_order">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.stationarity.suggest_differencing_order">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">suggest_differencing_order</span><span class="p">(</span>
     <span class="n">series</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">max_d</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>

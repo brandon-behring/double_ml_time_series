@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.dml.hac &#8212; Double ML Time Series</title>
+    <title>dml_ts.dml.hac &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/dml/hac';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/dml/hac';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/dml/hac.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/dml/hac.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.dml.hac</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.dml.hac</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">HAC (Heteroskedasticity and Autocorrelation Consistent) Covariance Estimation.</span>
 
@@ -333,7 +333,7 @@
 <span class="sd">  covariance matrix estimation. Review of Economic Studies, 61(4).</span>
 
 <span class="sd">Usage:</span>
-<span class="sd">    &gt;&gt;&gt; from src.dml.hac import newey_west_se, HACEstimator</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml.hac import newey_west_se, HACEstimator</span>
 <span class="sd">    &gt;&gt;&gt; # Simple usage for single coefficient</span>
 <span class="sd">    &gt;&gt;&gt; se = newey_west_se(residuals, bandwidth=10)</span>
 <span class="sd">    &gt;&gt;&gt; # Full covariance matrix</span>
@@ -354,7 +354,7 @@
 
 
 <div class="viewcode-block" id="HACResult">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.HACResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.HACResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">HACResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for HAC estimation.</span>
@@ -380,7 +380,7 @@
 
 
 <div class="viewcode-block" id="bartlett_kernel">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.bartlett_kernel">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.bartlett_kernel">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">bartlett_kernel</span><span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Bartlett (triangular) kernel weight.</span>
 
@@ -414,7 +414,7 @@
 
 
 <div class="viewcode-block" id="parzen_kernel">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.parzen_kernel">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.parzen_kernel">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parzen_kernel</span><span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parzen kernel weight.</span>
 
@@ -441,7 +441,7 @@
 
 
 <div class="viewcode-block" id="quadratic_spectral_kernel">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.quadratic_spectral_kernel">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.quadratic_spectral_kernel">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">quadratic_spectral_kernel</span><span class="p">(</span><span class="n">lag</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bandwidth</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Quadratic spectral (QS) kernel weight.</span>
 
@@ -466,7 +466,7 @@
 
 
 <div class="viewcode-block" id="get_kernel_function">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.get_kernel_function">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.get_kernel_function">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_kernel_function</span><span class="p">(</span><span class="n">kernel</span><span class="p">:</span> <span class="n">KernelType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get kernel function by name.</span>
 
@@ -491,7 +491,7 @@
 
 
 <div class="viewcode-block" id="optimal_bandwidth">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.optimal_bandwidth">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.optimal_bandwidth">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">optimal_bandwidth</span><span class="p">(</span>
     <span class="n">residuals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">method</span><span class="p">:</span> <span class="n">BandwidthMethod</span> <span class="o">=</span> <span class="s2">&quot;newey_west&quot;</span><span class="p">,</span>
@@ -633,7 +633,7 @@
 
 
 <div class="viewcode-block" id="newey_west_se">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.newey_west_se">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.newey_west_se">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">newey_west_se</span><span class="p">(</span>
     <span class="n">residuals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -700,7 +700,7 @@
 
 
 <div class="viewcode-block" id="newey_west_covariance">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.newey_west_covariance">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.newey_west_covariance">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">newey_west_covariance</span><span class="p">(</span>
     <span class="n">residuals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -794,7 +794,7 @@
 
 
 <div class="viewcode-block" id="HACEstimator">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.HACEstimator">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.HACEstimator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HACEstimator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HAC covariance estimator for DML inference.</span>
 
@@ -820,7 +820,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="HACEstimator.__init__">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.HACEstimator.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.HACEstimator.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">kernel</span><span class="p">:</span> <span class="n">KernelType</span> <span class="o">=</span> <span class="s2">&quot;bartlett&quot;</span><span class="p">,</span>
@@ -854,7 +854,7 @@
 
 
 <div class="viewcode-block" id="HACEstimator.fit">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.HACEstimator.fit">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.HACEstimator.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">residuals</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -967,7 +967,7 @@
         <span class="k">return</span> <span class="n">cov</span> <span class="o">*</span> <span class="n">recolor_factor</span>
 
 <div class="viewcode-block" id="HACEstimator.get_se">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.HACEstimator.get_se">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.HACEstimator.get_se">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_se</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get HAC standard error.</span>
 
@@ -990,7 +990,7 @@
 
 
 <div class="viewcode-block" id="HACEstimator.get_variance">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.HACEstimator.get_variance">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.HACEstimator.get_variance">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_variance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get HAC variance estimate.</span>
 
@@ -1006,7 +1006,7 @@
 
 
 <div class="viewcode-block" id="HACEstimator.get_covariance">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.HACEstimator.get_covariance">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.HACEstimator.get_covariance">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get HAC covariance matrix.</span>
 
@@ -1024,7 +1024,7 @@
 
 
 <div class="viewcode-block" id="HACEstimator.get_result">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.HACEstimator.get_result">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.HACEstimator.get_result">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HACResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get complete HAC result.</span>
 
@@ -1058,7 +1058,7 @@
 
 
 <div class="viewcode-block" id="hac_inference">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.hac.hac_inference">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.hac.hac_inference">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">hac_inference</span><span class="p">(</span>
     <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">se_hac</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>

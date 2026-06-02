@@ -9,26 +9,26 @@ Data loading utilities for empirical datasets and macroeconomic controls.
 
 ----
 
-OJ Dataset (``src.data.oj_loader``)
-------------------------------------
+OJ Dataset (``dml_ts.data.oj_loader``)
+--------------------------------------
 
 Dominick's orange juice scanner data — a standard cross-sectional causal
 inference benchmark dataset.
 
-.. automodule:: src.data.oj_loader
+.. automodule:: dml_ts.data.oj_loader
    :members:
    :undoc-members: False
    :show-inheritance:
 
 ----
 
-FRED Loader (``src.data.fred_loader``)
---------------------------------------
+FRED Loader (``dml_ts.data.fred_loader``)
+-----------------------------------------
 
 FRED (Federal Reserve Economic Data) macroeconomic series loader with
 stationarity transforms and synthetic data generation for offline use.
 
-.. automodule:: src.data.fred_loader
+.. automodule:: dml_ts.data.fred_loader
    :members:
    :undoc-members: False
    :show-inheritance:

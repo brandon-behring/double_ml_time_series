@@ -330,7 +330,7 @@
   <section id="temporal-plr-dml">
 <h1>Temporal PLR DML<a class="headerlink" href="#temporal-plr-dml" title="Link to this heading">#</a></h1>
 <p>This guide describes the current implemented time-series workflow. The central
-class is <a class="reference internal" href="../api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML" title="src.dml.temporal_plr_dml.TemporalPLRDML"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemporalPLRDML</span></code></a>, which estimates a
+class is <a class="reference internal" href="../api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDML" title="dml_ts.dml.temporal_plr_dml.TemporalPLRDML"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemporalPLRDML</span></code></a>, which estimates a
 scalar partially linear treatment effect using lagged treatment controls,
 temporal cross-fitting, and HAC inference.</p>
 <p>It is intentionally not documented as true Lewis-Syrgkanis dynamic g-estimation.
@@ -343,7 +343,7 @@ period-specific <code class="docutils literal notranslate"><span class="pre">the
 <li><p>lagged treatment controls through <code class="docutils literal notranslate"><span class="pre">n_lags</span></code></p></li>
 <li><p>expanding-window temporal cross-fitting</p></li>
 <li><p>gap handling through <code class="docutils literal notranslate"><span class="pre">gap</span></code></p></li>
-<li><p>HAC/Newey-West-style inference through <a class="reference internal" href="../api/dml.html#src.dml.hac.HACEstimator" title="src.dml.hac.HACEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">HACEstimator</span></code></a></p></li>
+<li><p>HAC/Newey-West-style inference through <a class="reference internal" href="../api/dml.html#dml_ts.dml.hac.HACEstimator" title="dml_ts.dml.hac.HACEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">HACEstimator</span></code></a></p></li>
 <li><p>explicit reporting of early rows excluded because temporal CV cannot produce
 out-of-fold predictions without training on future observations</p></li>
 </ul>
@@ -356,7 +356,7 @@ analysis.</p>
 <h2>Temporal Cross-Validation<a class="headerlink" href="#temporal-cross-validation" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
 
 <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">gap</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">purge_length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -373,7 +373,7 @@ residual regression and reports the count as <code class="docutils literal notra
 <h2>TemporalPLRDML<a class="headerlink" href="#temporalplrdml" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">n</span> <span class="o">=</span> <span class="mi">240</span>
@@ -407,7 +407,7 @@ lag construction and temporal-CV filtering, not simply <code class="docutils lit
 <p><code class="docutils literal notranslate"><span class="pre">RollingWindowDML</span></code> estimates a local scalar effect per window. It is useful as
 a descriptive stability diagnostic; it should not be described as a formal
 period-specific dynamic treatment-effect estimator.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">RollingWindowDML</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts</span><span class="w"> </span><span class="kn">import</span> <span class="n">RollingWindowDML</span>
 
 <span class="n">rolling</span> <span class="o">=</span> <span class="n">RollingWindowDML</span><span class="p">(</span>
     <span class="n">window_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
@@ -427,7 +427,7 @@ period-specific dynamic treatment-effect estimator.</p>
 PLR DML machinery.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">PanelDML</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts</span><span class="w"> </span><span class="kn">import</span> <span class="n">PanelDML</span>
 
 <span class="n">n_products</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">n_periods</span> <span class="o">=</span> <span class="mi">24</span>

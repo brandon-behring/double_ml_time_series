@@ -75,7 +75,7 @@ When the data generating process is truly linear, FWL recovers the exact treatme
 .. code-block:: python
 
    import numpy as np
-   from src.dml.fwl import fwl_estimate, fwl_vs_ols_comparison
+   from dml_ts.dml.fwl import fwl_estimate, fwl_vs_ols_comparison
 
    np.random.seed(42)
    n = 1000
@@ -150,7 +150,7 @@ ML estimators.
 
 .. code-block:: python
 
-   from src.dml.robinson import robinson_estimator
+   from dml_ts.dml.robinson import robinson_estimator
    from sklearn.ensemble import RandomForestRegressor
 
    result_robinson = robinson_estimator(
@@ -241,7 +241,7 @@ and :math:`\Sigma = \E{\psi^2}`.
 
 .. code-block:: python
 
-   from src.dml import double_ml
+   from dml_ts import double_ml
 
    result_dml = double_ml(
        Y, T, X,
@@ -297,7 +297,7 @@ After running DML, verify these conditions:
      - ``result.fold_estimates``
    * - Sensitivity
      - How large must unmeasured confounding be to overturn result?
-     - :class:`~src.sensitivity.rosenbaum.RosenbaumBounds`
+     - :class:`~dml_ts.sensitivity.rosenbaum.RosenbaumBounds`
 
 ----
 
@@ -310,9 +310,9 @@ Putting it all together — one DGP, three estimators, clear winner:
 
    import numpy as np
    from sklearn.ensemble import RandomForestRegressor
-   from src.dml.fwl import fwl_estimate
-   from src.dml.robinson import robinson_estimator
-   from src.dml import double_ml
+   from dml_ts.dml.fwl import fwl_estimate
+   from dml_ts.dml.robinson import robinson_estimator
+   from dml_ts import double_ml
 
    # DGP with nonlinear confounding
    np.random.seed(42)

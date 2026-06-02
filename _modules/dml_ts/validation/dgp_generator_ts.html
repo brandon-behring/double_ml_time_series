@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.validation.dgp_generator_ts &#8212; Double ML Time Series</title>
+    <title>dml_ts.validation.dgp_generator_ts &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/validation/dgp_generator_ts';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/validation/dgp_generator_ts';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/validation/dgp_generator_ts.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/validation/dgp_generator_ts.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.validation.dgp_generator_ts</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.validation.dgp_generator_ts</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Time Series Data Generating Process (DGP) Generator.</span>
 
@@ -332,7 +332,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesDGPResult">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.TimeSeriesDGPResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.TimeSeriesDGPResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeSeriesDGPResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result from time series DGP generation.</span>
@@ -370,7 +370,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesDGPGenerator">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.TimeSeriesDGPGenerator">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.TimeSeriesDGPGenerator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeSeriesDGPGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate synthetic time series data with known temporal properties.</span>
 
@@ -402,7 +402,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TimeSeriesDGPGenerator.__init__">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.TimeSeriesDGPGenerator.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.TimeSeriesDGPGenerator.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -519,7 +519,7 @@
         <span class="k">return</span> <span class="n">coefs</span>
 
 <div class="viewcode-block" id="TimeSeriesDGPGenerator.generate">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.TimeSeriesDGPGenerator.generate">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.TimeSeriesDGPGenerator.generate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeSeriesDGPResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a single dataset from the time series DGP.</span>
 
@@ -789,7 +789,7 @@
 
 
 <div class="viewcode-block" id="BreakDGPGenerator">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.BreakDGPGenerator">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.BreakDGPGenerator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BreakDGPGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate time series with structural breaks in treatment effects.</span>
 
@@ -808,7 +808,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BreakDGPGenerator.__init__">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.BreakDGPGenerator.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.BreakDGPGenerator.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -857,7 +857,7 @@
 
 
 <div class="viewcode-block" id="BreakDGPGenerator.generate">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.BreakDGPGenerator.generate">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.BreakDGPGenerator.generate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BreakDGPResult&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate data with structural breaks.</span>
 
@@ -923,7 +923,7 @@
 
 
 <div class="viewcode-block" id="BreakDGPResult">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.BreakDGPResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.BreakDGPResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">BreakDGPResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result from break DGP generation.</span>
@@ -953,7 +953,7 @@
 
 
 <div class="viewcode-block" id="create_ar_dgp">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.create_ar_dgp">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.create_ar_dgp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_ar_dgp</span><span class="p">(</span>
     <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
     <span class="n">p</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
@@ -989,7 +989,7 @@
 
 
 <div class="viewcode-block" id="create_panel_dgp">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.create_panel_dgp">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.create_panel_dgp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_panel_dgp</span><span class="p">(</span>
     <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
     <span class="n">n_units</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
@@ -1024,7 +1024,7 @@
 
 
 <div class="viewcode-block" id="create_break_dgp">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.dgp_generator_ts.create_break_dgp">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dgp_generator_ts.create_break_dgp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_break_dgp</span><span class="p">(</span>
     <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
     <span class="n">p</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>

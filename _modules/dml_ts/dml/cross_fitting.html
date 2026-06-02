@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.dml.cross_fitting &#8212; Double ML Time Series</title>
+    <title>dml_ts.dml.cross_fitting &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/dml/cross_fitting';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/dml/cross_fitting';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/dml/cross_fitting.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/dml/cross_fitting.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.dml.cross_fitting</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.dml.cross_fitting</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Time Series Cross-Validation for Double Machine Learning.</span>
 
@@ -329,7 +329,7 @@
 <span class="sd">- de Prado, M. L. (2018). Advances in Financial Machine Learning. Chapter 7.</span>
 
 <span class="sd">Usage:</span>
-<span class="sd">    &gt;&gt;&gt; from src.dml.cross_fitting import TimeSeriesCrossValidator</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator</span>
 <span class="sd">    &gt;&gt;&gt; cv = TimeSeriesCrossValidator(n_splits=5, gap=10, purge_length=5)</span>
 <span class="sd">    &gt;&gt;&gt; for train_idx, test_idx in cv.split(X):</span>
 <span class="sd">    ...     model.fit(X[train_idx], Y[train_idx])</span>
@@ -345,7 +345,7 @@
 
 
 <div class="viewcode-block" id="CVFold">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.CVFold">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.CVFold">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CVFold</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for a single cross-validation fold.</span>
@@ -371,7 +371,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesCrossValidator">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.TimeSeriesCrossValidator">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeSeriesCrossValidator</span><span class="p">(</span><span class="n">BaseCrossValidator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Time series cross-validator with purging and gap.</span>
 
@@ -413,7 +413,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TimeSeriesCrossValidator.__init__">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.TimeSeriesCrossValidator.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_splits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
@@ -452,7 +452,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesCrossValidator.split">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.TimeSeriesCrossValidator.split">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator.split">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -565,7 +565,7 @@
         <span class="k">return</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span>
 
 <div class="viewcode-block" id="TimeSeriesCrossValidator.get_n_splits">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.TimeSeriesCrossValidator.get_n_splits">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator.get_n_splits">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_n_splits</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -586,7 +586,7 @@
 
 
 <div class="viewcode-block" id="TimeSeriesCrossValidator.get_fold_info">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.TimeSeriesCrossValidator.get_fold_info">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator.get_fold_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fold_info</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -624,7 +624,7 @@
 
 
 <div class="viewcode-block" id="BlockedTimeSeriesCV">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.BlockedTimeSeriesCV">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.BlockedTimeSeriesCV">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BlockedTimeSeriesCV</span><span class="p">(</span><span class="n">BaseCrossValidator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Blocked time series cross-validation.</span>
 
@@ -658,7 +658,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BlockedTimeSeriesCV.__init__">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.BlockedTimeSeriesCV.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.BlockedTimeSeriesCV.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_splits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
@@ -689,7 +689,7 @@
 
 
 <div class="viewcode-block" id="BlockedTimeSeriesCV.split">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.BlockedTimeSeriesCV.split">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.BlockedTimeSeriesCV.split">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -762,7 +762,7 @@
 
 
 <div class="viewcode-block" id="BlockedTimeSeriesCV.get_n_splits">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.BlockedTimeSeriesCV.get_n_splits">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.BlockedTimeSeriesCV.get_n_splits">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_n_splits</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -776,7 +776,7 @@
 
 
 <div class="viewcode-block" id="PurgedGroupTimeSeriesCV">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.PurgedGroupTimeSeriesCV">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PurgedGroupTimeSeriesCV</span><span class="p">(</span><span class="n">BaseCrossValidator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Purged and embargoed group time series cross-validation.</span>
 
@@ -806,7 +806,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PurgedGroupTimeSeriesCV.__init__">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.PurgedGroupTimeSeriesCV.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_splits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
@@ -836,7 +836,7 @@
 
 
 <div class="viewcode-block" id="PurgedGroupTimeSeriesCV.split">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.PurgedGroupTimeSeriesCV.split">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV.split">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -890,7 +890,7 @@
 
 
 <div class="viewcode-block" id="PurgedGroupTimeSeriesCV.get_n_splits">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.PurgedGroupTimeSeriesCV.get_n_splits">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV.get_n_splits">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_n_splits</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -904,7 +904,7 @@
 
 
 <div class="viewcode-block" id="create_time_series_cv">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.cross_fitting.create_time_series_cv">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.cross_fitting.create_time_series_cv">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_time_series_cv</span><span class="p">(</span>
     <span class="n">strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;time_series_split&quot;</span><span class="p">,</span>
     <span class="n">n_splits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>

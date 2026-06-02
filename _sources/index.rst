@@ -62,43 +62,43 @@ Book Chapter Map
      - Key Classes/Functions
    * - 1
      - Potential Outcomes + FWL
-     - :mod:`src.dml.fwl`
-     - :func:`~src.dml.fwl.fwl_estimate`
+     - :mod:`dml_ts.dml.fwl`
+     - :func:`~dml_ts.dml.fwl.fwl_estimate`
    * - 2
      - Neyman Orthogonality + DML
-     - :mod:`src.dml.robinson`, :mod:`src.dml.double_ml`
-     - :func:`~src.dml.double_ml.double_ml`
+     - :mod:`dml_ts.dml.robinson`, :mod:`dml_ts.dml.double_ml`
+     - :func:`~dml_ts.dml.double_ml.double_ml`
    * - 3
      - Validation Framework
-     - :mod:`src.validation`
-     - :class:`~src.validation.dgp_generator.DGPGenerator`
+     - :mod:`dml_ts.validation`
+     - :class:`~dml_ts.validation.dgp_generator.DGPGenerator`
    * - 4
      - Cross-Sectional Application
-     - :mod:`src.data.oj_loader`
-     - :class:`~src.data.oj_loader.OJDataLoader`
+     - :mod:`dml_ts.data.oj_loader`
+     - :class:`~dml_ts.data.oj_loader.OJDataLoader`
    * - 5
      - Temporal PLR DML
-     - :mod:`src.dml.temporal_plr_dml`
-     - :class:`~src.dml.temporal_plr_dml.TemporalPLRDML`
+     - :mod:`dml_ts.dml.temporal_plr_dml`
+     - :class:`~dml_ts.dml.temporal_plr_dml.TemporalPLRDML`
    * - 6
      - Panel DML + Rolling Window
-     - :mod:`src.dml.temporal_plr_dml`
-     - :class:`~src.dml.temporal_plr_dml.RollingWindowDML`, :class:`~src.dml.temporal_plr_dml.PanelDML`
+     - :mod:`dml_ts.dml.temporal_plr_dml`
+     - :class:`~dml_ts.dml.temporal_plr_dml.RollingWindowDML`, :class:`~dml_ts.dml.temporal_plr_dml.PanelDML`
    * - 7
      - FRED Integration
-     - :mod:`src.data.fred_loader`
-     - :class:`~src.data.fred_loader.FREDLoader`
+     - :mod:`dml_ts.data.fred_loader`
+     - :class:`~dml_ts.data.fred_loader.FREDLoader`
    * - 8
      - Competitor Pricing DGP
-     - :mod:`src.validation.insurance_dgp`
-     - :func:`~src.validation.insurance_dgp.create_insurance_dgp`
+     - :mod:`dml_ts.validation.insurance_dgp`
+     - :func:`~dml_ts.validation.insurance_dgp.create_insurance_dgp`
    * - 9
      - Optional Heterogeneity Discussion
      - Optional external EconML discussion
      - Deferred in this repo
    * - 10
      - Research Pipeline Utilities
-     - :mod:`src.production`
+     - :mod:`dml_ts.production`
      - Demo utilities, not deployment guarantees
 
 ----

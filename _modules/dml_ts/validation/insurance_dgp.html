@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.validation.insurance_dgp &#8212; Double ML Time Series</title>
+    <title>dml_ts.validation.insurance_dgp &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/validation/insurance_dgp';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/validation/insurance_dgp';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/validation/insurance_dgp.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/validation/insurance_dgp.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.validation.insurance_dgp</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.validation.insurance_dgp</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Insurance/Annuity DGP Generator for DML Validation.</span>
 
@@ -336,7 +336,7 @@
 <span class="sd">- Macroeconomic controls for financial services</span>
 
 <span class="sd">Usage:</span>
-<span class="sd">    &gt;&gt;&gt; from src.validation import create_insurance_dgp</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.validation import create_insurance_dgp</span>
 <span class="sd">    &gt;&gt;&gt; dgp = create_insurance_dgp(</span>
 <span class="sd">    ...     realism=&quot;moderate&quot;,</span>
 <span class="sd">    ...     n_periods=120,</span>
@@ -359,7 +359,7 @@
 
 
 <div class="viewcode-block" id="InsuranceDGPParams">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.insurance_dgp.InsuranceDGPParams">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.insurance_dgp.InsuranceDGPParams">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">InsuranceDGPParams</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;True parameters of the insurance DGP for validation.</span>
@@ -386,7 +386,7 @@
 
 
 <div class="viewcode-block" id="InsuranceDGPResult">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.insurance_dgp.InsuranceDGPResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.insurance_dgp.InsuranceDGPResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">InsuranceDGPResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for generated insurance DGP data.</span>
@@ -815,7 +815,7 @@
 
 
 <div class="viewcode-block" id="create_insurance_dgp">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.insurance_dgp.create_insurance_dgp">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.insurance_dgp.create_insurance_dgp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_insurance_dgp</span><span class="p">(</span>
     <span class="n">realism</span><span class="p">:</span> <span class="n">RealismLevel</span> <span class="o">=</span> <span class="s2">&quot;moderate&quot;</span><span class="p">,</span>
     <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span><span class="p">,</span>
@@ -911,7 +911,7 @@
 
 
 <div class="viewcode-block" id="validate_dgp_recovery">
-<a class="viewcode-back" href="../../../api/validation.html#src.validation.insurance_dgp.validate_dgp_recovery">[docs]</a>
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.insurance_dgp.validate_dgp_recovery">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">validate_dgp_recovery</span><span class="p">(</span>
     <span class="n">realism</span><span class="p">:</span> <span class="n">RealismLevel</span> <span class="o">=</span> <span class="s2">&quot;moderate&quot;</span><span class="p">,</span>
     <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span><span class="p">,</span>
@@ -943,7 +943,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Import here to avoid circular dependency</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">src.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">PanelDML</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">PanelDML</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;PanelDML required for validation&quot;</span><span class="p">)</span>
 

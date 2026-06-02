@@ -10,80 +10,80 @@ Frisch-Waugh-Lovell through Double Machine Learning, plus temporal PLR helpers.
 
 ----
 
-Frisch-Waugh-Lovell (``src.dml.fwl``)
---------------------------------------
+Frisch-Waugh-Lovell (``dml_ts.dml.fwl``)
+----------------------------------------
 
 The FWL theorem provides the algebraic foundation for all residualization-based
 causal estimators. See :doc:`/user_guide/fwl_to_dml` for the mathematical derivation.
 
-.. automodule:: src.dml.fwl
+.. automodule:: dml_ts.dml.fwl
    :members:
    :undoc-members: False
    :show-inheritance:
 
 ----
 
-Robinson Estimator (``src.dml.robinson``)
------------------------------------------
+Robinson Estimator (``dml_ts.dml.robinson``)
+--------------------------------------------
 
 Semiparametric partially linear model estimator. Extends FWL to nonparametric
 nuisance functions :math:`g(X)` and :math:`m(X)`.
 
-.. automodule:: src.dml.robinson
+.. automodule:: dml_ts.dml.robinson
    :members:
    :undoc-members: False
    :show-inheritance:
 
 ----
 
-Double Machine Learning (``src.dml.double_ml``)
-------------------------------------------------
+Double Machine Learning (``dml_ts.dml.double_ml``)
+--------------------------------------------------
 
 Cross-fitted DML with Neyman orthogonal scores. Resolves the overfitting bias
 of the Robinson estimator via sample splitting.
 
-.. automodule:: src.dml.double_ml
+.. automodule:: dml_ts.dml.double_ml
    :members:
    :undoc-members: False
    :show-inheritance:
 
 ----
 
-Temporal PLR DML (``src.dml.temporal_plr_dml``)
------------------------------------------------
+Temporal PLR DML (``dml_ts.dml.temporal_plr_dml``)
+--------------------------------------------------
 
 Scalar temporal partially linear DML with lagged treatment controls,
 time-series cross-fitting, and HAC inference. This module also contains
 rolling-window and panel companion estimators. It is not a true dynamic
 g-estimation implementation.
 
-.. automodule:: src.dml.temporal_plr_dml
+.. automodule:: dml_ts.dml.temporal_plr_dml
    :members:
    :undoc-members: False
    :show-inheritance:
 
 ----
 
-Time Series Cross-Validation (``src.dml.cross_fitting``)
----------------------------------------------------------
+Time Series Cross-Validation (``dml_ts.dml.cross_fitting``)
+-----------------------------------------------------------
 
 Temporal cross-validation with blocking, purging, and gap controls to prevent
 information leakage under autocorrelation.
 
-.. automodule:: src.dml.cross_fitting
+.. automodule:: dml_ts.dml.cross_fitting
    :members:
    :undoc-members: False
    :show-inheritance:
 
 ----
 
-HAC Standard Errors (``src.dml.hac``)
---------------------------------------
+HAC Standard Errors (``dml_ts.dml.hac``)
+----------------------------------------
 
 Heteroskedasticity and autocorrelation consistent (HAC) covariance estimation
 via Newey-West with automatic bandwidth selection.
 
-.. automodule:: src.dml.hac
+.. automodule:: dml_ts.dml.hac
    :members:
    :undoc-members: False
    :show-inheritance:

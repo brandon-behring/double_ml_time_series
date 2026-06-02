@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.sensitivity.rosenbaum &#8212; Double ML Time Series</title>
+    <title>dml_ts.sensitivity.rosenbaum &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/sensitivity/rosenbaum';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/sensitivity/rosenbaum';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/sensitivity/rosenbaum.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/sensitivity/rosenbaum.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.sensitivity.rosenbaum</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.sensitivity.rosenbaum</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Rosenbaum Bounds Sensitivity Analysis.</span>
 
 <span class="sd">Implements sensitivity analysis for observational studies following</span>
@@ -370,7 +370,7 @@
 
 
 <div class="viewcode-block" id="SensitivityResult">
-<a class="viewcode-back" href="../../../api/sensitivity.html#src.sensitivity.rosenbaum.SensitivityResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/sensitivity.html#dml_ts.sensitivity.rosenbaum.SensitivityResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SensitivityResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for Rosenbaum bounds sensitivity analysis.</span>
@@ -419,7 +419,7 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="SensitivityResult.summary">
-<a class="viewcode-back" href="../../../api/sensitivity.html#src.sensitivity.rosenbaum.SensitivityResult.summary">[docs]</a>
+<a class="viewcode-back" href="../../../api/sensitivity.html#dml_ts.sensitivity.rosenbaum.SensitivityResult.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return formatted summary of sensitivity analysis.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
@@ -454,7 +454,7 @@
 
 
 <div class="viewcode-block" id="RosenbaumBounds">
-<a class="viewcode-back" href="../../../api/sensitivity.html#src.sensitivity.rosenbaum.RosenbaumBounds">[docs]</a>
+<a class="viewcode-back" href="../../../api/sensitivity.html#dml_ts.sensitivity.rosenbaum.RosenbaumBounds">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RosenbaumBounds</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Rosenbaum bounds sensitivity analysis for continuous treatment DML.</span>
 
@@ -473,8 +473,8 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; from src.sensitivity import RosenbaumBounds</span>
-<span class="sd">    &gt;&gt;&gt; from src.dml import double_ml</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.sensitivity import RosenbaumBounds</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml import double_ml</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # Run DML</span>
 <span class="sd">    &gt;&gt;&gt; result = double_ml(Y, T, X)</span>
@@ -491,7 +491,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RosenbaumBounds.__init__">
-<a class="viewcode-back" href="../../../api/sensitivity.html#src.sensitivity.rosenbaum.RosenbaumBounds.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/sensitivity.html#dml_ts.sensitivity.rosenbaum.RosenbaumBounds.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">gamma_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
@@ -512,7 +512,7 @@
 
 
 <div class="viewcode-block" id="RosenbaumBounds.analyze">
-<a class="viewcode-back" href="../../../api/sensitivity.html#src.sensitivity.rosenbaum.RosenbaumBounds.analyze">[docs]</a>
+<a class="viewcode-back" href="../../../api/sensitivity.html#dml_ts.sensitivity.rosenbaum.RosenbaumBounds.analyze">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">analyze</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -682,7 +682,7 @@
             <span class="k">return</span> <span class="s2">&quot;Fragile&quot;</span>
 
 <div class="viewcode-block" id="RosenbaumBounds.plot_sensitivity">
-<a class="viewcode-back" href="../../../api/sensitivity.html#src.sensitivity.rosenbaum.RosenbaumBounds.plot_sensitivity">[docs]</a>
+<a class="viewcode-back" href="../../../api/sensitivity.html#dml_ts.sensitivity.rosenbaum.RosenbaumBounds.plot_sensitivity">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_sensitivity</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">result</span><span class="p">:</span> <span class="n">SensitivityResult</span><span class="p">,</span>
@@ -785,7 +785,7 @@
 
 
 <div class="viewcode-block" id="compute_sensitivity_for_dml">
-<a class="viewcode-back" href="../../../api/sensitivity.html#src.sensitivity.rosenbaum.compute_sensitivity_for_dml">[docs]</a>
+<a class="viewcode-back" href="../../../api/sensitivity.html#dml_ts.sensitivity.rosenbaum.compute_sensitivity_for_dml">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_sensitivity_for_dml</span><span class="p">(</span>
     <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">se</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -818,8 +818,8 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; from src.dml import double_ml</span>
-<span class="sd">    &gt;&gt;&gt; from src.sensitivity import compute_sensitivity_for_dml</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml import double_ml</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.sensitivity import compute_sensitivity_for_dml</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; result = double_ml(Y, T, X)</span>
 <span class="sd">    &gt;&gt;&gt; sensitivity = compute_sensitivity_for_dml(</span>

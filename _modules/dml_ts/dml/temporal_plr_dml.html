@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.dml.temporal_plr_dml &#8212; Double ML Time Series</title>
+    <title>dml_ts.dml.temporal_plr_dml &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/dml/temporal_plr_dml';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/dml/temporal_plr_dml';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/dml/temporal_plr_dml.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/dml/temporal_plr_dml.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.dml.temporal_plr_dml</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.dml.temporal_plr_dml</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Temporal partially linear DML for time series.</span>
 
@@ -333,7 +333,7 @@
 <span class="sd">3. PanelDML - Fixed effects + DML for panel data structures</span>
 
 <span class="sd">Usage:</span>
-<span class="sd">    &gt;&gt;&gt; from src.dml import TemporalPLRDML</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml import TemporalPLRDML</span>
 <span class="sd">    &gt;&gt;&gt; model = TemporalPLRDML(</span>
 <span class="sd">    ...     n_lags=5,</span>
 <span class="sd">    ...     model_y=&quot;random_forest&quot;,</span>
@@ -377,7 +377,7 @@
 
 
 <div class="viewcode-block" id="TemporalPLRDMLResult">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDMLResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TemporalPLRDMLResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for TemporalPLRDML estimation.</span>
@@ -429,7 +429,7 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="TemporalPLRDMLResult.summary">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDMLResult.summary">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDMLResult.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return formatted summary of TemporalPLRDML results.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
@@ -611,7 +611,7 @@
 
 
 <div class="viewcode-block" id="TemporalPLRDML">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDML">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TemporalPLRDML</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Temporal partially linear DML for scalar treatment effects.</span>
 
@@ -652,7 +652,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TemporalPLRDML.__init__">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDML.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n_lags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -729,7 +729,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown CV strategy: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TemporalPLRDML.fit">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML.fit">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDML.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -931,7 +931,7 @@
 
 
 <div class="viewcode-block" id="TemporalPLRDML.effect">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML.effect">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDML.effect">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">effect</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -971,7 +971,7 @@
 
 
 <div class="viewcode-block" id="TemporalPLRDML.effect_interval">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.TemporalPLRDML.effect_interval">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDML.effect_interval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">effect_interval</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1019,7 +1019,7 @@
 
 
 <div class="viewcode-block" id="RollingWindowDML">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.RollingWindowDML">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.RollingWindowDML">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RollingWindowDML</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Rolling-window DML for non-stationary treatment effects.</span>
 
@@ -1042,7 +1042,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RollingWindowDML.__init__">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.RollingWindowDML.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.RollingWindowDML.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
@@ -1069,7 +1069,7 @@
 
 
 <div class="viewcode-block" id="RollingWindowDML.fit">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.RollingWindowDML.fit">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.RollingWindowDML.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -1148,7 +1148,7 @@
 
 
 <div class="viewcode-block" id="RollingWindowDML.get_effects">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.RollingWindowDML.get_effects">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.RollingWindowDML.get_effects">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_effects</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get time series of local treatment effects.</span>
 
@@ -1171,7 +1171,7 @@
 
 
 <div class="viewcode-block" id="PanelDML">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.PanelDML">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.PanelDML">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PanelDML</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Panel DML with fixed effects.</span>
 
@@ -1196,7 +1196,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PanelDML.__init__">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.PanelDML.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.PanelDML.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">fixed_effects</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;twoway&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;individual&quot;</span><span class="p">,</span>
@@ -1237,7 +1237,7 @@
         <span class="k">return</span> <span class="n">result</span>
 
 <div class="viewcode-block" id="PanelDML.fit">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.PanelDML.fit">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.PanelDML.fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">Y</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -1359,7 +1359,7 @@
 
 
 <div class="viewcode-block" id="demonstrate_temporal_plr_dml">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.temporal_plr_dml.demonstrate_temporal_plr_dml">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.temporal_plr_dml.demonstrate_temporal_plr_dml">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">demonstrate_temporal_plr_dml</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Demonstrate TemporalPLRDML on synthetic time series data.</span>
 

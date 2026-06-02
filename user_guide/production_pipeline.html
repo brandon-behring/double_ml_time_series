@@ -326,18 +326,18 @@
                   
   <section id="research-pipeline-utilities">
 <h1>Research Pipeline Utilities<a class="headerlink" href="#research-pipeline-utilities" title="Link to this heading">#</a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">src.production</span></code> package contains research/demo utilities for registry,
+<p>The <code class="docutils literal notranslate"><span class="pre">dml_ts.production</span></code> package contains research/demo utilities for registry,
 monitoring, and retraining examples used in the book companion. It should not be
 described as production deployment infrastructure without a separate hardening pass.</p>
 <section id="current-scope">
 <h2>Current Scope<a class="headerlink" href="#current-scope" title="Link to this heading">#</a></h2>
 <p>Implemented companion utilities include:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="../api/production.html#src.production.model_registry.DMLModelRegistry" title="src.production.model_registry.DMLModelRegistry"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMLModelRegistry</span></code></a></p></li>
-<li><p><a class="reference internal" href="../api/production.html#src.production.model_registry.DMLModelVersion" title="src.production.model_registry.DMLModelVersion"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMLModelVersion</span></code></a></p></li>
-<li><p><a class="reference internal" href="../api/production.html#src.production.causal_monitor.CausalMonitor" title="src.production.causal_monitor.CausalMonitor"><code class="xref py py-class docutils literal notranslate"><span class="pre">CausalMonitor</span></code></a></p></li>
-<li><p><a class="reference internal" href="../api/production.html#src.production.retrain_pipeline.RetrainScheduler" title="src.production.retrain_pipeline.RetrainScheduler"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrainScheduler</span></code></a></p></li>
-<li><p><a class="reference internal" href="../api/production.html#src.production.dml_pipeline.InsuranceDMLPipeline" title="src.production.dml_pipeline.InsuranceDMLPipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">InsuranceDMLPipeline</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/production.html#dml_ts.production.model_registry.DMLModelRegistry" title="dml_ts.production.model_registry.DMLModelRegistry"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMLModelRegistry</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/production.html#dml_ts.production.model_registry.DMLModelVersion" title="dml_ts.production.model_registry.DMLModelVersion"><code class="xref py py-class docutils literal notranslate"><span class="pre">DMLModelVersion</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/production.html#dml_ts.production.causal_monitor.CausalMonitor" title="dml_ts.production.causal_monitor.CausalMonitor"><code class="xref py py-class docutils literal notranslate"><span class="pre">CausalMonitor</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler" title="dml_ts.production.retrain_pipeline.RetrainScheduler"><code class="xref py py-class docutils literal notranslate"><span class="pre">RetrainScheduler</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/production.html#dml_ts.production.dml_pipeline.InsuranceDMLPipeline" title="dml_ts.production.dml_pipeline.InsuranceDMLPipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">InsuranceDMLPipeline</span></code></a></p></li>
 </ul>
 <p>These utilities are useful for demonstrating how causal diagnostics might be
 organized. They do not establish service reliability, model governance, security,
@@ -350,7 +350,7 @@ observability, deployment, rollback, or live data guarantees.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ridge</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.production</span><span class="w"> </span><span class="kn">import</span> <span class="n">DMLModelRegistry</span><span class="p">,</span> <span class="n">DMLModelVersion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.production</span><span class="w"> </span><span class="kn">import</span> <span class="n">DMLModelRegistry</span><span class="p">,</span> <span class="n">DMLModelVersion</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -388,7 +388,7 @@ observability, deployment, rollback, or live data guarantees.</p>
 <p>Use monitoring helpers as diagnostics, not as proof that a model is deployment-ready.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">src.production</span><span class="w"> </span><span class="kn">import</span> <span class="n">CausalMonitor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.production</span><span class="w"> </span><span class="kn">import</span> <span class="n">CausalMonitor</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">treatment_train</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.dml.fwl &#8212; Double ML Time Series</title>
+    <title>dml_ts.dml.fwl &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/dml/fwl';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/dml/fwl';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/dml/fwl.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/dml/fwl.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.dml.fwl</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.dml.fwl</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Frisch-Waugh-Lovell Theorem Implementation.</span>
 
 <span class="sd">This module implements the FWL theorem from scratch as a pedagogical foundation</span>
@@ -365,7 +365,7 @@
 
 
 <div class="viewcode-block" id="FWLResult">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.fwl.FWLResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.fwl.FWLResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FWLResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for FWL estimation.</span>
@@ -408,7 +408,7 @@
 
 
 <div class="viewcode-block" id="fwl_residualize">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.fwl.fwl_residualize">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.fwl.fwl_residualize">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fwl_residualize</span><span class="p">(</span>
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -474,7 +474,7 @@
 
 
 <div class="viewcode-block" id="fwl_estimate">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.fwl.fwl_estimate">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.fwl.fwl_estimate">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fwl_estimate</span><span class="p">(</span>
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -602,7 +602,7 @@
 
 
 <div class="viewcode-block" id="fwl_vs_ols_comparison">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.fwl.fwl_vs_ols_comparison">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.fwl.fwl_vs_ols_comparison">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fwl_vs_ols_comparison</span><span class="p">(</span>
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -680,7 +680,7 @@
 
 
 <div class="viewcode-block" id="demonstrate_fwl_theorem">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.fwl.demonstrate_fwl_theorem">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.fwl.demonstrate_fwl_theorem">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">demonstrate_fwl_theorem</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Print a demonstration of the FWL theorem.</span>
 

@@ -2,7 +2,7 @@ Temporal PLR DML
 ================
 
 This guide describes the current implemented time-series workflow. The central
-class is :class:`~src.dml.temporal_plr_dml.TemporalPLRDML`, which estimates a
+class is :class:`~dml_ts.dml.temporal_plr_dml.TemporalPLRDML`, which estimates a
 scalar partially linear treatment effect using lagged treatment controls,
 temporal cross-fitting, and HAC inference.
 
@@ -18,7 +18,7 @@ The current implementation supports:
 - lagged treatment controls through ``n_lags``
 - expanding-window temporal cross-fitting
 - gap handling through ``gap``
-- HAC/Newey-West-style inference through :class:`~src.dml.hac.HACEstimator`
+- HAC/Newey-West-style inference through :class:`~dml_ts.dml.hac.HACEstimator`
 - explicit reporting of early rows excluded because temporal CV cannot produce
   out-of-fold predictions without training on future observations
 
@@ -34,7 +34,7 @@ Temporal Cross-Validation
 
    import numpy as np
 
-   from src.dml import TimeSeriesCrossValidator
+   from dml_ts.dml import TimeSeriesCrossValidator
 
    X = np.arange(120).reshape(-1, 1)
    cv = TimeSeriesCrossValidator(n_splits=4, gap=3, purge_length=2)
@@ -53,7 +53,7 @@ TemporalPLRDML
 
    import numpy as np
 
-   from src.dml import TemporalPLRDML
+   from dml_ts import TemporalPLRDML
 
    rng = np.random.default_rng(42)
    n = 240
@@ -90,7 +90,7 @@ period-specific dynamic treatment-effect estimator.
 
 .. code-block:: python
 
-   from src.dml import RollingWindowDML
+   from dml_ts import RollingWindowDML
 
    rolling = RollingWindowDML(
        window_size=100,
@@ -112,7 +112,7 @@ PLR DML machinery.
 
    import numpy as np
 
-   from src.dml import PanelDML
+   from dml_ts import PanelDML
 
    n_products = 10
    n_periods = 24

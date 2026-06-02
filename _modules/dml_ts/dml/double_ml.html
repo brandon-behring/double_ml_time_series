@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.dml.double_ml &#8212; Double ML Time Series</title>
+    <title>dml_ts.dml.double_ml &#8212; Double ML Time Series</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/dml/double_ml';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/dml/double_ml';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -240,7 +240,7 @@
       
       
       
-      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/src/dml/double_ml.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/dml/double_ml.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -310,7 +310,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for src.dml.double_ml</h1><div class="highlight"><pre>
+  <h1>Source code for dml_ts.dml.double_ml</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Double Machine Learning (DML) with Cross-Fitting.</span>
 
 <span class="sd">This module implements the Chernozhukov et al. (2018) Double ML estimator,</span>
@@ -378,7 +378,7 @@
 
 
 <div class="viewcode-block" id="DMLResult">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.double_ml.DMLResult">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.double_ml.DMLResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">DMLResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for Double ML estimation.</span>
@@ -432,7 +432,7 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="DMLResult.summary">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.double_ml.DMLResult.summary">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.double_ml.DMLResult.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return formatted summary of DML results.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
@@ -596,7 +596,7 @@
 
 
 <div class="viewcode-block" id="double_ml">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.double_ml.double_ml">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.double_ml.double_ml">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">double_ml</span><span class="p">(</span>
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -754,7 +754,7 @@
 
 
 <div class="viewcode-block" id="compare_robinson_vs_dml">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.double_ml.compare_robinson_vs_dml">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.double_ml.compare_robinson_vs_dml">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compare_robinson_vs_dml</span><span class="p">(</span>
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -811,7 +811,7 @@
 
 
 <div class="viewcode-block" id="demonstrate_cross_fitting_benefit">
-<a class="viewcode-back" href="../../../api/dml.html#src.dml.double_ml.demonstrate_cross_fitting_benefit">[docs]</a>
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.double_ml.demonstrate_cross_fitting_benefit">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">demonstrate_cross_fitting_benefit</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span> <span class="n">n_sims</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Demonstrate that cross-fitting reduces overfitting bias.</span>
 
