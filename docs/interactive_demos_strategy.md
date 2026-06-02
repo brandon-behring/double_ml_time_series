@@ -56,5 +56,5 @@ Which chapters to prioritize; when to graduate the kit to the scaffold; per-chap
 vs committed-trace.
 
 ## Upstream (book-scaffold-astro)
-- Issue #__ — fontsource dev-server SSR fix.
-- Issue #__ — native interactive-demo support (this doc is the linked design).
+- [Issue #102](https://github.com/brandon-behring/book-scaffold-astro/issues/102) — fontsource dev-server SSR fix.
+- [Issue #103](https://github.com/brandon-behring/book-scaffold-astro/issues/103) — native interactive-demo support (this doc is the linked design).
