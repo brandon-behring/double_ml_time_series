@@ -124,6 +124,30 @@ so consumers can record port provenance in the semantically correct block — an
 
 
 
+### deploy-workflows: reusable workflow strips caller-granted `pull-requests: write` (PR preview-comment 403)
+
+**Status:** **RESOLVED** in `deploy-workflows` v2.0.2 (2026-06-04); the `v2` major tag was moved to the fix. *(Upstream repo: `brandon-behring/deploy-workflows` — the Cloudflare-deploy CI infra consumed by `deploy-web.yml`; distinct from the `book-scaffold-astro` issues below.)*
+
+**Surfaced during:** the dynamic-g merge close-out (PR #4, 2026-06-04) — the **first** PR-triggered run of `deploy-web.yml` (all prior runs were push-to-main). The `deploy-preview` job's deploy itself succeeded; only its "Comment preview URL on PR" step failed:
+
+```
+HttpError: Resource not accessible by integration (403) — issues.createComment
+```
+
+**Root cause:** The reusable workflow `deploy-astro-worker.yml@v2` declared its own `permissions:` block as `{contents: read, deployments: write}`. A reusable workflow's own block can only *downgrade* the `GITHUB_TOKEN`, so it stripped the `pull-requests: write` this consumer correctly granted in `deploy-web.yml`. The `enable-pr-previews` input doc even instructs callers to grant `pull-requests: write` — but the workflow omitted that same grant from its own block (a self-contradiction). The comment step (`actions/github-script@v9` → `github.rest.issues.createComment`) therefore 403'd on every consumer.
+
+**Severity:** `kind:bug`. The documented `enable-pr-previews` feature could never post a comment on any consumer; PR previews showed a red check despite a successful deploy.
+
+**Blast radius (verified account-wide sweep):** only `double_ml_time_series` consumed `@v2` with `enable-pr-previews: true`; `ssm-foundations` and `brandon-behring.dev` are on `@v1` without previews, so they were unaffected.
+
+**Upstream fix:** `deploy-workflows@a882661` adds `pull-requests: write` to the reusable workflow's `permissions:` block; released as `v2.0.2` with the `v2` major tag moved to it. This consumer pins `@v2`, so it auto-inherits the fix with no change here — the `deploy / deploy-preview` comment on the PR that adds this entry is the consumer-side confirmation.
+
+**Links:**
+- Upstream commit / tag: `brandon-behring/deploy-workflows@a882661` (`v2.0.2`).
+- Consumer receipt: `double_ml_time_series` PR #4 `deploy / deploy-preview` run (403 on `issues.createComment`).
+
+---
+
 ### Issue #20 — `book-scaffold validate` ignores `.env BOOK_PROFILE`; defaults to minimal
 
 **Status:** **RESOLVED** in v3.5.2.
