@@ -23,6 +23,19 @@ causal inference validation.
 
 ----
 
+Dynamic-Treatment DGP (``dml_ts.validation.dynamic_dgp``)
+------------------------------------------------------------
+
+Panel and single-series data with known per-period treatment blips, for
+validating recursive dynamic g-estimation against ground truth.
+
+.. automodule:: dml_ts.validation.dynamic_dgp
+   :members:
+   :undoc-members: False
+   :show-inheritance:
+
+----
+
 Time Series DGP (``dml_ts.validation.dgp_generator_ts``)
 --------------------------------------------------------
 

@@ -1,0 +1,901 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dml_ts.dml.dynamic_g_estimation &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=a2693998"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/dml/dynamic_g_estimation';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Temporal PLR DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Research Pipeline Utilities</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Research Pipeline Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/bbehring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/dml/dynamic_g_estimation.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for dml_ts.dml.dynamic_g_estimation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Recursive dynamic g-estimation (Lewis &amp; Syrgkanis, 2021).</span>
+
+<span class="sd">Implements ``DynamicGEstimationDML`` -- a Neyman-orthogonal, cross-fitted</span>
+<span class="sd">g-estimator for *linear structural nested mean models* that recovers</span>
+<span class="sd">**period-specific blips** ``theta = (theta_1, ..., theta_m)`` over an m-period</span>
+<span class="sd">horizon. This is the recursive dynamic treatment-effect method that</span>
+<span class="sd">``TemporalPLRDML`` is explicitly **not** (the latter returns a single scalar</span>
+<span class="sd">effect after controlling for lagged treatment).</span>
+
+<span class="sd">Reference:</span>
+
+<span class="sd">- Lewis, G. and Syrgkanis, V. (2021). *Double/Debiased Machine Learning for</span>
+<span class="sd">  Dynamic Treatment Effects via g-Estimation.* NeurIPS. arXiv:2002.07285.</span>
+
+<span class="sd">Algorithm (panel of n i.i.d. trajectories x m periods), recursive backward</span>
+<span class="sd">peeling -- a dynamic version of Robinson&#39;s partial linear model::</span>
+
+<span class="sd">    for tau = m-1 ... 0:</span>
+<span class="sd">        H_tau = history available before T_tau  (states X_0..tau, treatments T_0..tau-1)</span>
+<span class="sd">        cross-fit (over units) the residual-maker M_tau, residualize on H_tau:</span>
+<span class="sd">            R_tau = M_tau Y_final          (residualized final outcome)</span>
+<span class="sd">            T~_s  = M_tau T_s   for all s  (residualized treatments)</span>
+<span class="sd">        peeled residual outcome:  Y~^(tau) = R_tau - sum_{s&gt;tau} theta_s T~_s</span>
+<span class="sd">        orthogonal moment:        theta_tau = &lt;T~_tau, Y~^(tau)&gt; / &lt;T~_tau, T~_tau&gt;</span>
+
+<span class="sd">Inference is the joint M-estimation sandwich over the stacked moments</span>
+<span class="sd">``g_{i,tau} = T~_tau,i (R_tau,i - sum_{s&gt;=tau} theta_s T~_s,i)``, whose Jacobian</span>
+<span class="sd">is upper-triangular -- this correctly propagates the cross-stage coupling that</span>
+<span class="sd">Lewis &amp; Syrgkanis note breaks per-stage Neyman orthogonality. Clustered by unit</span>
+<span class="sd">(panel) or HAC/Newey-West (single series).</span>
+
+<span class="sd">``mode=&quot;series&quot;`` is the single-unit, stationarity-based adaptation (also in</span>
+<span class="sd">Lewis &amp; Syrgkanis): a stationary distributed-lag g-estimation</span>
+<span class="sd">``Y_t = sum_k theta_{k+1} T_{t-k} + g(X_t) + u_t`` with HAC inference.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">clone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span><span class="p">,</span> <span class="n">RandomForestRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.hac</span><span class="w"> </span><span class="kn">import</span> <span class="n">optimal_bandwidth</span>
+
+<span class="n">ArrayLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+<span class="n">ModelSpec</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">]</span>
+<span class="n">Mode</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span> <span class="s2">&quot;series&quot;</span><span class="p">]</span>
+
+<span class="n">_DEFAULT_N_JOBS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DML_N_JOBS&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="DynamicGEstimationResult">
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DynamicGEstimationResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of recursive dynamic g-estimation.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        theta_t: Per-period blips ``(m,)`` -- ``theta_t[k]`` is the effect of a</span>
+<span class="sd">            unit blip in the period-``k`` treatment on the final-period outcome</span>
+<span class="sd">            (panel) or the lag-``k`` distributed-lag effect (series).</span>
+<span class="sd">        se_t: Standard errors ``(m,)`` from the joint sandwich (panel) or HAC</span>
+<span class="sd">            (series).</span>
+<span class="sd">        ci_lower_t: Lower confidence bounds ``(m,)``.</span>
+<span class="sd">        ci_upper_t: Upper confidence bounds ``(m,)``.</span>
+<span class="sd">        p_value_t: Two-sided p-values ``(m,)`` for ``H0: theta_k = 0``.</span>
+<span class="sd">        cumulative_effect: ``sum(theta_t)``.</span>
+<span class="sd">        cumulative_se: Standard error of the cumulative effect.</span>
+<span class="sd">        n_units: Number of trajectories (1 for the series).</span>
+<span class="sd">        n_periods: Horizon m.</span>
+<span class="sd">        alpha: Significance level used for the intervals.</span>
+<span class="sd">        cov: Joint covariance matrix ``(m, m)`` of ``theta_t``.</span>
+<span class="sd">        nuisance_r2_t: Out-of-fold R^2 of the outcome nuisance at each stage.</span>
+<span class="sd">        backend: ``&quot;custom&quot;`` (this estimator) or ``&quot;econml&quot;`` (reference).</span>
+<span class="sd">        mode: ``&quot;panel&quot;`` or ``&quot;series&quot;``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">theta_t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">se_t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">ci_lower_t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">ci_upper_t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">p_value_t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">cumulative_effect</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">cumulative_se</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">n_units</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">n_periods</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">cov</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">nuisance_r2_t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;custom&quot;</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;panel&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">blips</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_t</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;DynamicGEstimationResult(theta_t=[</span><span class="si">{</span><span class="n">blips</span><span class="si">}</span><span class="s2">], &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;cumulative=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cumulative_effect</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, backend=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="DynamicGEstimationResult.summary">
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationResult.summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a formatted per-period results table.&quot;&quot;&quot;</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;Recursive Dynamic G-Estimation (Lewis-Syrgkanis)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">56</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Backend: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="si">}</span><span class="s2">   Mode: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2">   Units: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_units</span><span class="si">}</span><span class="s2">   &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Periods (m): </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;period&#39;</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;theta_t&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;se&#39;</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;[&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;% CI]&#39;</span><span class="si">:</span><span class="s2">&gt;20</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;p&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span><span class="p">):</span>
+            <span class="n">ci</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ci_lower_t</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ci_upper_t</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_t</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;10.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">se_t</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;9.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ci</span><span class="si">:</span><span class="s2">&gt;20</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value_t</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;8.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">56</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Cumulative effect: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cumulative_effect</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="sa">f</span><span class="s2">&quot;(se </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cumulative_se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_model</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="n">ModelSpec</span><span class="p">,</span> <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BaseEstimator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a model spec (string alias or estimator) into a regressor.</span>
+
+<span class="sd">    Conditional means ``E[Y|H]`` and ``E[T|H]`` are both estimated by</span>
+<span class="sd">    regression (valid for continuous and binary treatment alike, where the</span>
+<span class="sd">    treatment mean is the propensity).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">clone</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="o">==</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">RandomForestRegressor</span><span class="p">(</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">_DEFAULT_N_JOBS</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="o">==</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;ols&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">LinearRegression</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="o">==</span> <span class="s2">&quot;ridge&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Unknown model spec </span><span class="si">{</span><span class="n">spec</span><span class="si">!r}</span><span class="s2">. Use an sklearn estimator or one of &quot;</span>
+        <span class="s2">&quot;&#39;random_forest&#39;, &#39;gradient_boosting&#39;, &#39;linear&#39;, &#39;ridge&#39;.&quot;</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_crossfit_residualize_kfold</span><span class="p">(</span>
+    <span class="n">H</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">BaseEstimator</span><span class="p">,</span>
+    <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Out-of-fold residuals of each column of ``targets`` on ``H`` (KFold over rows).</span>
+
+<span class="sd">    Units are i.i.d. in the panel, so plain (shuffled) K-fold cross-fitting is</span>
+<span class="sd">    the correct dimension. Returns ``targets - hat`` with the same shape.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">kf</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="ow">in</span> <span class="n">kf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">H</span><span class="p">):</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">_yt</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">H</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">_yt</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="k">if</span> <span class="n">_yt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_yt</span><span class="p">)</span>
+        <span class="n">preds</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">H</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">test_idx</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">targets</span> <span class="o">-</span> <span class="n">preds</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_crossfit_residualize_timeseries</span><span class="p">(</span>
+    <span class="n">H</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">BaseEstimator</span><span class="p">,</span>
+    <span class="n">n_splits</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">gap</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Out-of-fold residuals using temporal CV (single-series mode).</span>
+
+<span class="sd">    Rows uncovered by the expanding-window splits are returned as NaN so the</span>
+<span class="sd">    caller can drop them (mirrors ``TemporalPLRDML``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">cv</span> <span class="o">=</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">n_splits</span><span class="p">,</span> <span class="n">gap</span><span class="o">=</span><span class="n">gap</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="ow">in</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">H</span><span class="p">):</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">_yt</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">H</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">_yt</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="k">if</span> <span class="n">_yt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_yt</span><span class="p">)</span>
+        <span class="n">preds</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">H</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">test_idx</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">targets</span> <span class="o">-</span> <span class="n">preds</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_r2</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">resid</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">ss_tot</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">resid</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">ss_tot</span><span class="p">)</span> <span class="k">if</span> <span class="n">ss_tot</span> <span class="o">&gt;</span> <span class="mf">1e-12</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+
+<div class="viewcode-block" id="DynamicGEstimationDML">
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationDML">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DynamicGEstimationDML</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursive dynamic g-estimation for period-specific treatment blips.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n_periods: Horizon ``m`` for the series mode (number of distributed</span>
+<span class="sd">            lags). For the panel mode ``m`` is inferred from ``groups`` and this</span>
+<span class="sd">            may be left ``None``.</span>
+<span class="sd">        model_y: Outcome nuisance ``E[Y|H]`` -- sklearn estimator or alias</span>
+<span class="sd">            (``&quot;random_forest&quot;`` default, ``&quot;linear&quot;``, ``&quot;ridge&quot;``,</span>
+<span class="sd">            ``&quot;gradient_boosting&quot;``).</span>
+<span class="sd">        model_t: Treatment nuisance ``E[T|H]`` (same options).</span>
+<span class="sd">        n_folds: Cross-fitting folds (panel KFold over units / series temporal CV).</span>
+<span class="sd">        gap: Temporal-CV gap (series mode only).</span>
+<span class="sd">        random_state: Seed for cross-fitting and nuisance models.</span>
+
+<span class="sd">    The estimator is honest about its scope: it recovers a *constant* per-period</span>
+<span class="sd">    blip (linear SNMM). Heterogeneous blips ``theta_tau(X)`` (the paper&#39;s Dynamic</span>
+<span class="sd">    RLearner) are out of scope.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DynamicGEstimationDML.__init__">
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationDML.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_periods</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_y</span><span class="p">:</span> <span class="n">ModelSpec</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">model_t</span><span class="p">:</span> <span class="n">ModelSpec</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span>
+        <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">gap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">n_folds</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_folds must be &gt;= 2, got </span><span class="si">{</span><span class="n">n_folds</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span> <span class="o">=</span> <span class="n">n_periods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_y</span> <span class="o">=</span> <span class="n">model_y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_t</span> <span class="o">=</span> <span class="n">model_t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_folds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gap</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DynamicGEstimationResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DynamicGEstimationDML.fit">
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationDML.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">W</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">groups</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ArrayLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mode</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicGEstimationResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate the per-period blips.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            Y: Outcome, stacked ``(n_rows,)``. Panel: per-period rows</span>
+<span class="sd">                (unit-major). Series: the single series.</span>
+<span class="sd">            T: Treatment, same stacking.</span>
+<span class="sd">            X: Confounders/state, ``(n_rows, p)``.</span>
+<span class="sd">            W: Optional extra controls appended to ``X`` (same stacking).</span>
+<span class="sd">            groups: Unit id per row (panel). Required for ``mode=&quot;panel&quot;``. Rows must</span>
+<span class="sd">                be unit-major: each unit&#39;s ``m`` periods form one contiguous,</span>
+<span class="sd">                time-ordered block (the layout from ``np.repeat(unit_ids, m)``, as</span>
+<span class="sd">                EconML expects). Non-contiguous groups raise ``ValueError``.</span>
+<span class="sd">            mode: ``&quot;panel&quot;`` (default when ``groups`` is given) or ``&quot;series&quot;``.</span>
+<span class="sd">            alpha: Significance level for confidence intervals.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A :class:`DynamicGEstimationResult` (also stored on ``self.result_``).</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: On inconsistent shapes, ragged or non-contiguous panels, or</span>
+<span class="sd">                missing ``groups`` for the panel mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">W</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">W</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">W</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">==</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Y, T, X must share the same number of rows.&quot;</span><span class="p">)</span>
+
+        <span class="n">resolved_mode</span><span class="p">:</span> <span class="n">Mode</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">mode</span> <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;panel&quot;</span> <span class="k">if</span> <span class="n">groups</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;series&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">resolved_mode</span> <span class="o">==</span> <span class="s2">&quot;panel&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mode=&#39;panel&#39; requires groups (unit ids per row).&quot;</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_panel</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">groups</span><span class="p">),</span> <span class="n">alpha</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_series</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="DynamicGEstimationDML.effect_by_period">
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationDML.effect_by_period">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">effect_by_period</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the fitted per-period blips ``theta_t`` (call ``fit`` first).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span><span class="p">()</span><span class="o">.</span><span class="n">theta_t</span></div>
+
+
+<div class="viewcode-block" id="DynamicGEstimationDML.cumulative_effect">
+<a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationDML.cumulative_effect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cumulative_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the fitted cumulative effect ``sum(theta_t)`` (call ``fit`` first).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span><span class="p">()</span><span class="o">.</span><span class="n">cumulative_effect</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicGEstimationResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the stored fit result, or raise if ``fit`` has not been called.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;This estimator is not fitted yet; call fit() first.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">result_</span>
+
+    <span class="c1"># ------------------------------------------------------------------ panel</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reshape_panel</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">groups</span><span class="p">:</span> <span class="n">NDArray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reshape stacked rows into (n_units, m) / (n_units, m, p), validating layout.</span>
+
+<span class="sd">        Rows must be unit-major: each unit&#39;s m periods form one contiguous,</span>
+<span class="sd">        time-ordered block. Non-contiguous groups would reshape into the wrong</span>
+<span class="sd">        trajectories, so they are rejected rather than silently mis-handled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">uniq</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">counts</span> <span class="o">==</span> <span class="n">m</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Panel is ragged: every group must have the same number of periods.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Need m &gt;= 2 periods per unit, got </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="c1"># Each unit must be a single contiguous block (one run in row order); otherwise</span>
+        <span class="c1"># reshape(n, m) would silently mix periods across units.</span>
+        <span class="n">n_runs</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">groups</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="n">groups</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">n_runs</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">uniq</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Panel rows are not unit-major contiguous: each unit&#39;s periods must form one &quot;</span>
+                <span class="s2">&quot;contiguous, time-ordered block (the layout from np.repeat(unit_ids, m), as &quot;</span>
+                <span class="s2">&quot;EconML expects). Sort rows by unit (stably, preserving time order) first.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">uniq</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">Yp</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="n">Tp</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="n">Xp</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Yp</span><span class="p">,</span> <span class="n">Tp</span><span class="p">,</span> <span class="n">Xp</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_panel</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">groups</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicGEstimationResult</span><span class="p">:</span>
+        <span class="n">Yp</span><span class="p">,</span> <span class="n">Tp</span><span class="p">,</span> <span class="n">Xp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_panel</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">groups</span><span class="p">)</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">Xp</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">Y_final</span> <span class="o">=</span> <span class="n">Yp</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">model_y</span> <span class="o">=</span> <span class="n">_resolve_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="n">model_t</span> <span class="o">=</span> <span class="n">_resolve_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="c1"># Per stage tau: residualize [Y_final, T_0..T_{m-1}] on history H_tau.</span>
+        <span class="n">R</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span> <span class="o">*</span> <span class="n">m</span>
+        <span class="n">Ttil</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span> <span class="o">*</span> <span class="n">m</span>  <span class="c1"># Ttil[tau] is (n, m): col s = M_tau T_s</span>
+        <span class="n">nuis_r2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tau</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">Xp</span><span class="p">[:,</span> <span class="n">k</span><span class="p">,</span> <span class="p">:]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tau</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>  <span class="c1"># states through tau</span>
+            <span class="k">if</span> <span class="n">tau</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Tp</span><span class="p">[:,</span> <span class="p">:</span><span class="n">tau</span><span class="p">])</span>  <span class="c1"># past treatments</span>
+            <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
+            <span class="n">y_resid</span> <span class="o">=</span> <span class="n">_crossfit_residualize_kfold</span><span class="p">(</span>
+                <span class="n">H</span><span class="p">,</span> <span class="n">Y_final</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">model_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="n">t_resid</span> <span class="o">=</span> <span class="n">_crossfit_residualize_kfold</span><span class="p">(</span>
+                <span class="n">H</span><span class="p">,</span> <span class="n">Tp</span><span class="p">,</span> <span class="n">model_t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
+            <span class="p">)</span>  <span class="c1"># (n, m)</span>
+            <span class="n">R</span><span class="p">[</span><span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_resid</span>
+            <span class="n">Ttil</span><span class="p">[</span><span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_resid</span>
+            <span class="n">nuis_r2</span><span class="p">[</span><span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="n">_r2</span><span class="p">(</span><span class="n">Y_final</span><span class="p">,</span> <span class="n">y_resid</span><span class="p">)</span>
+
+        <span class="c1"># Backward recursion for point estimates.</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tau</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">y_peeled</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">tau</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tau</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+                <span class="n">y_peeled</span> <span class="o">-=</span> <span class="n">theta</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> <span class="n">Ttil</span><span class="p">[</span><span class="n">tau</span><span class="p">][:,</span> <span class="n">s</span><span class="p">]</span>
+            <span class="n">t_tau</span> <span class="o">=</span> <span class="n">Ttil</span><span class="p">[</span><span class="n">tau</span><span class="p">][:,</span> <span class="n">tau</span><span class="p">]</span>
+            <span class="n">denom</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_tau</span> <span class="o">@</span> <span class="n">t_tau</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">denom</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No residual treatment variation at period </span><span class="si">{</span><span class="n">tau</span><span class="si">}</span><span class="s2"> (weak/colinear treatment).&quot;</span>
+                <span class="p">)</span>
+            <span class="n">theta</span><span class="p">[</span><span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_tau</span> <span class="o">@</span> <span class="n">y_peeled</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span>
+
+        <span class="c1"># Joint sandwich variance over the stacked moments (upper-triangular Jacobian).</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">tau</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="n">t_tau</span> <span class="o">=</span> <span class="n">Ttil</span><span class="p">[</span><span class="n">tau</span><span class="p">][:,</span> <span class="n">tau</span><span class="p">]</span>
+            <span class="n">resid_full</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">tau</span><span class="p">]</span> <span class="o">-</span> <span class="n">Ttil</span><span class="p">[</span><span class="n">tau</span><span class="p">][:,</span> <span class="n">tau</span><span class="p">:]</span> <span class="o">@</span> <span class="n">theta</span><span class="p">[</span><span class="n">tau</span><span class="p">:]</span>
+            <span class="n">g</span><span class="p">[:,</span> <span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_tau</span> <span class="o">*</span> <span class="n">resid_full</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+                <span class="n">G</span><span class="p">[</span><span class="n">tau</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">t_tau</span> <span class="o">*</span> <span class="n">Ttil</span><span class="p">[</span><span class="n">tau</span><span class="p">][:,</span> <span class="n">s</span><span class="p">]))</span>
+        <span class="n">meat</span> <span class="o">=</span> <span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">G_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+        <span class="n">cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">G_inv</span> <span class="o">@</span> <span class="n">meat</span> <span class="o">@</span> <span class="n">G_inv</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_package</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">n_units</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nuis_r2</span><span class="o">=</span><span class="n">nuis_r2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;panel&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ----------------------------------------------------------------- series</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_series</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicGEstimationResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mode=&#39;series&#39; requires n_periods (number of distributed lags).&quot;</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span><span class="p">)</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">L</span> <span class="o">&lt;=</span> <span class="n">m</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;series too short (</span><span class="si">{</span><span class="n">L</span><span class="si">}</span><span class="s2">) for m=</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2"> and n_folds=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Distributed-lag design: Y_t on [T_t, T_{t-1}, ..., T_{t-m+1}], controls X_t.</span>
+        <span class="n">Tlag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">T</span><span class="p">[(</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">k</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="n">L</span> <span class="o">-</span> <span class="n">k</span><span class="p">)]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span>
+        <span class="p">)</span>  <span class="c1"># (Lv, m), col k = T_{t-k}</span>
+        <span class="n">Yv</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">:]</span>
+        <span class="n">Xv</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">:]</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">Yv</span><span class="p">,</span> <span class="n">Tlag</span><span class="p">])</span>
+        <span class="n">resid</span> <span class="o">=</span> <span class="n">_crossfit_residualize_timeseries</span><span class="p">(</span>
+            <span class="n">Xv</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">_resolve_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span>
+        <span class="p">)</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">resid</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">resid</span> <span class="o">=</span> <span class="n">resid</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+        <span class="n">Ytil</span> <span class="o">=</span> <span class="n">resid</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">Ttil</span> <span class="o">=</span> <span class="n">resid</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>  <span class="c1"># (Lk, m)</span>
+        <span class="n">lk</span> <span class="o">=</span> <span class="n">Ttil</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">gram</span> <span class="o">=</span> <span class="n">Ttil</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Ttil</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">gram</span><span class="p">,</span> <span class="n">Ttil</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Ytil</span><span class="p">)</span>
+
+        <span class="c1"># HAC sandwich: scores s_t = Ttil_t (Ytil_t - Ttil_t . theta); bread = (gram/Lk)^{-1}.</span>
+        <span class="n">resid_full</span> <span class="o">=</span> <span class="n">Ytil</span> <span class="o">-</span> <span class="n">Ttil</span> <span class="o">@</span> <span class="n">theta</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">Ttil</span> <span class="o">*</span> <span class="n">resid_full</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># (Lk, m)</span>
+        <span class="n">bw</span> <span class="o">=</span> <span class="n">optimal_bandwidth</span><span class="p">(</span><span class="n">resid_full</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;newey_west&quot;</span><span class="p">)</span>
+        <span class="n">s_hac</span> <span class="o">=</span> <span class="n">_bartlett_long_run_cov</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">bw</span><span class="p">)</span>
+        <span class="n">bread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">gram</span> <span class="o">/</span> <span class="n">lk</span><span class="p">)</span>
+        <span class="n">cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">bread</span> <span class="o">@</span> <span class="n">s_hac</span> <span class="o">@</span> <span class="n">bread</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">lk</span>
+
+        <span class="n">nuis_r2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">_r2</span><span class="p">(</span><span class="n">Yv</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">Ytil</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_package</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">n_units</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nuis_r2</span><span class="o">=</span><span class="n">nuis_r2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;series&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ---------------------------------------------------------------- shared</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_package</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">theta</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">cov</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">n_units</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">nuis_r2</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicGEstimationResult</span><span class="p">:</span>
+        <span class="n">se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cov</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+            <span class="n">tstat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">se</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">se</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">pvals</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tstat</span><span class="p">)))</span>
+        <span class="n">cum</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">theta</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">cum_se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">@</span> <span class="n">cov</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">m</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="n">DynamicGEstimationResult</span><span class="p">(</span>
+            <span class="n">theta_t</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>
+            <span class="n">se_t</span><span class="o">=</span><span class="n">se</span><span class="p">,</span>
+            <span class="n">ci_lower_t</span><span class="o">=</span><span class="n">theta</span> <span class="o">-</span> <span class="n">z</span> <span class="o">*</span> <span class="n">se</span><span class="p">,</span>
+            <span class="n">ci_upper_t</span><span class="o">=</span><span class="n">theta</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">se</span><span class="p">,</span>
+            <span class="n">p_value_t</span><span class="o">=</span><span class="n">pvals</span><span class="p">,</span>
+            <span class="n">cumulative_effect</span><span class="o">=</span><span class="n">cum</span><span class="p">,</span>
+            <span class="n">cumulative_se</span><span class="o">=</span><span class="n">cum_se</span><span class="p">,</span>
+            <span class="n">n_units</span><span class="o">=</span><span class="n">n_units</span><span class="p">,</span>
+            <span class="n">n_periods</span><span class="o">=</span><span class="n">m</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">cov</span><span class="o">=</span><span class="n">cov</span><span class="p">,</span>
+            <span class="n">nuisance_r2_t</span><span class="o">=</span><span class="n">nuis_r2</span><span class="p">,</span>
+            <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;custom&quot;</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bartlett_long_run_cov</span><span class="p">(</span><span class="n">scores</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">bandwidth</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Newey-West (Bartlett) long-run covariance of a multivariate score series.</span>
+
+<span class="sd">    ``S = Gamma_0 + sum_{j=1}^{bw} w_j (Gamma_j + Gamma_j^T)``, with Bartlett</span>
+<span class="sd">    weights ``w_j = 1 - j/(bw+1)`` and ``Gamma_j = (1/T) sum_t s_t s_{t-j}^T``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">scores</span> <span class="o">-</span> <span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">s</span><span class="p">)</span> <span class="o">/</span> <span class="n">t</span>
+    <span class="n">bw</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">bandwidth</span><span class="p">),</span> <span class="n">t</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">bw</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">gamma_j</span> <span class="o">=</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="n">j</span><span class="p">])</span> <span class="o">/</span> <span class="n">t</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">j</span> <span class="o">/</span> <span class="p">(</span><span class="n">bw</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">cov</span> <span class="o">+=</span> <span class="n">weight</span> <span class="o">*</span> <span class="p">(</span><span class="n">gamma_j</span> <span class="o">+</span> <span class="n">gamma_j</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

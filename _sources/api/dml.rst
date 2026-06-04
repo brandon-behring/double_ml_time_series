@@ -87,3 +87,17 @@ via Newey-West with automatic bandwidth selection.
    :members:
    :undoc-members: False
    :show-inheritance:
+
+----
+
+Recursive Dynamic G-Estimation (``dml_ts.dml.dynamic_g_estimation``)
+-------------------------------------------------------------------------
+
+Neyman-orthogonal recursive dynamic g-estimation (Lewis-Syrgkanis): recovers
+period-specific treatment blips for linear structural nested mean models via
+cross-fitted backward peeling, with the joint coupled-stage sandwich variance.
+
+.. automodule:: dml_ts.dml.dynamic_g_estimation
+   :members:
+   :undoc-members: False
+   :show-inheritance:
