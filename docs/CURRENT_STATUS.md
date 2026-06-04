@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-06-01
+Last updated: 2026-06-04
 
 This file is the canonical project-status source. Historical reports and roadmaps
 were moved to `docs/archive/superseded_2026-05-02/` during the 2026-05-02 truth-first
@@ -103,7 +103,7 @@ in-suite contract tests.
 ### Track 3 — Deferred methodology (post-gates)
 
 - ~~True Lewis-Syrgkanis recursive dynamic g-estimation (separate, honestly-named class).~~
-  **Done 2026-06-02** — `DynamicGEstimationDML` recovers period-specific blips for a linear
+  **Done 2026-06-02, merged to `main` 2026-06-04 (PR #4, `6ef1519`)** — `DynamicGEstimationDML` recovers period-specific blips for a linear
   SNMM via recursive peeling (panel + single-series), with a joint coupled-stage sandwich
   variance and a gated EconML `DynamicDML` cross-check; validated against a known-blip DGP
   (`DynamicTreatmentDGP`). Heterogeneous `theta_t(X)` remains future work.
