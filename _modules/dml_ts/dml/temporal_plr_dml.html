@@ -884,9 +884,11 @@
         <span class="p">)</span>
         <span class="n">hac_estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">influence_scores</span><span class="p">)</span>
 
-        <span class="c1"># Get variance and SE using get_variance() for 1D case</span>
+        <span class="c1"># get_variance() already returns the variance of the mean estimator</span>
+        <span class="c1"># (long-run variance / n); its square root IS the standard error.</span>
+        <span class="c1"># Dividing by n again understates the SE by a factor of sqrt(n).</span>
         <span class="n">hac_var</span> <span class="o">=</span> <span class="n">hac_estimator</span><span class="o">.</span><span class="n">get_variance</span><span class="p">()</span>
-        <span class="n">hac_se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">hac_var</span> <span class="o">/</span> <span class="n">n_used</span><span class="p">))</span>
+        <span class="n">hac_se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">hac_var</span><span class="p">))</span>
 
         <span class="c1"># Get bandwidth used</span>
         <span class="n">bandwidth_used</span> <span class="o">=</span> <span class="n">hac_estimator</span><span class="o">.</span><span class="n">bandwidth_used</span>
