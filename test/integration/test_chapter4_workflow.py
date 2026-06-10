@@ -13,8 +13,13 @@ from dml_ts.dml import DMLResult, double_ml
 from dml_ts.sensitivity import RosenbaumBounds, SensitivityResult, compute_sensitivity_for_dml
 
 
+@pytest.mark.network
 class TestChapter4Workflow:
-    """Integration tests for Chapter 4: Cross-Sectional Application."""
+    """Integration tests for Chapter 4: Cross-Sectional Application.
+
+    The class-scoped OJ fixture downloads the Dominick's CSV on a cold
+    cache, so the whole class carries the network marker.
+    """
 
     @pytest.fixture(scope="class")
     def oj_data(self) -> OJDataset:

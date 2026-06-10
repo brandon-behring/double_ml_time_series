@@ -104,11 +104,17 @@ TIER_CONFIGS = {
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:
-    """Apply per-tier timeouts to collected tests.
+    """Apply per-tier timeouts and enforce tier-marker discipline.
 
     Tests marked with @pytest.mark.tierN receive timeout = TIER_CONFIGS[tierN].timeout.
     More specific tier markers override less specific ones.
+
+    Collection FAILS if any test lacks a tier marker — an unmarked test would be
+    invisible to the tiered CI gates and only run in full-suite contexts (see
+    CONTRIBUTING.md). The `--collect-only` step in the CI lint job is the
+    enforcement point that sees every test regardless of `-m` filtering.
     """
+    unmarked: list[str] = []
     for item in items:
         # Find the most specific tier marker on this test
         has_tier = False
@@ -122,9 +128,16 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:
                 has_tier = True
                 break
 
-        # Fallback: unmarked tests get a safe default timeout (120s)
-        if not has_tier and item.get_closest_marker("timeout") is None:
-            item.add_marker(pytest.mark.timeout(120))
+        if not has_tier:
+            unmarked.append(item.nodeid)
+
+    if unmarked:
+        preview = "\n  ".join(sorted(unmarked)[:20])
+        more = f"\n  ... and {len(unmarked) - 20} more" if len(unmarked) > 20 else ""
+        raise pytest.UsageError(
+            f"{len(unmarked)} test(s) lack a tier marker (tier1/tier2/tier3/tier4). "
+            f"Every test must declare its tier — see CONTRIBUTING.md:\n  {preview}{more}"
+        )
 
 
 # ---------------------------------------------------------------------------

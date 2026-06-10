@@ -14,8 +14,13 @@ from dml_ts.data.oj_loader import OJDataLoader, OJDataset
 
 
 @pytest.mark.tier2
+@pytest.mark.network
 class TestOJDataLoader:
-    """Test suite for OJDataLoader."""
+    """Test suite for OJDataLoader.
+
+    The class-scoped dataset fixture downloads the Dominick's OJ CSV on a
+    cold cache, so the whole class carries the network marker.
+    """
 
     @pytest.fixture(scope="class")
     def loader(self) -> OJDataLoader:
