@@ -8,7 +8,6 @@ Tests cover:
 - Persistence (save/load)
 """
 
-import json
 import tempfile
 from pathlib import Path
 
@@ -16,7 +15,7 @@ import numpy as np
 import pytest
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
-from dml_ts.production.model_registry import DMLModelVersion, DMLModelRegistry
+from dml_ts.production.model_registry import DMLModelRegistry, DMLModelVersion
 
 pytestmark = pytest.mark.tier2
 
@@ -411,7 +410,7 @@ class TestDMLModelRegistry:
 
             # Register multiple versions
             version_ids = []
-            for i in range(3):
+            for _i in range(3):
                 v = self._create_test_version()
                 v_id = registry.register(v)
                 version_ids.append(v_id)

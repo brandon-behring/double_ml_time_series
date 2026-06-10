@@ -6,7 +6,8 @@ for validating Double ML estimators.
 """
 
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal
+
 import numpy as np
 
 
@@ -66,7 +67,7 @@ class DGPGenerator:
         treatment_model: Literal["linear", "nonlinear"] = "linear",
         outcome_model: Literal["linear", "nonlinear"] = "linear",
         noise_level: float = 1.0,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         """Initialize DGP generator.
 

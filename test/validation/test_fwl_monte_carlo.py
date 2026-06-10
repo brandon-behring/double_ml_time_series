@@ -14,10 +14,9 @@ The validation criteria are:
 
 import numpy as np
 import pytest
-from scipy import stats
 
 from dml_ts.dml.fwl import fwl_estimate, fwl_vs_ols_comparison
-from dml_ts.dml.robinson import robinson_estimator, compare_fwl_vs_robinson
+from dml_ts.dml.robinson import robinson_estimator
 
 
 @pytest.mark.tier2
@@ -59,8 +58,7 @@ class TestFWLBasic:
         result = fwl_vs_ols_comparison(Y, T, X)
 
         assert result["match"], (
-            f"FWL theorem violated: OLS={result['theta_ols']:.10f}, "
-            f"FWL={result['theta_fwl']:.10f}"
+            f"FWL theorem violated: OLS={result['theta_ols']:.10f}, FWL={result['theta_fwl']:.10f}"
         )
 
 
@@ -80,7 +78,7 @@ class TestFWLMonteCarlo:
         ses = []
         coverages = []
 
-        for i in range(n_sims):
+        for _i in range(n_sims):
             # Generate data with linear confounding
             X = np.random.randn(n_obs, 3)
             T = 0.5 * X[:, 0] - 0.3 * X[:, 1] + np.random.randn(n_obs)

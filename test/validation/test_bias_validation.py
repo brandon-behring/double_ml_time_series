@@ -13,7 +13,6 @@ Usage:
 
 import numpy as np
 import pytest
-from datetime import datetime
 
 from dml_ts.validation.bias_validation import BiasValidation
 from dml_ts.validation.dgp_generator import DGPGenerator
@@ -301,9 +300,9 @@ class TestBiasValidationStatisticalProperties:
         result = validator.validate(dgp)
 
         # CI should be well-formed
-        assert (
-            result.ci_lower <= result.ci_upper
-        ), f"CI lower ({result.ci_lower}) > upper ({result.ci_upper})"
+        assert result.ci_lower <= result.ci_upper, (
+            f"CI lower ({result.ci_lower}) > upper ({result.ci_upper})"
+        )
         assert np.isfinite(result.ci_lower), "CI lower must be finite"
         assert np.isfinite(result.ci_upper), "CI upper must be finite"
 
@@ -478,9 +477,9 @@ class TestBiasValidationMultipleTestingCorrection:
         # Bonferroni should be more conservative or same (never less conservative)
         # FAIL < WARNING < PASS in conservativeness
         status_order = {"FAIL": 0, "WARNING": 1, "PASS": 2}
-        assert (
-            status_order[status_bonf] >= status_order[status_none]
-        ), "Bonferroni correction should be at least as conservative as no correction"
+        assert status_order[status_bonf] >= status_order[status_none], (
+            "Bonferroni correction should be at least as conservative as no correction"
+        )
 
     def test_no_correction_option_exists(self):
         """Test that 'none' correction method can be specified (for single-method testing)."""

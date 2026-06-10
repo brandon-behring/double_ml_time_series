@@ -13,7 +13,7 @@ from datetime import UTC, datetime, timedelta
 import numpy as np
 import pytest
 
-from dml_ts.production.causal_monitor import AlertLevel, CausalMonitor, MonitoringResult
+from dml_ts.production.causal_monitor import AlertLevel, MonitoringResult
 from dml_ts.production.retrain_pipeline import (
     RetrainScheduler,
     RetrainSchedulerConfig,

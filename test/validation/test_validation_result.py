@@ -8,6 +8,7 @@ All tests in this module are unit tests (no estimation, pure serialization).
 
 import json
 from datetime import datetime
+
 import pytest
 
 from dml_ts.validation.validation_result import ValidationResult

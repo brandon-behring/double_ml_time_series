@@ -13,19 +13,18 @@ Tests cover:
 
 import numpy as np
 import pytest
-from scipy import stats
 
 from dml_ts.dml.hac import (
-    bartlett_kernel,
-    parzen_kernel,
-    quadratic_spectral_kernel,
-    get_kernel_function,
-    optimal_bandwidth,
-    newey_west_se,
-    newey_west_covariance,
     HACEstimator,
     HACResult,
+    bartlett_kernel,
+    get_kernel_function,
     hac_inference,
+    newey_west_covariance,
+    newey_west_se,
+    optimal_bandwidth,
+    parzen_kernel,
+    quadratic_spectral_kernel,
 )
 
 

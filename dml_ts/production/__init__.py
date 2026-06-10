@@ -16,10 +16,10 @@ Conceptual differences from standard ML deployment:
 These are book-companion utilities, not deployment-ready infrastructure.
 """
 
-from dml_ts.production.model_registry import DMLModelVersion, DMLModelRegistry
 from dml_ts.production.causal_monitor import CausalMonitor, MonitoringResult
-from dml_ts.production.retrain_pipeline import RetrainScheduler, RetrainTrigger
 from dml_ts.production.dml_pipeline import InsuranceDMLPipeline, PipelineConfig
+from dml_ts.production.model_registry import DMLModelRegistry, DMLModelVersion
+from dml_ts.production.retrain_pipeline import RetrainScheduler, RetrainTrigger
 
 __all__ = [
     "DMLModelVersion",

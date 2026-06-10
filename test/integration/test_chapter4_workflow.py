@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from dml_ts.data import OJDataLoader, OJDataset
-from dml_ts.dml import double_ml, DMLResult
+from dml_ts.dml import DMLResult, double_ml
 from dml_ts.sensitivity import RosenbaumBounds, SensitivityResult, compute_sensitivity_for_dml
 
 
@@ -95,9 +95,9 @@ class TestChapter4Workflow:
         # DML should differ from naive OLS (confounding adjustment)
         # The magnitude of difference depends on confounding strength
         # Just check they're not identical
-        assert (
-            abs(dml_result.theta - naive_theta) > 0.01
-        ), f"DML ({dml_result.theta}) too similar to naive ({naive_theta})"
+        assert abs(dml_result.theta - naive_theta) > 0.01, (
+            f"DML ({dml_result.theta}) too similar to naive ({naive_theta})"
+        )
 
         # DML confidence interval should be reasonable width
         # Lower bound relaxed: precise estimates with large samples can have narrow CIs
@@ -147,9 +147,9 @@ class TestChapter4Workflow:
 
         # For a well-identified estimate like OJ elasticity, expect moderate robustness
         # (Literature suggests the effect is robust but not bulletproof)
-        assert (
-            sensitivity.gamma_critical > 1.0
-        ), f"Expected gamma_critical > 1 for significant effect, got {sensitivity.gamma_critical}"
+        assert sensitivity.gamma_critical > 1.0, (
+            f"Expected gamma_critical > 1 for significant effect, got {sensitivity.gamma_critical}"
+        )
 
     @pytest.mark.tier2
     def test_full_chapter4_pipeline_reproducible(self) -> None:

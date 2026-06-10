@@ -38,7 +38,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import List, Literal, Optional, Union
+from typing import Literal, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -51,8 +51,8 @@ from sklearn.model_selection import KFold
 from .cross_fitting import TimeSeriesCrossValidator
 from .hac import optimal_bandwidth
 
-ArrayLike = Union[np.ndarray, List[float]]
-ModelSpec = Union[str, BaseEstimator]
+ArrayLike: TypeAlias = np.ndarray | list[float]
+ModelSpec: TypeAlias = str | BaseEstimator
 Mode = Literal["panel", "series"]
 
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
@@ -123,12 +123,12 @@ class DynamicGEstimationResult:
             )
         lines.append("-" * 56)
         lines.append(
-            f"Cumulative effect: {self.cumulative_effect:.4f} " f"(se {self.cumulative_se:.4f})"
+            f"Cumulative effect: {self.cumulative_effect:.4f} (se {self.cumulative_se:.4f})"
         )
         return "\n".join(lines)
 
 
-def _resolve_model(spec: ModelSpec, random_state: Optional[int]) -> BaseEstimator:
+def _resolve_model(spec: ModelSpec, random_state: int | None) -> BaseEstimator:
     """Resolve a model spec (string alias or estimator) into a regressor.
 
     Conditional means ``E[Y|H]`` and ``E[T|H]`` are both estimated by
@@ -158,7 +158,7 @@ def _crossfit_residualize_kfold(
     targets: NDArray[np.float64],
     model: BaseEstimator,
     n_folds: int,
-    random_state: Optional[int],
+    random_state: int | None,
 ) -> NDArray[np.float64]:
     """Out-of-fold residuals of each column of ``targets`` on ``H`` (KFold over rows).
 
@@ -188,7 +188,6 @@ def _crossfit_residualize_timeseries(
     Rows uncovered by the expanding-window splits are returned as NaN so the
     caller can drop them (mirrors ``TemporalPLRDML``).
     """
-    n = H.shape[0]
     preds = np.full_like(targets, np.nan, dtype=float)
     cv = TimeSeriesCrossValidator(n_splits=n_splits, gap=gap)
     for train_idx, test_idx in cv.split(H):
@@ -226,12 +225,12 @@ class DynamicGEstimationDML:
 
     def __init__(
         self,
-        n_periods: Optional[int] = None,
+        n_periods: int | None = None,
         model_y: ModelSpec = "random_forest",
         model_t: ModelSpec = "random_forest",
         n_folds: int = 5,
         gap: int = 0,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         if n_folds < 2:
             raise ValueError(f"n_folds must be >= 2, got {n_folds}.")
@@ -241,16 +240,16 @@ class DynamicGEstimationDML:
         self.n_folds = int(n_folds)
         self.gap = int(gap)
         self.random_state = random_state
-        self.result_: Optional[DynamicGEstimationResult] = None
+        self.result_: DynamicGEstimationResult | None = None
 
     def fit(
         self,
         Y: ArrayLike,
         T: ArrayLike,
         X: ArrayLike,
-        W: Optional[ArrayLike] = None,
-        groups: Optional[ArrayLike] = None,
-        mode: Optional[Mode] = None,
+        W: ArrayLike | None = None,
+        groups: ArrayLike | None = None,
+        mode: Mode | None = None,
         alpha: float = 0.05,
     ) -> DynamicGEstimationResult:
         """Estimate the per-period blips.

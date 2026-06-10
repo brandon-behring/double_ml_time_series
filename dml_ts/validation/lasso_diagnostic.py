@@ -24,13 +24,13 @@ Usage:
     >>> print(f"Seed sensitivity: {results.seed_std_dev:.2f}")
 """
 
-from typing import Dict, Any, Optional, List, Tuple
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from scipy import stats
-import matplotlib.pyplot as plt
 
 
 @dataclass
@@ -63,7 +63,7 @@ class BootstrapDiagnosticResult:
     n_outliers: int
     converged: bool
     n_bootstrap: int
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -88,7 +88,7 @@ class HyperparameterSensitivityResult:
     sensitivity_score: float
     is_sensitive: bool
     recommended_value: Any
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -117,7 +117,7 @@ class SeedSensitivityResult:
     range_ate: float
     cv_ate: float
     is_stable: bool
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 @dataclass
@@ -134,10 +134,10 @@ class ComprehensiveDiagnosticResult:
     """
 
     bootstrap_diagnostic: BootstrapDiagnosticResult
-    hyperparameter_sensitivity: Dict[str, HyperparameterSensitivityResult]
+    hyperparameter_sensitivity: dict[str, HyperparameterSensitivityResult]
     seed_sensitivity: SeedSensitivityResult
     root_cause_analysis: str
-    recommendations: List[str]
+    recommendations: list[str]
     timestamp: datetime
 
 
@@ -161,8 +161,8 @@ class LassoDiagnostic:
 
     def __init__(
         self,
-        data_path: Optional[str] = None,
-        random_state: Optional[int] = None,
+        data_path: str | None = None,
+        random_state: int | None = None,
         verbose: bool = False,
     ):
         """Initialize diagnostic tool.
@@ -176,7 +176,7 @@ class LassoDiagnostic:
         self.random_state = random_state
         self.verbose = verbose
         self._rng = np.random.RandomState(random_state)
-        self._data: Optional[pd.DataFrame] = None
+        self._data: pd.DataFrame | None = None
         self._Y = None
         self._T = None
         self._X = None
@@ -202,13 +202,15 @@ class LassoDiagnostic:
                 from doubleml.datasets import fetch_401K
 
                 self._data = fetch_401K(return_type="DataFrame")
-            except ImportError:
-                raise ImportError("doubleml package required. Install with: pip install doubleml")
+            except ImportError as e:
+                raise ImportError(
+                    "doubleml package required. Install with: pip install doubleml"
+                ) from e
 
         assert self._data is not None
         return self._data
 
-    def preprocess_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def preprocess_data(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Preprocess 401(k) data for DML estimation.
 
         Returns:
@@ -319,8 +321,8 @@ class LassoDiagnostic:
         self._log(f"  Std ATE: ${std_ate:,.2f}")
         self._log(f"  95% CI: (${ci_lower:,.2f}, ${ci_upper:,.2f})")
         self._log(f"  Normality: {is_normal} (p={normality_pvalue:.4f})")
-        self._log(f"  Outliers: {n_outliers}/{n_bootstrap} ({100*n_outliers/n_bootstrap:.1f}%)")
-        self._log(f"  Converged: {converged} (CV={100*cv_running:.2f}%)")
+        self._log(f"  Outliers: {n_outliers}/{n_bootstrap} ({100 * n_outliers / n_bootstrap:.1f}%)")
+        self._log(f"  Converged: {converged} (CV={100 * cv_running:.2f}%)")
 
         return BootstrapDiagnosticResult(
             ate_estimates=ate_estimates,
@@ -342,7 +344,7 @@ class LassoDiagnostic:
         )
 
     def analyze_hyperparameter_sensitivity(
-        self, parameter: str, values: Optional[List[Any]] = None
+        self, parameter: str, values: list[Any] | None = None
     ) -> HyperparameterSensitivityResult:
         """Analyze ATE sensitivity to hyperparameter changes.
 
@@ -375,13 +377,12 @@ class LassoDiagnostic:
         if values is None:
             if parameter not in default_values:
                 raise ValueError(
-                    f"Unknown parameter: {parameter}. "
-                    f"Must be one of {list(default_values.keys())}"
+                    f"Unknown parameter: {parameter}. Must be one of {list(default_values.keys())}"
                 )
             values = default_values[parameter]
 
         from econml.dml import LinearDML
-        from sklearn.linear_model import LassoCV, Lasso
+        from sklearn.linear_model import LassoCV
 
         self._log(f"Analyzing {parameter} sensitivity ({len(values)} values)...")
 
@@ -634,9 +635,9 @@ class LassoDiagnostic:
     def _analyze_root_cause(
         self,
         bootstrap: BootstrapDiagnosticResult,
-        hyperparameters: Dict[str, HyperparameterSensitivityResult],
+        hyperparameters: dict[str, HyperparameterSensitivityResult],
         seed: SeedSensitivityResult,
-    ) -> Tuple[str, List[str]]:
+    ) -> tuple[str, list[str]]:
         """Identify root cause of mismatch from diagnostic results.
 
         Args:
@@ -664,7 +665,7 @@ class LassoDiagnostic:
         if bootstrap.has_outliers:
             causes.append(
                 f"Bootstrap distribution has {bootstrap.n_outliers} outliers "
-                f"({100*bootstrap.n_outliers/bootstrap.n_bootstrap:.1f}%)"
+                f"({100 * bootstrap.n_outliers / bootstrap.n_bootstrap:.1f}%)"
             )
             recommendations.append("Investigate and potentially remove outlier samples")
 

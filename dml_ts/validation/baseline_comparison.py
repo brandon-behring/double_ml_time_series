@@ -13,16 +13,16 @@ Provides side-by-side comparison of multiple causal inference estimators:
 Enables systematic evaluation of method performance across different DGP configurations.
 """
 
-from typing import Dict, Optional, Protocol
-from datetime import datetime
+from typing import Protocol
+
 import numpy as np
 import pandas as pd
 
-from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.bias_validation import BiasValidation
-from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
-from dml_ts.validation.ipw_baseline import IPWEstimator, AugmentedIPW
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.ipw_baseline import AugmentedIPW, IPWEstimator
 from dml_ts.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
+from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
 from dml_ts.validation.validation_result import ValidationResult
 
 
@@ -51,7 +51,7 @@ class BaselineComparison:
     def __init__(
         self,
         n_simulations: int = 100,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
         include_dml: bool = True,
         include_ml: bool = False,
     ):
@@ -70,7 +70,7 @@ class BaselineComparison:
         self.include_ml = include_ml
 
         # Initialize all baseline methods
-        self.methods: Dict[str, _Validatable] = {
+        self.methods: dict[str, _Validatable] = {
             "NaiveOLS": NaiveOLS(n_simulations=n_simulations, random_state=random_state),
             "OLSWithControls": OLSWithControls(
                 n_simulations=n_simulations, random_state=random_state
@@ -94,7 +94,7 @@ class BaselineComparison:
                 n_simulations=n_simulations, random_state=random_state
             )
 
-    def compare(self, dgp: DGPGenerator) -> Dict[str, ValidationResult]:
+    def compare(self, dgp: DGPGenerator) -> dict[str, ValidationResult]:
         """
         Run all methods on same DGP with deterministic comparability.
 
@@ -181,7 +181,7 @@ class BaselineComparison:
 
         return pd.DataFrame(data)
 
-    def compare_across_dgps(self, dgp_configs: list[Dict]) -> Dict[str, pd.DataFrame]:
+    def compare_across_dgps(self, dgp_configs: list[dict]) -> dict[str, pd.DataFrame]:
         """
         Compare methods across multiple DGP configurations.
 
@@ -201,7 +201,7 @@ class BaselineComparison:
 
         return all_results
 
-    def _config_to_string(self, config: Dict) -> str:
+    def _config_to_string(self, config: dict) -> str:
         """Convert DGP config dict to readable string."""
         parts = []
         for key in ["n", "p", "true_effect", "confounding_strength"]:
@@ -209,7 +209,7 @@ class BaselineComparison:
                 parts.append(f"{key}={config[key]}")
         return ", ".join(parts)
 
-    def generate_summary_statistics(self, dgp: DGPGenerator) -> Dict:
+    def generate_summary_statistics(self, dgp: DGPGenerator) -> dict:
         """
         Generate summary statistics across all methods.
 

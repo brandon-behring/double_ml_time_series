@@ -4,20 +4,17 @@ Tests for parallel execution framework.
 Tests all parallel utilities including map, Monte Carlo, decorators, and chunking.
 """
 
-import pytest
 import numpy as np
-from typing import List
-import time
+import pytest
 
 from dml_ts.validation.parallel import (
+    MIN_TASKS_PER_CORE,
+    ParallelExecutor,
+    chunk_workload,
     get_optimal_n_jobs,
     parallel_map,
     parallel_monte_carlo,
     parallelize,
-    ParallelExecutor,
-    chunk_workload,
-    DEFAULT_N_JOBS,
-    MIN_TASKS_PER_CORE,
 )
 
 
@@ -210,7 +207,7 @@ class TestParallelizeDecorator:
         """Decorator should parallelize function execution."""
 
         @parallelize(n_jobs=2, show_progress=False)
-        def process_batch(items: List[int]) -> callable:
+        def process_batch(items: list[int]) -> callable:
             def process_single(x: int) -> int:
                 return x**2
 
@@ -223,7 +220,7 @@ class TestParallelizeDecorator:
         """Decorator should work with additional kwargs."""
 
         @parallelize(n_jobs=2, show_progress=False)
-        def process_batch(items: List[int], multiplier: int = 1) -> callable:
+        def process_batch(items: list[int], multiplier: int = 1) -> callable:
             def process_single(x: int) -> int:
                 return x * multiplier
 
@@ -236,7 +233,7 @@ class TestParallelizeDecorator:
         """Decorator should preserve function metadata."""
 
         @parallelize(n_jobs=2)
-        def my_function(items: List[int]) -> callable:
+        def my_function(items: list[int]) -> callable:
             """My docstring."""
 
             def process(x: int) -> int:

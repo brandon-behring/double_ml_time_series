@@ -12,11 +12,11 @@ Tests how baseline methods and DML perform when model assumptions are violated:
 import numpy as np
 import pytest
 
-from dml_ts.validation.dgp_generator import DGPGenerator
-from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
-from dml_ts.validation.ipw_baseline import IPWEstimator, AugmentedIPW
-from dml_ts.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
 from dml_ts.validation.bias_validation import BiasValidation
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.ipw_baseline import AugmentedIPW, IPWEstimator
+from dml_ts.validation.ml_baseline import RandomForestEstimator
+from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
 
 
 class MisspecifiedDGPGenerator:

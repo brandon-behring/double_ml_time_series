@@ -7,9 +7,10 @@ The DGP generator must create synthetic data with known properties for validatio
 All tests in this module are unit tests (data generation, no estimation).
 """
 
+from dataclasses import asdict
+
 import numpy as np
 import pytest
-from dataclasses import asdict
 
 from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
 

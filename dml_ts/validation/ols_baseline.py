@@ -6,15 +6,16 @@ Two variants:
 2. OLSWithControls: Y ~ T + X - standard econometrics approach
 """
 
-from typing import Tuple, Optional, Literal
 from datetime import datetime
+from typing import Literal
+
 import numpy as np
 from scipy import stats
 from sklearn.linear_model import LinearRegression
 
-from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
+from dml_ts.validation.bootstrap_config import DEFAULT_BOOTSTRAP_CONFIG, BootstrapConfig
+from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.validation_result import ValidationResult
-from dml_ts.validation.bootstrap_config import BootstrapConfig, DEFAULT_BOOTSTRAP_CONFIG
 
 
 class NaiveOLS:
@@ -41,8 +42,8 @@ class NaiveOLS:
         self,
         n_simulations: int = 100,
         alpha: float = 0.05,
-        bootstrap_config: Optional[BootstrapConfig] = None,
-        random_state: Optional[int] = None,
+        bootstrap_config: BootstrapConfig | None = None,
+        random_state: int | None = None,
     ):
         """Initialize naive OLS estimator."""
         self.n_simulations = n_simulations
@@ -149,7 +150,7 @@ class NaiveOLS:
 
     def _determine_status(
         self, bias_samples: np.ndarray, alpha_test: float = 0.05
-    ) -> Tuple[Literal["PASS", "FAIL", "WARNING"], float]:
+    ) -> tuple[Literal["PASS", "FAIL", "WARNING"], float]:
         """Determine validation status using t-test for bias"""
         mean_bias = np.mean(bias_samples)
         se_bias = np.std(bias_samples) / np.sqrt(len(bias_samples))
@@ -196,8 +197,8 @@ class OLSWithControls:
         self,
         n_simulations: int = 100,
         alpha: float = 0.05,
-        bootstrap_config: Optional[BootstrapConfig] = None,
-        random_state: Optional[int] = None,
+        bootstrap_config: BootstrapConfig | None = None,
+        random_state: int | None = None,
     ):
         """Initialize OLS with controls estimator."""
         self.n_simulations = n_simulations
@@ -308,7 +309,7 @@ class OLSWithControls:
 
     def _determine_status(
         self, bias_samples: np.ndarray, alpha_test: float = 0.05
-    ) -> Tuple[Literal["PASS", "FAIL", "WARNING"], float]:
+    ) -> tuple[Literal["PASS", "FAIL", "WARNING"], float]:
         """Determine validation status using t-test for bias"""
         mean_bias = np.mean(bias_samples)
         se_bias = np.std(bias_samples) / np.sqrt(len(bias_samples))

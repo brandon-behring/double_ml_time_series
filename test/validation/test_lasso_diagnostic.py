@@ -10,16 +10,17 @@ Full integration tests are expensive (bootstrap takes hours), so these tests foc
 Note: Full bootstrap/sensitivity tests are marked @pytest.mark.tier2.
 """
 
+from unittest.mock import patch
+
 import numpy as np
 import pytest
-from unittest.mock import patch, MagicMock
 
 from dml_ts.validation.lasso_diagnostic import (
-    LassoDiagnostic,
     BootstrapDiagnosticResult,
-    HyperparameterSensitivityResult,
-    SeedSensitivityResult,
     ComprehensiveDiagnosticResult,
+    HyperparameterSensitivityResult,
+    LassoDiagnostic,
+    SeedSensitivityResult,
 )
 
 

@@ -36,7 +36,7 @@ Usage:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -60,9 +60,9 @@ class InsuranceDGPParams:
     """
 
     tau: float
-    tau_by_product: Optional[NDArray[np.float64]]
-    beta_macro: Dict[str, float]
-    beta_product: Optional[NDArray[np.float64]]
+    tau_by_product: NDArray[np.float64] | None
+    beta_macro: dict[str, float]
+    beta_product: NDArray[np.float64] | None
     ar_coef: float
     seasonal_amplitude: float
     regime_shift: float
@@ -97,7 +97,7 @@ class InsuranceDGPResult:
 def _generate_macro_environment(
     n_periods: int,
     rng: np.random.Generator,
-) -> Tuple[NDArray[np.float64], Dict[str, NDArray[np.float64]]]:
+) -> tuple[NDArray[np.float64], dict[str, NDArray[np.float64]]]:
     """Generate synthetic macroeconomic environment.
 
     Simulates correlated macro variables:
@@ -166,7 +166,7 @@ def _generate_competitor_treatment(
     n_periods: int,
     n_products: int,
     X_macro: NDArray[np.float64],
-    macro_dict: Dict[str, NDArray[np.float64]],
+    macro_dict: dict[str, NDArray[np.float64]],
     realism: RealismLevel,
     rng: np.random.Generator,
 ) -> NDArray[np.float64]:
@@ -188,7 +188,6 @@ def _generate_competitor_treatment(
     Returns:
         Treatment array (n_periods * n_products,)
     """
-    n_total = n_periods * n_products
     fed_funds = macro_dict["fed_funds"]
 
     if realism == "simple":
@@ -264,7 +263,7 @@ def _generate_outcome(
     true_tau: float,
     realism: RealismLevel,
     rng: np.random.Generator,
-) -> Tuple[NDArray[np.float64], InsuranceDGPParams]:
+) -> tuple[NDArray[np.float64], InsuranceDGPParams]:
     """Generate outcome variable (our sales/market share).
 
     Sales depend on:
@@ -307,7 +306,7 @@ def _generate_outcome(
 
         # Macro effects (stacked for all observations)
         X_macro_expanded = np.tile(X_macro, (n_products, 1))
-        for i, (key, beta) in enumerate(beta_macro.items()):
+        for i, (_key, beta) in enumerate(beta_macro.items()):
             Y += beta * X_macro_expanded[:, i]
 
         # IID noise
@@ -346,7 +345,7 @@ def _generate_outcome(
             Y_base[1:, p] += 0.3 * true_tau * T_reshaped[:-1, p]  # Lag effect
 
             # Macro effects
-            for i, (key, beta) in enumerate(beta_macro.items()):
+            for i, (_key, beta) in enumerate(beta_macro.items()):
                 Y_base[:, p] += beta * X_macro[:, i]
 
             # Product fixed effect
@@ -416,7 +415,7 @@ def _generate_outcome(
                     Y_base[lag:, p] += (0.5**lag) * tau_t[lag:] * T_reshaped[:-lag, p]
 
             # Macro effects
-            for i, (key, beta) in enumerate(beta_macro.items()):
+            for i, (_key, beta) in enumerate(beta_macro.items()):
                 Y_base[:, p] += beta * X_macro[:, i]
 
             # Product fixed effect + seasonal
@@ -460,8 +459,6 @@ def _generate_firm_controls(
     Returns:
         Firm controls array (n_total, n_firm_vars)
     """
-    n_total = n_periods * n_products
-
     # Product age (persistent)
     product_age = np.zeros((n_periods, n_products))
     initial_age = rng.integers(1, 20, n_products)
@@ -500,7 +497,7 @@ def create_insurance_dgp(
     n_periods: int = 120,
     n_products: int = 10,
     true_tau: float = -0.8,
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ) -> InsuranceDGPResult:
     """Create synthetic insurance/annuity competitor pricing DGP.
 
@@ -535,7 +532,6 @@ def create_insurance_dgp(
         raise ValueError(f"n_products must be >= 1, got {n_products}")
 
     rng = np.random.default_rng(seed)
-    n_total = n_periods * n_products
 
     # Generate macro environment
     X_macro, macro_dict = _generate_macro_environment(n_periods, rng)
@@ -595,7 +591,7 @@ def validate_dgp_recovery(
     true_tau: float = -0.8,
     n_sims: int = 100,
     seed: int = 42,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Validate DGP by checking if DML can recover true treatment effect.
 
     Runs Monte Carlo simulation to verify:
@@ -620,8 +616,8 @@ def validate_dgp_recovery(
     # Import here to avoid circular dependency
     try:
         from dml_ts.dml import PanelDML
-    except ImportError:
-        raise ImportError("PanelDML required for validation")
+    except ImportError as e:
+        raise ImportError("PanelDML required for validation") from e
 
     estimates = []
     ses = []

@@ -39,8 +39,8 @@ regardless of the ``state_feedback`` setting.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Literal, Optional, Tuple
+from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -74,7 +74,7 @@ class DynamicTreatmentDGPResult:
     Y: NDArray[np.float64]
     T: NDArray[np.float64]
     X: NDArray[np.float64]
-    groups: Optional[NDArray[np.int64]]
+    groups: NDArray[np.int64] | None
     time_index: NDArray[np.int64]
     theta_t: NDArray[np.float64]
     cumulative_effect: float
@@ -84,7 +84,7 @@ class DynamicTreatmentDGPResult:
     mode: str
     state_feedback: bool = False
 
-    def panels(self) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    def panels(self) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
         """Reshape the panel stacking into ``(n_units, m)`` / ``(n_units, m, p)``.
 
         Returns:
@@ -105,7 +105,7 @@ class DynamicTreatmentDGPResult:
 
     def to_econml(
         self,
-    ) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.int64]]:
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.int64]]:
         """Return ``(Y, T, X, groups)`` in EconML ``DynamicDML.fit`` layout.
 
         Raises:
@@ -128,7 +128,7 @@ def _as_matrix(value: float | NDArray[np.float64], p: int) -> NDArray[np.float64
 
 
 def _as_vector(
-    value: Optional[float | NDArray[np.float64]], p: int, default_first: float
+    value: float | NDArray[np.float64] | None, p: int, default_first: float
 ) -> NDArray[np.float64]:
     """Coerce a scalar/array/None into a length-``p`` coefficient vector."""
     if value is None:
@@ -198,17 +198,17 @@ class DynamicTreatmentDGP:
         p: int = 3,
         state_feedback: bool = False,
         state_transition: float | NDArray[np.float64] = 0.5,
-        treatment_state_coef: Optional[float | NDArray[np.float64]] = None,
-        treatment_policy_coef: Optional[float | NDArray[np.float64]] = None,
-        confounding_coef: Optional[float | NDArray[np.float64]] = 1.0,
+        treatment_state_coef: float | NDArray[np.float64] | None = None,
+        treatment_policy_coef: float | NDArray[np.float64] | None = None,
+        confounding_coef: float | NDArray[np.float64] | None = 1.0,
         treatment_type: Literal["continuous", "binary"] = "continuous",
         noise_level: float = 1.0,
-        state_noise: Optional[float] = None,
-        treatment_noise: Optional[float] = None,
-        outcome_noise: Optional[float] = None,
+        state_noise: float | None = None,
+        treatment_noise: float | None = None,
+        outcome_noise: float | None = None,
         series_length: int = 2000,
         mode: Literal["panel", "series"] = "panel",
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         if n_periods < 2:
             raise ValueError(f"n_periods (m) must be >= 2, got {n_periods}.")

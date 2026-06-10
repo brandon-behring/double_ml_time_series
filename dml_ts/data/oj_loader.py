@@ -27,10 +27,9 @@ Supermarket Scanner Data. Marketing Science, 16(4), 315-337.
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
-from typing import Optional
 from pathlib import Path
-import hashlib
 
 import numpy as np
 import pandas as pd
@@ -87,7 +86,7 @@ class OJDataset:
     feature_names: list[str]
     n_samples: int = field(init=False)
     n_features: int = field(init=False)
-    raw_df: Optional[pd.DataFrame] = None
+    raw_df: pd.DataFrame | None = None
 
     def __post_init__(self) -> None:
         """Compute derived attributes after initialization."""
@@ -108,7 +107,7 @@ Orange Juice Dataset Summary
 ============================
 Observations:     {self.n_samples:,}
 Features:         {self.n_features}
-Feature names:    {', '.join(self.feature_names)}
+Feature names:    {", ".join(self.feature_names)}
 
 Outcome (Y = log sales):
   Mean:           {np.mean(self.Y):.3f}
@@ -156,15 +155,15 @@ class OJDataLoader:
 
     def __init__(
         self,
-        cache_dir: Optional[Path | str] = None,
-        features: Optional[list[str]] = None,
-        brand: Optional[str] = None,
+        cache_dir: Path | str | None = None,
+        features: list[str] | None = None,
+        brand: str | None = None,
     ) -> None:
         """Initialize the OJ data loader."""
         self.cache_dir = Path(cache_dir) if cache_dir else None
         self.features = features if features is not None else self.DEFAULT_FEATURES.copy()
         self.brand = brand
-        self._raw_df: Optional[pd.DataFrame] = None
+        self._raw_df: pd.DataFrame | None = None
 
     def load(self, force_download: bool = False) -> OJDataset:
         """Load and preprocess the OJ dataset.
@@ -202,7 +201,7 @@ class OJDataLoader:
         missing = [f for f in self.features if f not in df.columns]
         if missing:
             raise ValueError(
-                f"Features not in dataset: {missing}. " f"Available: {df.columns.tolist()}"
+                f"Features not in dataset: {missing}. Available: {df.columns.tolist()}"
             )
 
         # Extract and transform variables
@@ -213,7 +212,11 @@ class OJDataLoader:
         # Drop rows with any missing values
         mask = ~(np.isnan(Y) | np.isnan(T) | np.any(np.isnan(X), axis=1))
         if not mask.all():
-            n_dropped = (~mask).sum()
+            n_dropped = int((~mask).sum())
+            warnings.warn(
+                f"Dropped {n_dropped} rows with missing values from OJ dataset",
+                stacklevel=2,
+            )
             Y, T, X = Y[mask], T[mask], X[mask]
             df = df[mask].copy()
 

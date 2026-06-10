@@ -16,8 +16,8 @@ def main() -> None:
     """Download and cache the 401(k) dataset."""
     try:
         from doubleml.datasets import fetch_401K
-    except ImportError:
-        raise ImportError("doubleml package required: pip install doubleml")
+    except ImportError as e:
+        raise ImportError("doubleml package required: pip install doubleml") from e
 
     data = fetch_401K(return_type="DataFrame")
 
@@ -31,8 +31,7 @@ def main() -> None:
     else:
         # Dict-like with separate components — reconstruct
         raise TypeError(
-            f"Unexpected return type from fetch_401K: {type(data)}. "
-            "Please check doubleml version."
+            f"Unexpected return type from fetch_401K: {type(data)}. Please check doubleml version."
         )
 
     out = Path(__file__).parent / "401k_data.csv"

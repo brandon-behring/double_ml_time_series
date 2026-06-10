@@ -12,28 +12,27 @@ The progression FWL -> Robinson -> DML is pedagogically essential:
 - DML solves the regularization bias problem via cross-fitting
 """
 
+from ._dynamic_econml import econml_available, fit_econml_reference
+from .cross_fitting import (
+    BlockedTimeSeriesCV,
+    PurgedGroupTimeSeriesCV,
+    TimeSeriesCrossValidator,
+)
+from .double_ml import DMLResult, double_ml
+from .dynamic_g_estimation import DynamicGEstimationDML, DynamicGEstimationResult
 from .fwl import (
     fwl_estimate,
     fwl_residualize,
     fwl_vs_ols_comparison,
 )
+from .hac import HACEstimator, newey_west_covariance, newey_west_se
 from .robinson import robinson_estimator
-from .double_ml import double_ml, DMLResult
-
 from .temporal_plr_dml import (
     PanelDML,
     RollingWindowDML,
     TemporalPLRDML,
     TemporalPLRDMLResult,
 )
-from .cross_fitting import (
-    TimeSeriesCrossValidator,
-    BlockedTimeSeriesCV,
-    PurgedGroupTimeSeriesCV,
-)
-from .hac import newey_west_se, newey_west_covariance, HACEstimator
-from .dynamic_g_estimation import DynamicGEstimationDML, DynamicGEstimationResult
-from ._dynamic_econml import fit_econml_reference, econml_available
 
 __all__ = [
     "fwl_estimate",

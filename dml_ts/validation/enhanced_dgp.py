@@ -12,7 +12,7 @@ Used to test DML performance under assumption violations.
 """
 
 from dataclasses import dataclass
-from typing import Literal, Optional, Callable
+
 import numpy as np
 
 
@@ -108,7 +108,7 @@ class EnhancedDGPGenerator:
         # Standard parameters
         confounding_strength: float = 1.0,
         noise_level: float = 1.0,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         """Initialize enhanced DGP generator.
 

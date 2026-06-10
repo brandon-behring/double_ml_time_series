@@ -47,13 +47,13 @@ sensitivity analysis with matched data. Unpublished manuscript.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal
 
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
 from numpy.typing import NDArray
 from scipy import stats
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 
 
 @dataclass
@@ -121,10 +121,10 @@ Explanation:
   to render this effect statistically insignificant.
 
 P-values at Selected Γ:
-  Γ = 1.0: p = {self.p_values_by_gamma.get(1.0, float('nan')):.4f} (no hidden bias)
-  Γ = 1.5: p = {self.p_values_by_gamma.get(1.5, float('nan')):.4f}
-  Γ = 2.0: p = {self.p_values_by_gamma.get(2.0, float('nan')):.4f}
-  Γ = 3.0: p = {self.p_values_by_gamma.get(3.0, float('nan')):.4f}
+  Γ = 1.0: p = {self.p_values_by_gamma.get(1.0, float("nan")):.4f} (no hidden bias)
+  Γ = 1.5: p = {self.p_values_by_gamma.get(1.5, float("nan")):.4f}
+  Γ = 2.0: p = {self.p_values_by_gamma.get(2.0, float("nan")):.4f}
+  Γ = 3.0: p = {self.p_values_by_gamma.get(3.0, float("nan")):.4f}
 
 Interpretation Guide:
   Robust (Γ > 2.0):           Strong confounding needed to overturn
@@ -358,7 +358,7 @@ class RosenbaumBounds:
         self,
         result: SensitivityResult,
         figsize: tuple[float, float] = (10, 6),
-        title: Optional[str] = None,
+        title: str | None = None,
     ) -> Figure:
         """Create visualization of sensitivity analysis results.
 
@@ -446,7 +446,7 @@ class RosenbaumBounds:
             fontsize=11,
             color=color,
             fontweight="bold",
-            arrowprops=dict(arrowstyle="->", color=color),
+            arrowprops={"arrowstyle": "->", "color": color},
         )
 
         plt.tight_layout()

@@ -31,8 +31,10 @@ Usage:
     >>> se = hac.get_se()
 """
 
-from typing import Callable, Literal, Optional, Union, cast
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Literal, cast
+
 import numpy as np
 from scipy import stats
 
@@ -56,7 +58,7 @@ class HACResult:
 
     variance: float
     se: float
-    covariance: Optional[np.ndarray]
+    covariance: np.ndarray | None
     bandwidth: int
     kernel: str
     n_samples: int
@@ -303,8 +305,8 @@ def _compute_long_run_variance(
 
 def newey_west_se(
     residuals: np.ndarray,
-    X: Optional[np.ndarray] = None,
-    bandwidth: Union[int, str] = "auto",
+    X: np.ndarray | None = None,
+    bandwidth: int | str = "auto",
     kernel: KernelType = "bartlett",
 ) -> float:
     """Compute Newey-West HAC standard error.
@@ -368,7 +370,7 @@ def newey_west_se(
 def newey_west_covariance(
     residuals: np.ndarray,
     X: np.ndarray,
-    bandwidth: Union[int, str] = "auto",
+    bandwidth: int | str = "auto",
     kernel: KernelType = "bartlett",
 ) -> np.ndarray:
     """Compute Newey-West HAC covariance matrix.
@@ -483,7 +485,7 @@ class HACEstimator:
     def __init__(
         self,
         kernel: KernelType = "bartlett",
-        bandwidth: Union[int, str] = "auto",
+        bandwidth: int | str = "auto",
         prewhiten: bool = False,
     ):
         """Initialize HACEstimator.
@@ -505,16 +507,16 @@ class HACEstimator:
         self.prewhiten = prewhiten
 
         # Fitted attributes
-        self._variance: Optional[float] = None
-        self._covariance: Optional[np.ndarray] = None
-        self._bandwidth_used: Optional[int] = None
-        self._n_samples: Optional[int] = None
+        self._variance: float | None = None
+        self._covariance: np.ndarray | None = None
+        self._bandwidth_used: int | None = None
+        self._n_samples: int | None = None
         self._is_fitted: bool = False
 
     def fit(
         self,
         residuals: np.ndarray,
-        X: Optional[np.ndarray] = None,
+        X: np.ndarray | None = None,
     ) -> "HACEstimator":
         """Fit the HAC estimator.
 

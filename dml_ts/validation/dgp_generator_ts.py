@@ -13,7 +13,8 @@ Key features:
 """
 
 from dataclasses import dataclass, field
-from typing import Literal, Optional
+from typing import Literal
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -47,9 +48,9 @@ class TimeSeriesDGPResult:
     n_units: int
     p: int
     time_index: NDArray[np.int64]
-    unit_ids: Optional[NDArray[np.int64]] = None
+    unit_ids: NDArray[np.int64] | None = None
     ar_coefs: NDArray[np.float64] = field(default_factory=lambda: np.array([]))
-    var_coefs: Optional[NDArray[np.float64]] = None
+    var_coefs: NDArray[np.float64] | None = None
     error_ar_coef: float = 0.0
 
 
@@ -90,15 +91,15 @@ class TimeSeriesDGPGenerator:
         true_effect: float,
         n_units: int = 1,
         treatment_ar_order: int = 1,
-        treatment_ar_coefs: Optional[NDArray[np.float64]] = None,
+        treatment_ar_coefs: NDArray[np.float64] | None = None,
         confounder_var_coef: float = 0.5,
         confounding_strength: float = 1.0,
-        lagged_effect_coefs: Optional[NDArray[np.float64]] = None,
+        lagged_effect_coefs: NDArray[np.float64] | None = None,
         error_ar_coef: float = 0.0,
         noise_level: float = 1.0,
         panel_fixed_effects: bool = False,
         treatment_type: Literal["continuous", "binary"] = "continuous",
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         """Initialize time series DGP generator.
 
@@ -394,7 +395,7 @@ class TimeSeriesDGPGenerator:
         T: NDArray[np.float64],
         X: NDArray[np.float64],
         unit_effect: float = 0.0,
-        time_effects: Optional[NDArray[np.float64]] = None,
+        time_effects: NDArray[np.float64] | None = None,
     ) -> NDArray[np.float64]:
         """Generate outcome with treatment effects and autocorrelated errors.
 
@@ -417,7 +418,6 @@ class TimeSeriesDGPGenerator:
         Y = self.true_effect * T.copy()
 
         # Lagged treatment effects
-        n_lags = len(self.lagged_effect_coefs)
         for lag, coef in enumerate(self.lagged_effect_coefs, start=1):
             if lag < n:
                 Y[lag:] += coef * T[:-lag]
@@ -488,7 +488,7 @@ class BreakDGPGenerator:
         break_points: list[int],
         confounding_strength: float = 1.0,
         noise_level: float = 1.0,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         """Initialize break DGP generator.
 
@@ -621,7 +621,7 @@ def create_ar_dgp(
     true_effect: float = 2.0,
     ar_coef: float = 0.5,
     confounding_strength: float = 1.0,
-    random_state: Optional[int] = None,
+    random_state: int | None = None,
 ) -> TimeSeriesDGPResult:
     """Convenience function for simple AR(1) treatment DGP.
 
@@ -654,7 +654,7 @@ def create_panel_dgp(
     p: int = 5,
     true_effect: float = 2.0,
     fixed_effects: bool = True,
-    random_state: Optional[int] = None,
+    random_state: int | None = None,
 ) -> TimeSeriesDGPResult:
     """Convenience function for panel DGP with fixed effects.
 
@@ -683,9 +683,9 @@ def create_panel_dgp(
 def create_break_dgp(
     n: int = 300,
     p: int = 5,
-    effects: Optional[list[float]] = None,
-    break_points: Optional[list[int]] = None,
-    random_state: Optional[int] = None,
+    effects: list[float] | None = None,
+    break_points: list[int] | None = None,
+    random_state: int | None = None,
 ) -> BreakDGPResult:
     """Convenience function for structural break DGP.
 

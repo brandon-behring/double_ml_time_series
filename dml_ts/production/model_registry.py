@@ -22,7 +22,7 @@ import pickle
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 
@@ -56,27 +56,27 @@ class DMLModelVersion:
     created_at: str
     model_type: str
     n_folds: int
-    nuisance_models: Dict[int, Tuple[bytes, bytes]]  # fold -> (propensity, outcome)
-    feature_names: List[str]
+    nuisance_models: dict[int, tuple[bytes, bytes]]  # fold -> (propensity, outcome)
+    feature_names: list[str]
     treatment_name: str
     outcome_name: str
-    hyperparameters: Dict[str, Any]
-    metrics: Dict[str, float] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    _feature_transformer: Optional[bytes] = None
+    hyperparameters: dict[str, Any]
+    metrics: dict[str, float] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    _feature_transformer: bytes | None = None
 
     @classmethod
     def create(
         cls,
         model_type: str,
-        nuisance_models: Dict[int, Tuple[Any, Any]],
-        feature_names: List[str],
+        nuisance_models: dict[int, tuple[Any, Any]],
+        feature_names: list[str],
         treatment_name: str,
         outcome_name: str,
-        hyperparameters: Dict[str, Any],
-        metrics: Optional[Dict[str, float]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        feature_transformer: Optional[Any] = None,
+        hyperparameters: dict[str, Any],
+        metrics: dict[str, float] | None = None,
+        metadata: dict[str, Any] | None = None,
+        feature_transformer: Any | None = None,
     ) -> DMLModelVersion:
         """
         Create a new versioned DML model.
@@ -102,7 +102,7 @@ class DMLModelVersion:
             raise ValueError("nuisance_models cannot be empty")
 
         # Serialize nuisance models
-        serialized_nuisance: Dict[int, Tuple[bytes, bytes]] = {}
+        serialized_nuisance: dict[int, tuple[bytes, bytes]] = {}
         for fold_idx, (propensity, outcome) in nuisance_models.items():
             if propensity is None or outcome is None:
                 raise ValueError(f"Fold {fold_idx} contains None model")
@@ -141,9 +141,9 @@ class DMLModelVersion:
     @staticmethod
     def _compute_hash(
         model_type: str,
-        nuisance_models: Dict[int, Tuple[bytes, bytes]],
-        feature_names: List[str],
-        hyperparameters: Dict[str, Any],
+        nuisance_models: dict[int, tuple[bytes, bytes]],
+        feature_names: list[str],
+        hyperparameters: dict[str, Any],
         timestamp: str,
     ) -> str:
         """Compute SHA-256 hash of model content for versioning."""
@@ -158,10 +158,9 @@ class DMLModelVersion:
             hasher.update(out_bytes)
         return hasher.hexdigest()
 
-    def get_nuisance_models(self, fold: Optional[int] = None) -> Union[
-        Dict[int, Tuple[Any, Any]],
-        Tuple[Any, Any],
-    ]:
+    def get_nuisance_models(
+        self, fold: int | None = None
+    ) -> dict[int, tuple[Any, Any]] | tuple[Any, Any]:
         """
         Deserialize and return nuisance models.
 
@@ -188,7 +187,7 @@ class DMLModelVersion:
             for fold_idx, (prop_bytes, out_bytes) in self.nuisance_models.items()
         }
 
-    def get_feature_transformer(self) -> Optional[Any]:
+    def get_feature_transformer(self) -> Any | None:
         """Return deserialized feature transformer, or None if not set."""
         if self._feature_transformer is None:
             return None
@@ -198,7 +197,7 @@ class DMLModelVersion:
         self,
         X: np.ndarray,
         return_std: bool = False,
-    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         """
         Predict conditional average treatment effect (CATE).
 
@@ -219,10 +218,6 @@ class DMLModelVersion:
         # A hardened inference path would usually use a meta-learner trained on
         # orthogonalized residuals. Here we provide a simplified averaging approach.
 
-        n_samples = X.shape[0]
-        cate_predictions = np.zeros((self.n_folds, n_samples))
-
-        models = self.get_nuisance_models()
         transformer = self.get_feature_transformer()
 
         if transformer is not None:
@@ -236,7 +231,7 @@ class DMLModelVersion:
             "not just nuisance models. Use InsuranceDMLPipeline.predict() instead."
         )
 
-    def save(self, path: Union[str, Path]) -> Path:
+    def save(self, path: str | Path) -> Path:
         """
         Save model version to disk.
 
@@ -281,7 +276,7 @@ class DMLModelVersion:
         return model_dir
 
     @classmethod
-    def load(cls, path: Union[str, Path]) -> DMLModelVersion:
+    def load(cls, path: str | Path) -> DMLModelVersion:
         """
         Load model version from disk.
 
@@ -306,7 +301,7 @@ class DMLModelVersion:
             metadata = json.load(f)
 
         # Load nuisance models
-        nuisance_models: Dict[int, Tuple[bytes, bytes]] = {}
+        nuisance_models: dict[int, tuple[bytes, bytes]] = {}
         for fold_idx in range(metadata["n_folds"]):
             prop_path = path / f"propensity_fold_{fold_idx}.pkl"
             out_path = path / f"outcome_fold_{fold_idx}.pkl"
@@ -369,7 +364,7 @@ class DMLModelRegistry:
         staging_version: Candidate version for promotion (or None)
     """
 
-    def __init__(self, base_path: Union[str, Path]):
+    def __init__(self, base_path: str | Path):
         """
         Initialize model registry.
 
@@ -386,9 +381,9 @@ class DMLModelRegistry:
         if self._registry_file.exists():
             with open(self._registry_file) as f:
                 state = json.load(f)
-            self.production_version: Optional[str] = state.get("production_version")
-            self.staging_version: Optional[str] = state.get("staging_version")
-            self._versions: List[str] = state.get("versions", [])
+            self.production_version: str | None = state.get("production_version")
+            self.staging_version: str | None = state.get("staging_version")
+            self._versions: list[str] = state.get("versions", [])
         else:
             self.production_version = None
             self.staging_version = None
@@ -414,7 +409,7 @@ class DMLModelRegistry:
         Returns:
             Version ID of registered model
         """
-        model_path = model.save(self.base_path)
+        model.save(self.base_path)
 
         if model.version_id not in self._versions:
             self._versions.append(model.version_id)
@@ -441,13 +436,13 @@ class DMLModelRegistry:
         model_path = self.base_path / version_id
         return DMLModelVersion.load(model_path)
 
-    def get_production(self) -> Optional[DMLModelVersion]:
+    def get_production(self) -> DMLModelVersion | None:
         """Return current production model, or None if not set."""
         if self.production_version is None:
             return None
         return self.get(self.production_version)
 
-    def get_staging(self) -> Optional[DMLModelVersion]:
+    def get_staging(self) -> DMLModelVersion | None:
         """Return current staging model, or None if not set."""
         if self.staging_version is None:
             return None
@@ -469,7 +464,7 @@ class DMLModelRegistry:
         self.staging_version = version_id
         self._save_registry()
 
-    def promote_to_production(self, version_id: Optional[str] = None) -> str:
+    def promote_to_production(self, version_id: str | None = None) -> str:
         """
         Mark a version as the registry's production slot.
 
@@ -491,16 +486,13 @@ class DMLModelRegistry:
         if version_id not in self._versions:
             raise KeyError(f"Version {version_id} not found")
 
-        # Archive previous production version
-        old_production = self.production_version
-
         self.production_version = version_id
         self.staging_version = None
         self._save_registry()
 
         return version_id
 
-    def rollback(self, to_version: Optional[str] = None) -> str:
+    def rollback(self, to_version: str | None = None) -> str:
         """
         Roll back the registry's production slot to a previous version.
 
@@ -528,17 +520,17 @@ class DMLModelRegistry:
 
         try:
             current_idx = self._versions.index(self.production_version)
-            if current_idx == 0:
-                raise ValueError("No previous version available")
-            previous_version = self._versions[current_idx - 1]
-        except ValueError:
-            raise ValueError("Production version not found in version list")
+        except ValueError as e:
+            raise ValueError("Production version not found in version list") from e
+        if current_idx == 0:
+            raise ValueError("No previous version available")
+        previous_version = self._versions[current_idx - 1]
 
         self.production_version = previous_version
         self._save_registry()
         return previous_version
 
-    def list_versions(self) -> List[Dict[str, Any]]:
+    def list_versions(self) -> list[dict[str, Any]]:
         """
         List all registered versions with metadata.
 

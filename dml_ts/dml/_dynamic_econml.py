@@ -14,16 +14,13 @@ clear, actionable error if it is missing.
 
 from __future__ import annotations
 
-from typing import List, Optional, Union
-
 import numpy as np
-from numpy.typing import NDArray
 from scipy import stats
 from sklearn.base import BaseEstimator
 
 from .dynamic_g_estimation import DynamicGEstimationResult
 
-ArrayLike = Union[np.ndarray, List[float]]
+ArrayLike = np.ndarray | list[float]
 
 
 def econml_available() -> bool:
@@ -42,10 +39,10 @@ def fit_econml_reference(
     X: ArrayLike,
     groups: ArrayLike,
     alpha: float = 0.05,
-    model_y: Optional[BaseEstimator] = None,
-    model_t: Optional[BaseEstimator] = None,
+    model_y: BaseEstimator | None = None,
+    model_t: BaseEstimator | None = None,
     cv: int = 5,
-    random_state: Optional[int] = None,
+    random_state: int | None = None,
 ) -> DynamicGEstimationResult:
     """Fit EconML ``DynamicDML`` and return a comparable result.
 

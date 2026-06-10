@@ -6,7 +6,6 @@ estimators, and future validation methods.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -40,7 +39,7 @@ class BootstrapConfig:
 
     n_bootstrap_bias: int = 1000
     n_bootstrap_ci: int = 500
-    seed: Optional[int] = None
+    seed: int | None = None
     method: str = "percentile"
 
     @classmethod

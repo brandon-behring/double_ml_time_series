@@ -6,8 +6,9 @@ LinearDML with bootstrap-based hypothesis tests for statistical and
 practical significance.
 """
 
-from typing import Dict, Any, Optional, Literal
 from datetime import datetime
+from typing import Literal
+
 import numpy as np
 from scipy import stats
 
@@ -40,7 +41,7 @@ class BiasValidation:
         self,
         n_simulations: int = 1000,
         alpha: float = 0.05,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         """Initialize validation method.
 
@@ -161,7 +162,7 @@ class BiasValidation:
             Tuple of (estimate, ci_lower, ci_upper) for coverage calculation
         """
         from econml.dml import LinearDML
-        from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+        from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
         # Configure models
         model_y = RandomForestRegressor(
@@ -355,7 +356,6 @@ class BiasValidation:
             corrected_alpha_strict = 0.01 / k_tests  # For FAIL threshold
         elif correction_method == "holm":
             # Holm-Bonferroni (sequential): Sort p-values and compare sequentially
-            p_values = sorted([bias_p_value, coverage_p_value])
             # Check if smallest p-value < α/k, then next p-value < α/(k-1), etc.
             # For simplicity, use Bonferroni-Holm adjusted thresholds
             corrected_alpha = alpha_test / k_tests  # Most conservative for first test
