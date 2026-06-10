@@ -728,6 +728,168 @@ class TestPanelDML:
         assert result_no_cluster.se > 0
         assert result_cluster.se > 0
 
+    @pytest.mark.tier2
+    def test_cluster_se_scale_on_uncorrelated_panel(self, panel_data):
+        """Cluster SE is the same order as the non-clustered SE on iid scores.
+
+        Regression test for issue #9: cluster-level influence SUMS were
+        treated as cluster means, overstating the SE by ~the effective
+        cluster size (~x17 here: n_eff/sqrt(G(G-1)) after CV trimming).
+        """
+        Y, T, X, individual_id, time_id, _ = panel_data
+
+        common = dict(
+            fixed_effects="individual",
+            model_y="ridge",
+            model_t="ridge",
+            random_state=42,
+        )
+        plain = PanelDML(cluster_se=False, **common).fit(Y, T, X, individual_id, time_id)
+        clustered = PanelDML(cluster_se=True, **common).fit(Y, T, X, individual_id, time_id)
+
+        # With no within-cluster correlation in the DGP noise, the cluster
+        # SE and the plain SE estimate the same quantity.
+        ratio = clustered.se / plain.se
+        assert 0.5 < ratio < 2.0, f"cluster/plain SE ratio {ratio:.2f} far from 1"
+
+    @pytest.mark.tier2
+    def test_cluster_se_matches_cr1_formula(self, panel_data):
+        """Cluster SE equals CR1: sqrt(G_eff/(G_eff-1) * sum_g S_g^2) / n_eff.
+
+        Regression guard for the sums-vs-means and /n_eff^2 scaling of
+        issue #9. Mirrors the production prefix alignment, so it does NOT
+        independently test cluster alignment (the correlated-panel test
+        below covers misalignment).
+        """
+        Y, T, X, individual_id, time_id, _ = panel_data
+
+        model = PanelDML(
+            fixed_effects="individual",
+            cluster_se=True,
+            model_y="ridge",
+            model_t="ridge",
+            random_state=42,
+        )
+        result = model.fit(Y, T, X, individual_id, time_id)
+
+        psi = result.influence_scores
+        n_eff = len(psi)
+        cv_start = result.lagged_rows_dropped + result.dropped_initial_rows
+        cluster_sums = []
+        for ind in np.unique(individual_id):
+            mask_eff = np.asarray(individual_id == ind)[cv_start:]
+            if mask_eff.any():
+                cluster_sums.append(np.sum(psi[mask_eff]))
+        cluster_sums_arr = np.array(cluster_sums)
+        g_eff = len(cluster_sums_arr)
+
+        expected_se = np.sqrt((g_eff / (g_eff - 1)) * np.sum(cluster_sums_arr**2)) / n_eff
+        assert_allclose(result.se, expected_se, rtol=1e-12)
+
+    @pytest.mark.tier2
+    def test_cluster_se_exceeds_plain_se_on_correlated_panel(self):
+        """Clustered SE materially exceeds the plain SE under within-cluster
+        correlated noise.
+
+        Functional direction check that also catches cluster MISALIGNMENT:
+        scrambling cluster assignments deflates the clustered SE back toward
+        the plain SE, failing this bound.
+        """
+        np.random.seed(99)
+        n_ind, n_per = 40, 15
+        n = n_ind * n_per
+        individual_id = np.repeat(np.arange(n_ind), n_per)
+        time_id = np.tile(np.arange(n_per), n_ind)
+
+        def ar_noise() -> np.ndarray:
+            e = np.random.randn(n_ind, n_per)
+            out = np.zeros((n_ind, n_per))
+            out[:, 0] = e[:, 0]
+            for t in range(1, n_per):
+                out[:, t] = 0.95 * out[:, t - 1] + e[:, t]
+            return out.ravel()
+
+        X = np.random.randn(n, 2)
+        T = 0.5 * X[:, 0] + ar_noise()
+        Y = 3.0 * T + X[:, 0] + ar_noise()
+
+        common = dict(
+            fixed_effects="individual",
+            model_y="ridge",
+            model_t="ridge",
+            random_state=42,
+        )
+        plain = PanelDML(cluster_se=False, **common).fit(Y, T, X, individual_id, time_id)
+        clustered = PanelDML(cluster_se=True, **common).fit(Y, T, X, individual_id, time_id)
+
+        ratio = clustered.se / plain.se
+        assert ratio > 1.15, f"cluster/plain SE ratio {ratio:.2f} — clustering not detected"
+
+    @pytest.mark.tier2
+    def test_cluster_se_single_cluster_raises(self):
+        """A single cluster cannot support cluster-robust SEs: fail loud."""
+        np.random.seed(7)
+        n_periods = 100
+        individual_id = np.zeros(n_periods, dtype=int)
+        time_id = np.arange(n_periods)
+        X = np.random.randn(n_periods, 2)
+        T = 0.5 * X[:, 0] + np.random.randn(n_periods)
+        Y = 2.0 * T + X[:, 0] + np.random.randn(n_periods)
+
+        model = PanelDML(
+            fixed_effects="individual",
+            cluster_se=True,
+            model_y="ridge",
+            model_t="ridge",
+            random_state=42,
+        )
+        with pytest.raises(ValueError, match="at least 2 clusters"):
+            model.fit(Y, T, X, individual_id, time_id)
+
+    @pytest.mark.tier2
+    def test_cluster_se_fully_trimmed_cluster_raises(self):
+        """A cluster swallowed whole by CV trimming must not silently yield
+        se~0, t=0, p=1.0 (review finding on issue #9): with only one cluster
+        retaining observations, fail loud."""
+        np.random.seed(11)
+        n = 120
+        # Individual-major layout: cluster 0 (12 rows) sits entirely inside
+        # the ~n/6 rows dropped by the first CV fold.
+        individual_id = np.concatenate([np.zeros(12, dtype=int), np.ones(108, dtype=int)])
+        time_id = np.concatenate([np.arange(12), np.arange(108)])
+        X = np.random.randn(n, 2)
+        T = 0.5 * X[:, 0] + np.random.randn(n)
+        Y = 2.0 * T + X[:, 0] + np.random.randn(n)
+
+        model = PanelDML(
+            fixed_effects="individual",
+            cluster_se=True,
+            model_y="ridge",
+            model_t="ridge",
+            random_state=42,
+        )
+        with pytest.raises(ValueError, match="retained after lag/temporal-CV trimming"):
+            with pytest.warns(RuntimeWarning, match="clusters have no observations"):
+                model.fit(Y, T, X, individual_id, time_id)
+
+    @pytest.mark.tier2
+    def test_cluster_se_warns_on_partially_trimmed_clusters(self, panel_data):
+        """Clusters dropped by CV trimming are disclosed, never silent.
+
+        With this fixture's individual-major layout, the first ~8 of 50
+        individuals fall entirely inside the dropped CV prefix.
+        """
+        Y, T, X, individual_id, time_id, _ = panel_data
+        model = PanelDML(
+            fixed_effects="individual",
+            cluster_se=True,
+            model_y="ridge",
+            model_t="ridge",
+            random_state=42,
+        )
+        with pytest.warns(RuntimeWarning, match="clusters have no observations"):
+            model.fit(Y, T, X, individual_id, time_id)
+
 
 # ============================================================================
 # Integration Tests
