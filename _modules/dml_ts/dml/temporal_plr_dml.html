@@ -1308,24 +1308,59 @@
             <span class="n">unique_individuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">individual_id</span><span class="p">)</span>
             <span class="n">n_clusters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_individuals</span><span class="p">)</span>
 
-            <span class="c1"># Compute cluster-level influence sums</span>
-            <span class="n">cluster_psi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_clusters</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_individuals</span><span class="p">):</span>
-                <span class="n">mask</span> <span class="o">=</span> <span class="n">individual_id</span> <span class="o">==</span> <span class="n">ind</span>
-                <span class="c1"># Align mask with the fitted sample after temporal-CV filtering.</span>
-                <span class="n">n_eff</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">influence_scores</span><span class="p">)</span>
-                <span class="n">cv_start</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">lagged_rows_dropped</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="n">dropped_initial_rows</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">-</span> <span class="n">cv_start</span> <span class="o">==</span> <span class="n">n_eff</span><span class="p">:</span>
-                    <span class="n">mask_eff</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="n">cv_start</span><span class="p">:]</span>
-                <span class="k">elif</span> <span class="n">n_eff</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
-                    <span class="n">mask_eff</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="o">-</span><span class="n">n_eff</span><span class="p">:]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">mask_eff</span> <span class="o">=</span> <span class="n">mask</span>
-                <span class="n">cluster_psi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">influence_scores</span><span class="p">[</span><span class="n">mask_eff</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">n_clusters</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cluster-robust SEs require at least 2 clusters, got </span><span class="si">{</span><span class="n">n_clusters</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="s2">&quot;Use cluster_se=False for a single cross-sectional unit.&quot;</span>
+                <span class="p">)</span>
 
-            <span class="c1"># Cluster-robust variance</span>
-            <span class="n">cluster_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">cluster_psi</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_clusters</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_clusters</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-            <span class="n">cluster_se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cluster_var</span> <span class="o">/</span> <span class="n">n_clusters</span><span class="p">))</span>
+            <span class="c1"># Compute cluster-level influence sums. The rows dropped by lag</span>
+            <span class="c1"># construction and temporal-CV filtering form a contiguous prefix</span>
+            <span class="c1"># under the hardcoded time_series_split strategy, so clusters</span>
+            <span class="c1"># align as mask[cv_start:]. (Explicit retained-row indices on the</span>
+            <span class="c1"># result will replace this bookkeeping in the B1 result refactor.)</span>
+            <span class="n">n_eff</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">influence_scores</span><span class="p">)</span>
+            <span class="n">cv_start</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">lagged_rows_dropped</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="n">dropped_initial_rows</span>
+            <span class="n">cluster_sums</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">n_empty_clusters</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">unique_individuals</span><span class="p">:</span>
+                <span class="n">mask_eff</span> <span class="o">=</span> <span class="p">(</span><span class="n">individual_id</span> <span class="o">==</span> <span class="n">ind</span><span class="p">)[</span><span class="n">cv_start</span><span class="p">:]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">mask_eff</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="c1"># Cluster fell entirely inside the dropped prefix: it</span>
+                    <span class="c1"># contributes nothing to theta-hat and must not count</span>
+                    <span class="c1"># toward the cluster degrees of freedom.</span>
+                    <span class="n">n_empty_clusters</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+                <span class="n">cluster_sums</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">influence_scores</span><span class="p">[</span><span class="n">mask_eff</span><span class="p">])))</span>
+
+            <span class="n">n_clusters_eff</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster_sums</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">n_empty_clusters</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_empty_clusters</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">n_clusters</span><span class="si">}</span><span class="s2"> clusters have no observations &quot;</span>
+                    <span class="s2">&quot;retained after lag/temporal-CV trimming; cluster-robust inference &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;uses the remaining </span><span class="si">{</span><span class="n">n_clusters_eff</span><span class="si">}</span><span class="s2"> clusters.&quot;</span><span class="p">,</span>
+                    <span class="ne">RuntimeWarning</span><span class="p">,</span>
+                    <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">n_clusters_eff</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cluster-robust SEs require at least 2 clusters with observations &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;retained after lag/temporal-CV trimming, got </span><span class="si">{</span><span class="n">n_clusters_eff</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;(of </span><span class="si">{</span><span class="n">n_clusters</span><span class="si">}</span><span class="s2"> nominal). Use cluster_se=False or reduce n_folds.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Cluster-robust (CR1) variance of theta-hat: theta_hat - theta</span>
+            <span class="c1"># ~= mean(psi) over the n_eff fitted observations, so</span>
+            <span class="c1"># Var = G/(G-1) * sum_g S_g^2 / n_eff^2 where S_g are the</span>
+            <span class="c1"># within-cluster SUMS of psi (already centered: sum_i psi_i = 0</span>
+            <span class="c1"># by FWL construction) and G counts retained clusters. Treating</span>
+            <span class="c1"># the sums as cluster means overstated the SE by ~the effective</span>
+            <span class="c1"># cluster size (issue #9).</span>
+            <span class="n">cluster_psi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cluster_sums</span><span class="p">)</span>
+            <span class="n">cluster_var</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">n_clusters_eff</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_clusters_eff</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cluster_psi</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_eff</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">cluster_se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cluster_var</span><span class="p">))</span>
 
             <span class="c1"># Update result with cluster SE</span>
             <span class="n">z_crit</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.975</span><span class="p">)</span>
