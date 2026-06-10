@@ -56,7 +56,7 @@ def verify_imports() -> Tuple[List[str], List[Tuple[str, str]]]:
         # Testing
         ("pytest", "pytest"),
         # Code quality
-        ("black", "Black formatter"),
+        ("ruff", "ruff linter/formatter"),
         ("mypy", "mypy type checker"),
     ]
 
@@ -95,7 +95,7 @@ def main() -> int:
             print(f"  ✗ {package}")
             print(f"    Error: {error}")
         print()
-        print("To fix: Activate venv and run 'pip install -r requirements.txt'")
+        print('To fix: VIRTUAL_ENV=venv uv pip install -e ".[dev,docs]"')
         print()
         return 1
 

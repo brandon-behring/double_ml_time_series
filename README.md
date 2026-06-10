@@ -170,7 +170,8 @@ docs/archive/            Superseded reports and roadmaps
 venv/bin/python -m pytest --collect-only -q
 venv/bin/python -m pytest -m tier1 --no-cov -q
 venv/bin/python -m pytest -m "tier1 or tier2" --no-cov -q
-venv/bin/python -m black --check dml_ts/ test/ examples/
+venv/bin/python -m ruff check dml_ts/ test/ examples/
+venv/bin/python -m ruff format --check dml_ts/ test/ examples/
 venv/bin/python -m mypy dml_ts/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
 ```
 

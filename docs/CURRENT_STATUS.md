@@ -60,7 +60,7 @@ Every gate below was re-run in this pass (Python via repo venv, 3.13.5):
 - Test collection: **803 collected** (+1 leakage regression test, F5).
 - Tier 1: **321 passed**, 482 deselected.
 - Tier 1 + Tier 2: **622 passed**, 181 deselected, 23 warnings.
-- Black: pass, 82 files unchanged.
+- Lint/format: ruff check + `ruff format --check` pass (tooling migrated from black, 2026-06-10).
 - Mypy: **pass** — `Success: no issues found in 37 source files`. After the R1
   reconciliation, local venv, pre-commit hook, and CI all run mypy 2.1.0 on Python 3.13.
 - Coverage: tier1+2 = **74.89%**; gate raised to `fail_under = 70` (F15).
@@ -72,7 +72,7 @@ Every gate below was re-run in this pass (Python via repo venv, 3.13.5):
 - Drift guard: `scripts/check_tex_mdx_drift.py` ✓ exit 0 (Ch1 MDX `source_sha256`
   matches `chapters/chapter_01.tex`); 7 tier1 tests; enforced in pre-commit + CI.
 
-CI gates the full stack: `tests.yml` (black + mypy + collect + tier1 + tier1/2 +
+CI gates the full stack: `tests.yml` (ruff + mypy + collect + tier1 + tier1/2 +
 an examples job), `book.yml` (LuaLaTeX+biber), `docs.yml` (Sphinx `-W` + Pages),
 `nightly.yml` (tier3/tier4 + coverage), `deploy-web.yml` (web validate/build/deploy).
 

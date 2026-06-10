@@ -403,6 +403,23 @@ class TestDMLModelRegistry:
             assert rolled_back == versions[0]
             assert registry.production_version == versions[0]
 
+    def test_rollback_first_version_raises(self):
+        """Rollback with no earlier version fails loud with the right message.
+
+        Regression guard: this branch previously raised inside a try whose
+        except swallowed it and re-raised with the wrong message
+        ('Production version not found in version list').
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            registry = DMLModelRegistry(tmpdir)
+
+            v1 = self._create_test_version()
+            v1_id = registry.register(v1)
+            registry.promote_to_production(v1_id)
+
+            with pytest.raises(ValueError, match="No previous version"):
+                registry.rollback()
+
     def test_list_versions(self):
         """Test listing all versions."""
         with tempfile.TemporaryDirectory() as tmpdir:

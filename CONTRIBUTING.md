@@ -14,8 +14,11 @@ VIRTUAL_ENV=venv uv pip install -e ".[dev,docs]"
 venv/bin/pre-commit install --hook-type pre-commit --hook-type pre-push
 ```
 
-`uv.lock` is the reproducibility source of truth. The `temporalcv` dependency is
-a git tag pin (`@v2.0.0`) — environments need git access to resolve it.
+`uv.lock` records the locked resolution (refresh with `uv lock` after dependency
+changes); the install commands above and CI resolve fresh from `pyproject.toml`,
+which is why the gate tools are pinned exactly there (`ruff==0.15.16`,
+`mypy==2.1.0`). The `temporalcv` dependency is a git tag pin (`@v2.0.0`) —
+environments need git access to resolve it.
 
 ## Gates (run from the repo venv)
 
@@ -34,7 +37,10 @@ MDX twin (`scripts/check_tex_mdx_drift.py` enforces this).
 
 ## Test tiers
 
-Every test must carry exactly one tier marker:
+Every test must carry a tier marker (collection-time enforcement lands with the
+B0 tier-enforcement PR). Class- and method-level markers may overlap; the most
+specific (highest) tier wins — `test/conftest.py` resolves tier4 > tier3 >
+tier2 > tier1:
 
 - `tier1` — unit, no estimation, <100ms (pre-commit hook)
 - `tier2` — integration, light estimation, <60s (pre-push hook + PR CI)
@@ -50,7 +56,9 @@ skipped windows) must raise or warn loudly — fabricating neutral-looking outpu
 ## Versioning policy (pre-PyPI)
 
 This package has no external consumers; the book's code listings are the
-compatibility contract and move atomically with the code in the same PR.
+compatibility contract, and the policy is that they move atomically with the
+code in the same PR (the standing pre-policy violations in chapters 6 and 8
+are tracked in #12).
 Under this policy, **minor versions may remove internal or companion APIs**
 (strict semver resumes at the PyPI debut). Versions must agree across
 `pyproject.toml`, `docs/sphinx/conf.py`, `CITATION.cff`, and

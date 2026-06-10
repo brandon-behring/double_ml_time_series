@@ -10,8 +10,8 @@ tests, and primary literature outrank this file if they ever disagree.
 |---|---|---|
 | Partially linear outcome | `Y = theta*T + g(X) + e`, scalar constant `theta` | Not testable; chapter 3 discusses misspecification |
 | Unconfoundedness given controls | `E[e | T, X] = 0` (with lags where applicable) | Not testable; sensitivity tools in `dml_ts/sensitivity/` |
-| Overlap / treatment variation | residualized T retains variation | RAISES when residual variation ~0; WARNS when weak |
-| Nuisance learnability | `m(X)`, `l(X)` estimable at adequate rates | WARNS on poor cross-validated nuisance R² |
+| Overlap / treatment variation | residualized T retains variation | ALL estimators RAISE when residual variation ~0; TemporalPLRDML additionally WARNS when weak (the others stay silent today) |
+| Nuisance learnability | `m(X)`, `l(X)` estimable at adequate rates | TemporalPLRDML WARNS on poor cross-validated nuisance R² (threshold -0.25); `double_ml`/FWL/Robinson compute R² but do not warn |
 
 ## `double_ml` (cross-sectional / i.i.d.-style)
 
@@ -49,8 +49,9 @@ tests, and primary literature outrank this file if they ever disagree.
 
 - **Linear SNMM with constant (non-heterogeneous) period-specific blips**
   `theta_1..theta_m` (chapter 6); recursive Lewis-Syrgkanis g-estimation.
-- Sequential conditional exogeneity at every period; joint sandwich variance;
-  optional EconML `DynamicDML` cross-check is gated (tier3/tier4).
+- Sequential conditional exogeneity at every period; joint sandwich variance
+  (panel mode; the single-series mode uses a per-stack HAC sandwich); optional
+  EconML `DynamicDML` cross-check is gated (tier3, nightly lane).
 - Heterogeneous `theta_t(X)` is explicitly future work — do not claim it.
 
 ## Data layer

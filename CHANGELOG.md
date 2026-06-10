@@ -51,14 +51,18 @@ First stable release of the causal-layer API: the headline estimators
 
 ### Changed
 
-- Lint/format tooling migrated black -> ruff (format + lint, one pinned version
-  across dev extras, CI, and pre-commit), aligning with the temporalcv ecosystem.
-  Includes a mechanical modernization pass (PEP 604/585 annotations, import
-  sorting, exception chaining via `raise ... from e`).
+- Lint/format tooling migrated black -> ruff (`ruff==0.15.16` pinned exactly in
+  the dev extra; CI and pre-commit both run that pin), aligning with the
+  temporalcv ecosystem. Includes a mechanical modernization pass (~630 autofixes:
+  PEP 604/585 annotations, import sorting, formatting) plus targeted residue
+  fixes (exception chaining via `raise ... from e`, a previously masked rollback
+  error message in the model registry, silently dropped OJ rows now warned).
 
 ## [0.1.0] - 2026-06-01
 
-Initial book-companion baseline: FWL, Robinson, and cross-sectional `double_ml`;
+Baseline as of the `src.*` -> `dml_ts` namespace migration (development began
+2025-11; the 0.1.0 version string predates this date). Initial book-companion
+baseline: FWL, Robinson, and cross-sectional `double_ml`;
 `TemporalPLRDML` with `RollingWindowDML`/`PanelDML` companions;
 `DynamicGEstimationDML` (recursive dynamic g-estimation, Lewis-Syrgkanis);
 time-series CV helpers; HAC/Newey-West inference; FRED and orange-juice loaders;

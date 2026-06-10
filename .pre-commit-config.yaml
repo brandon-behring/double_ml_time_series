@@ -10,7 +10,7 @@ repos:
       # version (the dev extra in pyproject.toml).
       - id: ruff-check
         name: ruff lint (autofix)
-        entry: venv/bin/python -m ruff check --fix dml_ts/ test/ examples/
+        entry: venv/bin/python -m ruff check --fix --exit-non-zero-on-fix dml_ts/ test/ examples/
         language: system
         pass_filenames: false
         types: [python]
