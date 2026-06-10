@@ -14,9 +14,8 @@ The validation criteria are:
 
 import numpy as np
 import pytest
-from scipy import stats
 
-from dml_ts.dml.double_ml import double_ml, compare_robinson_vs_dml, DMLResult
+from dml_ts.dml.double_ml import DMLResult, double_ml
 from dml_ts.dml.robinson import robinson_estimator
 
 
@@ -26,7 +25,7 @@ class TestDMLBasic:
 
     def test_dml_imports(self):
         """Verify DML module imports correctly."""
-        from dml_ts.dml import double_ml, DMLResult
+        from dml_ts.dml import DMLResult, double_ml
 
         assert callable(double_ml)
         assert DMLResult is not None
@@ -106,7 +105,7 @@ class TestDMLMonteCarlo:
         ses = []
         coverages = []
 
-        for i in range(n_sims):
+        for _i in range(n_sims):
             # Generate data with moderate nonlinearity
             X = np.random.randn(n_obs, 3)
             T = 0.5 * X[:, 0] + 0.3 * X[:, 1] + np.random.randn(n_obs)
@@ -176,7 +175,7 @@ class TestDMLVsRobinson:
 
         dml_coverages = []
 
-        for i in range(n_sims):
+        for _i in range(n_sims):
             X = np.random.randn(n_obs, 5)  # More features than needed
             T = 0.3 * X[:, 0] + np.random.randn(n_obs)
             Y = true_theta * T + np.sin(X[:, 0]) + np.random.randn(n_obs)
@@ -199,7 +198,7 @@ class TestDMLVsRobinson:
         robinson_biases = []
         dml_biases = []
 
-        for i in range(n_sims):
+        for _i in range(n_sims):
             X = np.random.randn(n_obs, 3)
             T = 0.5 * X[:, 0] + np.random.randn(n_obs)
             Y = true_theta * T + np.sin(X[:, 0]) + X[:, 1] ** 2 + np.random.randn(n_obs)

@@ -144,7 +144,7 @@ class TestNaiveOLS:
         assert result.metadata["dgp_n"] == 500
         assert result.metadata["dgp_p"] == 3
         assert result.metadata["dgp_true_effect"] == 2.5
-        assert result.metadata["controls_used"] == False
+        assert not result.metadata["controls_used"]
 
     def test_result_contains_all_required_fields(self):
         """Test that result has all required fields."""
@@ -261,7 +261,7 @@ class TestOLSWithControls:
         assert result.metadata["dgp_n"] == 500
         assert result.metadata["dgp_p"] == 3
         assert result.metadata["dgp_true_effect"] == 2.5
-        assert result.metadata["controls_used"] == True
+        assert result.metadata["controls_used"]
 
     def test_result_contains_all_required_fields(self):
         """Test that result has all required fields."""

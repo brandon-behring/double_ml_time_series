@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from dml_ts.validation.dgp_generator import DGPGenerator
-from dml_ts.validation.ipw_baseline import IPWEstimator, AugmentedIPW
+from dml_ts.validation.ipw_baseline import AugmentedIPW, IPWEstimator
 from dml_ts.validation.validation_result import ValidationResult
 
 

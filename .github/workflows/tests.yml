@@ -23,8 +23,10 @@ jobs:
         run: |
           pip install -e ".[dev]"
 
-      - name: Check formatting (Black)
-        run: python -m black --check dml_ts/ test/ examples/
+      - name: Lint and check formatting (ruff)
+        run: |
+          python -m ruff check dml_ts/ test/ examples/
+          python -m ruff format --check dml_ts/ test/ examples/
 
       - name: Type check (mypy)
         run: python -m mypy dml_ts/ --ignore-missing-imports --no-strict-optional --explicit-package-bases

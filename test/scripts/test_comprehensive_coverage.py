@@ -5,13 +5,13 @@ Tests the scenario creation, coverage calculation, and result categorization
 for scripts/comprehensive_coverage_test.py.
 """
 
-import pytest
-import numpy as np
-import pandas as pd
-from pathlib import Path
+import shutil
 import sys
 import tempfile
-import shutil
+from pathlib import Path
+
+import pandas as pd
+import pytest
 
 # Add scripts directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
@@ -214,9 +214,9 @@ class TestCoverageStressTest:
         result = run_coverage_stress_test(output_dir=temp_output_dir, n_simulations=n_sims)
 
         valid = result[result["status"] != "ERROR"]
-        assert (
-            valid["n_simulations"] == n_sims
-        ).all(), f"All scenarios should use n_simulations={n_sims}"
+        assert (valid["n_simulations"] == n_sims).all(), (
+            f"All scenarios should use n_simulations={n_sims}"
+        )
 
 
 @pytest.mark.tier4
@@ -249,7 +249,7 @@ class TestCoverageCategorization:
 
             # coverage_pct should be properly formatted percentage
             assert row["coverage_pct"] == f"{coverage:.1%}", (
-                f"coverage_pct '{row['coverage_pct']}' doesn't match " f"actual_coverage {coverage}"
+                f"coverage_pct '{row['coverage_pct']}' doesn't match actual_coverage {coverage}"
             )
 
             # Verify categorization thresholds are distinguishable
@@ -270,7 +270,7 @@ class TestExitCodes:
             Path(__file__).parent.parent.parent / "scripts" / "comprehensive_coverage_test.py"
         )
 
-        with open(script_path, "r") as f:
+        with open(script_path) as f:
             script_content = f.read()
 
         # Check for exit code definitions

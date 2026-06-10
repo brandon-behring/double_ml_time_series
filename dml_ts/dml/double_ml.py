@@ -49,7 +49,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import Literal, Optional, Union, cast
+from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -281,11 +281,9 @@ def double_ml(
     T: NDArray[np.float64],
     X: NDArray[np.float64],
     n_folds: int = 5,
-    model: Optional[
-        Union[BaseEstimator, Literal["ridge", "random_forest", "gradient_boosting"]]
-    ] = None,
-    outcome_model: Optional[BaseEstimator] = None,
-    treatment_model: Optional[BaseEstimator] = None,
+    model: BaseEstimator | Literal["ridge", "random_forest", "gradient_boosting"] | None = None,
+    outcome_model: BaseEstimator | None = None,
+    treatment_model: BaseEstimator | None = None,
     alpha: float = 0.05,
     random_state: int = 42,
 ) -> DMLResult:
@@ -435,7 +433,7 @@ def compare_robinson_vs_dml(
     Y: NDArray[np.float64],
     T: NDArray[np.float64],
     X: NDArray[np.float64],
-    true_theta: Optional[float] = None,
+    true_theta: float | None = None,
     n_folds: int = 5,
 ) -> dict:
     """Compare Robinson (no cross-fitting) vs DML (with cross-fitting).
@@ -516,7 +514,7 @@ def demonstrate_cross_fitting_benefit(seed: int = 42, n_sims: int = 100) -> None
     dml_thetas_list: list[float] = []
     dml_coverages: list[bool] = []
 
-    for i in range(n_sims):
+    for _i in range(n_sims):
         X = np.random.randn(n_obs, 3)
         T = 0.5 * X[:, 0] + X[:, 1] + np.random.randn(n_obs)
         Y = true_theta * T + np.sin(X[:, 0]) + X[:, 1] ** 2 + np.random.randn(n_obs)
@@ -541,7 +539,7 @@ def demonstrate_cross_fitting_benefit(seed: int = 42, n_sims: int = 100) -> None
     )
     print(f"  Std Dev:          {np.std(robinson_thetas):.4f}         {np.std(dml_thetas):.4f}")
     print(
-        f"  RMSE:             {np.sqrt(np.mean((robinson_thetas - true_theta)**2)):.4f}         {np.sqrt(np.mean((dml_thetas - true_theta)**2)):.4f}"
+        f"  RMSE:             {np.sqrt(np.mean((robinson_thetas - true_theta) ** 2)):.4f}         {np.sqrt(np.mean((dml_thetas - true_theta) ** 2)):.4f}"
     )
     print(f"  95% CI Coverage:  N/A*           {np.mean(dml_coverages):.1%}")
     print()

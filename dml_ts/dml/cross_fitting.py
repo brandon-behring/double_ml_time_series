@@ -23,12 +23,14 @@ Usage:
     ...     pred = model.predict(X[test_idx])
 """
 
-from typing import Any, Iterator, List, Optional, Tuple, Union
+from collections.abc import Iterator
 from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 from sklearn.model_selection import BaseCrossValidator
 
-ArrayLike = Union[np.ndarray, List[float]]
+ArrayLike = np.ndarray | list[float]
 
 
 @dataclass
@@ -99,9 +101,9 @@ class TimeSeriesCrossValidator(BaseCrossValidator):
         n_splits: int = 5,
         gap: int = 0,
         purge_length: int = 0,
-        test_size: Optional[int] = None,
+        test_size: int | None = None,
         expanding: bool = True,
-        min_train_size: Optional[int] = None,
+        min_train_size: int | None = None,
     ):
         """Initialize TimeSeriesCrossValidator.
 
@@ -133,10 +135,10 @@ class TimeSeriesCrossValidator(BaseCrossValidator):
     def split(
         self,
         X: ArrayLike,
-        y: Optional[ArrayLike] = None,
-        groups: Optional[ArrayLike] = None,
-        time_index: Optional[ArrayLike] = None,
-    ) -> Iterator[Tuple[np.ndarray, np.ndarray]]:
+        y: ArrayLike | None = None,
+        groups: ArrayLike | None = None,
+        time_index: ArrayLike | None = None,
+    ) -> Iterator[tuple[np.ndarray, np.ndarray]]:
         """Generate train/test indices for each fold.
 
         Args:
@@ -199,7 +201,7 @@ class TimeSeriesCrossValidator(BaseCrossValidator):
         fold_idx: int,
         test_size: int,
         min_train_size: int,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Calculate train/test indices for a single fold.
 
         Args:
@@ -242,9 +244,9 @@ class TimeSeriesCrossValidator(BaseCrossValidator):
 
     def get_n_splits(
         self,
-        X: Optional[ArrayLike] = None,
-        y: Optional[ArrayLike] = None,
-        groups: Optional[ArrayLike] = None,
+        X: ArrayLike | None = None,
+        y: ArrayLike | None = None,
+        groups: ArrayLike | None = None,
     ) -> int:
         """Return the number of splitting iterations.
 
@@ -261,7 +263,7 @@ class TimeSeriesCrossValidator(BaseCrossValidator):
     def get_fold_info(
         self,
         X: ArrayLike,
-    ) -> List[CVFold]:
+    ) -> list[CVFold]:
         """Get detailed information about all folds.
 
         Args:
@@ -327,9 +329,9 @@ class BlockedTimeSeriesCV(BaseCrossValidator):
     def __init__(
         self,
         n_splits: int = 5,
-        block_size: Optional[int] = None,
+        block_size: int | None = None,
         gap_blocks: int = 1,
-        test_blocks: Optional[int] = None,
+        test_blocks: int | None = None,
     ):
         """Initialize BlockedTimeSeriesCV.
 
@@ -355,9 +357,9 @@ class BlockedTimeSeriesCV(BaseCrossValidator):
     def split(
         self,
         X: ArrayLike,
-        y: Optional[ArrayLike] = None,
-        groups: Optional[ArrayLike] = None,
-    ) -> Iterator[Tuple[np.ndarray, np.ndarray]]:
+        y: ArrayLike | None = None,
+        groups: ArrayLike | None = None,
+    ) -> Iterator[tuple[np.ndarray, np.ndarray]]:
         """Generate blocked train/test indices.
 
         Args:
@@ -424,9 +426,9 @@ class BlockedTimeSeriesCV(BaseCrossValidator):
 
     def get_n_splits(
         self,
-        X: Optional[ArrayLike] = None,
-        y: Optional[ArrayLike] = None,
-        groups: Optional[ArrayLike] = None,
+        X: ArrayLike | None = None,
+        y: ArrayLike | None = None,
+        groups: ArrayLike | None = None,
     ) -> int:
         """Return the number of splits."""
         return self.n_splits
@@ -490,10 +492,10 @@ class PurgedGroupTimeSeriesCV(BaseCrossValidator):
     def split(
         self,
         X: ArrayLike,
-        y: Optional[ArrayLike] = None,
-        groups: Optional[ArrayLike] = None,
-        event_spans: Optional[ArrayLike] = None,
-    ) -> Iterator[Tuple[np.ndarray, np.ndarray]]:
+        y: ArrayLike | None = None,
+        groups: ArrayLike | None = None,
+        event_spans: ArrayLike | None = None,
+    ) -> Iterator[tuple[np.ndarray, np.ndarray]]:
         """Generate purged train/test indices.
 
         For each fold:
@@ -540,9 +542,9 @@ class PurgedGroupTimeSeriesCV(BaseCrossValidator):
 
     def get_n_splits(
         self,
-        X: Optional[ArrayLike] = None,
-        y: Optional[ArrayLike] = None,
-        groups: Optional[ArrayLike] = None,
+        X: ArrayLike | None = None,
+        y: ArrayLike | None = None,
+        groups: ArrayLike | None = None,
     ) -> int:
         """Return the number of splits."""
         return self.n_splits

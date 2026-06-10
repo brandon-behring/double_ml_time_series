@@ -14,7 +14,6 @@ Usage:
 
 import tempfile
 
-import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 
 from dml_ts.dml import double_ml
@@ -78,7 +77,7 @@ def main() -> None:
 
         dummy_propensity = Ridge().fit(train_data.X[:100], train_data.T[:100])
         dummy_outcome = Ridge().fit(train_data.X[:100], train_data.Y[:100])
-        nuisance = {i: (dummy_propensity, dummy_outcome) for i in range(5)}
+        nuisance = dict.fromkeys(range(5), (dummy_propensity, dummy_outcome))
 
         version = DMLModelVersion.create(
             model_type="double_ml",

@@ -29,9 +29,10 @@ Usage:
     >>> print(f"Status: {result.status}")
 """
 
-from typing import Dict, Any, Optional, Literal, Tuple
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Literal
+
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -69,7 +70,7 @@ class ReplicationResult:
     status: Literal["MATCH", "MISMATCH"]
     tolerance: float
     timestamp: datetime
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 class FourZeroOneKReplication:
@@ -101,8 +102,8 @@ class FourZeroOneKReplication:
 
     def __init__(
         self,
-        data_path: Optional[str] = None,
-        random_state: Optional[int] = None,
+        data_path: str | None = None,
+        random_state: int | None = None,
         tolerance: float = 0.15,
     ):
         """Initialize 401(k) replication module.
@@ -116,7 +117,7 @@ class FourZeroOneKReplication:
         self.random_state = random_state
         self.tolerance = tolerance
         self._rng = np.random.RandomState(random_state)
-        self._data: Optional[pd.DataFrame] = None
+        self._data: pd.DataFrame | None = None
         self._Y = None
         self._T = None
         self._X = None
@@ -147,16 +148,16 @@ class FourZeroOneKReplication:
                 from doubleml.datasets import fetch_401K
 
                 self._data = fetch_401K(return_type="DataFrame")
-            except ImportError:
+            except ImportError as e:
                 raise ImportError(
                     "doubleml package required for dataset loading. "
                     "Install with: pip install doubleml"
-                )
+                ) from e
 
         assert self._data is not None
         return self._data
 
-    def preprocess_data(self, treatment: str = "e401") -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def preprocess_data(self, treatment: str = "e401") -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Preprocess 401(k) data for DML estimation.
 
         Args:
@@ -197,7 +198,7 @@ class FourZeroOneKReplication:
         return self._Y, self._T, self._X
 
     def replicate_plr_rf(
-        self, treatment: str = "e401", n_estimators: int = 500, max_depth: Optional[int] = None
+        self, treatment: str = "e401", n_estimators: int = 500, max_depth: int | None = None
     ) -> ReplicationResult:
         """Replicate PLR with Random Forest (primary validation).
 
@@ -221,7 +222,7 @@ class FourZeroOneKReplication:
             True
         """
         from econml.dml import LinearDML
-        from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+        from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
         # Load and preprocess data
         Y, T, X = self.preprocess_data(treatment=treatment)
@@ -355,7 +356,7 @@ class FourZeroOneKReplication:
         std_error: float,
         ci_lower: float,
         ci_upper: float,
-        metadata: Dict[str, Any],
+        metadata: dict[str, Any],
     ) -> ReplicationResult:
         """Compare estimated ATE with published results.
 

@@ -4,9 +4,9 @@ Tests the RosenbaumBounds class to ensure correct computation of
 critical gamma, p-values, and sensitivity interpretations.
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-import matplotlib.pyplot as plt
 
 from dml_ts.sensitivity.rosenbaum import (
     RosenbaumBounds,

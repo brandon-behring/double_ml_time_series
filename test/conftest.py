@@ -23,9 +23,7 @@ os.environ.setdefault("DML_N_JOBS", "1")
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -165,7 +163,7 @@ def tier4_config() -> TierConfig:
 
 
 @pytest.fixture
-def real_401k_data() -> Optional[pd.DataFrame]:
+def real_401k_data() -> pd.DataFrame | None:
     """Load cached 401(k) dataset from test/fixtures/.
 
     Returns None if the cached file does not exist (network tests skipped).

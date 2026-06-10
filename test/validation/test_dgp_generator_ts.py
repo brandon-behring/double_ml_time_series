@@ -13,17 +13,17 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-pytestmark = pytest.mark.tier2
-
 from dml_ts.validation.dgp_generator_ts import (
-    TimeSeriesDGPGenerator,
-    TimeSeriesDGPResult,
     BreakDGPGenerator,
     BreakDGPResult,
+    TimeSeriesDGPGenerator,
+    TimeSeriesDGPResult,
     create_ar_dgp,
-    create_panel_dgp,
     create_break_dgp,
+    create_panel_dgp,
 )
+
+pytestmark = pytest.mark.tier2
 
 # ============================================================================
 # TimeSeriesDGPGenerator Tests - Single Series

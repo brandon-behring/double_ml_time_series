@@ -12,8 +12,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.baseline_comparison import BaselineComparison
+from dml_ts.validation.dgp_generator import DGPGenerator
 
 
 class TestBaselineComparisonBasic:

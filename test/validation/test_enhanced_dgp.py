@@ -7,8 +7,9 @@ and assumption violations.
 All tests in this module are unit tests (data generation, no estimation).
 """
 
-import pytest
 import numpy as np
+import pytest
+
 from dml_ts.validation.enhanced_dgp import EnhancedDGPGenerator, EnhancedDGPResult
 
 # Mark all tests in this module as unit tests

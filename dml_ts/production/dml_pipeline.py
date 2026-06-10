@@ -22,16 +22,15 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
 
 # Import our DML components
 try:
-    from dml_ts.dml.double_ml import double_ml  # noqa: F401
     from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator  # noqa: F401
+    from dml_ts.dml.double_ml import double_ml  # noqa: F401
     from dml_ts.dml.hac import newey_west_se
     from dml_ts.dml.temporal_plr_dml import TemporalPLRDML  # noqa: F401
 
@@ -40,8 +39,8 @@ except ImportError:
     DML_AVAILABLE = False
 
 # Import registry and monitoring components
-from dml_ts.production.model_registry import DMLModelVersion, DMLModelRegistry
 from dml_ts.production.causal_monitor import CausalMonitor, MonitoringResult
+from dml_ts.production.model_registry import DMLModelRegistry, DMLModelVersion
 from dml_ts.production.retrain_pipeline import RetrainScheduler, RetrainTrigger
 
 
@@ -71,16 +70,16 @@ class PipelineConfig:
     n_jobs: int = -1
     random_state: int = 42
     model_registry_path: str = "./models/dml_registry"
-    propensity_model: Optional[Any] = None
-    outcome_model: Optional[Any] = None
+    propensity_model: Any | None = None
+    outcome_model: Any | None = None
     use_hac: bool = True
-    hac_bandwidth: Optional[int] = None
+    hac_bandwidth: int | None = None
     monitoring_enabled: bool = True
-    feature_columns: List[str] = field(default_factory=list)
+    feature_columns: list[str] = field(default_factory=list)
     treatment_column: str = "treatment"
     outcome_column: str = "outcome"
-    time_column: Optional[str] = None
-    entity_column: Optional[str] = None
+    time_column: str | None = None
+    entity_column: str | None = None
 
 
 @dataclass
@@ -105,14 +104,14 @@ class PipelineResult:
     ate_se: float
     ate_ci_lower: float
     ate_ci_upper: float
-    cate: Optional[np.ndarray] = None
-    nuisance_metrics: Dict[str, float] = field(default_factory=dict)
-    monitoring_results: List[MonitoringResult] = field(default_factory=list)
-    model_version: Optional[str] = None
+    cate: np.ndarray | None = None
+    nuisance_metrics: dict[str, float] = field(default_factory=dict)
+    monitoring_results: list[MonitoringResult] = field(default_factory=list)
+    model_version: str | None = None
     fit_timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "ate": self.ate,
@@ -156,7 +155,7 @@ class InsuranceDMLPipeline:
         >>> print(f"ATE: {result.ate:.3f} ({result.ate_ci_lower:.3f}, {result.ate_ci_upper:.3f})")
     """
 
-    def __init__(self, config: Optional[PipelineConfig] = None):
+    def __init__(self, config: PipelineConfig | None = None):
         """
         Initialize insurance DML pipeline.
 
@@ -166,13 +165,13 @@ class InsuranceDMLPipeline:
         self.config = config or PipelineConfig()
 
         # Initialize components
-        self._scaler: Optional[StandardScaler] = None
+        self._scaler: StandardScaler | None = None
         self._fitted = False
-        self._propensity_scores: Optional[np.ndarray] = None
-        self._nuisance_models: Optional[Dict[int, Tuple[Any, Any]]] = None
-        self._ate: Optional[float] = None
-        self._ate_se: Optional[float] = None
-        self._current_version: Optional[DMLModelVersion] = None
+        self._propensity_scores: np.ndarray | None = None
+        self._nuisance_models: dict[int, tuple[Any, Any]] | None = None
+        self._ate: float | None = None
+        self._ate_se: float | None = None
+        self._current_version: DMLModelVersion | None = None
 
         # Initialize model registry
         self._registry = DMLModelRegistry(self.config.model_registry_path)
@@ -201,7 +200,7 @@ class InsuranceDMLPipeline:
         X: np.ndarray,
         T: np.ndarray,
         Y: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Prepare data for DML estimation.
 
@@ -229,7 +228,7 @@ class InsuranceDMLPipeline:
 
         return X_scaled, T, Y
 
-    def _create_cross_validator(self, n_samples: int) -> Union["TimeSeriesCrossValidator", Any]:
+    def _create_cross_validator(self, n_samples: int) -> TimeSeriesCrossValidator | Any:
         """
         Create appropriate cross-validator.
 
@@ -261,8 +260,8 @@ class InsuranceDMLPipeline:
         X: np.ndarray,
         T: np.ndarray,
         Y: np.ndarray,
-        baseline_ate: Optional[float] = None,
-        baseline_ate_se: Optional[float] = None,
+        baseline_ate: float | None = None,
+        baseline_ate_se: float | None = None,
     ) -> PipelineResult:
         """
         Fit DML pipeline to data.
@@ -472,7 +471,7 @@ class InsuranceDMLPipeline:
 
         # Average across folds
         propensity_sum = np.zeros(n_samples)
-        for fold_idx, (prop_model, _) in self._nuisance_models.items():
+        for _fold_idx, (prop_model, _) in self._nuisance_models.items():
             if hasattr(prop_model, "predict_proba"):
                 propensity_sum += prop_model.predict_proba(X_scaled)[:, 1]
             else:
@@ -484,9 +483,9 @@ class InsuranceDMLPipeline:
         self,
         X_new: np.ndarray,
         T_new: np.ndarray,
-        X_baseline: Optional[np.ndarray] = None,
-        T_baseline: Optional[np.ndarray] = None,
-    ) -> Tuple[List[MonitoringResult], Optional[RetrainTrigger]]:
+        X_baseline: np.ndarray | None = None,
+        T_baseline: np.ndarray | None = None,
+    ) -> tuple[list[MonitoringResult], RetrainTrigger | None]:
         """
         Evaluate if retraining is needed based on new data.
 
@@ -541,7 +540,7 @@ class InsuranceDMLPipeline:
         # Then to production
         return self._registry.promote_to_production()
 
-    def rollback(self, to_version: Optional[str] = None) -> str:
+    def rollback(self, to_version: str | None = None) -> str:
         """
         Roll back to previous production-slot version.
 
@@ -553,15 +552,15 @@ class InsuranceDMLPipeline:
         """
         return self._registry.rollback(to_version)
 
-    def get_production_model(self) -> Optional[DMLModelVersion]:
+    def get_production_model(self) -> DMLModelVersion | None:
         """Return current production model, or None if not set."""
         return self._registry.get_production()
 
-    def list_versions(self) -> List[Dict[str, Any]]:
+    def list_versions(self) -> list[dict[str, Any]]:
         """List all registered model versions."""
         return self._registry.list_versions()
 
-    def save(self, path: Union[str, Path]) -> Path:
+    def save(self, path: str | Path) -> Path:
         """
         Save pipeline state.
 
@@ -616,7 +615,7 @@ class InsuranceDMLPipeline:
         return path
 
     @classmethod
-    def load(cls, path: Union[str, Path]) -> "InsuranceDMLPipeline":
+    def load(cls, path: str | Path) -> InsuranceDMLPipeline:
         """
         Load pipeline from saved state.
 

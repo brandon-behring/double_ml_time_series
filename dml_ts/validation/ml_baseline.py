@@ -8,16 +8,16 @@ Two variants:
 Both use simple outcome regression without propensity score weighting.
 """
 
-from typing import Tuple, Optional, Literal
 from datetime import datetime
+from typing import Literal
+
 import numpy as np
 from scipy import stats
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 
+from dml_ts.validation.bootstrap_config import DEFAULT_BOOTSTRAP_CONFIG, BootstrapConfig
 from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
 from dml_ts.validation.validation_result import ValidationResult
-from dml_ts.validation.bootstrap_config import BootstrapConfig, DEFAULT_BOOTSTRAP_CONFIG
 
 
 class RandomForestEstimator:
@@ -47,8 +47,8 @@ class RandomForestEstimator:
         n_simulations: int = 100,
         alpha: float = 0.05,
         n_estimators: int = 100,
-        bootstrap_config: Optional[BootstrapConfig] = None,
-        random_state: Optional[int] = None,
+        bootstrap_config: BootstrapConfig | None = None,
+        random_state: int | None = None,
     ):
         """Initialize Random Forest estimator."""
         self.n_simulations = n_simulations
@@ -150,7 +150,7 @@ class RandomForestEstimator:
             bias_p_value=bias_p_value,
         )
 
-    def _calculate_ci_bootstrap(self, data: DGPResult, ate: float) -> Tuple[float, float]:
+    def _calculate_ci_bootstrap(self, data: DGPResult, ate: float) -> tuple[float, float]:
         """Calculate confidence interval via bootstrap."""
         n_bootstrap = self.bootstrap_config.n_bootstrap_ci
         bootstrap_estimates = np.zeros(n_bootstrap)
@@ -210,7 +210,7 @@ class RandomForestEstimator:
 
     def _determine_status(
         self, bias_samples: np.ndarray, alpha_test: float = 0.05
-    ) -> Tuple[Literal["PASS", "FAIL", "WARNING"], float]:
+    ) -> tuple[Literal["PASS", "FAIL", "WARNING"], float]:
         """Determine validation status using t-test for bias"""
         mean_bias = np.mean(bias_samples)
         se_bias = np.std(bias_samples) / np.sqrt(len(bias_samples))
@@ -259,8 +259,8 @@ class XGBoostEstimator:
         n_simulations: int = 100,
         alpha: float = 0.05,
         n_estimators: int = 100,
-        bootstrap_config: Optional[BootstrapConfig] = None,
-        random_state: Optional[int] = None,
+        bootstrap_config: BootstrapConfig | None = None,
+        random_state: int | None = None,
     ):
         """Initialize XGBoost estimator."""
         self.n_simulations = n_simulations
@@ -363,7 +363,7 @@ class XGBoostEstimator:
             bias_p_value=bias_p_value,
         )
 
-    def _calculate_ci_bootstrap(self, data: DGPResult, ate: float) -> Tuple[float, float]:
+    def _calculate_ci_bootstrap(self, data: DGPResult, ate: float) -> tuple[float, float]:
         """Calculate confidence interval via bootstrap."""
         n_bootstrap = self.bootstrap_config.n_bootstrap_ci
         bootstrap_estimates = np.zeros(n_bootstrap)
@@ -423,7 +423,7 @@ class XGBoostEstimator:
 
     def _determine_status(
         self, bias_samples: np.ndarray, alpha_test: float = 0.05
-    ) -> Tuple[Literal["PASS", "FAIL", "WARNING"], float]:
+    ) -> tuple[Literal["PASS", "FAIL", "WARNING"], float]:
         """Determine validation status using t-test for bias"""
         mean_bias = np.mean(bias_samples)
         se_bias = np.std(bias_samples) / np.sqrt(len(bias_samples))

@@ -16,10 +16,10 @@ import pytest
 from sklearn.model_selection import TimeSeriesSplit
 
 from dml_ts.dml.cross_fitting import (
-    TimeSeriesCrossValidator,
     BlockedTimeSeriesCV,
-    PurgedGroupTimeSeriesCV,
     CVFold,
+    PurgedGroupTimeSeriesCV,
+    TimeSeriesCrossValidator,
     create_time_series_cv,
 )
 
@@ -104,9 +104,9 @@ class TestTimeSeriesCrossValidatorTemporalOrder:
         X = np.arange(200).reshape(-1, 1)
 
         for train_idx, test_idx in cv.split(X):
-            assert (
-                train_idx.max() < test_idx.min()
-            ), f"Train max ({train_idx.max()}) >= Test min ({test_idx.min()})"
+            assert train_idx.max() < test_idx.min(), (
+                f"Train max ({train_idx.max()}) >= Test min ({test_idx.min()})"
+            )
 
     @pytest.mark.tier1
     def test_no_overlap(self) -> None:
@@ -132,7 +132,7 @@ class TestTimeSeriesCrossValidatorTemporalOrder:
         for i in range(1, len(train_sizes)):
             assert train_sizes[i] > train_sizes[i - 1], (
                 f"Fold {i} train size ({train_sizes[i]}) not larger than "
-                f"fold {i-1} ({train_sizes[i-1]})"
+                f"fold {i - 1} ({train_sizes[i - 1]})"
             )
 
     @pytest.mark.tier1
@@ -148,7 +148,7 @@ class TestTimeSeriesCrossValidatorTemporalOrder:
         for i in range(1, len(test_starts)):
             assert test_starts[i] > test_starts[i - 1], (
                 f"Fold {i} test start ({test_starts[i]}) not after "
-                f"fold {i-1} ({test_starts[i-1]})"
+                f"fold {i - 1} ({test_starts[i - 1]})"
             )
 
 
@@ -176,9 +176,9 @@ class TestTimeSeriesCrossValidatorGapAndPurge:
 
         for (train_no, _), (train_with, _) in zip(cv_no_purge.split(X), cv_with_purge.split(X)):
             size_diff = len(train_no) - len(train_with)
-            assert (
-                size_diff == purge_length
-            ), f"Purge removed {size_diff} samples, expected {purge_length}"
+            assert size_diff == purge_length, (
+                f"Purge removed {size_diff} samples, expected {purge_length}"
+            )
 
     @pytest.mark.tier1
     def test_combined_gap_and_purge(self) -> None:
@@ -191,9 +191,9 @@ class TestTimeSeriesCrossValidatorGapAndPurge:
         for train_idx, test_idx in cv.split(X):
             # Total separation should be gap + purge
             total_sep = test_idx[0] - train_idx[-1] - 1
-            assert (
-                total_sep >= gap + purge
-            ), f"Total separation ({total_sep}) less than gap+purge ({gap + purge})"
+            assert total_sep >= gap + purge, (
+                f"Total separation ({total_sep}) less than gap+purge ({gap + purge})"
+            )
 
 
 class TestTimeSeriesCrossValidatorSlidingWindow:
@@ -362,9 +362,9 @@ class TestBlockedTimeSeriesCV:
                 # Gap should be at least gap_blocks * block_size
                 actual_gap = test_idx[0] - train_idx[-1] - 1
                 expected_min_gap = gap_blocks * block_size
-                assert (
-                    actual_gap >= expected_min_gap
-                ), f"Actual gap ({actual_gap}) less than expected ({expected_min_gap})"
+                assert actual_gap >= expected_min_gap, (
+                    f"Actual gap ({actual_gap}) less than expected ({expected_min_gap})"
+                )
 
 
 class TestPurgedGroupTimeSeriesCV:
@@ -517,8 +517,8 @@ class TestIntegration:
     @pytest.mark.tier1
     def test_sklearn_cross_val_score_compatible(self) -> None:
         """Test CV is compatible with sklearn cross_val_score."""
-        from sklearn.model_selection import cross_val_score
         from sklearn.linear_model import Ridge
+        from sklearn.model_selection import cross_val_score
 
         np.random.seed(42)
         X = np.random.randn(100, 5)

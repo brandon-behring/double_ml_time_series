@@ -38,7 +38,7 @@ def main() -> None:
     Y, T, X = data.Y, data.T, data.X
     print(f"  n_periods: {len(Y)}")
     print(f"  n_features: {X.shape[1]}")
-    print(f"  AR confounder persistence: 0.7")
+    print("  AR confounder persistence: 0.7")
     print(f"  True effect: {TRUE_THETA}")
     print()
 

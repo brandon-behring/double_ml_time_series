@@ -48,11 +48,10 @@ Usage:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Optional, Tuple
+from typing import Any, Literal
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy import stats
 from scipy.interpolate import interp1d
 
 TestMethod = Literal["adf", "kpss", "pp"]
@@ -144,7 +143,7 @@ class StationarityResult:
     test_name: str
     statistic: float
     p_value: float
-    critical_values: Dict[str, float]
+    critical_values: dict[str, float]
     is_stationary: bool
     n_lags: int
     regression_type: str
@@ -170,8 +169,8 @@ class ComprehensiveStationarityResult:
     """
 
     adf_result: StationarityResult
-    kpss_result: Optional[StationarityResult]
-    pp_result: Optional[StationarityResult]
+    kpss_result: StationarityResult | None
+    pp_result: StationarityResult | None
     overall_conclusion: str
     recommendation: str
 
@@ -186,9 +185,9 @@ class ComprehensiveStationarityResult:
 
 def _compute_adf_statistic(
     y: NDArray[np.float64],
-    max_lags: Optional[int] = None,
+    max_lags: int | None = None,
     regression: str = "c",
-) -> Tuple[float, int, float, NDArray[np.float64]]:
+) -> tuple[float, int, float, NDArray[np.float64]]:
     """Compute ADF test statistic from regression.
 
     Implements:
@@ -339,8 +338,8 @@ def _compute_adf_pvalue(t_stat: float, n: int, regression: str) -> float:
 def _compute_kpss_statistic(
     y: NDArray[np.float64],
     regression: str = "c",
-    n_lags: Optional[int] = None,
-) -> Tuple[float, int, float]:
+    n_lags: int | None = None,
+) -> tuple[float, int, float]:
     """Compute KPSS stationarity test statistic.
 
     Implements:
@@ -426,8 +425,8 @@ def _compute_kpss_pvalue(eta: float, regression: str) -> float:
 def _compute_pp_statistic(
     y: NDArray[np.float64],
     regression: str = "c",
-    n_lags: Optional[int] = None,
-) -> Tuple[float, int, float, NDArray[np.float64]]:
+    n_lags: int | None = None,
+) -> tuple[float, int, float, NDArray[np.float64]]:
     """Compute Phillips-Perron test statistic.
 
     Uses Newey-West HAC correction to the standard ADF regression.
@@ -532,7 +531,7 @@ class StationarityDiagnostic:
     def __init__(
         self,
         significance_level: float = 0.05,
-        max_lags: Optional[int] = None,
+        max_lags: int | None = None,
         regression: str = "c",
     ):
         """Initialize StationarityDiagnostic.
@@ -554,8 +553,8 @@ class StationarityDiagnostic:
     def test_adf(
         self,
         series: NDArray[np.float64],
-        max_lags: Optional[int] = None,
-        regression: Optional[str] = None,
+        max_lags: int | None = None,
+        regression: str | None = None,
     ) -> StationarityResult:
         """Perform Augmented Dickey-Fuller test.
 
@@ -622,8 +621,8 @@ class StationarityDiagnostic:
     def test_kpss(
         self,
         series: NDArray[np.float64],
-        regression: Optional[str] = None,
-        n_lags: Optional[int] = None,
+        regression: str | None = None,
+        n_lags: int | None = None,
     ) -> StationarityResult:
         """Perform KPSS stationarity test.
 
@@ -697,8 +696,8 @@ class StationarityDiagnostic:
     def test_phillips_perron(
         self,
         series: NDArray[np.float64],
-        regression: Optional[str] = None,
-        n_lags: Optional[int] = None,
+        regression: str | None = None,
+        n_lags: int | None = None,
     ) -> StationarityResult:
         """Perform Phillips-Perron unit root test.
 

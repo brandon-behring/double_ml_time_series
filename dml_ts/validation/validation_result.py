@@ -1,9 +1,10 @@
 """Validation result data structure for Double ML validation methods."""
 
-from dataclasses import dataclass, asdict
-from datetime import datetime
-from typing import Dict, Any, Literal, Optional
 import json
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from typing import Any, Literal
+
 import numpy as np
 
 
@@ -57,14 +58,14 @@ class ValidationResult:
     ci_upper: float
     n_simulations: int
     timestamp: datetime
-    metadata: Dict[str, Any]
-    ci_estimates: Optional[np.ndarray] = None
-    point_estimates: Optional[np.ndarray] = None
-    bias_p_value: Optional[float] = None
-    coverage_p_value: Optional[float] = None
-    statistical_status: Optional[Literal["PASS", "FAIL", "WARNING"]] = None
+    metadata: dict[str, Any]
+    ci_estimates: np.ndarray | None = None
+    point_estimates: np.ndarray | None = None
+    bias_p_value: float | None = None
+    coverage_p_value: float | None = None
+    statistical_status: Literal["PASS", "FAIL", "WARNING"] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization.
 
         Returns:
@@ -84,7 +85,7 @@ class ValidationResult:
         return json.dumps(self.to_dict(), indent=2)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "ValidationResult":
+    def from_dict(cls, d: dict[str, Any]) -> "ValidationResult":
         """Create ValidationResult from dictionary.
 
         Args:
@@ -134,5 +135,5 @@ Bias: {self.bias:.4f} (95% CI: [{self.ci_lower:.4f}, {self.ci_upper:.4f}])
 MSE: {self.mse:.4f}
 Coverage: {self.coverage:.2%}
 Simulations: {self.n_simulations:,}
-Timestamp: {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
+Timestamp: {self.timestamp.strftime("%Y-%m-%d %H:%M:%S")}
 """.strip()

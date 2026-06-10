@@ -6,12 +6,14 @@ Provides decorators and utilities for parallelizing validation methods.
 """
 
 import os
-from typing import Callable, List, Any, Optional, TypeVar, ParamSpec
+import warnings
+from collections.abc import Callable
 from functools import wraps
+from typing import Any, ParamSpec, TypeVar
+
 import numpy as np
 from joblib import Parallel, delayed
 from tqdm import tqdm
-import warnings
 
 # Type variables for generic function signatures
 P = ParamSpec("P")
@@ -53,12 +55,12 @@ def get_optimal_n_jobs(n_tasks: int, n_jobs: int = DEFAULT_N_JOBS) -> int:
 
 def parallel_map(
     func: Callable[[Any], T],
-    items: List[Any],
+    items: list[Any],
     n_jobs: int = DEFAULT_N_JOBS,
     show_progress: bool = True,
     desc: str = "Processing",
     backend: str = "loky",
-) -> List[T]:
+) -> list[T]:
     """
     Parallel map with automatic optimization and progress tracking.
 
@@ -111,9 +113,9 @@ def parallel_monte_carlo(
     n_simulations: int,
     n_jobs: int = DEFAULT_N_JOBS,
     show_progress: bool = True,
-    random_state: Optional[int] = None,
+    random_state: int | None = None,
     **kwargs: Any,
-) -> List[T]:
+) -> list[T]:
     """
     Execute Monte Carlo simulations in parallel with reproducibility.
 
@@ -161,8 +163,8 @@ def parallel_monte_carlo(
 def parallelize(
     n_jobs: int = DEFAULT_N_JOBS,
     show_progress: bool = True,
-    desc: Optional[str] = None,
-) -> Callable[[Callable[P, T]], Callable[P, List[T]]]:
+    desc: str | None = None,
+) -> Callable[[Callable[P, T]], Callable[P, list[T]]]:
     """
     Decorator to automatically parallelize a function over a list argument.
 
@@ -185,9 +187,9 @@ def parallelize(
         >>> # Usage: results = process_batch([1, 2, 3, 4])
     """
 
-    def decorator(func: Callable[P, Callable[[Any], T]]) -> Callable[P, List[T]]:
+    def decorator(func: Callable[P, Callable[[Any], T]]) -> Callable[P, list[T]]:
         @wraps(func)
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> List[T]:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> list[T]:
             # Get the processing function and items
             items = args[0] if args else kwargs.get("items", [])
 
@@ -245,7 +247,7 @@ class ParallelExecutor:
         self.n_jobs = n_jobs
         self.backend = backend
         self.show_progress = show_progress
-        self._parallel: Optional[Parallel] = None
+        self._parallel: Parallel | None = None
 
     def __enter__(self) -> "ParallelExecutor":
         """Enter context manager."""
@@ -261,9 +263,9 @@ class ParallelExecutor:
     def map(
         self,
         func: Callable[[Any], T],
-        items: List[Any],
+        items: list[Any],
         desc: str = "Processing",
-    ) -> List[T]:
+    ) -> list[T]:
         """
         Map function over items in parallel.
 
@@ -296,7 +298,7 @@ class ParallelExecutor:
         return results  # type: ignore[no-any-return]
 
 
-def chunk_workload(n_tasks: int, n_chunks: int, balance: bool = True) -> List[tuple[int, int]]:
+def chunk_workload(n_tasks: int, n_chunks: int, balance: bool = True) -> list[tuple[int, int]]:
     """
     Split workload into chunks for parallel processing.
 

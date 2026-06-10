@@ -14,19 +14,16 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-pytestmark = pytest.mark.tier2
-
 from dml_ts.validation.stationarity import (
+    ComprehensiveStationarityResult,
     StationarityDiagnostic,
     StationarityResult,
-    ComprehensiveStationarityResult,
+    _interpolate_critical_value,
     run_stationarity_test,
     suggest_differencing_order,
-    _compute_adf_statistic,
-    _compute_kpss_statistic,
-    _compute_pp_statistic,
-    _interpolate_critical_value,
 )
+
+pytestmark = pytest.mark.tier2
 
 # =============================================================================
 # Fixtures
@@ -397,7 +394,7 @@ class TestStatsmodelsComparison:
     def check_statsmodels(self):
         """Check if statsmodels is available."""
         try:
-            from statsmodels.tsa.stattools import adfuller
+            from statsmodels.tsa.stattools import adfuller  # noqa: F401  # availability probe
 
             return True
         except ImportError:

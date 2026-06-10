@@ -7,15 +7,15 @@ Provides efficient storage, retrieval, and caching of:
 - Simulation outputs
 """
 
-from typing import List, Optional, Dict, Any, cast
-from pathlib import Path
-from datetime import datetime
+import hashlib
 import json
 import pickle
-import hashlib
+from datetime import datetime
+from pathlib import Path
+from typing import Any, cast
 
-from dml_ts.validation.validation_result import ValidationResult
 from dml_ts.validation.dgp_generator import DGPResult
+from dml_ts.validation.validation_result import ValidationResult
 
 
 class ResultStorage:
@@ -57,8 +57,8 @@ class ResultStorage:
     def save_result(
         self,
         result: ValidationResult,
-        method: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        method: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Path:
         """
         Save ValidationResult to storage.
@@ -108,17 +108,17 @@ class ResultStorage:
         Returns:
             ValidationResult object
         """
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             result_dict = json.load(f)
 
         return ValidationResult.from_dict(result_dict)
 
     def load_results(
         self,
-        method: Optional[str] = None,
-        status: Optional[str] = None,
-        limit: Optional[int] = None,
-    ) -> List[ValidationResult]:
+        method: str | None = None,
+        status: str | None = None,
+        limit: int | None = None,
+    ) -> list[ValidationResult]:
         """
         Load multiple validation results with filtering.
 
@@ -155,7 +155,7 @@ class ResultStorage:
 
         return results
 
-    def cache_dgp(self, dgp_result: DGPResult, dgp_config: Dict[str, Any]) -> str:
+    def cache_dgp(self, dgp_result: DGPResult, dgp_config: dict[str, Any]) -> str:
         """
         Cache DGPResult for reuse across validation methods.
 
@@ -185,7 +185,7 @@ class ResultStorage:
 
         return cache_key
 
-    def load_cached_dgp(self, dgp_config: Dict[str, Any]) -> Optional[DGPResult]:
+    def load_cached_dgp(self, dgp_config: dict[str, Any]) -> DGPResult | None:
         """
         Load cached DGPResult if available.
 
@@ -207,7 +207,7 @@ class ResultStorage:
 
         return None
 
-    def clear_cache(self, older_than_days: Optional[int] = None) -> int:
+    def clear_cache(self, older_than_days: int | None = None) -> int:
         """
         Clear DGP cache.
 
@@ -238,7 +238,7 @@ class ResultStorage:
 
         return cleared
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """
         Get storage summary statistics.
 
@@ -262,11 +262,11 @@ class ResultStorage:
             "last_updated": self.index.get("last_updated", "Never"),
         }
 
-    def _load_index(self) -> Dict[str, Any]:
+    def _load_index(self) -> dict[str, Any]:
         """Load or create result index."""
         if self.index_file.exists():
-            with open(self.index_file, "r") as f:
-                return cast(Dict[str, Any], json.load(f))
+            with open(self.index_file) as f:
+                return cast(dict[str, Any], json.load(f))
         else:
             return {"results": [], "last_updated": None}
 
@@ -283,7 +283,7 @@ class ResultStorage:
         method: str,
         status: str,
         timestamp: str,
-        metadata: Dict[str, Any],
+        metadata: dict[str, Any],
     ) -> None:
         """Add entry to index."""
         entry = {

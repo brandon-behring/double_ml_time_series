@@ -25,10 +25,11 @@ Usage:
     >>> print(f"Converged: {result['converged']}")
 """
 
-from typing import Dict, Any, List, Tuple, Literal, Optional
+from dataclasses import dataclass
+from typing import Any, Literal
+
 import numpy as np
 from scipy import stats
-from dataclasses import dataclass
 
 from dml_ts.validation.dgp_generator import DGPResult
 
@@ -47,13 +48,13 @@ class ConvergenceDiagnostic:
         diagnostics: Additional diagnostic information
     """
 
-    n_bootstrap_tested: List[int]
-    estimates: List[float]
-    std_errors: List[float]
+    n_bootstrap_tested: list[int]
+    estimates: list[float]
+    std_errors: list[float]
     convergence_score: float
     converged: bool
     recommended_n: int
-    diagnostics: Dict[str, Any]
+    diagnostics: dict[str, Any]
 
 
 @dataclass
@@ -76,7 +77,7 @@ class DistributionDiagnostic:
     skewness: float
     kurtosis: float
     symmetry_score: float
-    diagnostics: Dict[str, Any]
+    diagnostics: dict[str, Any]
 
 
 class BootstrapDiagnostics:
@@ -111,7 +112,7 @@ class BootstrapDiagnostics:
         self,
         data: DGPResult,
         estimator_type: Literal["LinearDML", "IPW", "AIPW", "OLS"] = "LinearDML",
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         """Initialize bootstrap diagnostics.
 
@@ -128,8 +129,8 @@ class BootstrapDiagnostics:
     def diagnose_convergence(
         self,
         target: Literal["bias", "variance", "coverage"],
-        n_bootstrap_range: List[int],
-        true_value: Optional[float] = None,
+        n_bootstrap_range: list[int],
+        true_value: float | None = None,
         n_replications: int = 10,
         tolerance: float = 0.05,
     ) -> ConvergenceDiagnostic:
@@ -291,16 +292,17 @@ class BootstrapDiagnostics:
 
     def recommend_n_bootstrap(
         self,
-        target_tasks: List[Literal["bias", "ci", "both"]] = ["both"],
+        target_tasks: list[Literal["bias", "ci", "both"]] | None = None,
         precision_level: Literal["fast", "default", "precise"] = "default",
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """Recommend n_bootstrap values based on convergence diagnostics.
 
         Runs convergence diagnostics to determine appropriate bootstrap sample
         sizes for different tasks (bias estimation vs confidence intervals).
 
         Args:
-            target_tasks: Which tasks to optimize for ("bias", "ci", "both")
+            target_tasks: Which tasks to optimize for ("bias", "ci", "both").
+                Defaults to ["both"].
             precision_level: Desired precision ("fast", "default", "precise")
 
         Returns:
@@ -310,6 +312,9 @@ class BootstrapDiagnostics:
             >>> diag.recommend_n_bootstrap(["bias", "ci"], "default")
             {'bias': 1000, 'ci': 500, 'both': 1000}
         """
+        if target_tasks is None:
+            target_tasks = ["both"]
+
         # Default ranges based on precision level
         ranges_bias = {
             "fast": [100, 200, 500],
@@ -384,7 +389,7 @@ class BootstrapDiagnostics:
 
         return boot_estimates
 
-    def _bootstrap_confidence_intervals(self, n_bootstrap: int) -> List[Tuple[float, float]]:
+    def _bootstrap_confidence_intervals(self, n_bootstrap: int) -> list[tuple[float, float]]:
         """Generate bootstrap confidence intervals (percentile method).
 
         Args:

@@ -1,41 +1,41 @@
 """Validation infrastructure for Double ML methods."""
 
+from . import plotting
+from .bias_validation import BiasValidation
 from .dgp_generator import DGPGenerator, DGPResult
 from .dgp_generator_ts import (
-    TimeSeriesDGPGenerator,
-    TimeSeriesDGPResult,
     BreakDGPGenerator,
     BreakDGPResult,
+    TimeSeriesDGPGenerator,
+    TimeSeriesDGPResult,
     create_ar_dgp,
-    create_panel_dgp,
     create_break_dgp,
+    create_panel_dgp,
 )
 from .dynamic_dgp import DynamicTreatmentDGP, DynamicTreatmentDGPResult
-from .validation_result import ValidationResult
-from .storage import ResultStorage
-from . import plotting
-from .parallel import (
-    parallel_map,
-    parallel_monte_carlo,
-    parallelize,
-    ParallelExecutor,
-    chunk_workload,
-    get_optimal_n_jobs,
-)
-from .bias_validation import BiasValidation
-
-# Phase 2A (fully implemented)
-from .stationarity import (
-    StationarityDiagnostic,
-    StationarityResult,
-    ComprehensiveStationarityResult,
-)
 from .insurance_dgp import (
     InsuranceDGPParams,
     InsuranceDGPResult,
     create_insurance_dgp,
     validate_dgp_recovery,
 )
+from .parallel import (
+    ParallelExecutor,
+    chunk_workload,
+    get_optimal_n_jobs,
+    parallel_map,
+    parallel_monte_carlo,
+    parallelize,
+)
+
+# Phase 2A (fully implemented)
+from .stationarity import (
+    ComprehensiveStationarityResult,
+    StationarityDiagnostic,
+    StationarityResult,
+)
+from .storage import ResultStorage
+from .validation_result import ValidationResult
 
 __all__ = [
     # i.i.d. DGP

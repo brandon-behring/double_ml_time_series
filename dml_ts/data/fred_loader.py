@@ -36,7 +36,7 @@ import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -90,15 +90,15 @@ class MacroControlsResult:
     """
 
     data: pd.DataFrame
-    metadata: Dict[str, Dict[str, str]]
+    metadata: dict[str, dict[str, str]]
     start_date: str
     end_date: str
     frequency: str
-    missing_pct: Dict[str, float]
+    missing_pct: dict[str, float]
 
 
 # Standard FRED series for DML macro controls
-STANDARD_MACRO_SERIES: Dict[str, Dict[str, str]] = {
+STANDARD_MACRO_SERIES: dict[str, dict[str, str]] = {
     # Output measures
     "GDP": {
         "name": "Gross Domestic Product",
@@ -186,7 +186,7 @@ STANDARD_MACRO_SERIES: Dict[str, Dict[str, str]] = {
 }
 
 # Pre-defined macro control sets for common applications
-MACRO_CONTROL_SETS: Dict[str, List[str]] = {
+MACRO_CONTROL_SETS: dict[str, list[str]] = {
     "basic": ["GDPC1", "CPIAUCSL", "UNRATE", "FEDFUNDS"],
     "comprehensive": [
         "GDPC1",
@@ -224,8 +224,8 @@ class FREDLoader:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        cache_dir: Optional[Union[str, Path]] = None,
+        api_key: str | None = None,
+        cache_dir: str | Path | None = None,
     ):
         """Initialize FREDLoader.
 
@@ -234,7 +234,7 @@ class FREDLoader:
             cache_dir: Directory for caching. Defaults to ~/.cache/fred_dml/
         """
         self.api_key = api_key or os.environ.get("FRED_API_KEY")
-        self._fred: Optional[Any] = None
+        self._fred: Any | None = None
 
         # Set up caching
         if cache_dir is None:
@@ -245,12 +245,12 @@ class FREDLoader:
         if self.cache_dir:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
 
-        self._cache: Dict[str, pd.Series] = {}
+        self._cache: dict[str, pd.Series] = {}
 
     def _get_fred_client(self) -> Any:
         """Get or create FRED API client."""
         if not FREDAPI_AVAILABLE:
-            raise ImportError("fredapi package not installed. " "Install with: pip install fredapi")
+            raise ImportError("fredapi package not installed. Install with: pip install fredapi")
 
         if self._fred is None:
             if self.api_key is None:
@@ -267,7 +267,7 @@ class FREDLoader:
         """Get cache file path for a series."""
         return self.cache_dir / f"{series_id}.parquet"
 
-    def _load_from_cache(self, series_id: str) -> Optional[pd.Series]:
+    def _load_from_cache(self, series_id: str) -> pd.Series | None:
         """Load series from cache if available and recent."""
         cache_path = self._get_cache_path(series_id)
 
@@ -295,13 +295,13 @@ class FREDLoader:
             df = pd.DataFrame({series_id: data})
             df.to_parquet(cache_path)
         except Exception as e:
-            warnings.warn(f"Failed to cache {series_id}: {e}")
+            warnings.warn(f"Failed to cache {series_id}: {e}", stacklevel=2)
 
     def get_series(
         self,
         series_id: str,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
         use_cache: bool = True,
     ) -> FREDSeries:
         """Fetch a single FRED series.
@@ -373,11 +373,11 @@ class FREDLoader:
 
     def get_multiple_series(
         self,
-        series_ids: List[str],
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
+        series_ids: list[str],
+        start_date: str | None = None,
+        end_date: str | None = None,
         use_cache: bool = True,
-    ) -> Dict[str, FREDSeries]:
+    ) -> dict[str, FREDSeries]:
         """Fetch multiple FRED series.
 
         Args:
@@ -394,7 +394,7 @@ class FREDLoader:
             try:
                 results[series_id] = self.get_series(series_id, start_date, end_date, use_cache)
             except Exception as e:
-                warnings.warn(f"Failed to fetch {series_id}: {e}")
+                warnings.warn(f"Failed to fetch {series_id}: {e}", stacklevel=2)
                 continue
 
         return results
@@ -471,8 +471,8 @@ class FREDLoader:
         end_date: str,
         series_set: str = "basic",
         frequency: FrequencyType = "M",
-        custom_series: Optional[List[str]] = None,
-        transforms: Optional[Dict[str, str]] = None,
+        custom_series: list[str] | None = None,
+        transforms: dict[str, str] | None = None,
         fill_method: str = "ffill",
     ) -> MacroControlsResult:
         """Get aligned macro control variables for DML.
@@ -575,7 +575,7 @@ class FREDLoader:
         )
 
     @staticmethod
-    def list_available_series() -> Dict[str, Dict[str, str]]:
+    def list_available_series() -> dict[str, dict[str, str]]:
         """List pre-defined FRED series with descriptions.
 
         Returns:
@@ -584,7 +584,7 @@ class FREDLoader:
         return STANDARD_MACRO_SERIES.copy()
 
     @staticmethod
-    def list_control_sets() -> Dict[str, List[str]]:
+    def list_control_sets() -> dict[str, list[str]]:
         """List pre-defined macro control sets.
 
         Returns:
@@ -597,7 +597,7 @@ def create_synthetic_fred_data(
     start_date: str = "2010-01-01",
     end_date: str = "2023-12-31",
     frequency: FrequencyType = "M",
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ) -> MacroControlsResult:
     """Create synthetic FRED-like data for testing without API access.
 

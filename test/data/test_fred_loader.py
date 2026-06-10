@@ -10,14 +10,12 @@ Tests cover:
 import numpy as np
 import pandas as pd
 import pytest
-from numpy.testing import assert_allclose
 
 from dml_ts.data.fred_loader import (
-    FREDLoader,
-    FREDSeries,
-    MacroControlsResult,
     MACRO_CONTROL_SETS,
     STANDARD_MACRO_SERIES,
+    FREDLoader,
+    MacroControlsResult,
     create_synthetic_fred_data,
 )
 
@@ -107,7 +105,7 @@ class TestSyntheticFREDData:
         """Test that missing_pct is all zeros for synthetic data."""
         result = create_synthetic_fred_data(seed=42)
 
-        for series_id, pct in result.missing_pct.items():
+        for _series_id, pct in result.missing_pct.items():
             assert pct == 0.0
 
     def test_synthetic_gdp_reasonable_range(self):

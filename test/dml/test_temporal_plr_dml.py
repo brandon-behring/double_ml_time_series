@@ -16,10 +16,10 @@ from sklearn.dummy import DummyRegressor
 from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator
 from dml_ts.dml.hac import HACEstimator, newey_west_se
 from dml_ts.dml.temporal_plr_dml import (
-    TemporalPLRDML,
-    TemporalPLRDMLResult,
     PanelDML,
     RollingWindowDML,
+    TemporalPLRDML,
+    TemporalPLRDMLResult,
     _compute_r2,
     _create_lagged_features,
     _cross_fit_nuisance_time_series,
@@ -222,9 +222,9 @@ class TestHelperFunctions:
 
         predicted_by_fold = np.full(n, -1, dtype=int)
         for fold, (train_idx, test_idx) in enumerate(cv.split(X, Y)):
-            assert (
-                train_idx.max() < test_idx.min()
-            ), f"Fold {fold}: train max {train_idx.max()} >= test min {test_idx.min()}"
+            assert train_idx.max() < test_idx.min(), (
+                f"Fold {fold}: train max {train_idx.max()} >= test min {test_idx.min()}"
+            )
             predicted_by_fold[test_idx] = fold
 
         Y_hat, T_hat = _cross_fit_nuisance_time_series(
@@ -738,12 +738,12 @@ class TestPanelDML:
         """
         Y, T, X, individual_id, time_id, _ = panel_data
 
-        common = dict(
-            fixed_effects="individual",
-            model_y="ridge",
-            model_t="ridge",
-            random_state=42,
-        )
+        common = {
+            "fixed_effects": "individual",
+            "model_y": "ridge",
+            "model_t": "ridge",
+            "random_state": 42,
+        }
         plain = PanelDML(cluster_se=False, **common).fit(Y, T, X, individual_id, time_id)
         clustered = PanelDML(cluster_se=True, **common).fit(Y, T, X, individual_id, time_id)
 
@@ -813,12 +813,12 @@ class TestPanelDML:
         T = 0.5 * X[:, 0] + ar_noise()
         Y = 3.0 * T + X[:, 0] + ar_noise()
 
-        common = dict(
-            fixed_effects="individual",
-            model_y="ridge",
-            model_t="ridge",
-            random_state=42,
-        )
+        common = {
+            "fixed_effects": "individual",
+            "model_y": "ridge",
+            "model_t": "ridge",
+            "random_state": 42,
+        }
         plain = PanelDML(cluster_se=False, **common).fit(Y, T, X, individual_id, time_id)
         clustered = PanelDML(cluster_se=True, **common).fit(Y, T, X, individual_id, time_id)
 
@@ -1025,9 +1025,9 @@ class TestTemporalPLRDMLIntegration:
         # 16/20 at nominal 0.95: loose enough for Monte Carlo noise with
         # 20 simulations, tight enough that sqrt(n)-understated SEs
         # (empirical coverage ~0.10) fail hard.
-        assert (
-            coverage_rate >= 0.80
-        ), f"Coverage {coverage_rate:.2f} far below nominal 0.95 — HAC SEs understated"
+        assert coverage_rate >= 0.80, (
+            f"Coverage {coverage_rate:.2f} far below nominal 0.95 — HAC SEs understated"
+        )
 
 
 # ============================================================================

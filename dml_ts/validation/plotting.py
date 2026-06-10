@@ -5,12 +5,13 @@ Provides consistent, professional styling across all validation plots.
 All functions use the same color scheme, fonts, and layout.
 """
 
-from typing import List, Optional, Dict, Any
+from pathlib import Path
+from typing import Any
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
-from pathlib import Path
 
 # Professional color palette (colorblind-friendly)
 COLORS = {
@@ -51,7 +52,7 @@ def plot_bias_distribution(
     biases: np.ndarray,
     true_effect: float = 0.0,
     title: str = "Bias Distribution",
-    save_path: Optional[Path] = None,
+    save_path: Path | None = None,
 ) -> plt.Figure:
     """
     Plot distribution of bias estimates.
@@ -118,7 +119,7 @@ def plot_bias_distribution(
         transform=ax.transAxes,
         verticalalignment="top",
         horizontalalignment="right",
-        bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.3),
+        bbox={"boxstyle": "round", "facecolor": "wheat", "alpha": 0.3},
         fontsize=9,
     )
 
@@ -133,9 +134,9 @@ def plot_bias_distribution(
 def plot_mse_curves(
     results: pd.DataFrame,
     x_var: str = "n",
-    group_var: Optional[str] = None,
+    group_var: str | None = None,
     title: str = "MSE vs Sample Size",
-    save_path: Optional[Path] = None,
+    save_path: Path | None = None,
 ) -> plt.Figure:
     """
     Plot MSE curves across varying parameter (typically sample size).
@@ -203,10 +204,10 @@ def plot_mse_curves(
 def plot_coverage_rates(
     results: pd.DataFrame,
     x_var: str = "n",
-    group_var: Optional[str] = None,
+    group_var: str | None = None,
     nominal_level: float = 0.95,
     title: str = "Coverage Rates",
-    save_path: Optional[Path] = None,
+    save_path: Path | None = None,
 ) -> plt.Figure:
     """
     Plot confidence interval coverage rates.
@@ -298,10 +299,10 @@ def plot_coverage_rates(
 def plot_power_curves(
     results: pd.DataFrame,
     x_var: str = "effect_size",
-    group_var: Optional[str] = None,
+    group_var: str | None = None,
     alpha: float = 0.05,
     title: str = "Statistical Power",
-    save_path: Optional[Path] = None,
+    save_path: Path | None = None,
 ) -> plt.Figure:
     """
     Plot statistical power curves.
@@ -372,8 +373,8 @@ def plot_power_curves(
 
 
 def plot_validation_summary(
-    results: List[Dict[str, Any]],
-    save_path: Optional[Path] = None,
+    results: list[dict[str, Any]],
+    save_path: Path | None = None,
 ) -> plt.Figure:
     """
     Create summary dashboard of all validation results.

@@ -10,7 +10,6 @@ Usage:
 
 import numpy as np
 import pytest
-from typing import List
 
 from dml_ts.validation.bootstrap_diagnostics import (
     BootstrapDiagnostics,

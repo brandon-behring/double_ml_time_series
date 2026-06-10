@@ -47,7 +47,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import Literal, Optional, Union, cast
+from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -143,9 +143,7 @@ def robinson_estimator(
     Y: NDArray[np.float64],
     T: NDArray[np.float64],
     X: NDArray[np.float64],
-    model: Optional[
-        Union[BaseEstimator, Literal["ridge", "random_forest", "gradient_boosting"]]
-    ] = None,
+    model: BaseEstimator | Literal["ridge", "random_forest", "gradient_boosting"] | None = None,
 ) -> RobinsonResult:
     """Robinson (1988) semiparametric estimator.
 
@@ -264,7 +262,7 @@ def compare_fwl_vs_robinson(
     Y: NDArray[np.float64],
     T: NDArray[np.float64],
     X: NDArray[np.float64],
-    true_theta: Optional[float] = None,
+    true_theta: float | None = None,
 ) -> dict:
     """Compare FWL (linear) vs Robinson (ML) on the same data.
 

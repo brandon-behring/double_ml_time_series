@@ -7,15 +7,16 @@ production utilities deliberately stay namespaced under their subpackages (e.g.
 importing the package eagerly pulls in only ``dml`` and ``validation``.
 """
 
-from . import dml
-from . import validation
+from . import dml, validation
 from .dml import (
-    double_ml,
-    TemporalPLRDML,
-    RollingWindowDML,
-    PanelDML,
     DynamicGEstimationDML,
+    PanelDML,
+    RollingWindowDML,
+    TemporalPLRDML,
+    double_ml,
 )
+
+__version__ = "1.0.0"
 
 __all__ = [
     "dml",
@@ -25,4 +26,5 @@ __all__ = [
     "RollingWindowDML",
     "PanelDML",
     "DynamicGEstimationDML",
+    "__version__",
 ]

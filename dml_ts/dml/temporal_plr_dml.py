@@ -36,7 +36,7 @@ from __future__ import annotations
 import os
 import warnings
 from dataclasses import dataclass
-from typing import Any, List, Literal, Optional, Tuple, Union, cast
+from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -49,12 +49,11 @@ from .cross_fitting import (
     BlockedTimeSeriesCV,
     PurgedGroupTimeSeriesCV,
     TimeSeriesCrossValidator,
-    create_time_series_cv,
 )
-from .hac import HACEstimator, hac_inference, newey_west_se, optimal_bandwidth
+from .hac import HACEstimator
 
 # Type aliases
-ArrayLike = Union[np.ndarray, List[float]]
+ArrayLike = np.ndarray | list[float]
 ModelType = Literal["ridge", "lasso", "random_forest", "gradient_boosting"]
 CVStrategy = Literal["time_series_split", "blocked_cv", "purged_cv"]
 KernelType = Literal["bartlett", "parzen", "quadratic_spectral"]
@@ -147,7 +146,7 @@ Interpretation:
 
 def _get_nuisance_model(
     model_type: ModelType,
-    random_state: Optional[int] = None,
+    random_state: int | None = None,
 ) -> BaseEstimator:
     """Get a nuisance model for E[Y|X] or E[T|X] estimation.
 
@@ -192,7 +191,7 @@ def _create_lagged_features(
     X: NDArray[np.float64],
     T: NDArray[np.float64],
     n_lags: int,
-) -> Tuple[NDArray[np.float64], int]:
+) -> tuple[NDArray[np.float64], int]:
     """Create lagged controls for temporal partially linear DML.
 
     Constructs a feature matrix with current controls and lagged treatment
@@ -208,13 +207,9 @@ def _create_lagged_features(
         Tuple of (augmented feature matrix, number of rows lost to lags)
     """
     n_samples = X.shape[0]
-    n_features = X.shape[1] if X.ndim > 1 else 1
 
     if X.ndim == 1:
         X = X.reshape(-1, 1)
-
-    # Effective sample size after accounting for lags
-    n_effective = n_samples - n_lags
 
     # Build lagged features: [X_t, T_{t-1}, T_{t-2}, ..., T_{t-n_lags}]
     # Also include lagged X if desired: [X_t, X_{t-1}, ..., T_{t-1}, ...]
@@ -236,11 +231,11 @@ def _cross_fit_nuisance_time_series(
     X: NDArray[np.float64],
     Y: NDArray[np.float64],
     T: NDArray[np.float64],
-    cv: Union[TimeSeriesCrossValidator, BlockedTimeSeriesCV, PurgedGroupTimeSeriesCV],
+    cv: TimeSeriesCrossValidator | BlockedTimeSeriesCV | PurgedGroupTimeSeriesCV,
     outcome_model: BaseEstimator,
     treatment_model: BaseEstimator,
-    time_index: Optional[NDArray[np.float64]] = None,
-) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+    time_index: NDArray[np.float64] | None = None,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Generate cross-fitted predictions for nuisance models using time series CV.
 
     For each fold, trains models on out-of-fold data (respecting temporal order)
@@ -338,9 +333,9 @@ class TemporalPLRDML:
         cv_strategy: CVStrategy = "time_series_split",
         n_splits: int = 5,
         gap: int = 0,
-        hac_bandwidth: Optional[int] = None,
+        hac_bandwidth: int | None = None,
         hac_kernel: KernelType = "bartlett",
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         """Initialize TemporalPLRDML.
 
@@ -366,19 +361,19 @@ class TemporalPLRDML:
         self.random_state = random_state
 
         # Fitted state
-        self._outcome_model: Optional[BaseEstimator] = None
-        self._treatment_model: Optional[BaseEstimator] = None
+        self._outcome_model: BaseEstimator | None = None
+        self._treatment_model: BaseEstimator | None = None
         self._is_fitted = False
-        self._result: Optional[TemporalPLRDMLResult] = None
+        self._result: TemporalPLRDMLResult | None = None
 
         # Data state
-        self._Y_residual: Optional[NDArray[np.float64]] = None
-        self._T_residual: Optional[NDArray[np.float64]] = None
-        self._X_augmented: Optional[NDArray[np.float64]] = None
+        self._Y_residual: NDArray[np.float64] | None = None
+        self._T_residual: NDArray[np.float64] | None = None
+        self._X_augmented: NDArray[np.float64] | None = None
 
     def _create_cv(
         self, n_samples: int
-    ) -> Union[TimeSeriesCrossValidator, BlockedTimeSeriesCV, PurgedGroupTimeSeriesCV]:
+    ) -> TimeSeriesCrossValidator | BlockedTimeSeriesCV | PurgedGroupTimeSeriesCV:
         """Create the appropriate cross-validator based on strategy."""
         if self.cv_strategy == "time_series_split":
             return TimeSeriesCrossValidator(
@@ -409,7 +404,7 @@ class TemporalPLRDML:
         Y: ArrayLike,
         T: ArrayLike,
         X: ArrayLike,
-        time_index: Optional[ArrayLike] = None,
+        time_index: ArrayLike | None = None,
         alpha: float = 0.05,
     ) -> TemporalPLRDMLResult:
         """Fit the TemporalPLRDML model.
@@ -607,7 +602,7 @@ class TemporalPLRDML:
 
     def effect(
         self,
-        X: Optional[ArrayLike] = None,
+        X: ArrayLike | None = None,
         T0: float = 0.0,
         T1: float = 1.0,
     ) -> np.ndarray:
@@ -644,11 +639,11 @@ class TemporalPLRDML:
 
     def effect_interval(
         self,
-        X: Optional[ArrayLike] = None,
+        X: ArrayLike | None = None,
         alpha: float = 0.05,
         T0: float = 0.0,
         T1: float = 1.0,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Compute confidence interval for treatment effect.
 
         Returns HAC-adjusted confidence intervals for the treatment effect.
@@ -714,8 +709,8 @@ class RollingWindowDML:
         model_y: ModelType = "random_forest",
         model_t: ModelType = "random_forest",
         n_folds: int = 3,
-        hac_bandwidth: Optional[int] = None,
-        random_state: Optional[int] = None,
+        hac_bandwidth: int | None = None,
+        random_state: int | None = None,
     ):
         """Initialize RollingWindowDML."""
         self.window_size = window_size
@@ -726,9 +721,9 @@ class RollingWindowDML:
         self.hac_bandwidth = hac_bandwidth
         self.random_state = random_state
 
-        self._theta_series: Optional[NDArray[np.float64]] = None
-        self._se_series: Optional[NDArray[np.float64]] = None
-        self._time_centers: Optional[NDArray[np.float64]] = None
+        self._theta_series: NDArray[np.float64] | None = None
+        self._se_series: NDArray[np.float64] | None = None
+        self._time_centers: NDArray[np.float64] | None = None
         self._is_fitted = False
 
     def fit(
@@ -736,8 +731,8 @@ class RollingWindowDML:
         Y: ArrayLike,
         T: ArrayLike,
         X: ArrayLike,
-        time_index: Optional[ArrayLike] = None,
-    ) -> "RollingWindowDML":
+        time_index: ArrayLike | None = None,
+    ) -> RollingWindowDML:
         """Fit rolling-window DML model.
 
         Args:
@@ -757,11 +752,6 @@ class RollingWindowDML:
             X = X.reshape(-1, 1)
 
         n_samples = len(Y)
-
-        if time_index is None:
-            time_index_arr = np.arange(n_samples, dtype=np.float64)
-        else:
-            time_index_arr = np.asarray(time_index, dtype=np.float64)
 
         # Compute window centers
         half_window = self.window_size // 2
@@ -807,7 +797,7 @@ class RollingWindowDML:
 
         return self
 
-    def get_effects(self) -> Tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    def get_effects(self) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
         """Get time series of local treatment effects.
 
         Returns:
@@ -856,7 +846,7 @@ class PanelDML:
         model_y: ModelType = "random_forest",
         model_t: ModelType = "random_forest",
         n_folds: int = 5,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ):
         """Initialize PanelDML."""
         self.fixed_effects = fixed_effects
@@ -866,7 +856,7 @@ class PanelDML:
         self.n_folds = n_folds
         self.random_state = random_state
 
-        self._result: Optional[TemporalPLRDMLResult] = None
+        self._result: TemporalPLRDMLResult | None = None
         self._is_fitted = False
 
     def _demean_by_group(

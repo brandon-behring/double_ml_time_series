@@ -24,7 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 
@@ -61,10 +61,10 @@ class RetrainTrigger:
     triggered_at: str
     severity: AlertLevel
     reason: str
-    metrics: Dict[str, float] = field(default_factory=dict)
-    model_version: Optional[str] = None
+    metrics: dict[str, float] = field(default_factory=dict)
+    model_version: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "trigger_type": self.trigger_type.value,
@@ -95,7 +95,7 @@ class RetrainSchedulerConfig:
     trigger_on_warning: bool = False
     min_samples_for_trigger: int = 100
     cooldown_hours: int = 24
-    enabled_triggers: List[TriggerType] = field(
+    enabled_triggers: list[TriggerType] = field(
         default_factory=lambda: [
             TriggerType.SCHEDULED,
             TriggerType.OVERLAP_VIOLATION,
@@ -127,8 +127,8 @@ class RetrainScheduler:
 
     def __init__(
         self,
-        config: Optional[RetrainSchedulerConfig] = None,
-        monitor: Optional[CausalMonitor] = None,
+        config: RetrainSchedulerConfig | None = None,
+        monitor: CausalMonitor | None = None,
     ):
         """
         Initialize retrain scheduler.
@@ -140,10 +140,10 @@ class RetrainScheduler:
         self.config = config or RetrainSchedulerConfig()
         self.monitor = monitor or CausalMonitor()
 
-        self._last_retrain: Optional[datetime] = None
-        self._last_scheduled_check: Optional[datetime] = None
-        self._trigger_history: List[RetrainTrigger] = []
-        self._current_model_version: Optional[str] = None
+        self._last_retrain: datetime | None = None
+        self._last_scheduled_check: datetime | None = None
+        self._trigger_history: list[RetrainTrigger] = []
+        self._current_model_version: str | None = None
 
     def set_current_model(self, version_id: str) -> None:
         """Set the current production model version."""
@@ -168,7 +168,7 @@ class RetrainScheduler:
         elapsed = datetime.now(UTC) - self._last_retrain
         return elapsed < timedelta(hours=self.config.cooldown_hours)
 
-    def check_scheduled_retrain(self) -> Optional[RetrainTrigger]:
+    def check_scheduled_retrain(self) -> RetrainTrigger | None:
         """
         Check if scheduled retraining is due.
 
@@ -210,9 +210,9 @@ class RetrainScheduler:
 
     def evaluate_monitoring_results(
         self,
-        results: List[MonitoringResult],
-        n_samples: Optional[int] = None,
-    ) -> Optional[RetrainTrigger]:
+        results: list[MonitoringResult],
+        n_samples: int | None = None,
+    ) -> RetrainTrigger | None:
         """
         Evaluate monitoring results and determine if retraining needed.
 
@@ -274,17 +274,17 @@ class RetrainScheduler:
 
     def evaluate_and_monitor(
         self,
-        propensity_scores: Optional[np.ndarray] = None,
-        treatment_current: Optional[np.ndarray] = None,
-        treatment_baseline: Optional[np.ndarray] = None,
-        r2_propensity: Optional[float] = None,
-        r2_outcome: Optional[float] = None,
-        current_effect: Optional[float] = None,
-        baseline_effect: Optional[float] = None,
-        X_current: Optional[np.ndarray] = None,
-        X_baseline: Optional[np.ndarray] = None,
+        propensity_scores: np.ndarray | None = None,
+        treatment_current: np.ndarray | None = None,
+        treatment_baseline: np.ndarray | None = None,
+        r2_propensity: float | None = None,
+        r2_outcome: float | None = None,
+        current_effect: float | None = None,
+        baseline_effect: float | None = None,
+        X_current: np.ndarray | None = None,
+        X_baseline: np.ndarray | None = None,
         **kwargs: Any,
-    ) -> tuple[List[MonitoringResult], Optional[RetrainTrigger]]:
+    ) -> tuple[list[MonitoringResult], RetrainTrigger | None]:
         """
         Run monitoring and evaluate for retraining in one call.
 
@@ -351,11 +351,11 @@ class RetrainScheduler:
             model_version=self._current_model_version,
         )
 
-    def get_trigger_history(self) -> List[Dict[str, Any]]:
+    def get_trigger_history(self) -> list[dict[str, Any]]:
         """Return history of retraining triggers as dicts."""
         return [t.to_dict() for t in self._trigger_history]
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """
         Get current scheduler status.
 
@@ -393,7 +393,7 @@ def create_airflow_dag_config(
     scheduler: RetrainScheduler,
     dag_id: str = "dml_retrain_pipeline",
     schedule: str = "@daily",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Create Airflow DAG configuration for DML retraining.
 
@@ -456,7 +456,7 @@ def create_airflow_dag_config(
 def create_prefect_flow_config(
     scheduler: RetrainScheduler,
     flow_name: str = "dml-retrain",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Create Prefect flow configuration for DML retraining.
 

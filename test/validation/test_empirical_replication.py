@@ -9,9 +9,9 @@ Tier assignments:
     tier4: Full PLR replication (RF/Lasso), integration workflows
 """
 
-import pytest
 import numpy as np
-import pandas as pd
+import pytest
+
 from dml_ts.validation.empirical_replication import (
     FourZeroOneKReplication,
     ReplicationResult,

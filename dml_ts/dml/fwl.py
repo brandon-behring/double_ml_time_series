@@ -45,7 +45,7 @@ and structural parameters. The Econometrics Journal, 21(1), C1-C68.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -130,8 +130,6 @@ def fwl_residualize(
     >>> np.allclose(residuals.sum(), 0)  # Residuals sum to ~0
     True
     """
-    n = len(Y)
-
     if X.ndim == 1:
         X = X.reshape(-1, 1)
 
@@ -251,7 +249,7 @@ def fwl_estimate(
     df = n - p - 1
 
     if df <= 0:
-        raise ValueError(f"Not enough degrees of freedom: n={n}, p={p}. " "Need n > p + 1.")
+        raise ValueError(f"Not enough degrees of freedom: n={n}, p={p}. Need n > p + 1.")
 
     # σ̂² = RSS / df
     sigma_sq = np.sum(final_residuals**2) / df

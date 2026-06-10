@@ -29,7 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 from scipy import stats
@@ -62,15 +62,15 @@ class MonitoringResult:
     level: AlertLevel
     message: str
     value: float
-    threshold: Optional[float] = None
+    threshold: float | None = None
     timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
 
     def is_ok(self) -> bool:
         """Return True if no issues detected."""
         return self.level == AlertLevel.OK
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "check_name": self.check_name,
@@ -144,7 +144,7 @@ class CausalMonitor:
         ...         print(f"ALERT: {r.message}")
     """
 
-    def __init__(self, config: Optional[CausalMonitorConfig] = None):
+    def __init__(self, config: CausalMonitorConfig | None = None):
         """
         Initialize causal monitor.
 
@@ -152,7 +152,7 @@ class CausalMonitor:
             config: Monitoring configuration (uses defaults if None)
         """
         self.config = config or CausalMonitorConfig()
-        self._history: List[List[MonitoringResult]] = []
+        self._history: list[list[MonitoringResult]] = []
 
     def check_overlap_violations(
         self,
@@ -305,8 +305,8 @@ class CausalMonitor:
         self,
         r2_propensity: float,
         r2_outcome: float,
-        r2_propensity_baseline: Optional[float] = None,
-        r2_outcome_baseline: Optional[float] = None,
+        r2_propensity_baseline: float | None = None,
+        r2_outcome_baseline: float | None = None,
     ) -> MonitoringResult:
         """
         Check for nuisance model degradation.
@@ -385,8 +385,8 @@ class CausalMonitor:
         self,
         current_effect: float,
         baseline_effect: float,
-        current_se: Optional[float] = None,
-        baseline_se: Optional[float] = None,
+        current_se: float | None = None,
+        baseline_se: float | None = None,
     ) -> MonitoringResult:
         """
         Check for treatment effect stability over time.
@@ -466,7 +466,7 @@ class CausalMonitor:
         self,
         X_current: np.ndarray,
         X_baseline: np.ndarray,
-        feature_names: Optional[List[str]] = None,
+        feature_names: list[str] | None = None,
     ) -> MonitoringResult:
         """
         Check for covariate distribution shift.
@@ -545,18 +545,18 @@ class CausalMonitor:
 
     def run_all_checks(
         self,
-        propensity_scores: Optional[np.ndarray] = None,
-        treatment_current: Optional[np.ndarray] = None,
-        treatment_baseline: Optional[np.ndarray] = None,
-        r2_propensity: Optional[float] = None,
-        r2_outcome: Optional[float] = None,
-        current_effect: Optional[float] = None,
-        baseline_effect: Optional[float] = None,
-        X_current: Optional[np.ndarray] = None,
-        X_baseline: Optional[np.ndarray] = None,
-        feature_names: Optional[List[str]] = None,
+        propensity_scores: np.ndarray | None = None,
+        treatment_current: np.ndarray | None = None,
+        treatment_baseline: np.ndarray | None = None,
+        r2_propensity: float | None = None,
+        r2_outcome: float | None = None,
+        current_effect: float | None = None,
+        baseline_effect: float | None = None,
+        X_current: np.ndarray | None = None,
+        X_baseline: np.ndarray | None = None,
+        feature_names: list[str] | None = None,
         **kwargs: Any,
-    ) -> List[MonitoringResult]:
+    ) -> list[MonitoringResult]:
         """
         Run all applicable monitoring checks.
 
@@ -619,7 +619,7 @@ class CausalMonitor:
 
         return results
 
-    def get_summary(self, results: Optional[List[MonitoringResult]] = None) -> Dict[str, Any]:
+    def get_summary(self, results: list[MonitoringResult] | None = None) -> dict[str, Any]:
         """
         Get summary of monitoring results.
 
