@@ -10,9 +10,11 @@ Tests cover:
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from scipy import stats as scipy_stats
 from sklearn.dummy import DummyRegressor
 
 from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator
+from dml_ts.dml.hac import HACEstimator, newey_west_se
 from dml_ts.dml.temporal_plr_dml import (
     TemporalPLRDML,
     TemporalPLRDMLResult,
@@ -596,6 +598,43 @@ class TestRollingWindowDML:
         assert len(theta_series) == len(time_centers)
         assert len(se_series) == len(time_centers)
 
+    @pytest.mark.tier2
+    def test_window_se_matches_standalone_fit(self, autocorrelated_time_series):
+        """Window SEs delegate to TemporalPLRDML without divergent rescaling.
+
+        Consistency test between call paths: a rolling window's SE must equal
+        the SE of a standalone TemporalPLRDML fit on the same slice. Guards
+        against a future "fix" applied only inside RollingWindowDML's loop.
+        """
+        Y, T, X, time, _ = autocorrelated_time_series
+        model = RollingWindowDML(
+            window_size=100,
+            step_size=20,
+            model_y="ridge",
+            model_t="ridge",
+            random_state=42,
+        )
+        model.fit(Y, T, X, time_index=time)
+        _, _, se_series = model.get_effects()
+
+        # n=300, window 100, step 20 -> centers range(50, 250, 20) = 10
+        # windows. A silent window skip would misalign every later center.
+        assert len(se_series) == 10
+        assert np.all(se_series > 0)
+
+        # First window covers [0, 100); replicate its exact internal fit.
+        standalone = TemporalPLRDML(
+            n_lags=0,
+            model_y="ridge",
+            model_t="ridge",
+            cv_strategy="time_series_split",
+            n_splits=3,
+            random_state=42,
+        )
+        first_window = standalone.fit(Y[:100], T[:100], X[:100])
+
+        assert_allclose(se_series[0], first_window.se, rtol=1e-10)
+
 
 # ============================================================================
 # PanelDML Tests
@@ -714,6 +753,54 @@ class TestTemporalPLRDMLIntegration:
             assert result.se > 0
             assert result.hac_bandwidth > 0
 
+    def test_hac_se_consistency_with_hac_module(self, simple_time_series):
+        """SE equals the HAC variance-of-the-mean of the influence scores.
+
+        Regression test for issue #7: the estimator previously divided the
+        HAC variance (already long-run variance / n) by n again, understating
+        SEs by a factor of sqrt(n).
+        """
+        Y, T, X, time, _ = simple_time_series
+        model = TemporalPLRDML(n_lags=1, random_state=42)
+        result = model.fit(Y, T, X, time_index=time)
+
+        hac = HACEstimator(kernel=model.hac_kernel, bandwidth=result.hac_bandwidth)
+        hac.fit(result.influence_scores)
+
+        assert_allclose(result.se, np.sqrt(hac.get_variance()), rtol=1e-12)
+        assert_allclose(result.se, hac.get_se(), rtol=1e-12)
+        assert_allclose(
+            result.se,
+            newey_west_se(
+                result.influence_scores,
+                bandwidth=result.hac_bandwidth,
+                kernel=model.hac_kernel,
+            ),
+            rtol=1e-12,
+        )
+
+        # Inference statistics must all derive from the same se (guards the
+        # block at temporal_plr_dml.py:569-575 through future refactors).
+        z_crit = scipy_stats.norm.ppf(0.975)
+        assert_allclose(result.t_stat, result.theta / result.se, rtol=1e-12)
+        assert_allclose(result.ci_upper - result.ci_lower, 2 * z_crit * result.se, rtol=1e-12)
+        assert_allclose(
+            result.p_value,
+            2 * (1 - scipy_stats.norm.cdf(abs(result.t_stat))),
+            rtol=1e-9,
+            atol=1e-12,
+        )
+
+        # Two-sided magnitude guard: the HAC SE must be the same order as the
+        # iid SE of the influence scores. Under the pre-fix double division it
+        # was sqrt(n_used) (here ~13x) smaller and the lower bound fails hard;
+        # the upper bound catches an hac-module-internal inflation (both sides
+        # of the equality asserts above would move together).
+        n_used = len(result.influence_scores)
+        naive_se = np.std(result.influence_scores, ddof=1) / np.sqrt(n_used)
+        assert result.se > 0.2 * naive_se
+        assert result.se < 5 * naive_se
+
     def test_integration_with_cross_fitting(self, simple_time_series):
         """Test integration with time series cross-validation."""
         Y, T, X, time, _ = simple_time_series
@@ -733,11 +820,12 @@ class TestTemporalPLRDMLIntegration:
 
     @pytest.mark.tier3
     def test_confidence_interval_coverage(self):
-        """Test that confidence intervals provide reasonable coverage.
+        """Nominal-0.95 CIs must achieve near-nominal empirical coverage.
 
-        Note: HAC SEs for the influence function approach may be conservative
-        or anti-conservative depending on the DGP. This test verifies the
-        implementation produces sensible results, not exact nominal coverage.
+        Regression test for issue #7: with SEs understated by sqrt(n) the
+        empirical coverage collapses to ~0.10 (theory: 2*Phi(1.96/sqrt(n))-1).
+        The previous assertion (coverage_rate >= 0.0) was vacuous and masked
+        exactly that.
         """
         np.random.seed(42)
         n_sims = 20  # Limited for speed
@@ -772,10 +860,12 @@ class TestTemporalPLRDMLIntegration:
         assert abs(mean_bias) < 0.3, f"Mean bias {mean_bias:.3f} too large"
         assert rmse < 0.5, f"RMSE {rmse:.3f} too large"
 
-        # Coverage may be lower than nominal due to HAC SE estimation
-        # Just verify it's not catastrophically wrong (> 0.0)
-        # The main value of this test is verifying the code runs without error
-        assert coverage_rate >= 0.0, f"Coverage {coverage_rate} is invalid"
+        # 16/20 at nominal 0.95: loose enough for Monte Carlo noise with
+        # 20 simulations, tight enough that sqrt(n)-understated SEs
+        # (empirical coverage ~0.10) fail hard.
+        assert (
+            coverage_rate >= 0.80
+        ), f"Coverage {coverage_rate:.2f} far below nominal 0.95 — HAC SEs understated"
 
 
 # ============================================================================
