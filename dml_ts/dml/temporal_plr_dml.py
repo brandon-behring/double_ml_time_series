@@ -558,9 +558,11 @@ class TemporalPLRDML:
         )
         hac_estimator.fit(influence_scores)
 
-        # Get variance and SE using get_variance() for 1D case
+        # get_variance() already returns the variance of the mean estimator
+        # (long-run variance / n); its square root IS the standard error.
+        # Dividing by n again understates the SE by a factor of sqrt(n).
         hac_var = hac_estimator.get_variance()
-        hac_se = float(np.sqrt(hac_var / n_used))
+        hac_se = float(np.sqrt(hac_var))
 
         # Get bandwidth used
         bandwidth_used = hac_estimator.bandwidth_used
