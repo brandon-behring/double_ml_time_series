@@ -955,24 +955,59 @@ class PanelDML:
             unique_individuals = np.unique(individual_id)
             n_clusters = len(unique_individuals)
 
-            # Compute cluster-level influence sums
-            cluster_psi = np.zeros(n_clusters)
-            for i, ind in enumerate(unique_individuals):
-                mask = individual_id == ind
-                # Align mask with the fitted sample after temporal-CV filtering.
-                n_eff = len(result.influence_scores)
-                cv_start = result.lagged_rows_dropped + result.dropped_initial_rows
-                if len(mask) - cv_start == n_eff:
-                    mask_eff = mask[cv_start:]
-                elif n_eff < len(mask):
-                    mask_eff = mask[-n_eff:]
-                else:
-                    mask_eff = mask
-                cluster_psi[i] = np.sum(result.influence_scores[mask_eff])
+            if n_clusters < 2:
+                raise ValueError(
+                    f"Cluster-robust SEs require at least 2 clusters, got {n_clusters}. "
+                    "Use cluster_se=False for a single cross-sectional unit."
+                )
 
-            # Cluster-robust variance
-            cluster_var = np.var(cluster_psi, ddof=1) * (n_clusters / (n_clusters - 1))
-            cluster_se = float(np.sqrt(cluster_var / n_clusters))
+            # Compute cluster-level influence sums. The rows dropped by lag
+            # construction and temporal-CV filtering form a contiguous prefix
+            # under the hardcoded time_series_split strategy, so clusters
+            # align as mask[cv_start:]. (Explicit retained-row indices on the
+            # result will replace this bookkeeping in the B1 result refactor.)
+            n_eff = len(result.influence_scores)
+            cv_start = result.lagged_rows_dropped + result.dropped_initial_rows
+            cluster_sums: list[float] = []
+            n_empty_clusters = 0
+            for ind in unique_individuals:
+                mask_eff = (individual_id == ind)[cv_start:]
+                if not mask_eff.any():
+                    # Cluster fell entirely inside the dropped prefix: it
+                    # contributes nothing to theta-hat and must not count
+                    # toward the cluster degrees of freedom.
+                    n_empty_clusters += 1
+                    continue
+                cluster_sums.append(float(np.sum(result.influence_scores[mask_eff])))
+
+            n_clusters_eff = len(cluster_sums)
+            if n_empty_clusters > 0:
+                warnings.warn(
+                    f"{n_empty_clusters} of {n_clusters} clusters have no observations "
+                    "retained after lag/temporal-CV trimming; cluster-robust inference "
+                    f"uses the remaining {n_clusters_eff} clusters.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
+            if n_clusters_eff < 2:
+                raise ValueError(
+                    "Cluster-robust SEs require at least 2 clusters with observations "
+                    f"retained after lag/temporal-CV trimming, got {n_clusters_eff} "
+                    f"(of {n_clusters} nominal). Use cluster_se=False or reduce n_folds."
+                )
+
+            # Cluster-robust (CR1) variance of theta-hat: theta_hat - theta
+            # ~= mean(psi) over the n_eff fitted observations, so
+            # Var = G/(G-1) * sum_g S_g^2 / n_eff^2 where S_g are the
+            # within-cluster SUMS of psi (already centered: sum_i psi_i = 0
+            # by FWL construction) and G counts retained clusters. Treating
+            # the sums as cluster means overstated the SE by ~the effective
+            # cluster size (issue #9).
+            cluster_psi = np.asarray(cluster_sums)
+            cluster_var = (
+                (n_clusters_eff / (n_clusters_eff - 1)) * float(np.sum(cluster_psi**2)) / (n_eff**2)
+            )
+            cluster_se = float(np.sqrt(cluster_var))
 
             # Update result with cluster SE
             z_crit = stats.norm.ppf(0.975)
