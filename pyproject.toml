@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dml_ts"
-version = "0.1.0"
+version = "1.0.0"
 description = "Book companion code for Double Machine Learning with temporal PLR examples"
 authors = [{name = "Brandon Behring"}]
 requires-python = ">=3.11"
@@ -29,6 +29,9 @@ dependencies = [
     "tqdm>=4.65",
     "matplotlib>=3.7",
     "seaborn>=0.12",
+    # Universal time-series toolkit (Track B migration target). Git pin until
+    # temporalcv publishes to PyPI; pinned to the v2.0.0 release tag.
+    "temporalcv @ git+https://github.com/brandon-behring/temporalcv@v2.0.0",
 ]
 
 [project.optional-dependencies]
@@ -36,7 +39,7 @@ dev = [
     "pytest>=7.4",
     "pytest-cov>=4.1",
     "pytest-timeout>=2.2",
-    "black>=23.11",
+    "ruff>=0.15.16,<0.16",
     "mypy==2.1.0",
     "pre-commit>=3.5",
 ]
@@ -62,26 +65,36 @@ include = ["dml_ts*"]
 [tool.setuptools.package-dir]
 "" = "."
 
-[tool.black]
+[tool.ruff]
+target-version = "py311"
 line-length = 100
-target-version = ["py311"]
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
+extend-exclude = ["venv", "_build", "build", "dist"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501", # line too long (handled by the formatter)
+    "B905", # zip-without-explicit-strict (adding strict= is a behavior change)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# __init__.py imports are deliberate re-exports
+"**/__init__.py" = ["F401"]
+# Examples keep unused vars / late imports for pedagogical clarity
+"examples/**" = ["F841", "B007", "E402"]
+# Test fixtures commonly bind unused values for documentation
+"test/**" = ["F841"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["dml_ts"]
 
 [tool.mypy]
 python_version = "3.13"
