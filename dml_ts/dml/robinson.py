@@ -45,20 +45,16 @@ and structural parameters. The Econometrics Journal, 21(1), C1-C68.
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator, clone
-from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
-from sklearn.linear_model import Ridge
 
 from ._results import ResultBase
-
-# Configurable parallelism: default uses all cores; tests can set DML_N_JOBS=1.
-_DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
+from ._utils import compute_r2 as _compute_r2
+from ._utils import get_nuisance_model, theta_via_fwl, validate_lengths
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -95,57 +91,13 @@ class RobinsonResult(ResultBase):
         )
 
 
-def _get_nuisance_model(
-    model_type: Literal["ridge", "random_forest", "gradient_boosting"],
-) -> BaseEstimator:
-    """Get a nuisance model for E[Y|X] or E[T|X] estimation.
-
-    Parameters
-    ----------
-    model_type : str
-        Type of model to use.
-
-    Returns
-    -------
-    sklearn estimator
-        Unfitted model with fit() and predict() methods.
-    """
-    if model_type == "ridge":
-        return Ridge(alpha=1.0)
-    elif model_type == "random_forest":
-        return RandomForestRegressor(
-            n_estimators=100,
-            max_depth=5,
-            min_samples_leaf=10,
-            random_state=42,
-            n_jobs=_DEFAULT_N_JOBS,
-        )
-    elif model_type == "gradient_boosting":
-        return GradientBoostingRegressor(
-            n_estimators=100,
-            max_depth=3,
-            learning_rate=0.1,
-            random_state=42,
-        )
-    else:
-        raise ValueError(
-            f"Unknown model type: {model_type}. "
-            f"Choose from: 'ridge', 'random_forest', 'gradient_boosting'"
-        )
-
-
-def _compute_r2(y_true: NDArray, y_pred: NDArray) -> float:
-    """Compute R² (coefficient of determination)."""
-    ss_res = np.sum((y_true - y_pred) ** 2)
-    ss_tot = np.sum((y_true - y_true.mean()) ** 2)
-    return float(1 - ss_res / ss_tot) if ss_tot > 1e-10 else 0.0
-
-
 def robinson_estimator(
     Y: NDArray[np.float64],
     T: NDArray[np.float64],
     X: NDArray[np.float64],
-    model: BaseEstimator | Literal["ridge", "random_forest", "gradient_boosting"] | None = None,
+    model: BaseEstimator
+    | Literal["ridge", "lasso", "random_forest", "gradient_boosting"]
+    | None = None,
 ) -> RobinsonResult:
     """Robinson (1988) semiparametric estimator.
 
@@ -163,7 +115,7 @@ def robinson_estimator(
     model : sklearn estimator or str, optional
         Model for nuisance estimation. Can be:
         - An sklearn estimator with fit() and predict()
-        - A string: "ridge", "random_forest", "gradient_boosting"
+        - A string: "ridge", "lasso", "random_forest", "gradient_boosting"
         - None: defaults to "random_forest"
 
     Returns
@@ -197,13 +149,8 @@ def robinson_estimator(
     >>> abs(result.theta - 2.0) < 0.2  # Should recover ~2.0
     True
     """
-    n = len(Y)
-
     # Validate inputs
-    if len(T) != n:
-        raise ValueError(f"T length ({len(T)}) must match Y length ({n})")
-    if X.shape[0] != n:
-        raise ValueError(f"X rows ({X.shape[0]}) must match Y length ({n})")
+    validate_lengths(Y, T, X)
 
     if X.ndim == 1:
         X = X.reshape(-1, 1)
@@ -213,9 +160,10 @@ def robinson_estimator(
         model = "random_forest"
 
     if isinstance(model, str):
-        model_type = cast(Literal["ridge", "random_forest", "gradient_boosting"], model)
-        outcome_model = _get_nuisance_model(model_type)
-        treatment_model = _get_nuisance_model(model_type)
+        model_type = cast(Literal["ridge", "lasso", "random_forest", "gradient_boosting"], model)
+        # random_state=42 preserves the historical hardcoded nuisance seed.
+        outcome_model = get_nuisance_model(model_type, random_state=42)
+        treatment_model = get_nuisance_model(model_type, random_state=42)
     else:
         outcome_model = clone(model)
         treatment_model = clone(model)
@@ -235,15 +183,14 @@ def robinson_estimator(
     T_tilde = T - T_hat
 
     # Step 4: Robinson formula
-    T_tilde_sq_sum = np.sum(T_tilde**2)
-
-    if T_tilde_sq_sum < 1e-10:
-        raise ValueError(
+    theta, T_tilde_sq_sum = theta_via_fwl(
+        Y_tilde,
+        T_tilde,
+        no_variation_msg=(
             "Treatment has no variation after controlling for X. "
             "The nuisance model may have overfit or T is deterministic given X."
-        )
-
-    theta = np.sum(Y_tilde * T_tilde) / T_tilde_sq_sum
+        ),
+    )
 
     # Naive SE (doesn't account for nuisance estimation)
     final_residuals = Y_tilde - theta * T_tilde

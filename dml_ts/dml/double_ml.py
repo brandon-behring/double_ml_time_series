@@ -47,7 +47,6 @@ Econometrica, 56(4), 931-954.
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from typing import Literal, cast
 
@@ -55,15 +54,16 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy import stats
 from sklearn.base import BaseEstimator, clone
-from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
-from sklearn.linear_model import Ridge
 from sklearn.model_selection import KFold
 
 from ._results import ResultBase
-
-# Configurable parallelism: default uses all cores; tests use 1 (sequential).
-# Set DML_N_JOBS=1 in test/conftest.py to avoid multiprocessing hangs under Python 3.13.
-_DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
+from ._utils import (
+    compute_r2,
+    cross_fit_predictions,
+    get_nuisance_model,
+    theta_via_fwl,
+    validate_lengths,
+)
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -140,99 +140,6 @@ Interpretation:
 """
 
 
-def _get_nuisance_model(
-    model_type: Literal["ridge", "random_forest", "gradient_boosting"],
-) -> BaseEstimator:
-    """Get a nuisance model for E[Y|X] or E[T|X] estimation."""
-    if model_type == "ridge":
-        return Ridge(alpha=1.0)
-    elif model_type == "random_forest":
-        return RandomForestRegressor(
-            n_estimators=100,
-            max_depth=5,
-            min_samples_leaf=10,
-            random_state=42,
-            n_jobs=_DEFAULT_N_JOBS,
-        )
-    elif model_type == "gradient_boosting":
-        return GradientBoostingRegressor(
-            n_estimators=100,
-            max_depth=3,
-            learning_rate=0.1,
-            random_state=42,
-        )
-    else:
-        raise ValueError(f"Unknown model type: {model_type}")
-
-
-def _compute_r2(y_true: NDArray, y_pred: NDArray) -> float:
-    """Compute R² (coefficient of determination)."""
-    ss_res = np.sum((y_true - y_pred) ** 2)
-    ss_tot = np.sum((y_true - y_true.mean()) ** 2)
-    return float(1 - ss_res / ss_tot) if ss_tot > 1e-10 else 0.0
-
-
-def _cross_fit_nuisance(
-    X: NDArray[np.float64],
-    Y: NDArray[np.float64],
-    T: NDArray[np.float64],
-    n_folds: int,
-    outcome_model: BaseEstimator,
-    treatment_model: BaseEstimator,
-    random_state: int = 42,
-) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    """Generate cross-fitted predictions for nuisance models.
-
-    For each fold, trains models on out-of-fold data and predicts
-    on in-fold data. This eliminates in-sample bias.
-
-    Parameters
-    ----------
-    X : array, shape (n, p)
-        Covariates.
-    Y : array, shape (n,)
-        Outcome.
-    T : array, shape (n,)
-        Treatment.
-    n_folds : int
-        Number of cross-validation folds.
-    outcome_model : sklearn estimator
-        Model for E[Y|X].
-    treatment_model : sklearn estimator
-        Model for E[T|X].
-    random_state : int
-        Random seed for fold splitting.
-
-    Returns
-    -------
-    Y_hat : array, shape (n,)
-        Cross-fitted predictions of E[Y|X].
-    T_hat : array, shape (n,)
-        Cross-fitted predictions of E[T|X].
-    """
-    n = len(Y)
-    Y_hat = np.zeros(n)
-    T_hat = np.zeros(n)
-
-    kf = KFold(n_splits=n_folds, shuffle=True, random_state=random_state)
-
-    for train_idx, test_idx in kf.split(X):
-        X_train, X_test = X[train_idx], X[test_idx]
-        Y_train = Y[train_idx]
-        T_train = T[train_idx]
-
-        # Train on training fold, predict on test fold (out-of-sample)
-        outcome_mod = clone(outcome_model)
-        outcome_mod.fit(X_train, Y_train)
-        Y_hat[test_idx] = outcome_mod.predict(X_test)
-
-        treatment_mod = clone(treatment_model)
-        treatment_mod.fit(X_train, T_train)
-        T_hat[test_idx] = treatment_mod.predict(X_test)
-
-    return Y_hat, T_hat
-
-
 def _influence_function_se(
     Y_tilde: NDArray[np.float64],
     T_tilde: NDArray[np.float64],
@@ -283,7 +190,9 @@ def double_ml(
     T: NDArray[np.float64],
     X: NDArray[np.float64],
     n_folds: int = 5,
-    model: BaseEstimator | Literal["ridge", "random_forest", "gradient_boosting"] | None = None,
+    model: BaseEstimator
+    | Literal["ridge", "lasso", "random_forest", "gradient_boosting"]
+    | None = None,
     outcome_model: BaseEstimator | None = None,
     treatment_model: BaseEstimator | None = None,
     alpha: float = 0.05,
@@ -309,7 +218,7 @@ def double_ml(
         Number of cross-fitting folds. Default: 5.
     model : sklearn estimator or str, optional
         Model for both nuisance functions. Overridden by specific models.
-        Options: "ridge", "random_forest", "gradient_boosting"
+        Options: "ridge", "lasso", "random_forest", "gradient_boosting"
         Default: "random_forest"
     outcome_model : sklearn estimator, optional
         Model for E[Y|X]. Overrides `model` for outcome.
@@ -347,13 +256,8 @@ def double_ml(
     >>> result = double_ml(Y, T, X, model="random_forest")
     >>> print(result.summary())
     """
-    n = len(Y)
-
     # Validate inputs
-    if len(T) != n:
-        raise ValueError(f"T length ({len(T)}) must match Y length ({n})")
-    if X.shape[0] != n:
-        raise ValueError(f"X rows ({X.shape[0]}) must match Y length ({n})")
+    validate_lengths(Y, T, X)
 
     if X.ndim == 1:
         X = X.reshape(-1, 1)
@@ -363,8 +267,10 @@ def double_ml(
         model = "random_forest"
 
     if isinstance(model, str):
-        model_type = cast(Literal["ridge", "random_forest", "gradient_boosting"], model)
-        base_model = _get_nuisance_model(model_type)
+        model_type = cast(Literal["ridge", "lasso", "random_forest", "gradient_boosting"], model)
+        # random_state=42 preserves this estimator's historical hardcoded
+        # nuisance seed (independent of the fold-shuffling random_state).
+        base_model = get_nuisance_model(model_type, random_state=42)
     else:
         base_model = model
 
@@ -374,34 +280,26 @@ def double_ml(
         treatment_model = clone(base_model)
 
     # Step 1-2: Cross-fit nuisance models
-    Y_hat, T_hat = _cross_fit_nuisance(
-        X=X,
-        Y=Y,
-        T=T,
-        n_folds=n_folds,
-        outcome_model=outcome_model,
-        treatment_model=treatment_model,
-        random_state=random_state,
-    )
+    kf = KFold(n_splits=n_folds, shuffle=True, random_state=random_state)
+    Y_hat, T_hat = cross_fit_predictions(X, Y, T, kf.split(X), outcome_model, treatment_model)
 
     # Compute cross-validated R²
-    outcome_r2_cv = _compute_r2(Y, Y_hat)
-    treatment_r2_cv = _compute_r2(T, T_hat)
+    outcome_r2_cv = compute_r2(Y, Y_hat)
+    treatment_r2_cv = compute_r2(T, T_hat)
 
     # Step 3: Compute residuals
     Y_tilde = Y - Y_hat
     T_tilde = T - T_hat
 
     # Step 4: Estimate theta
-    T_tilde_sq_sum = np.sum(T_tilde**2)
-
-    if T_tilde_sq_sum < 1e-10:
-        raise ValueError(
+    theta, _ = theta_via_fwl(
+        Y_tilde,
+        T_tilde,
+        no_variation_msg=(
             "Treatment has no variation after controlling for X. "
             "This may indicate perfect prediction of T by X."
-        )
-
-    theta = np.sum(Y_tilde * T_tilde) / T_tilde_sq_sum
+        ),
+    )
 
     # Step 5: Compute influence function-based SE
     se, influence_scores = _influence_function_se(Y_tilde, T_tilde, theta)
