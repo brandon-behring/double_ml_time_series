@@ -32,6 +32,10 @@ from typing import Any
 import numpy as np
 import pytest
 
+# HAC primitives migrated upstream (Track B PR-7); values must stay EXACT
+# vs the goldens captured from dml_ts.dml.hac — that is the parity claim.
+from temporalcv import newey_west_covariance, newey_west_se, optimal_bandwidth
+
 from dml_ts.dml import (
     DynamicGEstimationDML,
     PanelDML,
@@ -45,7 +49,6 @@ from dml_ts.dml.cross_fitting import (
     TimeSeriesCrossValidator,
 )
 from dml_ts.dml.fwl import fwl_estimate
-from dml_ts.dml.hac import newey_west_covariance, newey_west_se, optimal_bandwidth
 from dml_ts.dml.robinson import robinson_estimator
 
 SNAPSHOT_DIR = Path(__file__).resolve().parent / "snapshots"
@@ -305,11 +308,11 @@ class TestHACGoldens:
         X = np.column_stack([np.ones(n), rng.normal(size=n)])
 
         entry = {
-            "nw_se_auto": newey_west_se(e),
-            "nw_se_bw5": newey_west_se(e, bandwidth=5),
-            "nw_se_parzen_bw5": newey_west_se(e, bandwidth=5, kernel="parzen"),
+            "nw_se_auto": float(newey_west_se(e).se),
+            "nw_se_bw5": float(newey_west_se(e, bandwidth=5).se),
+            "nw_se_parzen_bw5": float(newey_west_se(e, bandwidth=5, kernel="parzen").se),
             "bw_newey_west": optimal_bandwidth(e, method="newey_west"),
-            "sandwich_00_auto": float(newey_west_covariance(e, X)[0, 0]),
+            "sandwich_00_auto": float(newey_west_covariance(e, X).covariance[0, 0]),
         }
         _check("hac", key, entry)
 

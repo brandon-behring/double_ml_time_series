@@ -9,7 +9,7 @@ description: "Extending DML to time series: why random K-fold leaks future data,
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_05.tex
-source_sha256: 9dbab79dd43c4961e97d115729ec538526cf4fbb98fa33ee95d15083839dd348
+source_sha256: 4feaa0c83522116afd0af85299842694aee48ee368a77677474ed91fb7663c0e
 provenance:
   ai_tools:
     - Claude Code
@@ -236,7 +236,7 @@ where:
 
 ### Kernel functions
 
-Three commonly used kernels (implemented in `dml_ts/dml/hac.py`):
+Three commonly used kernels (implemented upstream in `temporalcv`):
 
 1. **Bartlett (triangular)**:
 
@@ -281,13 +281,13 @@ The bandwidth $B$ controls the bias–variance tradeoff:
 
 <Theorem kind="definition" n="5.5" name="Optimal Bandwidth Rule" id="def-optimal-bandwidth">
 
-The rule-of-thumb bandwidth for the Bartlett kernel:
+The rule-of-thumb bandwidth for the Bartlett kernel, as implemented in `temporalcv`:
 
 $$
-B^* = \left\lfloor 1.3 \cdot n^{1/3} \right\rfloor
+B^* = \left\lfloor n^{1/3} \right\rfloor
 $$
 
-For $n=500$: $B^* \approx 10$ lags.
+For $n=500$: $B^* = 7$ lags. Constant factors vary across texts and implementations (Newey & West's (1994) own rule of thumb is $4(n/100)^{2/9}$); the growth rate $n^{1/3}$ is what matters for the Bartlett kernel's consistency.
 
 </Theorem>
 
@@ -302,23 +302,26 @@ where $\hat{\rho}$ is the AR(1) coefficient of the influence scores.
 ### Python implementation
 
 ```python
-from dml_ts.dml import HACEstimator, newey_west_se
+from temporalcv import newey_west_se
 
-# Option 1: Function interface
-se = newey_west_se(
-    residuals=influence_scores,
-    bandwidth="auto",  # Automatic selection
-    kernel="bartlett"
+result = newey_west_se(
+    influence_scores,
+    bandwidth="auto",   # floor(n^(1/3)) Newey-West rule
+    kernel="bartlett",
 )
 
-# Option 2: Class interface with full diagnostics
-hac = HACEstimator(kernel="parzen", bandwidth=10)
-hac.fit(influence_scores)
-
-print(f"HAC SE: {hac.get_se():.4f}")
-print(f"Bandwidth used: {hac.bandwidth_used}")
-print(f"Long-run variance: {hac.get_variance():.4f}")
+# HACResult separates the three scales explicitly:
+print(f"Long-run variance (Omega):      {result.long_run_variance:.4f}")
+print(f"Variance of the mean (Omega/n): {result.variance:.4f}")
+print(f"HAC SE = sqrt(Omega/n):         {result.se:.4f}")
+print(f"Bandwidth used:                 {result.bandwidth}")
 ```
+
+<Theorem kind="remark">
+
+The explicit `long_run_variance` / `variance` / `se` split exists precisely because conflating $\Omega$ with $\Omega/n$ produces silent $\sqrt{n}$-scale errors in downstream standard errors; an earlier revision of this companion's estimator divided by $n$ twice at exactly this seam.
+
+</Theorem>
 
 ## The TemporalPLRDML framework
 
@@ -380,7 +383,8 @@ model = TemporalPLRDML(
     model_y="random_forest",
     model_t="random_forest",
     cv_strategy="time_series_split",
-    hac_kernel="bartlett"
+    hac_kernel="bartlett",
+    random_state=42,
 )
 
 result = model.fit(Y, T, X, time_index=time)
@@ -392,21 +396,21 @@ print(result.summary())
 ```
 Temporal PLR DML Results
 ========================
-Treatment Effect (τ):    2.0391
-HAC Standard Error:      0.0854
-t-statistic:             23.87
+Treatment Effect (θ):    2.1831
+HAC Standard Error:      0.1060
+t-statistic:             20.60
 p-value:                 0.0000
-95% Confidence Interval: [1.8717, 2.2065]
+95% Confidence Interval: [1.9754, 2.3907]
 
 Sample Information:
   Observations:          500
-  Used observations:     414
+  Used observations:     410
   Lag rows dropped:      3
-  CV rows dropped:       83
+  CV rows dropped:       87
 
 Nuisance Model Diagnostics:
-  Outcome R² (CV):       0.451
-  Treatment R² (CV):     0.210
+  Outcome R² (CV):       0.211
+  Treatment R² (CV):     0.081
 
 HAC Inference:
   Bandwidth:             7
@@ -415,7 +419,7 @@ HAC Inference:
 
 <Theorem kind="remark">
 
-The HAC bandwidth of 7 was automatically selected using the $n^{1/3}$ rule. For $n=497$, this equals $\lfloor 1.3 \times 497^{1/3} \rfloor = 10$, slightly adjusted by the kernel choice.
+The HAC bandwidth of 7 was automatically selected by the $\lfloor n_{\text{used}}^{1/3} \rfloor$ rule implemented in `temporalcv`: for $n_{\text{used}}=410$, $\lfloor 410^{1/3} \rfloor = \lfloor 7.43 \rfloor = 7$.
 
 </Theorem>
 
@@ -548,13 +552,13 @@ Consider a dataset with $n=100$ observations indexed $t=1,\ldots,100$. You want 
 
 You estimate a treatment effect with $n=1000$ observations and observe AR(1) autocorrelation $\hat{\rho} = 0.4$ in the influence scores.
 
-(a) Calculate the rule-of-thumb bandwidth $B^* = \lfloor 1.3 \cdot n^{1/3} \rfloor$.
+(a) Calculate the rule-of-thumb bandwidth $B^* = \lfloor n^{1/3} \rfloor$.
 (b) Calculate the Andrews data-driven bandwidth.
 (c) Which would you recommend and why?
 
 **Solution.**
 
-(a) $B^* = \lfloor 1.3 \times 1000^{1/3} \rfloor = \lfloor 1.3 \times 10 \rfloor = 13$.
+(a) $B^* = \lfloor 1000^{1/3} \rfloor = \lfloor 10 \rfloor = 10$.
 
 (b) $B_{\text{Andrews}} = 1.1447 \left( \frac{0.4^2 \times 1000}{(1-0.4)^4} \right)^{1/3} = 1.1447 \times \left( \frac{160}{0.1296} \right)^{1/3} \approx 12$.
 

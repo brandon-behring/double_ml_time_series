@@ -47,10 +47,10 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.model_selection import KFold
+from temporalcv import optimal_bandwidth
 
 from ._results import ResultBase
 from .cross_fitting import TimeSeriesCrossValidator
-from .hac import optimal_bandwidth
 
 ArrayLike: TypeAlias = np.ndarray | list[float]
 ModelSpec: TypeAlias = str | BaseEstimator

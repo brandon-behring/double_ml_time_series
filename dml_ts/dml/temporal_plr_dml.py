@@ -41,6 +41,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy import stats
 from sklearn.base import BaseEstimator
+from temporalcv import newey_west_se
 
 from ._results import ResultBase
 from ._utils import ModelType, cross_fit_predictions, theta_via_fwl, validate_lengths
@@ -51,7 +52,6 @@ from .cross_fitting import (
     PurgedGroupTimeSeriesCV,
     TimeSeriesCrossValidator,
 )
-from .hac import HACEstimator
 
 # Type aliases
 ArrayLike = np.ndarray | list[float]
@@ -244,7 +244,7 @@ class TemporalPLRDML:
         cv_strategy: Cross-validation strategy for time series
         n_splits: Number of CV splits
         gap: Gap between train and test sets (to prevent leakage)
-        hac_bandwidth: Bandwidth for HAC covariance (None = auto)
+        hac_bandwidth: Bandwidth for HAC covariance (None = automatic; 0 = no lags)
         hac_kernel: Kernel for HAC estimation
         random_state: Random seed for reproducibility
 
@@ -281,10 +281,22 @@ class TemporalPLRDML:
             cv_strategy: Time series CV strategy
             n_splits: Number of cross-validation splits
             gap: Gap between train and test (prevents leakage)
-            hac_bandwidth: HAC bandwidth (None for automatic)
+            hac_bandwidth: HAC bandwidth (None = automatic floor(n^(1/3))
+                selection; 0 = no lags, i.e. heteroskedasticity-only SEs)
             hac_kernel: Kernel function for HAC estimation
             random_state: Random seed
+
+        Raises:
+            ValueError: If hac_bandwidth is not None or a non-negative int.
         """
+        if hac_bandwidth is not None and (
+            isinstance(hac_bandwidth, bool)
+            or not isinstance(hac_bandwidth, (int, np.integer))
+            or hac_bandwidth < 0
+        ):
+            raise ValueError(
+                f"hac_bandwidth must be None or a non-negative int, got {hac_bandwidth!r}"
+            )
         self.n_lags = n_lags
         self.model_y = model_y
         self.model_t = model_t
@@ -476,23 +488,22 @@ class TemporalPLRDML:
         # Compute influence scores
         influence_scores = (Y_tilde - theta * T_tilde) * T_tilde / T_tilde_sq_mean
 
-        # Compute HAC standard errors
-        # The "residuals" for HAC are the influence scores
-        hac_estimator = HACEstimator(
+        # Compute HAC standard errors via temporalcv. The "residuals" for
+        # HAC are the influence scores; HACResult.se is sqrt(long-run
+        # variance / n) — the variance of the MEAN — so no further scaling
+        # (issue #7 was a second division by n at exactly this point).
+        if not np.all(np.isfinite(influence_scores)):
+            raise ValueError(
+                "Influence scores contain non-finite values; check the "
+                "nuisance model predictions and input data for NaN/inf."
+            )
+        hac_res = newey_west_se(
+            influence_scores,
+            bandwidth=self.hac_bandwidth if self.hac_bandwidth is not None else "auto",
             kernel=self.hac_kernel,
-            bandwidth=self.hac_bandwidth if self.hac_bandwidth else "auto",
-            prewhiten=False,
         )
-        hac_estimator.fit(influence_scores)
-
-        # get_variance() already returns the variance of the mean estimator
-        # (long-run variance / n); its square root IS the standard error.
-        # Dividing by n again understates the SE by a factor of sqrt(n).
-        hac_var = hac_estimator.get_variance()
-        hac_se = float(np.sqrt(hac_var))
-
-        # Get bandwidth used
-        bandwidth_used = hac_estimator.bandwidth_used
+        hac_se = float(hac_res.se)
+        bandwidth_used = int(hac_res.bandwidth)
 
         # Compute inference statistics
         t_stat = theta / hac_se if hac_se > 1e-10 else 0.0

@@ -12,8 +12,7 @@ import pytest
 
 from dml_ts.dml import TemporalPLRDML, double_ml
 from dml_ts.dml.dynamic_g_estimation import DynamicGEstimationResult
-from dml_ts.dml.fwl import fwl_estimate
-from dml_ts.dml.hac import HACResult
+from dml_ts.dml.fwl import FWLResult, fwl_estimate
 from dml_ts.dml.robinson import robinson_estimator
 
 pytestmark = pytest.mark.tier2
@@ -34,15 +33,6 @@ def _result_instances() -> list[Any]:
         robinson_estimator(Y, T, X, model="ridge"),
         double_ml(Y, T, X, n_folds=3, model="ridge", random_state=0),
         TemporalPLRDML(n_lags=0, model_y="ridge", model_t="ridge", random_state=0).fit(Y, T, X),
-        HACResult(
-            variance=0.01,
-            se=0.1,
-            covariance=None,
-            bandwidth=3,
-            kernel="bartlett",
-            n_samples=120,
-            effective_dof=117.0,
-        ),
         # Direct construction: also covers the default-valued fields
         # (backend/mode) under frozen+slots.
         DynamicGEstimationResult(
@@ -105,9 +95,10 @@ def test_eq_is_identity(result_instances: list[Any]) -> None:
     for r in result_instances:
         assert r == r
         assert hash(r) == hash(r)  # usable in sets/dicts (identity hash)
-    # two equal-valued HACResults are still distinct objects
-    a = HACResult(0.01, 0.1, None, 3, "bartlett", 120, 117.0)
-    b = HACResult(0.01, 0.1, None, 3, "bartlett", 120, 117.0)
+    # two equal-valued results are still distinct objects
+    z = np.zeros(3)
+    a = FWLResult(1.0, 0.1, 10.0, 0.0, z, z, 0.5, 0.5)
+    b = FWLResult(1.0, 0.1, 10.0, 0.0, z, z, 0.5, 0.5)
     assert a != b
 
 
