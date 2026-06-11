@@ -13,8 +13,14 @@ from dml_ts.dml import DMLResult, double_ml
 from dml_ts.sensitivity import RosenbaumBounds, SensitivityResult, compute_sensitivity_for_dml
 
 
+@pytest.mark.network
 class TestChapter4Workflow:
-    """Integration tests for Chapter 4: Cross-Sectional Application."""
+    """Integration tests for Chapter 4: Cross-Sectional Application.
+
+    OJDataLoader is constructed with cache_dir=None (no caching), so every
+    load() downloads the Dominick's CSV — the whole class carries the
+    network marker.
+    """
 
     @pytest.fixture(scope="class")
     def oj_data(self) -> OJDataset:
@@ -222,10 +228,16 @@ class TestChapter4Workflow:
         assert result.p_value < 0.10  # More lenient with smaller sample
 
 
+@pytest.mark.network
 class TestEdgeCases:
-    """Edge case tests for Chapter 4 workflow."""
+    """Edge case tests for Chapter 4 workflow.
 
-    @pytest.mark.tier1
+    These construct their own OJDataLoader instances (cache_dir=None), so
+    every run downloads the CSV — network-marked, and tier2 because both
+    tests run DML estimation.
+    """
+
+    @pytest.mark.tier2
     def test_dml_with_extended_features(self) -> None:
         """Test DML with more confounders."""
         loader = OJDataLoader(features=["feat", "INCOME", "AGE60", "EDUC", "ETHNIC", "HHLARGE"])
@@ -243,7 +255,7 @@ class TestEdgeCases:
         assert not np.isnan(result.theta)
         assert result.theta < 0  # Still expect negative elasticity
 
-    @pytest.mark.tier1
+    @pytest.mark.tier2
     def test_sensitivity_plot_integration(self) -> None:
         """Test that sensitivity plot works with real DML results."""
         import matplotlib
