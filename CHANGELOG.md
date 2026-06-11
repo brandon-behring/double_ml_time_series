@@ -10,6 +10,25 @@ are the compatibility contract).
 
 ### Removed
 
+- **`dml_ts/dml/cross_fitting.py` retired onto temporalcv v2.0.0** (Track B):
+  `TimeSeriesCrossValidator` and `BlockedTimeSeriesCV` import from temporalcv
+  under the same names (they were ported there verbatim with bit-exact golden
+  parity); `CVFold`/`get_fold_info()` are gone (temporalcv exposes
+  `SplitInfo`/`get_split_info()`). `create_time_series_cv` survives as a thin
+  factory (`dml_ts/dml/cv_factory.py`) returning temporalcv objects.
+- **`PurgedGroupTimeSeriesCV` removed — it was leaky.** The retired splitter
+  was a bidirectional purged K-fold: it trained on observations AFTER each
+  test fold, i.e. nuisances saw the future. `TemporalPLRDML
+  (cv_strategy="purged_cv")` and the factory's `"purged"` strategy now use
+  the forward-only `temporalcv.PurgedWalkForward` (`gap` maps directly to the
+  absolute `purge_gap`). **Previous `purged_cv` results were produced with
+  temporal leakage**; the purged golden-snapshot keys were regenerated with
+  provenance, and a no-lookahead invariant now gates every pinned splitter.
+  `gap` maps EXACTLY to `purge_gap` (`embargo_pct=0.0` is set explicitly).
+  Known inherited limitation: PurgedWalkForward silently skips
+  under-provisioned folds (temporalcv#32) — the estimator now WARNS when the
+  CV yields fewer folds than requested.
+
 - **`dml_ts/validation/stationarity.py` retired onto temporalcv v2.0.0**
   (Track B): `StationarityDiagnostic`, `StationarityResult`, and
   `ComprehensiveStationarityResult` are gone from `dml_ts.validation` — use

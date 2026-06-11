@@ -13,11 +13,7 @@ The progression FWL -> Robinson -> DML is pedagogically essential:
 """
 
 from ._dynamic_econml import econml_available, fit_econml_reference
-from .cross_fitting import (
-    BlockedTimeSeriesCV,
-    PurgedGroupTimeSeriesCV,
-    TimeSeriesCrossValidator,
-)
+from .cv_factory import create_time_series_cv
 from .double_ml import DMLResult, double_ml
 from .dynamic_g_estimation import DynamicGEstimationDML, DynamicGEstimationResult
 from .fwl import (
@@ -34,6 +30,7 @@ from .temporal_plr_dml import (
 )
 
 __all__ = [
+    "create_time_series_cv",
     "fwl_estimate",
     "fwl_residualize",
     "fwl_vs_ols_comparison",
@@ -44,9 +41,6 @@ __all__ = [
     "TemporalPLRDMLResult",
     "RollingWindowDML",
     "PanelDML",
-    "TimeSeriesCrossValidator",
-    "BlockedTimeSeriesCV",
-    "PurgedGroupTimeSeriesCV",
     "DynamicGEstimationDML",
     "DynamicGEstimationResult",
     "fit_econml_reference",

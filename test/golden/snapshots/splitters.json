@@ -3,6 +3,18 @@
     "initial": {
       "pr": "track-B PR-4",
       "reason": "initial capture after the #7 and #9 fixes (goldens born correct)"
+    },
+    "pr8_purged_leakage_fix": {
+      "pr": "track-B PR-8",
+      "reason": "purged_* keys (PurgedGroupTimeSeriesCV) REMOVED and replaced by purgedwf_* (PurgedWalkForward): the retired splitter was bidirectional \u2014 it trained on observations after each test fold (temporal leakage). Forward-only behavior is additionally pinned by test_splitter_no_lookahead. purgedwf_* keys captured with embargo_pct=0.0 to mirror _create_cv exactly.",
+      "removed_keys": [
+        "purged_n200_e0.01",
+        "purged_n200_e0.025",
+        "purged_n200_e0.1",
+        "purged_n600_e0.01",
+        "purged_n600_e0.025",
+        "purged_n600_e0.1"
+      ]
     }
   },
   "entries": {
@@ -414,11 +426,11 @@
       "n_folds": 5,
       "sha256": "490f5cc0577154fde427299dc334c0e60517e1b2c979df88c2d631e065562450"
     },
-    "purged_n200_e0.01": {
+    "purgedwf_n200_s5_g0": {
       "folds": [
         {
           "n_test": 33,
-          "n_train": 165,
+          "n_train": 35,
           "test_head": [
             35,
             36,
@@ -435,14 +447,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            32,
+            33,
+            34
           ]
         },
         {
           "n_test": 33,
-          "n_train": 165,
+          "n_train": 68,
           "test_head": [
             68,
             69,
@@ -459,14 +471,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            65,
+            66,
+            67
           ]
         },
         {
           "n_test": 33,
-          "n_train": 165,
+          "n_train": 101,
           "test_head": [
             101,
             102,
@@ -483,14 +495,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            98,
+            99,
+            100
           ]
         },
         {
           "n_test": 33,
-          "n_train": 165,
+          "n_train": 134,
           "test_head": [
             134,
             135,
@@ -507,9 +519,9 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            131,
+            132,
+            133
           ]
         },
         {
@@ -538,13 +550,13 @@
         }
       ],
       "n_folds": 5,
-      "sha256": "5a162f7ce85f3c01054e2f3781e4d52eed45aaa497ca94d4041d3676a36bcf78"
+      "sha256": "508a60217e4936802cd13f3dbce280d04f226180d98fe66bdec92759bf2cb715"
     },
-    "purged_n200_e0.025": {
+    "purgedwf_n200_s5_g20": {
       "folds": [
         {
           "n_test": 33,
-          "n_train": 162,
+          "n_train": 15,
           "test_head": [
             35,
             36,
@@ -561,14 +573,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            12,
+            13,
+            14
           ]
         },
         {
           "n_test": 33,
-          "n_train": 162,
+          "n_train": 48,
           "test_head": [
             68,
             69,
@@ -585,14 +597,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            45,
+            46,
+            47
           ]
         },
         {
           "n_test": 33,
-          "n_train": 162,
+          "n_train": 81,
           "test_head": [
             101,
             102,
@@ -609,14 +621,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            78,
+            79,
+            80
           ]
         },
         {
           "n_test": 33,
-          "n_train": 162,
+          "n_train": 114,
           "test_head": [
             134,
             135,
@@ -633,14 +645,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            111,
+            112,
+            113
           ]
         },
         {
           "n_test": 33,
-          "n_train": 167,
+          "n_train": 147,
           "test_head": [
             167,
             168,
@@ -657,20 +669,20 @@
             2
           ],
           "train_tail": [
-            164,
-            165,
-            166
+            144,
+            145,
+            146
           ]
         }
       ],
       "n_folds": 5,
-      "sha256": "8576b6973fdf9ed797c23b0611b2ab687c1c56c5b666f2b82c2617d61ccccdd5"
+      "sha256": "9f9decca199d42f3a0a2d90a57fdd4a321d6ab77bff4379892f94a61006eb0e8"
     },
-    "purged_n200_e0.1": {
+    "purgedwf_n200_s5_g5": {
       "folds": [
         {
           "n_test": 33,
-          "n_train": 147,
+          "n_train": 30,
           "test_head": [
             35,
             36,
@@ -687,14 +699,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            27,
+            28,
+            29
           ]
         },
         {
           "n_test": 33,
-          "n_train": 147,
+          "n_train": 63,
           "test_head": [
             68,
             69,
@@ -711,14 +723,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            60,
+            61,
+            62
           ]
         },
         {
           "n_test": 33,
-          "n_train": 147,
+          "n_train": 96,
           "test_head": [
             101,
             102,
@@ -735,14 +747,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            93,
+            94,
+            95
           ]
         },
         {
           "n_test": 33,
-          "n_train": 147,
+          "n_train": 129,
           "test_head": [
             134,
             135,
@@ -759,14 +771,14 @@
             2
           ],
           "train_tail": [
-            197,
-            198,
-            199
+            126,
+            127,
+            128
           ]
         },
         {
           "n_test": 33,
-          "n_train": 167,
+          "n_train": 162,
           "test_head": [
             167,
             168,
@@ -783,20 +795,20 @@
             2
           ],
           "train_tail": [
-            164,
-            165,
-            166
+            159,
+            160,
+            161
           ]
         }
       ],
       "n_folds": 5,
-      "sha256": "aff6610e151ee0325bf0d7cd3c10f5ce556adb6617426e50e6c443568231696c"
+      "sha256": "e8cb01ac3cf61f0e49395fb48fb9194c68a4697ba6604508d924b5db9b2b6eaf"
     },
-    "purged_n600_e0.01": {
+    "purgedwf_n600_s5_g0": {
       "folds": [
         {
           "n_test": 100,
-          "n_train": 494,
+          "n_train": 100,
           "test_head": [
             100,
             101,
@@ -813,14 +825,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            97,
+            98,
+            99
           ]
         },
         {
           "n_test": 100,
-          "n_train": 494,
+          "n_train": 200,
           "test_head": [
             200,
             201,
@@ -837,14 +849,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            197,
+            198,
+            199
           ]
         },
         {
           "n_test": 100,
-          "n_train": 494,
+          "n_train": 300,
           "test_head": [
             300,
             301,
@@ -861,14 +873,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            297,
+            298,
+            299
           ]
         },
         {
           "n_test": 100,
-          "n_train": 494,
+          "n_train": 400,
           "test_head": [
             400,
             401,
@@ -885,9 +897,9 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            397,
+            398,
+            399
           ]
         },
         {
@@ -916,13 +928,13 @@
         }
       ],
       "n_folds": 5,
-      "sha256": "6d0974c6fb225823995a9f61cca63368fe4ee38a6aa890fb9613ffbb272bf4d3"
+      "sha256": "52f143747be6c096cec44e4224651338bf855d7accaef1b051518c40a95431eb"
     },
-    "purged_n600_e0.025": {
+    "purgedwf_n600_s5_g20": {
       "folds": [
         {
           "n_test": 100,
-          "n_train": 485,
+          "n_train": 80,
           "test_head": [
             100,
             101,
@@ -939,14 +951,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            77,
+            78,
+            79
           ]
         },
         {
           "n_test": 100,
-          "n_train": 485,
+          "n_train": 180,
           "test_head": [
             200,
             201,
@@ -963,14 +975,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            177,
+            178,
+            179
           ]
         },
         {
           "n_test": 100,
-          "n_train": 485,
+          "n_train": 280,
           "test_head": [
             300,
             301,
@@ -987,14 +999,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            277,
+            278,
+            279
           ]
         },
         {
           "n_test": 100,
-          "n_train": 485,
+          "n_train": 380,
           "test_head": [
             400,
             401,
@@ -1011,14 +1023,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            377,
+            378,
+            379
           ]
         },
         {
           "n_test": 100,
-          "n_train": 500,
+          "n_train": 480,
           "test_head": [
             500,
             501,
@@ -1035,20 +1047,20 @@
             2
           ],
           "train_tail": [
-            497,
-            498,
-            499
+            477,
+            478,
+            479
           ]
         }
       ],
       "n_folds": 5,
-      "sha256": "5ec0b3b1808e6f0d025e55c87a16ae5c78c2e8e0fc1c7c74d162371464dbe5d9"
+      "sha256": "91bae51d752d0368ef24bf39a42421637321f416f10f4bbaeec1dcd626cf4217"
     },
-    "purged_n600_e0.1": {
+    "purgedwf_n600_s5_g5": {
       "folds": [
         {
           "n_test": 100,
-          "n_train": 440,
+          "n_train": 95,
           "test_head": [
             100,
             101,
@@ -1065,14 +1077,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            92,
+            93,
+            94
           ]
         },
         {
           "n_test": 100,
-          "n_train": 440,
+          "n_train": 195,
           "test_head": [
             200,
             201,
@@ -1089,14 +1101,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            192,
+            193,
+            194
           ]
         },
         {
           "n_test": 100,
-          "n_train": 440,
+          "n_train": 295,
           "test_head": [
             300,
             301,
@@ -1113,14 +1125,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            292,
+            293,
+            294
           ]
         },
         {
           "n_test": 100,
-          "n_train": 440,
+          "n_train": 395,
           "test_head": [
             400,
             401,
@@ -1137,14 +1149,14 @@
             2
           ],
           "train_tail": [
-            597,
-            598,
-            599
+            392,
+            393,
+            394
           ]
         },
         {
           "n_test": 100,
-          "n_train": 500,
+          "n_train": 495,
           "test_head": [
             500,
             501,
@@ -1161,14 +1173,14 @@
             2
           ],
           "train_tail": [
-            497,
-            498,
-            499
+            492,
+            493,
+            494
           ]
         }
       ],
       "n_folds": 5,
-      "sha256": "de5fcd47de943d458963a900ed966a5d233be9a7db7f1915e84aea59f98902f1"
+      "sha256": "7edb4ef88ece3303ecb8d7a2d990a785b95bae940a7061f18eb53285d1b03740"
     },
     "tscv_n1000_s3_g0": {
       "folds": [

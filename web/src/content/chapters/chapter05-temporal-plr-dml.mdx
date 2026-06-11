@@ -9,7 +9,7 @@ description: "Extending DML to time series: why random K-fold leaks future data,
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_05.tex
-source_sha256: 4feaa0c83522116afd0af85299842694aee48ee368a77677474ed91fb7663c0e
+source_sha256: d1bee047c3df2ab18b5748e41efeea8deb2f410cc6b2b69d7b1bcd266b66fd40
 provenance:
   ai_tools:
     - Claude Code
@@ -113,7 +113,7 @@ Now testing never uses future training data.
 
 ### Time series cross-validation strategies
 
-We implement three strategies in `dml_ts/dml/cross_fitting.py`:
+Three strategies are available (implemented upstream in `temporalcv`; the companion's estimators select among them via `cv_strategy`):
 
 <Theorem kind="definition" n="5.1" name="Expanding Window CV" id="def-expanding-cv">
 
@@ -145,15 +145,18 @@ The window "slides" forward, discarding old data to maintain adaptivity to regim
 
 </Theorem>
 
-<Theorem kind="definition" n="5.3" name="Purged K-Fold CV" id="def-purged-cv">
+<Theorem kind="definition" n="5.3" name="Purged Walk-Forward CV" id="def-purged-cv">
 
-Following de Prado (<Cite key="dePrado2018" />), for financial data with overlapping labels or leakage concerns:
+Following de Prado (<Cite key="dePrado2018" />), for data with overlapping labels or leakage concerns, a forward-only walk with purging:
 
-1. Split data into $K$ folds based on time.
-2. For each test fold, **purge** training observations within the embargo period.
-3. **Embargo** prevents train observations immediately before test from contaminating predictions.
+1. Walk test windows forward through time, training only on observations *before* each test window.
+2. **Purge** the last $g$ training observations adjacent to the test boundary (the `purge_gap`), so labels that overlap the test window never enter training.
 
-Purging removes $p\%$ of training data adjacent to test boundaries.
+</Theorem>
+
+<Theorem kind="remark">
+
+De Prado's original formulation is a *bidirectional* purged K-fold (training on both sides of each test fold, with a post-test embargo). For nuisance estimation in temporal DML that bidirectionality is itself lookahead: an earlier revision of this companion's `purged_cv` strategy trained nuisances on observations after the test window, and was replaced by the forward-only walk above.
 
 </Theorem>
 
@@ -162,7 +165,7 @@ Purging removes $p\%$ of training data adjacent to test boundaries.
 Our `TimeSeriesCrossValidator` handles all three strategies:
 
 ```python
-from dml_ts.dml import TimeSeriesCrossValidator
+from temporalcv import TimeSeriesCrossValidator
 
 # Expanding window with 5 folds and 2-period gap
 cv = TimeSeriesCrossValidator(
@@ -173,7 +176,7 @@ cv = TimeSeriesCrossValidator(
 )
 
 # Generate train/test indices
-for train_idx, test_idx in cv.split(X, y, time_index=time):
+for train_idx, test_idx in cv.split(X):
     print(f"Train: {train_idx[:5]}...{train_idx[-5:]}")
     print(f"Test:  {test_idx[:5]}...{test_idx[-5:]}")
 ```

@@ -3,6 +3,14 @@
     "initial": {
       "pr": "track-B PR-4",
       "reason": "initial capture after the #7 and #9 fixes (goldens born correct)"
+    },
+    "pr8_purged_leakage_fix": {
+      "pr": "track-B PR-8",
+      "reason": "tplr_purged_ridge and tplr_purged_rf REGENERATED: cv_strategy='purged_cv' now uses the forward-only PurgedWalkForward (gap -> purge_gap); the previous values were produced with nuisances trained on future observations.",
+      "regenerated_keys": [
+        "tplr_purged_ridge",
+        "tplr_purged_rf"
+      ]
     }
   },
   "entries": {
@@ -131,32 +139,32 @@
       "treatment_r2_cv": 0.3528286105172128
     },
     "tplr_purged_rf": {
-      "ci_lower": 1.3169990621222738,
-      "ci_upper": 1.5507007629520906,
+      "ci_lower": 1.3573922615560479,
+      "ci_upper": 1.6096008333550236,
       "dropped_initial_rows": 35,
       "hac_bandwidth": 5,
       "lagged_rows_dropped": 0,
       "n_periods": 165,
-      "outcome_r2_cv": 0.3838191502974011,
+      "outcome_r2_cv": 0.32412923359447443,
       "p_value": 0.0,
-      "se": 0.059618876334776076,
-      "t_stat": 24.050267309395906,
-      "theta": 1.4338499125371822,
-      "treatment_r2_cv": 0.06195650431333344
+      "se": 0.06434010364179259,
+      "t_stat": 23.05710534311169,
+      "theta": 1.4834965474555357,
+      "treatment_r2_cv": 0.054763794454195436
     },
     "tplr_purged_ridge": {
-      "ci_lower": 1.3596224357144018,
-      "ci_upper": 1.5974746372218083,
-      "dropped_initial_rows": 54,
+      "ci_lower": 1.404806027577341,
+      "ci_upper": 1.6362116443979375,
+      "dropped_initial_rows": 49,
       "hac_bandwidth": 6,
       "lagged_rows_dropped": 1,
-      "n_periods": 245,
-      "outcome_r2_cv": 0.5248507748275211,
+      "n_periods": 250,
+      "outcome_r2_cv": 0.4806787799183978,
       "p_value": 0.0,
-      "se": 0.0606776969841166,
-      "t_stat": 24.36724875789435,
-      "theta": 1.478548536468105,
-      "treatment_r2_cv": 0.3519592443860946
+      "se": 0.059033129854909216,
+      "t_stat": 25.756873127423944,
+      "theta": 1.5205088359876393,
+      "treatment_r2_cv": 0.3086075643442783
     },
     "tplr_time_series_rf": {
       "ci_lower": 1.3604225363930142,

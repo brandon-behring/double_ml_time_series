@@ -71,7 +71,7 @@ Use temporal blocking and purging directly when inspecting train/test geometry.
 
    import numpy as np
 
-   from dml_ts.dml import TimeSeriesCrossValidator
+   from temporalcv import TimeSeriesCrossValidator
 
    X = np.arange(100).reshape(-1, 1)
    cv = TimeSeriesCrossValidator(n_splits=5, gap=3, purge_length=2)
