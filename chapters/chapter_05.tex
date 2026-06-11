@@ -98,7 +98,7 @@ Now testing never uses future training data.
 
 \subsection{Time Series Cross-Validation Strategies}
 
-We implement three strategies in \texttt{dml\_ts/dml/cross\_fitting.py}:
+Three strategies are available (implemented upstream in \texttt{temporalcv}; the companion's estimators select among them via \texttt{cv\_strategy}):
 
 \begin{definition}[Expanding Window CV]
 \label{def:expanding_cv}
@@ -123,24 +123,34 @@ Like expanding window, but with fixed training size $w$:
 The window ``slides'' forward, discarding old data to maintain adaptivity to regime changes.
 \end{definition}
 
-\begin{definition}[Purged K-Fold CV \cite{dePrado2018}]
+\begin{definition}[Purged Walk-Forward CV \cite{dePrado2018}]
 \label{def:purged_cv}
-For financial data with overlapping labels or leakage concerns:
+For data with overlapping labels or leakage concerns, a forward-only walk
+with purging:
 \begin{enumerate}
-    \item Split data into $K$ folds based on time
-    \item For each test fold, \textbf{purge} training observations within embargo period
-    \item \textbf{Embargo} prevents train observations immediately before test from contaminating predictions
+    \item Walk test windows forward through time, training only on
+          observations \emph{before} each test window
+    \item \textbf{Purge} the last $g$ training observations adjacent to the
+          test boundary (the \texttt{purge\_gap}), so labels that overlap
+          the test window never enter training
 \end{enumerate}
-
-Purging removes $p\%$ of training data adjacent to test boundaries.
 \end{definition}
+
+\begin{remark}
+De Prado's original formulation is a \emph{bidirectional} purged K-fold
+(training on both sides of each test fold, with a post-test embargo). For
+nuisance estimation in temporal DML that bidirectionality is itself
+lookahead: an earlier revision of this companion's \texttt{purged\_cv}
+strategy trained nuisances on observations after the test window, and was
+replaced by the forward-only walk above.
+\end{remark}
 
 \subsection{Python Implementation}
 
 Our \texttt{TimeSeriesCrossValidator} handles all three strategies:
 
 \begin{minted}[fontsize=\small]{python}
-from dml_ts.dml import TimeSeriesCrossValidator
+from temporalcv import TimeSeriesCrossValidator
 
 # Expanding window with 5 folds and 2-period gap
 cv = TimeSeriesCrossValidator(
@@ -151,7 +161,7 @@ cv = TimeSeriesCrossValidator(
 )
 
 # Generate train/test indices
-for train_idx, test_idx in cv.split(X, y, time_index=time):
+for train_idx, test_idx in cv.split(X):
     print(f"Train: {train_idx[:5]}...{train_idx[-5:]}")
     print(f"Test:  {test_idx[:5]}...{test_idx[-5:]}")
 \end{minted}

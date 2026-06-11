@@ -41,17 +41,17 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy import stats
 from sklearn.base import BaseEstimator
-from temporalcv import newey_west_se
+from temporalcv import (
+    BlockedTimeSeriesCV,
+    PurgedWalkForward,
+    TimeSeriesCrossValidator,
+    newey_west_se,
+)
 
 from ._results import ResultBase
 from ._utils import ModelType, cross_fit_predictions, theta_via_fwl, validate_lengths
 from ._utils import compute_r2 as _compute_r2
 from ._utils import get_nuisance_model as _get_nuisance_model
-from .cross_fitting import (
-    BlockedTimeSeriesCV,
-    PurgedGroupTimeSeriesCV,
-    TimeSeriesCrossValidator,
-)
 
 # Type aliases
 ArrayLike = np.ndarray | list[float]
@@ -185,10 +185,9 @@ def _cross_fit_nuisance_time_series(
     X: NDArray[np.float64],
     Y: NDArray[np.float64],
     T: NDArray[np.float64],
-    cv: TimeSeriesCrossValidator | BlockedTimeSeriesCV | PurgedGroupTimeSeriesCV,
+    cv: TimeSeriesCrossValidator | BlockedTimeSeriesCV | PurgedWalkForward,
     outcome_model: BaseEstimator,
     treatment_model: BaseEstimator,
-    time_index: NDArray[np.float64] | None = None,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Generate cross-fitted predictions for nuisance models using time series CV.
 
@@ -203,17 +202,25 @@ def _cross_fit_nuisance_time_series(
         cv: Time series cross-validator
         outcome_model: Model for E[Y|X]
         treatment_model: Model for E[T|X]
-        time_index: Optional time index for observations
 
     Returns:
         Tuple of (Y_hat, T_hat) cross-fitted predictions
     """
-    # Get splits - different CV classes have different signatures
-    if isinstance(cv, TimeSeriesCrossValidator):
-        splits = cv.split(X, Y, time_index=time_index)
-    else:
-        # BlockedTimeSeriesCV and PurgedGroupTimeSeriesCV don't take time_index
-        splits = cv.split(X, Y)
+    # temporalcv splitters share split(X, y=None, groups=None) — splitting
+    # is positional. Materialize the folds to detect silent shortfall:
+    # PurgedWalkForward skips under-provisioned folds while get_n_splits()
+    # stays nominal (temporalcv#32).
+    splits = list(cv.split(X, Y))
+    if len(splits) < cv.get_n_splits():
+        warnings.warn(
+            f"CV yielded {len(splits)} of {cv.get_n_splits()} requested folds; "
+            "the configuration is under-provisioned for this sample size "
+            "(temporalcv#32: PurgedWalkForward silently skips folds with empty "
+            "train windows). Uncovered rows are excluded via "
+            "dropped_initial_rows.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
 
     # Early observations may be uncovered by expanding-window temporal CV;
     # cross_fit_predictions leaves them NaN so the estimator excludes them
@@ -320,7 +327,7 @@ class TemporalPLRDML:
 
     def _create_cv(
         self, n_samples: int
-    ) -> TimeSeriesCrossValidator | BlockedTimeSeriesCV | PurgedGroupTimeSeriesCV:
+    ) -> TimeSeriesCrossValidator | BlockedTimeSeriesCV | PurgedWalkForward:
         """Create the appropriate cross-validator based on strategy."""
         if self.cv_strategy == "time_series_split":
             return TimeSeriesCrossValidator(
@@ -336,12 +343,18 @@ class TemporalPLRDML:
                 gap_blocks=max(1, self.gap // 10) if self.gap > 0 else 1,
             )
         elif self.cv_strategy == "purged_cv":
-            # PurgedGroupTimeSeriesCV uses embargo_pct
-            # Convert gap to embargo percentage
-            embargo_pct = self.gap / n_samples if self.gap > 0 and n_samples > 0 else 0.01
-            return PurgedGroupTimeSeriesCV(
+            # Forward-only purged walk (temporalcv). The retired
+            # PurgedGroupTimeSeriesCV trained on observations AFTER each test
+            # fold — temporal leakage — so this strategy now purges `gap`
+            # observations before each test window and never trains on the
+            # future. gap maps directly to the absolute purge_gap.
+            return PurgedWalkForward(
                 n_splits=self.n_splits,
-                embargo_pct=min(0.1, max(0.01, embargo_pct)),
+                purge_gap=self.gap,
+                # Explicit: gap maps EXACTLY to the purge distance; without
+                # this, PurgedWalkForward's default 1%-of-test embargo would
+                # add undisclosed extra separation.
+                embargo_pct=0.0,
             )
         else:
             raise ValueError(f"Unknown CV strategy: {self.cv_strategy}")
@@ -366,7 +379,8 @@ class TemporalPLRDML:
             Y: Outcome variable (n_samples,)
             T: Treatment variable (n_samples,)
             X: Confounders (n_samples, n_features)
-            time_index: Time index for each observation (optional, uses row order if None)
+            time_index: Accepted for API compatibility and length-validated;
+                splitting is positional (row order), so the values are not used
             alpha: Significance level for confidence intervals (default 0.05)
 
         Returns:
@@ -389,22 +403,21 @@ class TemporalPLRDML:
         validate_lengths(Y, T, X)
 
         # Create time index if not provided
-        if time_index is None:
-            time_index_arr = np.arange(n_samples, dtype=np.float64)
-        else:
-            time_index_arr = np.asarray(time_index, dtype=np.float64)
+        if time_index is not None and len(np.asarray(time_index)) != n_samples:
+            raise ValueError(
+                f"time_index length ({len(np.asarray(time_index))}) must match "
+                f"Y length ({n_samples})"
+            )
 
         # Create lagged features
         if self.n_lags > 0:
             X_augmented, n_dropped = _create_lagged_features(X, T, self.n_lags)
             Y_eff = Y[self.n_lags :]
             T_eff = T[self.n_lags :]
-            time_eff = time_index_arr[self.n_lags :]
         else:
             X_augmented = X
             Y_eff = Y
             T_eff = T
-            time_eff = time_index_arr
             n_dropped = 0
 
         n_effective = len(Y_eff)
@@ -424,7 +437,6 @@ class TemporalPLRDML:
             cv=cv,
             outcome_model=outcome_model,
             treatment_model=treatment_model,
-            time_index=time_eff,
         )
 
         # Expanding-window temporal CV cannot predict the earliest rows without
@@ -879,7 +891,8 @@ class PanelDML:
             random_state=self.random_state,
         )
 
-        # Use time_id as time index for proper CV
+        # time_index is accepted for API compatibility only — splitting is
+        # positional, so rows must already be in temporal order per unit
         result = dml.fit(Y_fe, T_fe, X_fe, time_index=time_id.astype(np.float64))
 
         # If cluster SE requested, recompute with clustering

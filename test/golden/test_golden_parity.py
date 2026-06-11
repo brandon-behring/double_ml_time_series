@@ -34,7 +34,20 @@ import pytest
 
 # HAC primitives migrated upstream (Track B PR-7); values must stay EXACT
 # vs the goldens captured from dml_ts.dml.hac — that is the parity claim.
-from temporalcv import newey_west_covariance, newey_west_se, optimal_bandwidth
+# Splitters and HAC primitives migrated upstream (Track B PR-7/PR-8).
+# TSCV/Blocked values must stay EXACT vs the goldens captured from
+# dml_ts.dml.cross_fitting (verbatim A2 ports — that is the parity claim).
+# The purged keys were REGENERATED in PR-8: the retired
+# PurgedGroupTimeSeriesCV was bidirectional (trained on observations after
+# each test fold — temporal leakage); PurgedWalkForward is forward-only.
+from temporalcv import (
+    BlockedTimeSeriesCV,
+    PurgedWalkForward,
+    TimeSeriesCrossValidator,
+    newey_west_covariance,
+    newey_west_se,
+    optimal_bandwidth,
+)
 
 from dml_ts.dml import (
     DynamicGEstimationDML,
@@ -42,11 +55,6 @@ from dml_ts.dml import (
     RollingWindowDML,
     TemporalPLRDML,
     double_ml,
-)
-from dml_ts.dml.cross_fitting import (
-    BlockedTimeSeriesCV,
-    PurgedGroupTimeSeriesCV,
-    TimeSeriesCrossValidator,
 )
 from dml_ts.dml.fwl import fwl_estimate
 from dml_ts.dml.robinson import robinson_estimator
@@ -236,13 +244,11 @@ for _n in (200, 1000):
             BlockedTimeSeriesCV(n_splits=_ns, gap_blocks=1),
             _n,
         )
-# Embargo values spanning TemporalPLRDML._create_cv's clamp range [0.01, 0.1]
-# (it emits clamp(gap/n, 0.01, 0.1) with its configured n_splits; these pins
-# parametrize the splitter directly at the floor, an interior value, and the
-# ceiling for two sample sizes).
-for _n, _embargo in ((200, 0.01), (200, 0.025), (200, 0.1), (600, 0.01), (600, 0.025), (600, 0.1)):
-    SPLITTER_CONFIGS[f"purged_n{_n}_e{_embargo}"] = (
-        PurgedGroupTimeSeriesCV(n_splits=5, embargo_pct=_embargo),
+# Forward-only purged walk configs matching TemporalPLRDML._create_cv
+# exactly: gap -> purge_gap, embargo_pct=0.0 (PR-8 leakage fix).
+for _n, _pg in ((200, 0), (200, 5), (200, 20), (600, 0), (600, 5), (600, 20)):
+    SPLITTER_CONFIGS[f"purgedwf_n{_n}_s5_g{_pg}"] = (
+        PurgedWalkForward(n_splits=5, purge_gap=_pg, embargo_pct=0.0),
         _n,
     )
 
@@ -276,6 +282,20 @@ class TestSplitterGoldens:
             )
         entry = {"n_folds": len(folds), "folds": folds, "sha256": digest.hexdigest()}
         _check("splitters", key, entry)
+
+    @pytest.mark.parametrize("key", sorted(SPLITTER_CONFIGS))
+    def test_splitter_no_lookahead(self, key: str) -> None:
+        """Behavioral gate: every pinned splitter is forward-only.
+
+        Replacement gate for the PR-8 purged regeneration — the retired
+        bidirectional purged K-fold trained on max(train) > min(test).
+        """
+        splitter, n = SPLITTER_CONFIGS[key]
+        X = np.zeros((n, 1))
+        for train_idx, test_idx in splitter.split(X):
+            assert np.max(train_idx) < np.min(test_idx), f"{key}: lookahead fold"
+            if hasattr(splitter, "purge_gap") and splitter.purge_gap:
+                assert np.max(train_idx) + splitter.purge_gap < np.min(test_idx)
 
 
 # ---------------------------------------------------------------------------

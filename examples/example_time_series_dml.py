@@ -11,9 +11,9 @@ Usage:
 """
 
 import numpy as np
+from temporalcv import TimeSeriesCrossValidator
 
 from dml_ts.dml import TemporalPLRDML
-from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator
 from dml_ts.validation import TimeSeriesDGPGenerator
 
 

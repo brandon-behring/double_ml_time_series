@@ -12,9 +12,8 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy import stats as scipy_stats
 from sklearn.dummy import DummyRegressor
-from temporalcv import newey_west_se
+from temporalcv import TimeSeriesCrossValidator, newey_west_se
 
-from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator
 from dml_ts.dml.temporal_plr_dml import (
     PanelDML,
     RollingWindowDML,

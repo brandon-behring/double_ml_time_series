@@ -34,7 +34,7 @@ Temporal Cross-Validation
 
    import numpy as np
 
-   from dml_ts.dml import TimeSeriesCrossValidator
+   from temporalcv import TimeSeriesCrossValidator
 
    X = np.arange(120).reshape(-1, 1)
    cv = TimeSeriesCrossValidator(n_splits=4, gap=3, purge_length=2)

@@ -2,9 +2,10 @@
 
 import numpy as np
 import pytest
+from temporalcv import TimeSeriesCrossValidator
 
 from dml_ts.data import create_synthetic_fred_data
-from dml_ts.dml import TemporalPLRDML, TimeSeriesCrossValidator, double_ml
+from dml_ts.dml import TemporalPLRDML, double_ml
 from dml_ts.validation import create_insurance_dgp
 
 pytestmark = pytest.mark.tier1
@@ -85,3 +86,17 @@ def test_sphinx_insurance_dgp_snippet() -> None:
     assert len(data.Y) == 96
     assert data.X.shape[0] == 96
     assert data.true_params.tau == -0.8
+
+
+def test_chapter5_temporal_cv_loop_snippet() -> None:
+    """Chapter 5's temporal-CV loop runs against the live temporalcv API.
+
+    Regression guard: the chapter previously passed time_index= to split(),
+    which the temporalcv splitter rejects (splitting is positional).
+    """
+    X = np.arange(200, dtype=float).reshape(-1, 1)
+    cv = TimeSeriesCrossValidator(n_splits=5, gap=2)
+    folds = list(cv.split(X))
+    assert len(folds) == 5
+    for train_idx, test_idx in folds:
+        assert np.max(train_idx) < np.min(test_idx)

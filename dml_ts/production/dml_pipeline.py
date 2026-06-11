@@ -30,9 +30,11 @@ from sklearn.preprocessing import StandardScaler
 
 # Import our DML components
 try:
-    from temporalcv import newey_west_se
+    from temporalcv import (
+        TimeSeriesCrossValidator,  # noqa: F401
+        newey_west_se,
+    )
 
-    from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator  # noqa: F401
     from dml_ts.dml.double_ml import double_ml  # noqa: F401
     from dml_ts.dml.temporal_plr_dml import TemporalPLRDML  # noqa: F401
 

@@ -64,13 +64,15 @@ g-estimation implementation.
 
 ----
 
-Time Series Cross-Validation (``dml_ts.dml.cross_fitting``)
------------------------------------------------------------
+Time Series Cross-Validation (``dml_ts.dml.cv_factory``)
+---------------------------------------------------------
 
-Temporal cross-validation with blocking, purging, and gap controls to prevent
-information leakage under autocorrelation.
+The splitters live upstream in `temporalcv <https://github.com/brandon-behring/temporalcv>`_
+(``from temporalcv import TimeSeriesCrossValidator, BlockedTimeSeriesCV,
+PurgedWalkForward``); this module keeps the dml_ts-style string-dispatch
+factory.
 
-.. automodule:: dml_ts.dml.cross_fitting
+.. automodule:: dml_ts.dml.cv_factory
    :members:
    :undoc-members: False
    :show-inheritance:
