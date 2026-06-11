@@ -19,6 +19,7 @@ as DML requires different handling than standard ML prediction.
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -29,14 +30,22 @@ from sklearn.preprocessing import StandardScaler
 
 # Import our DML components
 try:
+    from temporalcv import newey_west_se
+
     from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator  # noqa: F401
     from dml_ts.dml.double_ml import double_ml  # noqa: F401
-    from dml_ts.dml.hac import newey_west_se
     from dml_ts.dml.temporal_plr_dml import TemporalPLRDML  # noqa: F401
 
     DML_AVAILABLE = True
-except ImportError:
+except ImportError as _import_error:
     DML_AVAILABLE = False
+    warnings.warn(
+        f"DML/HAC components unavailable ({_import_error!r}); the demo "
+        "pipeline will fall back to NAIVE iid standard errors, which "
+        "understate uncertainty under autocorrelation.",
+        RuntimeWarning,
+        stacklevel=2,
+    )
 
 # Import registry and monitoring components
 from dml_ts.production.causal_monitor import CausalMonitor, MonitoringResult
@@ -57,7 +66,7 @@ class PipelineConfig:
         propensity_model: Model for treatment propensity
         outcome_model: Model for outcome regression
         use_hac: Use HAC standard errors for time series
-        hac_bandwidth: Bandwidth for HAC (None = auto)
+        hac_bandwidth: Bandwidth for HAC (None = Andrews data-driven selection)
         monitoring_enabled: Enable companion monitoring utilities
         feature_columns: List of feature/covariate column names
         treatment_column: Treatment variable name
@@ -366,8 +375,21 @@ class InsuranceDMLPipeline:
 
         # Compute standard error
         if self.config.use_hac and DML_AVAILABLE:
-            se = newey_west_se(psi, bandwidth=self.config.hac_bandwidth)
+            # Historical quirk preserved: the retired dml_ts hac treated
+            # bandwidth=None as Andrews selection (an else-branch accident).
+            # temporalcv rejects None, so map it explicitly; note temporalcv's
+            # Andrews uses the literature alpha(1) constant for Bartlett
+            # (documented deviation from the old implementation).
+            bw = self.config.hac_bandwidth if self.config.hac_bandwidth is not None else "andrews"
+            se = float(newey_west_se(psi, bandwidth=bw).se)
         else:
+            if self.config.use_hac and not DML_AVAILABLE:
+                warnings.warn(
+                    "use_hac=True but HAC components are unavailable; "
+                    "reporting NAIVE iid standard errors instead.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
             se = np.std(psi) / np.sqrt(n_samples)
 
         self._ate_se = se

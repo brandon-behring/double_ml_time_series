@@ -25,7 +25,6 @@ from .fwl import (
     fwl_residualize,
     fwl_vs_ols_comparison,
 )
-from .hac import HACEstimator, newey_west_covariance, newey_west_se
 from .robinson import robinson_estimator
 from .temporal_plr_dml import (
     PanelDML,
@@ -48,9 +47,6 @@ __all__ = [
     "TimeSeriesCrossValidator",
     "BlockedTimeSeriesCV",
     "PurgedGroupTimeSeriesCV",
-    "newey_west_se",
-    "newey_west_covariance",
-    "HACEstimator",
     "DynamicGEstimationDML",
     "DynamicGEstimationResult",
     "fit_econml_reference",

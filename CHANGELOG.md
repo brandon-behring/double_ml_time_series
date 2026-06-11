@@ -8,7 +8,40 @@ are the compatibility contract).
 
 ## [Unreleased]
 
-No unreleased changes.
+### Removed
+
+- **`dml_ts/dml/hac.py` retired onto temporalcv v2.0.0** (Track B):
+  `HACEstimator`, `newey_west_se`, and `newey_west_covariance` are gone from
+  `dml_ts.dml` — use `from temporalcv import newey_west_se,
+  newey_west_covariance, optimal_bandwidth`. Golden-parity gated: every
+  estimator snapshot byte-identical (the temporalcv port was proven bit-exact
+  against this module at its capture time).
+
+### Added
+
+- `dml_ts/dml/inference.py`: the causal-layer `hac_inference` survivor, now
+  raising on non-positive/non-finite `se_hac` (previously reported t=inf,
+  p=0.0 — "infinitely significant" from degenerate input).
+
+### Changed
+
+- `TemporalPLRDML` validates `hac_bandwidth` at construction (None or
+  non-negative int, parameter-named error) and raises with context on
+  non-finite influence scores. `hac_bandwidth=0` now means zero lags
+  (heteroskedasticity-only SEs) instead of silently selecting automatic
+  bandwidth (a falsy-check quirk). Invalid bandwidths that the retired module
+  silently clamped/truncated (negative, fractional) now raise.
+- The demo pipeline (`dml_ts/production`) maps `hac_bandwidth=None` to
+  Andrews selection explicitly (the retired module did so via an else-branch
+  accident); temporalcv's Andrews uses the literature alpha(1) constant for
+  Bartlett, so SEs on this demo path shift slightly. The pipeline now WARNS
+  loudly when HAC components are unavailable instead of silently degrading
+  to naive iid SEs.
+- Chapter 5's HAC listing teaches the temporalcv function API and the
+  `HACResult` long-run-variance/variance/se split; the example output block
+  is regenerated from a seeded, reproducible run (the previous block was not
+  producible by any shipped code); the bandwidth definition now matches the
+  implemented floor(n^(1/3)) rule.
 
 ## [1.0.0] - 2026-06-10
 

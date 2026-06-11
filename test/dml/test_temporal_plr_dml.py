@@ -12,9 +12,9 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy import stats as scipy_stats
 from sklearn.dummy import DummyRegressor
+from temporalcv import newey_west_se
 
 from dml_ts.dml.cross_fitting import TimeSeriesCrossValidator
-from dml_ts.dml.hac import HACEstimator, newey_west_se
 from dml_ts.dml.temporal_plr_dml import (
     PanelDML,
     RollingWindowDML,
@@ -916,30 +916,27 @@ class TestTemporalPLRDMLIntegration:
             assert result.hac_bandwidth > 0
 
     def test_hac_se_consistency_with_hac_module(self, simple_time_series):
-        """SE equals the HAC variance-of-the-mean of the influence scores.
+        """SE equals temporalcv's HAC variance-of-the-mean of the scores.
 
         Regression test for issue #7: the estimator previously divided the
         HAC variance (already long-run variance / n) by n again, understating
-        SEs by a factor of sqrt(n).
+        SEs by a factor of sqrt(n). HACResult's long_run_variance/se split
+        makes the contract explicit.
         """
         Y, T, X, time, _ = simple_time_series
         model = TemporalPLRDML(n_lags=1, random_state=42)
         result = model.fit(Y, T, X, time_index=time)
 
-        hac = HACEstimator(kernel=model.hac_kernel, bandwidth=result.hac_bandwidth)
-        hac.fit(result.influence_scores)
-
-        assert_allclose(result.se, np.sqrt(hac.get_variance()), rtol=1e-12)
-        assert_allclose(result.se, hac.get_se(), rtol=1e-12)
-        assert_allclose(
-            result.se,
-            newey_west_se(
-                result.influence_scores,
-                bandwidth=result.hac_bandwidth,
-                kernel=model.hac_kernel,
-            ),
-            rtol=1e-12,
+        hac_res = newey_west_se(
+            result.influence_scores,
+            bandwidth=result.hac_bandwidth,
+            kernel=model.hac_kernel,
         )
+        assert_allclose(result.se, hac_res.se, rtol=1e-12)
+        # Pin the semantic split explicitly: se = sqrt(long-run variance / n),
+        # the variance of the MEAN — the #7 bug divided by n a second time.
+        n_used = len(result.influence_scores)
+        assert_allclose(result.se, np.sqrt(hac_res.long_run_variance / n_used), rtol=1e-12)
 
         # Inference statistics must all derive from the same se (guards the
         # block at temporal_plr_dml.py:569-575 through future refactors).
@@ -958,7 +955,6 @@ class TestTemporalPLRDMLIntegration:
         # was sqrt(n_used) (here ~13x) smaller and the lower bound fails hard;
         # the upper bound catches an hac-module-internal inflation (both sides
         # of the equality asserts above would move together).
-        n_used = len(result.influence_scores)
         naive_se = np.std(result.influence_scores, ddof=1) / np.sqrt(n_used)
         assert result.se > 0.2 * naive_se
         assert result.se < 5 * naive_se
