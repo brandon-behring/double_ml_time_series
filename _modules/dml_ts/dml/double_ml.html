@@ -360,7 +360,6 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">cast</span>
 
@@ -368,15 +367,16 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">clone</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span><span class="p">,</span> <span class="n">RandomForestRegressor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ridge</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
-
-<span class="c1"># Configurable parallelism: default uses all cores; tests use 1 (sequential).</span>
-<span class="c1"># Set DML_N_JOBS=1 in test/conftest.py to avoid multiprocessing hangs under Python 3.13.</span>
-<span class="n">_DEFAULT_N_JOBS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DML_N_JOBS&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">))</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">compute_r2</span><span class="p">,</span>
+    <span class="n">cross_fit_predictions</span><span class="p">,</span>
+    <span class="n">get_nuisance_model</span><span class="p">,</span>
+    <span class="n">theta_via_fwl</span><span class="p">,</span>
+    <span class="n">validate_lengths</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="DMLResult">
@@ -459,99 +459,6 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_get_nuisance_model</span><span class="p">(</span>
-    <span class="n">model_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseEstimator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a nuisance model for E[Y|X] or E[T|X] estimation.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;ridge&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">RandomForestRegressor</span><span class="p">(</span>
-            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-            <span class="n">max_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-            <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-            <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
-            <span class="n">n_jobs</span><span class="o">=</span><span class="n">_DEFAULT_N_JOBS</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span>
-            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-            <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-            <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-            <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown model type: </span><span class="si">{</span><span class="n">model_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_r2</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute R² (coefficient of determination).&quot;&quot;&quot;</span>
-    <span class="n">ss_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">ss_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_true</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ss_res</span> <span class="o">/</span> <span class="n">ss_tot</span><span class="p">)</span> <span class="k">if</span> <span class="n">ss_tot</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="mf">0.0</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_cross_fit_nuisance</span><span class="p">(</span>
-    <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">outcome_model</span><span class="p">:</span> <span class="n">BaseEstimator</span><span class="p">,</span>
-    <span class="n">treatment_model</span><span class="p">:</span> <span class="n">BaseEstimator</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate cross-fitted predictions for nuisance models.</span>
-
-<span class="sd">    For each fold, trains models on out-of-fold data and predicts</span>
-<span class="sd">    on in-fold data. This eliminates in-sample bias.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    X : array, shape (n, p)</span>
-<span class="sd">        Covariates.</span>
-<span class="sd">    Y : array, shape (n,)</span>
-<span class="sd">        Outcome.</span>
-<span class="sd">    T : array, shape (n,)</span>
-<span class="sd">        Treatment.</span>
-<span class="sd">    n_folds : int</span>
-<span class="sd">        Number of cross-validation folds.</span>
-<span class="sd">    outcome_model : sklearn estimator</span>
-<span class="sd">        Model for E[Y|X].</span>
-<span class="sd">    treatment_model : sklearn estimator</span>
-<span class="sd">        Model for E[T|X].</span>
-<span class="sd">    random_state : int</span>
-<span class="sd">        Random seed for fold splitting.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    Y_hat : array, shape (n,)</span>
-<span class="sd">        Cross-fitted predictions of E[Y|X].</span>
-<span class="sd">    T_hat : array, shape (n,)</span>
-<span class="sd">        Cross-fitted predictions of E[T|X].</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
-    <span class="n">Y_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-    <span class="n">T_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-
-    <span class="n">kf</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="ow">in</span> <span class="n">kf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
-        <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
-        <span class="n">Y_train</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span>
-        <span class="n">T_train</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span>
-
-        <span class="c1"># Train on training fold, predict on test fold (out-of-sample)</span>
-        <span class="n">outcome_mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">outcome_model</span><span class="p">)</span>
-        <span class="n">outcome_mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">)</span>
-        <span class="n">Y_hat</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">outcome_mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-
-        <span class="n">treatment_mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">treatment_model</span><span class="p">)</span>
-        <span class="n">treatment_mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">T_train</span><span class="p">)</span>
-        <span class="n">T_hat</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">treatment_mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">Y_hat</span><span class="p">,</span> <span class="n">T_hat</span>
-
-
 <span class="k">def</span><span class="w"> </span><span class="nf">_influence_function_se</span><span class="p">(</span>
     <span class="n">Y_tilde</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">T_tilde</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -604,7 +511,9 @@
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">BaseEstimator</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">BaseEstimator</span>
+    <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;lasso&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">]</span>
+    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">outcome_model</span><span class="p">:</span> <span class="n">BaseEstimator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">treatment_model</span><span class="p">:</span> <span class="n">BaseEstimator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
@@ -630,7 +539,7 @@
 <span class="sd">        Number of cross-fitting folds. Default: 5.</span>
 <span class="sd">    model : sklearn estimator or str, optional</span>
 <span class="sd">        Model for both nuisance functions. Overridden by specific models.</span>
-<span class="sd">        Options: &quot;ridge&quot;, &quot;random_forest&quot;, &quot;gradient_boosting&quot;</span>
+<span class="sd">        Options: &quot;ridge&quot;, &quot;lasso&quot;, &quot;random_forest&quot;, &quot;gradient_boosting&quot;</span>
 <span class="sd">        Default: &quot;random_forest&quot;</span>
 <span class="sd">    outcome_model : sklearn estimator, optional</span>
 <span class="sd">        Model for E[Y|X]. Overrides `model` for outcome.</span>
@@ -668,13 +577,8 @@
 <span class="sd">    &gt;&gt;&gt; result = double_ml(Y, T, X, model=&quot;random_forest&quot;)</span>
 <span class="sd">    &gt;&gt;&gt; print(result.summary())</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
-
     <span class="c1"># Validate inputs</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X rows (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">validate_lengths</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -684,8 +588,10 @@
         <span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">model_type</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">],</span> <span class="n">model</span><span class="p">)</span>
-        <span class="n">base_model</span> <span class="o">=</span> <span class="n">_get_nuisance_model</span><span class="p">(</span><span class="n">model_type</span><span class="p">)</span>
+        <span class="n">model_type</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;lasso&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">],</span> <span class="n">model</span><span class="p">)</span>
+        <span class="c1"># random_state=42 preserves this estimator&#39;s historical hardcoded</span>
+        <span class="c1"># nuisance seed (independent of the fold-shuffling random_state).</span>
+        <span class="n">base_model</span> <span class="o">=</span> <span class="n">get_nuisance_model</span><span class="p">(</span><span class="n">model_type</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">base_model</span> <span class="o">=</span> <span class="n">model</span>
 
@@ -695,34 +601,26 @@
         <span class="n">treatment_model</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">base_model</span><span class="p">)</span>
 
     <span class="c1"># Step 1-2: Cross-fit nuisance models</span>
-    <span class="n">Y_hat</span><span class="p">,</span> <span class="n">T_hat</span> <span class="o">=</span> <span class="n">_cross_fit_nuisance</span><span class="p">(</span>
-        <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
-        <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span>
-        <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
-        <span class="n">n_folds</span><span class="o">=</span><span class="n">n_folds</span><span class="p">,</span>
-        <span class="n">outcome_model</span><span class="o">=</span><span class="n">outcome_model</span><span class="p">,</span>
-        <span class="n">treatment_model</span><span class="o">=</span><span class="n">treatment_model</span><span class="p">,</span>
-        <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">kf</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+    <span class="n">Y_hat</span><span class="p">,</span> <span class="n">T_hat</span> <span class="o">=</span> <span class="n">cross_fit_predictions</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">kf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">outcome_model</span><span class="p">,</span> <span class="n">treatment_model</span><span class="p">)</span>
 
     <span class="c1"># Compute cross-validated R²</span>
-    <span class="n">outcome_r2_cv</span> <span class="o">=</span> <span class="n">_compute_r2</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">Y_hat</span><span class="p">)</span>
-    <span class="n">treatment_r2_cv</span> <span class="o">=</span> <span class="n">_compute_r2</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">T_hat</span><span class="p">)</span>
+    <span class="n">outcome_r2_cv</span> <span class="o">=</span> <span class="n">compute_r2</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">Y_hat</span><span class="p">)</span>
+    <span class="n">treatment_r2_cv</span> <span class="o">=</span> <span class="n">compute_r2</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">T_hat</span><span class="p">)</span>
 
     <span class="c1"># Step 3: Compute residuals</span>
     <span class="n">Y_tilde</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="n">Y_hat</span>
     <span class="n">T_tilde</span> <span class="o">=</span> <span class="n">T</span> <span class="o">-</span> <span class="n">T_hat</span>
 
     <span class="c1"># Step 4: Estimate theta</span>
-    <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">T_tilde_sq_sum</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+    <span class="n">theta</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">theta_via_fwl</span><span class="p">(</span>
+        <span class="n">Y_tilde</span><span class="p">,</span>
+        <span class="n">T_tilde</span><span class="p">,</span>
+        <span class="n">no_variation_msg</span><span class="o">=</span><span class="p">(</span>
             <span class="s2">&quot;Treatment has no variation after controlling for X. &quot;</span>
             <span class="s2">&quot;This may indicate perfect prediction of T by X.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y_tilde</span> <span class="o">*</span> <span class="n">T_tilde</span><span class="p">)</span> <span class="o">/</span> <span class="n">T_tilde_sq_sum</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
 
     <span class="c1"># Step 5: Compute influence function-based SE</span>
     <span class="n">se</span><span class="p">,</span> <span class="n">influence_scores</span> <span class="o">=</span> <span class="n">_influence_function_se</span><span class="p">(</span><span class="n">Y_tilde</span><span class="p">,</span> <span class="n">T_tilde</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>

@@ -358,20 +358,16 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">clone</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span><span class="p">,</span> <span class="n">RandomForestRegressor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ridge</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
-
-<span class="c1"># Configurable parallelism: default uses all cores; tests can set DML_N_JOBS=1.</span>
-<span class="n">_DEFAULT_N_JOBS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DML_N_JOBS&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">))</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_r2</span> <span class="k">as</span> <span class="n">_compute_r2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_nuisance_model</span><span class="p">,</span> <span class="n">theta_via_fwl</span><span class="p">,</span> <span class="n">validate_lengths</span>
 
 
 <div class="viewcode-block" id="RobinsonResult">
@@ -411,59 +407,15 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_get_nuisance_model</span><span class="p">(</span>
-    <span class="n">model_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseEstimator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a nuisance model for E[Y|X] or E[T|X] estimation.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    model_type : str</span>
-<span class="sd">        Type of model to use.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    sklearn estimator</span>
-<span class="sd">        Unfitted model with fit() and predict() methods.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;ridge&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">RandomForestRegressor</span><span class="p">(</span>
-            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-            <span class="n">max_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-            <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-            <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
-            <span class="n">n_jobs</span><span class="o">=</span><span class="n">_DEFAULT_N_JOBS</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span>
-            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-            <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-            <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-            <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Unknown model type: </span><span class="si">{</span><span class="n">model_type</span><span class="si">}</span><span class="s2">. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Choose from: &#39;ridge&#39;, &#39;random_forest&#39;, &#39;gradient_boosting&#39;&quot;</span>
-        <span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_r2</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute R² (coefficient of determination).&quot;&quot;&quot;</span>
-    <span class="n">ss_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">ss_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_true</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ss_res</span> <span class="o">/</span> <span class="n">ss_tot</span><span class="p">)</span> <span class="k">if</span> <span class="n">ss_tot</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="mf">0.0</span>
-
-
 <div class="viewcode-block" id="robinson_estimator">
 <a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.robinson.robinson_estimator">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">robinson_estimator</span><span class="p">(</span>
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">BaseEstimator</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">BaseEstimator</span>
+    <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;lasso&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">]</span>
+    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RobinsonResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Robinson (1988) semiparametric estimator.</span>
 
@@ -481,7 +433,7 @@
 <span class="sd">    model : sklearn estimator or str, optional</span>
 <span class="sd">        Model for nuisance estimation. Can be:</span>
 <span class="sd">        - An sklearn estimator with fit() and predict()</span>
-<span class="sd">        - A string: &quot;ridge&quot;, &quot;random_forest&quot;, &quot;gradient_boosting&quot;</span>
+<span class="sd">        - A string: &quot;ridge&quot;, &quot;lasso&quot;, &quot;random_forest&quot;, &quot;gradient_boosting&quot;</span>
 <span class="sd">        - None: defaults to &quot;random_forest&quot;</span>
 
 <span class="sd">    Returns</span>
@@ -515,13 +467,8 @@
 <span class="sd">    &gt;&gt;&gt; abs(result.theta - 2.0) &lt; 0.2  # Should recover ~2.0</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
-
     <span class="c1"># Validate inputs</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X rows (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">validate_lengths</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -531,9 +478,10 @@
         <span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;random_forest&quot;</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">model_type</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">],</span> <span class="n">model</span><span class="p">)</span>
-        <span class="n">outcome_model</span> <span class="o">=</span> <span class="n">_get_nuisance_model</span><span class="p">(</span><span class="n">model_type</span><span class="p">)</span>
-        <span class="n">treatment_model</span> <span class="o">=</span> <span class="n">_get_nuisance_model</span><span class="p">(</span><span class="n">model_type</span><span class="p">)</span>
+        <span class="n">model_type</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;lasso&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">],</span> <span class="n">model</span><span class="p">)</span>
+        <span class="c1"># random_state=42 preserves the historical hardcoded nuisance seed.</span>
+        <span class="n">outcome_model</span> <span class="o">=</span> <span class="n">get_nuisance_model</span><span class="p">(</span><span class="n">model_type</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+        <span class="n">treatment_model</span> <span class="o">=</span> <span class="n">get_nuisance_model</span><span class="p">(</span><span class="n">model_type</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">outcome_model</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
         <span class="n">treatment_model</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
@@ -553,15 +501,14 @@
     <span class="n">T_tilde</span> <span class="o">=</span> <span class="n">T</span> <span class="o">-</span> <span class="n">T_hat</span>
 
     <span class="c1"># Step 4: Robinson formula</span>
-    <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">T_tilde_sq_sum</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+    <span class="n">theta</span><span class="p">,</span> <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">theta_via_fwl</span><span class="p">(</span>
+        <span class="n">Y_tilde</span><span class="p">,</span>
+        <span class="n">T_tilde</span><span class="p">,</span>
+        <span class="n">no_variation_msg</span><span class="o">=</span><span class="p">(</span>
             <span class="s2">&quot;Treatment has no variation after controlling for X. &quot;</span>
             <span class="s2">&quot;The nuisance model may have overfit or T is deterministic given X.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y_tilde</span> <span class="o">*</span> <span class="n">T_tilde</span><span class="p">)</span> <span class="o">/</span> <span class="n">T_tilde_sq_sum</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
 
     <span class="c1"># Naive SE (doesn&#39;t account for nuisance estimation)</span>
     <span class="n">final_residuals</span> <span class="o">=</span> <span class="n">Y_tilde</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">T_tilde</span>

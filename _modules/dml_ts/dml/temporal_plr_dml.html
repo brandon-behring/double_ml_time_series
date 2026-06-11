@@ -346,7 +346,6 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
@@ -354,11 +353,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">clone</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span><span class="p">,</span> <span class="n">RandomForestRegressor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lasso</span><span class="p">,</span> <span class="n">Ridge</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelType</span><span class="p">,</span> <span class="n">cross_fit_predictions</span><span class="p">,</span> <span class="n">theta_via_fwl</span><span class="p">,</span> <span class="n">validate_lengths</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_r2</span> <span class="k">as</span> <span class="n">_compute_r2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_nuisance_model</span> <span class="k">as</span> <span class="n">_get_nuisance_model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BlockedTimeSeriesCV</span><span class="p">,</span>
     <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">,</span>
@@ -368,12 +368,8 @@
 
 <span class="c1"># Type aliases</span>
 <span class="n">ArrayLike</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-<span class="n">ModelType</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;lasso&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">]</span>
 <span class="n">CVStrategy</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;time_series_split&quot;</span><span class="p">,</span> <span class="s2">&quot;blocked_cv&quot;</span><span class="p">,</span> <span class="s2">&quot;purged_cv&quot;</span><span class="p">]</span>
 <span class="n">KernelType</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bartlett&quot;</span><span class="p">,</span> <span class="s2">&quot;parzen&quot;</span><span class="p">,</span> <span class="s2">&quot;quadratic_spectral&quot;</span><span class="p">]</span>
-
-<span class="c1"># Configurable parallelism: default uses all cores; tests can set DML_N_JOBS=1.</span>
-<span class="n">_DEFAULT_N_JOBS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DML_N_JOBS&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="TemporalPLRDMLResult">
@@ -464,49 +460,6 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_get_nuisance_model</span><span class="p">(</span>
-    <span class="n">model_type</span><span class="p">:</span> <span class="n">ModelType</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseEstimator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a nuisance model for E[Y|X] or E[T|X] estimation.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model_type: Type of model to use</span>
-<span class="sd">        random_state: Random seed for reproducibility</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Sklearn estimator instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;ridge&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;lasso&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Lasso</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">RandomForestRegressor</span><span class="p">(</span>
-            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-            <span class="n">max_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-            <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-            <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
-            <span class="n">n_jobs</span><span class="o">=</span><span class="n">_DEFAULT_N_JOBS</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span>
-            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-            <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-            <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-            <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown model type: </span><span class="si">{</span><span class="n">model_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_r2</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute R² (coefficient of determination).&quot;&quot;&quot;</span>
-    <span class="n">ss_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">ss_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_true</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ss_res</span> <span class="o">/</span> <span class="n">ss_tot</span><span class="p">)</span> <span class="k">if</span> <span class="n">ss_tot</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="mf">0.0</span>
-
-
 <span class="k">def</span><span class="w"> </span><span class="nf">_create_lagged_features</span><span class="p">(</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
@@ -574,10 +527,6 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        Tuple of (Y_hat, T_hat) cross-fitted predictions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
-    <span class="n">Y_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-    <span class="n">T_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-
     <span class="c1"># Get splits - different CV classes have different signatures</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">):</span>
         <span class="n">splits</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="n">time_index</span><span class="p">)</span>
@@ -585,25 +534,10 @@
         <span class="c1"># BlockedTimeSeriesCV and PurgedGroupTimeSeriesCV don&#39;t take time_index</span>
         <span class="n">splits</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="ow">in</span> <span class="n">splits</span><span class="p">:</span>
-        <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
-        <span class="n">Y_train</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span>
-        <span class="n">T_train</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span>
-
-        <span class="c1"># Train on training fold (temporally before test)</span>
-        <span class="n">outcome_mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">outcome_model</span><span class="p">)</span>
-        <span class="n">outcome_mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">)</span>
-        <span class="n">Y_hat</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">outcome_mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-
-        <span class="n">treatment_mod</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">treatment_model</span><span class="p">)</span>
-        <span class="n">treatment_mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">T_train</span><span class="p">)</span>
-        <span class="n">T_hat</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">treatment_mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-
-    <span class="c1"># Early observations may be uncovered by expanding-window temporal CV.</span>
-    <span class="c1"># Leave these predictions as NaN so the estimator can exclude them rather</span>
-    <span class="c1"># than training on future observations to fill the gaps.</span>
-
-    <span class="k">return</span> <span class="n">Y_hat</span><span class="p">,</span> <span class="n">T_hat</span>
+    <span class="c1"># Early observations may be uncovered by expanding-window temporal CV;</span>
+    <span class="c1"># cross_fit_predictions leaves them NaN so the estimator excludes them</span>
+    <span class="c1"># rather than training on future observations to fill the gaps.</span>
+    <span class="k">return</span> <span class="n">cross_fit_predictions</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">splits</span><span class="p">,</span> <span class="n">outcome_model</span><span class="p">,</span> <span class="n">treatment_model</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="TemporalPLRDML">
@@ -766,10 +700,7 @@
         <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
 
         <span class="c1"># Validate inputs</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_samples</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n_samples</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X rows (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="n">validate_lengths</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 
         <span class="c1"># Create time index if not provided</span>
         <span class="k">if</span> <span class="n">time_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -850,14 +781,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_X_augmented</span> <span class="o">=</span> <span class="n">X_used</span>
 
         <span class="c1"># Estimate theta via FWL</span>
-        <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">T_tilde_sq_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">T_tilde_sq_sum</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="n">theta</span><span class="p">,</span> <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">theta_via_fwl</span><span class="p">(</span>
+            <span class="n">Y_tilde</span><span class="p">,</span>
+            <span class="n">T_tilde</span><span class="p">,</span>
+            <span class="n">no_variation_msg</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;Treatment has no variation after controlling for X and lags. &quot;</span>
                 <span class="s2">&quot;This may indicate perfect prediction of T by X.&quot;</span>
-            <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">T_tilde_sq_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">T_tilde_sq_mean</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="s2">&quot;Treatment residual variation is very low after controlling for &quot;</span>
@@ -865,8 +798,6 @@
                 <span class="ne">RuntimeWarning</span><span class="p">,</span>
                 <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="p">)</span>
-
-        <span class="n">theta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y_tilde</span> <span class="o">*</span> <span class="n">T_tilde</span><span class="p">)</span> <span class="o">/</span> <span class="n">T_tilde_sq_sum</span><span class="p">)</span>
 
         <span class="c1"># Compute influence scores</span>
         <span class="n">influence_scores</span> <span class="o">=</span> <span class="p">(</span><span class="n">Y_tilde</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">T_tilde</span><span class="p">)</span> <span class="o">*</span> <span class="n">T_tilde</span> <span class="o">/</span> <span class="n">T_tilde_sq_mean</span>
