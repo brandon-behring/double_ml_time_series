@@ -53,21 +53,24 @@ deployed to Cloudflare Workers at `dml.brandon-behring.dev` (PR previews enabled
 - **Known web risk (W4):** open upstream `book-scaffold-astro#69` keeps the
   `web/src/pages/chapters/[...slug].astro` route shim load-bearing. See `web/UPSTREAM_ISSUES.md`.
 
-## Verified Baseline (live, 2026-05-30)
+## Verified Baseline (live, 2026-06-11, v1.1.0)
 
-Every gate below was re-run in this pass (Python via repo venv, 3.13.5):
+Track B complete: dml_ts is a thin causal consumer of temporalcv v2.0.0
+(splitters/HAC/stationarity consumed upstream, golden-snapshot gated; see
+CHANGELOG 1.0.0 + 1.1.0 for the inference fixes and the purged_cv leakage
+correction). Gates re-run at release:
 
-- Test collection: **803 collected** (+1 leakage regression test, F5).
-- Tier 1: **321 passed**, 482 deselected.
-- Tier 1 + Tier 2: **622 passed**, 181 deselected, 23 warnings.
+- Test collection: **841 collected** (golden parity gate, validators, factory).
+- Tier 1 lane: **339 tests**.
+- Tier 1 + Tier 2: **656 passed**; full non-network suite **795 passed**
+  (2026-06-11 pre-B3-merge run).
 - Lint/format: ruff check + `ruff format --check` pass (tooling migrated from black, 2026-06-10).
-- Mypy: **pass** — `Success: no issues found in 37 source files`. After the R1
+- Mypy: **pass** — `Success: no issues found in 41 source files`. After the R1
   reconciliation, local venv, pre-commit hook, and CI all run mypy 2.1.0 on Python 3.13.
 - Coverage: tier1+2 = **74.89%**; gate raised to `fail_under = 70` (F15).
 - Examples: all 5 `examples/*.py` execute.
 - Sphinx: `-W --keep-going` build succeeded (Sphinx 9.1.0).
-- Book: forced clean rebuild → **205 pages, 0 fatal errors**, 257 overfull /
-  12 underfull boxes (LuaTeX 1.22.0). Boxes are non-blocking report items.
+- Book: forced clean rebuild → **209 pages, 0 fatal errors** (LuaTeX; boxes remain non-blocking report items).
 - Web: `npm run validate` ✓ 0 errors (academic profile); `npm run build` ✓.
 - Drift guard: `scripts/check_tex_mdx_drift.py` ✓ exit 0 (Ch1 MDX `source_sha256`
   matches `chapters/chapter_01.tex`); 7 tier1 tests; enforced in pre-commit + CI.

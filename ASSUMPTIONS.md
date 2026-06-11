@@ -32,8 +32,9 @@ tests, and primary literature outrank this file if they ever disagree.
 - **Stationarity, cointegration**: documented risks — diagnostics may WARN but
   do not block estimation at this milestone.
 - `RollingWindowDML` additionally assumes effects vary slowly relative to the
-  window; windows that fail to fit are currently skipped (see issue #10 for the
-  center-alignment hazard).
+  window; windows that fail to fit are skipped WITH a RuntimeWarning naming
+  each skipped center, and reported estimates keep their correct time centers
+  (the silent skip-and-misalign hazard was fixed in 1.1.0, issue #10).
 
 ## `PanelDML`
 
@@ -43,7 +44,7 @@ tests, and primary literature outrank this file if they ever disagree.
   fixed the ~cluster-size overstatement): requires >= 2 clusters with retained
   observations (RAISES otherwise); clusters dropped by CV trimming are disclosed
   via RuntimeWarning. Normal critical values — mildly anticonservative at small
-  G (t_{G-1} refinement tracked in #12 discussion).
+  G (chapter 6's remark covers the t_{G-1} refinement; Cameron & Miller 2015).
 
 ## `DynamicGEstimationDML`
 

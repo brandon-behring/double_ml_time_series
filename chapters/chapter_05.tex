@@ -98,6 +98,17 @@ Now testing never uses future training data.
 
 \subsection{Time Series Cross-Validation Strategies}
 
+\begin{remark}[Companion v1.1.0]
+As of companion release 1.1.0, the temporal-validation infrastructure in
+this chapter --- cross-validation splitters, HAC/Newey--West inference, and
+stationarity diagnostics --- is consumed from the \texttt{temporalcv}
+library rather than maintained inside the companion. Each migration was
+gated on golden snapshots of the estimators' numerical output; the one
+deliberate behavioral change (the forward-only purged walk replacing a
+bidirectional purged K-fold) is a leakage \emph{correction}, documented
+where it appears below.
+\end{remark}
+
 Three strategies are available (implemented upstream in \texttt{temporalcv}; the companion's estimators select among them via \texttt{cv\_strategy}):
 
 \begin{definition}[Expanding Window CV]
