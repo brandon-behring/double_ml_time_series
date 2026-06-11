@@ -372,6 +372,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ridge</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
+
 <span class="c1"># Configurable parallelism: default uses all cores; tests use 1 (sequential).</span>
 <span class="c1"># Set DML_N_JOBS=1 in test/conftest.py to avoid multiprocessing hangs under Python 3.13.</span>
 <span class="n">_DEFAULT_N_JOBS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DML_N_JOBS&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">))</span>
@@ -379,8 +381,8 @@
 
 <div class="viewcode-block" id="DMLResult">
 <a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.double_ml.DMLResult">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">DMLResult</span><span class="p">:</span>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DMLResult</span><span class="p">(</span><span class="n">ResultBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for Double ML estimation.</span>
 
 <span class="sd">    Attributes</span>

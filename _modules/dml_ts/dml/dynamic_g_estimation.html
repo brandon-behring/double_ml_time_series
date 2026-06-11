@@ -361,6 +361,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.hac</span><span class="w"> </span><span class="kn">import</span> <span class="n">optimal_bandwidth</span>
 
@@ -373,8 +374,8 @@
 
 <div class="viewcode-block" id="DynamicGEstimationResult">
 <a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationResult">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">DynamicGEstimationResult</span><span class="p">:</span>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DynamicGEstimationResult</span><span class="p">(</span><span class="n">ResultBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of recursive dynamic g-estimation.</span>
 
 <span class="sd">    Attributes:</span>
