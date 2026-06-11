@@ -59,13 +59,15 @@ from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import KFold
 
+from ._results import ResultBase
+
 # Configurable parallelism: default uses all cores; tests use 1 (sequential).
 # Set DML_N_JOBS=1 in test/conftest.py to avoid multiprocessing hangs under Python 3.13.
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 
 
-@dataclass
-class DMLResult:
+@dataclass(frozen=True, slots=True, eq=False)
+class DMLResult(ResultBase):
     """Result container for Double ML estimation.
 
     Attributes
