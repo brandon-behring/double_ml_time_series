@@ -50,9 +50,11 @@ from typing import Literal
 import numpy as np
 from numpy.typing import NDArray
 
+from ._results import ResultBase
 
-@dataclass
-class FWLResult:
+
+@dataclass(frozen=True, slots=True, eq=False)
+class FWLResult(ResultBase):
     """Result container for FWL estimation.
 
     Attributes

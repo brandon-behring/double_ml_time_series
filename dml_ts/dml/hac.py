@@ -38,12 +38,14 @@ from typing import Literal, cast
 import numpy as np
 from scipy import stats
 
+from ._results import ResultBase
+
 KernelType = Literal["bartlett", "parzen", "quadratic_spectral"]
 BandwidthMethod = Literal["auto", "newey_west", "andrews"]
 
 
-@dataclass
-class HACResult:
+@dataclass(frozen=True, slots=True, eq=False)
+class HACResult(ResultBase):
     """Result container for HAC estimation.
 
     Attributes:

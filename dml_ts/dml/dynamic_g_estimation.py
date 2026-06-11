@@ -48,6 +48,7 @@ from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.model_selection import KFold
 
+from ._results import ResultBase
 from .cross_fitting import TimeSeriesCrossValidator
 from .hac import optimal_bandwidth
 
@@ -58,8 +59,8 @@ Mode = Literal["panel", "series"]
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 
 
-@dataclass
-class DynamicGEstimationResult:
+@dataclass(frozen=True, slots=True, eq=False)
+class DynamicGEstimationResult(ResultBase):
     """Result of recursive dynamic g-estimation.
 
     Attributes:

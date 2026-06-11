@@ -45,6 +45,7 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Lasso, Ridge
 
+from ._results import ResultBase
 from .cross_fitting import (
     BlockedTimeSeriesCV,
     PurgedGroupTimeSeriesCV,
@@ -62,8 +63,8 @@ KernelType = Literal["bartlett", "parzen", "quadratic_spectral"]
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 
 
-@dataclass
-class TemporalPLRDMLResult:
+@dataclass(frozen=True, slots=True, eq=False)
+class TemporalPLRDMLResult(ResultBase):
     """Result container for TemporalPLRDML estimation.
 
     Attributes:
