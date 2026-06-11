@@ -1,0 +1,80 @@
+{
+  "_provenance": {
+    "initial": {
+      "pr": "track-B PR-4",
+      "reason": "initial capture after the #7 and #9 fixes (goldens born correct)"
+    }
+  },
+  "entries": {
+    "ar06_n120_seed0": {
+      "bw_newey_west": 4,
+      "nw_se_auto": 0.1946718600960042,
+      "nw_se_bw5": 0.20296461146515818,
+      "nw_se_parzen_bw5": 0.191968507451689,
+      "sandwich_00_auto": 0.03901420910199392
+    },
+    "ar06_n120_seed1": {
+      "bw_newey_west": 4,
+      "nw_se_auto": 0.11895658875869801,
+      "nw_se_bw5": 0.12062225757834348,
+      "nw_se_parzen_bw5": 0.11938240259284885,
+      "sandwich_00_auto": 0.01543888542387963
+    },
+    "ar06_n120_seed2": {
+      "bw_newey_west": 4,
+      "nw_se_auto": 0.1452937927263415,
+      "nw_se_bw5": 0.145033642911854,
+      "nw_se_parzen_bw5": 0.14724058445972635,
+      "sandwich_00_auto": 0.020795910711514244
+    },
+    "ar06_n120_seed3": {
+      "bw_newey_west": 4,
+      "nw_se_auto": 0.16132400983585812,
+      "nw_se_bw5": 0.16506889762488905,
+      "nw_se_parzen_bw5": 0.1611003404999029,
+      "sandwich_00_auto": 0.026277503523076125
+    },
+    "ar06_n120_seed4": {
+      "bw_newey_west": 4,
+      "nw_se_auto": 0.15279506331685225,
+      "nw_se_bw5": 0.15309607469529735,
+      "nw_se_parzen_bw5": 0.15382065542540635,
+      "sandwich_00_auto": 0.023150320133267236
+    },
+    "ar09_n300_seed20": {
+      "bw_newey_west": 6,
+      "nw_se_auto": 0.22527870080891765,
+      "nw_se_bw5": 0.21530197785506158,
+      "nw_se_parzen_bw5": 0.1977799596342533,
+      "sandwich_00_auto": 0.1129929018636611
+    },
+    "ar09_n300_seed21": {
+      "bw_newey_west": 6,
+      "nw_se_auto": 0.2717796802594827,
+      "nw_se_bw5": 0.2559315179161639,
+      "nw_se_parzen_bw5": 0.22863648375460707,
+      "sandwich_00_auto": 0.0969572357248313
+    },
+    "wn_n200_seed10": {
+      "bw_newey_west": 5,
+      "nw_se_auto": 0.07623561363694355,
+      "nw_se_bw5": 0.07623561363694355,
+      "nw_se_parzen_bw5": 0.07455047647320599,
+      "sandwich_00_auto": 0.00754677569229658
+    },
+    "wn_n200_seed11": {
+      "bw_newey_west": 5,
+      "nw_se_auto": 0.06490196969909161,
+      "nw_se_bw5": 0.06490196969909161,
+      "nw_se_parzen_bw5": 0.06388370857477012,
+      "sandwich_00_auto": 0.004213683035464561
+    },
+    "wn_n200_seed12": {
+      "bw_newey_west": 5,
+      "nw_se_auto": 0.07263848731787684,
+      "nw_se_bw5": 0.07263848731787684,
+      "nw_se_parzen_bw5": 0.07208507078864197,
+      "sandwich_00_auto": 0.0052704547218837975
+    }
+  }
+}

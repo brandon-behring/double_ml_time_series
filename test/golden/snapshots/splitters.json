@@ -1,0 +1,2398 @@
+{
+  "_provenance": {
+    "initial": {
+      "pr": "track-B PR-4",
+      "reason": "initial capture after the #7 and #9 fixes (goldens born correct)"
+    }
+  },
+  "entries": {
+    "blocked_n1000_s3": {
+      "folds": [
+        {
+          "n_test": 250,
+          "n_train": 125,
+          "test_head": [
+            250,
+            251,
+            252
+          ],
+          "test_tail": [
+            497,
+            498,
+            499
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            122,
+            123,
+            124
+          ]
+        },
+        {
+          "n_test": 250,
+          "n_train": 375,
+          "test_head": [
+            500,
+            501,
+            502
+          ],
+          "test_tail": [
+            747,
+            748,
+            749
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            372,
+            373,
+            374
+          ]
+        },
+        {
+          "n_test": 250,
+          "n_train": 625,
+          "test_head": [
+            750,
+            751,
+            752
+          ],
+          "test_tail": [
+            997,
+            998,
+            999
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            622,
+            623,
+            624
+          ]
+        }
+      ],
+      "n_folds": 3,
+      "sha256": "115d5f09fc05d58b54b97f3df22639e740f499295873cf9b7e28911a8d4d3cb7"
+    },
+    "blocked_n1000_s5": {
+      "folds": [
+        {
+          "n_test": 166,
+          "n_train": 83,
+          "test_head": [
+            166,
+            167,
+            168
+          ],
+          "test_tail": [
+            329,
+            330,
+            331
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            80,
+            81,
+            82
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 249,
+          "test_head": [
+            332,
+            333,
+            334
+          ],
+          "test_tail": [
+            495,
+            496,
+            497
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            246,
+            247,
+            248
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 415,
+          "test_head": [
+            498,
+            499,
+            500
+          ],
+          "test_tail": [
+            661,
+            662,
+            663
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            412,
+            413,
+            414
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 581,
+          "test_head": [
+            664,
+            665,
+            666
+          ],
+          "test_tail": [
+            827,
+            828,
+            829
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            578,
+            579,
+            580
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 747,
+          "test_head": [
+            830,
+            831,
+            832
+          ],
+          "test_tail": [
+            993,
+            994,
+            995
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            744,
+            745,
+            746
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "1ee1f257aa3c15049468fe7d651c2769bd954343d2427c76727361701987a600"
+    },
+    "blocked_n200_s3": {
+      "folds": [
+        {
+          "n_test": 50,
+          "n_train": 25,
+          "test_head": [
+            50,
+            51,
+            52
+          ],
+          "test_tail": [
+            97,
+            98,
+            99
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            22,
+            23,
+            24
+          ]
+        },
+        {
+          "n_test": 50,
+          "n_train": 75,
+          "test_head": [
+            100,
+            101,
+            102
+          ],
+          "test_tail": [
+            147,
+            148,
+            149
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            72,
+            73,
+            74
+          ]
+        },
+        {
+          "n_test": 50,
+          "n_train": 125,
+          "test_head": [
+            150,
+            151,
+            152
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            122,
+            123,
+            124
+          ]
+        }
+      ],
+      "n_folds": 3,
+      "sha256": "b3f3744d0d0782db88228e8c97f084f2e3753bdc2fb59b924e949dad54f02801"
+    },
+    "blocked_n200_s5": {
+      "folds": [
+        {
+          "n_test": 32,
+          "n_train": 16,
+          "test_head": [
+            32,
+            33,
+            34
+          ],
+          "test_tail": [
+            61,
+            62,
+            63
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            13,
+            14,
+            15
+          ]
+        },
+        {
+          "n_test": 32,
+          "n_train": 48,
+          "test_head": [
+            64,
+            65,
+            66
+          ],
+          "test_tail": [
+            93,
+            94,
+            95
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            45,
+            46,
+            47
+          ]
+        },
+        {
+          "n_test": 32,
+          "n_train": 80,
+          "test_head": [
+            96,
+            97,
+            98
+          ],
+          "test_tail": [
+            125,
+            126,
+            127
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            77,
+            78,
+            79
+          ]
+        },
+        {
+          "n_test": 32,
+          "n_train": 112,
+          "test_head": [
+            128,
+            129,
+            130
+          ],
+          "test_tail": [
+            157,
+            158,
+            159
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            109,
+            110,
+            111
+          ]
+        },
+        {
+          "n_test": 32,
+          "n_train": 144,
+          "test_head": [
+            160,
+            161,
+            162
+          ],
+          "test_tail": [
+            189,
+            190,
+            191
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            141,
+            142,
+            143
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "490f5cc0577154fde427299dc334c0e60517e1b2c979df88c2d631e065562450"
+    },
+    "purged_n200_e0.01": {
+      "folds": [
+        {
+          "n_test": 33,
+          "n_train": 165,
+          "test_head": [
+            35,
+            36,
+            37
+          ],
+          "test_tail": [
+            65,
+            66,
+            67
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 165,
+          "test_head": [
+            68,
+            69,
+            70
+          ],
+          "test_tail": [
+            98,
+            99,
+            100
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 165,
+          "test_head": [
+            101,
+            102,
+            103
+          ],
+          "test_tail": [
+            131,
+            132,
+            133
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 165,
+          "test_head": [
+            134,
+            135,
+            136
+          ],
+          "test_tail": [
+            164,
+            165,
+            166
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 167,
+          "test_head": [
+            167,
+            168,
+            169
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            164,
+            165,
+            166
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "5a162f7ce85f3c01054e2f3781e4d52eed45aaa497ca94d4041d3676a36bcf78"
+    },
+    "purged_n200_e0.025": {
+      "folds": [
+        {
+          "n_test": 33,
+          "n_train": 162,
+          "test_head": [
+            35,
+            36,
+            37
+          ],
+          "test_tail": [
+            65,
+            66,
+            67
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 162,
+          "test_head": [
+            68,
+            69,
+            70
+          ],
+          "test_tail": [
+            98,
+            99,
+            100
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 162,
+          "test_head": [
+            101,
+            102,
+            103
+          ],
+          "test_tail": [
+            131,
+            132,
+            133
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 162,
+          "test_head": [
+            134,
+            135,
+            136
+          ],
+          "test_tail": [
+            164,
+            165,
+            166
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 167,
+          "test_head": [
+            167,
+            168,
+            169
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            164,
+            165,
+            166
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "8576b6973fdf9ed797c23b0611b2ab687c1c56c5b666f2b82c2617d61ccccdd5"
+    },
+    "purged_n200_e0.1": {
+      "folds": [
+        {
+          "n_test": 33,
+          "n_train": 147,
+          "test_head": [
+            35,
+            36,
+            37
+          ],
+          "test_tail": [
+            65,
+            66,
+            67
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 147,
+          "test_head": [
+            68,
+            69,
+            70
+          ],
+          "test_tail": [
+            98,
+            99,
+            100
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 147,
+          "test_head": [
+            101,
+            102,
+            103
+          ],
+          "test_tail": [
+            131,
+            132,
+            133
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 147,
+          "test_head": [
+            134,
+            135,
+            136
+          ],
+          "test_tail": [
+            164,
+            165,
+            166
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            197,
+            198,
+            199
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 167,
+          "test_head": [
+            167,
+            168,
+            169
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            164,
+            165,
+            166
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "aff6610e151ee0325bf0d7cd3c10f5ce556adb6617426e50e6c443568231696c"
+    },
+    "purged_n600_e0.01": {
+      "folds": [
+        {
+          "n_test": 100,
+          "n_train": 494,
+          "test_head": [
+            100,
+            101,
+            102
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 494,
+          "test_head": [
+            200,
+            201,
+            202
+          ],
+          "test_tail": [
+            297,
+            298,
+            299
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 494,
+          "test_head": [
+            300,
+            301,
+            302
+          ],
+          "test_tail": [
+            397,
+            398,
+            399
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 494,
+          "test_head": [
+            400,
+            401,
+            402
+          ],
+          "test_tail": [
+            497,
+            498,
+            499
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 500,
+          "test_head": [
+            500,
+            501,
+            502
+          ],
+          "test_tail": [
+            597,
+            598,
+            599
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            497,
+            498,
+            499
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "6d0974c6fb225823995a9f61cca63368fe4ee38a6aa890fb9613ffbb272bf4d3"
+    },
+    "purged_n600_e0.025": {
+      "folds": [
+        {
+          "n_test": 100,
+          "n_train": 485,
+          "test_head": [
+            100,
+            101,
+            102
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 485,
+          "test_head": [
+            200,
+            201,
+            202
+          ],
+          "test_tail": [
+            297,
+            298,
+            299
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 485,
+          "test_head": [
+            300,
+            301,
+            302
+          ],
+          "test_tail": [
+            397,
+            398,
+            399
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 485,
+          "test_head": [
+            400,
+            401,
+            402
+          ],
+          "test_tail": [
+            497,
+            498,
+            499
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 500,
+          "test_head": [
+            500,
+            501,
+            502
+          ],
+          "test_tail": [
+            597,
+            598,
+            599
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            497,
+            498,
+            499
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "5ec0b3b1808e6f0d025e55c87a16ae5c78c2e8e0fc1c7c74d162371464dbe5d9"
+    },
+    "purged_n600_e0.1": {
+      "folds": [
+        {
+          "n_test": 100,
+          "n_train": 440,
+          "test_head": [
+            100,
+            101,
+            102
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 440,
+          "test_head": [
+            200,
+            201,
+            202
+          ],
+          "test_tail": [
+            297,
+            298,
+            299
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 440,
+          "test_head": [
+            300,
+            301,
+            302
+          ],
+          "test_tail": [
+            397,
+            398,
+            399
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 440,
+          "test_head": [
+            400,
+            401,
+            402
+          ],
+          "test_tail": [
+            497,
+            498,
+            499
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            597,
+            598,
+            599
+          ]
+        },
+        {
+          "n_test": 100,
+          "n_train": 500,
+          "test_head": [
+            500,
+            501,
+            502
+          ],
+          "test_tail": [
+            597,
+            598,
+            599
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            497,
+            498,
+            499
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "de5fcd47de943d458963a900ed966a5d233be9a7db7f1915e84aea59f98902f1"
+    },
+    "tscv_n1000_s3_g0": {
+      "folds": [
+        {
+          "n_test": 250,
+          "n_train": 250,
+          "test_head": [
+            250,
+            251,
+            252
+          ],
+          "test_tail": [
+            497,
+            498,
+            499
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            247,
+            248,
+            249
+          ]
+        },
+        {
+          "n_test": 250,
+          "n_train": 500,
+          "test_head": [
+            500,
+            501,
+            502
+          ],
+          "test_tail": [
+            747,
+            748,
+            749
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            497,
+            498,
+            499
+          ]
+        },
+        {
+          "n_test": 250,
+          "n_train": 750,
+          "test_head": [
+            750,
+            751,
+            752
+          ],
+          "test_tail": [
+            997,
+            998,
+            999
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            747,
+            748,
+            749
+          ]
+        }
+      ],
+      "n_folds": 3,
+      "sha256": "487bccd3c692e198cca6492090231793b550a7ae1a54a9fcbac49b7cf6cd6bae"
+    },
+    "tscv_n1000_s3_g5": {
+      "folds": [
+        {
+          "n_test": 250,
+          "n_train": 245,
+          "test_head": [
+            250,
+            251,
+            252
+          ],
+          "test_tail": [
+            497,
+            498,
+            499
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            242,
+            243,
+            244
+          ]
+        },
+        {
+          "n_test": 250,
+          "n_train": 495,
+          "test_head": [
+            500,
+            501,
+            502
+          ],
+          "test_tail": [
+            747,
+            748,
+            749
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            492,
+            493,
+            494
+          ]
+        },
+        {
+          "n_test": 250,
+          "n_train": 745,
+          "test_head": [
+            750,
+            751,
+            752
+          ],
+          "test_tail": [
+            997,
+            998,
+            999
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            742,
+            743,
+            744
+          ]
+        }
+      ],
+      "n_folds": 3,
+      "sha256": "affce4d29275011256c4e772e8723cc46dc78881a6b193c4a4787e2fa9614fb9"
+    },
+    "tscv_n1000_s5_g0": {
+      "folds": [
+        {
+          "n_test": 166,
+          "n_train": 170,
+          "test_head": [
+            170,
+            171,
+            172
+          ],
+          "test_tail": [
+            333,
+            334,
+            335
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            167,
+            168,
+            169
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 336,
+          "test_head": [
+            336,
+            337,
+            338
+          ],
+          "test_tail": [
+            499,
+            500,
+            501
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            333,
+            334,
+            335
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 502,
+          "test_head": [
+            502,
+            503,
+            504
+          ],
+          "test_tail": [
+            665,
+            666,
+            667
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            499,
+            500,
+            501
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 668,
+          "test_head": [
+            668,
+            669,
+            670
+          ],
+          "test_tail": [
+            831,
+            832,
+            833
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            665,
+            666,
+            667
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 834,
+          "test_head": [
+            834,
+            835,
+            836
+          ],
+          "test_tail": [
+            997,
+            998,
+            999
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            831,
+            832,
+            833
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "63a0233b4fea96b584a48712acf2dc44b7a7bc29f5a701c75d752e82396dda09"
+    },
+    "tscv_n1000_s5_g5": {
+      "folds": [
+        {
+          "n_test": 166,
+          "n_train": 165,
+          "test_head": [
+            170,
+            171,
+            172
+          ],
+          "test_tail": [
+            333,
+            334,
+            335
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            162,
+            163,
+            164
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 331,
+          "test_head": [
+            336,
+            337,
+            338
+          ],
+          "test_tail": [
+            499,
+            500,
+            501
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            328,
+            329,
+            330
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 497,
+          "test_head": [
+            502,
+            503,
+            504
+          ],
+          "test_tail": [
+            665,
+            666,
+            667
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            494,
+            495,
+            496
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 663,
+          "test_head": [
+            668,
+            669,
+            670
+          ],
+          "test_tail": [
+            831,
+            832,
+            833
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            660,
+            661,
+            662
+          ]
+        },
+        {
+          "n_test": 166,
+          "n_train": 829,
+          "test_head": [
+            834,
+            835,
+            836
+          ],
+          "test_tail": [
+            997,
+            998,
+            999
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            826,
+            827,
+            828
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "7f1ca0de9e6d9da9b82b2db850211949d790fe199c74d3d68724cc8d0dc50c3d"
+    },
+    "tscv_n200_s3_g0": {
+      "folds": [
+        {
+          "n_test": 50,
+          "n_train": 50,
+          "test_head": [
+            50,
+            51,
+            52
+          ],
+          "test_tail": [
+            97,
+            98,
+            99
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            47,
+            48,
+            49
+          ]
+        },
+        {
+          "n_test": 50,
+          "n_train": 100,
+          "test_head": [
+            100,
+            101,
+            102
+          ],
+          "test_tail": [
+            147,
+            148,
+            149
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            97,
+            98,
+            99
+          ]
+        },
+        {
+          "n_test": 50,
+          "n_train": 150,
+          "test_head": [
+            150,
+            151,
+            152
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            147,
+            148,
+            149
+          ]
+        }
+      ],
+      "n_folds": 3,
+      "sha256": "d82aaa8bcc6316a5ba9861db0e21b1c4315a3d7de00d81c103151adab83c8d83"
+    },
+    "tscv_n200_s3_g5": {
+      "folds": [
+        {
+          "n_test": 50,
+          "n_train": 45,
+          "test_head": [
+            50,
+            51,
+            52
+          ],
+          "test_tail": [
+            97,
+            98,
+            99
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            42,
+            43,
+            44
+          ]
+        },
+        {
+          "n_test": 50,
+          "n_train": 95,
+          "test_head": [
+            100,
+            101,
+            102
+          ],
+          "test_tail": [
+            147,
+            148,
+            149
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            92,
+            93,
+            94
+          ]
+        },
+        {
+          "n_test": 50,
+          "n_train": 145,
+          "test_head": [
+            150,
+            151,
+            152
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            142,
+            143,
+            144
+          ]
+        }
+      ],
+      "n_folds": 3,
+      "sha256": "df199dc51a883dc41a3bcca233a064ea371f1d6078360db571ff2e458dc071be"
+    },
+    "tscv_n200_s5_g0": {
+      "folds": [
+        {
+          "n_test": 33,
+          "n_train": 35,
+          "test_head": [
+            35,
+            36,
+            37
+          ],
+          "test_tail": [
+            65,
+            66,
+            67
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            32,
+            33,
+            34
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 68,
+          "test_head": [
+            68,
+            69,
+            70
+          ],
+          "test_tail": [
+            98,
+            99,
+            100
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            65,
+            66,
+            67
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 101,
+          "test_head": [
+            101,
+            102,
+            103
+          ],
+          "test_tail": [
+            131,
+            132,
+            133
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            98,
+            99,
+            100
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 134,
+          "test_head": [
+            134,
+            135,
+            136
+          ],
+          "test_tail": [
+            164,
+            165,
+            166
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            131,
+            132,
+            133
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 167,
+          "test_head": [
+            167,
+            168,
+            169
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            164,
+            165,
+            166
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "508a60217e4936802cd13f3dbce280d04f226180d98fe66bdec92759bf2cb715"
+    },
+    "tscv_n200_s5_g5": {
+      "folds": [
+        {
+          "n_test": 33,
+          "n_train": 30,
+          "test_head": [
+            35,
+            36,
+            37
+          ],
+          "test_tail": [
+            65,
+            66,
+            67
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            27,
+            28,
+            29
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 63,
+          "test_head": [
+            68,
+            69,
+            70
+          ],
+          "test_tail": [
+            98,
+            99,
+            100
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            60,
+            61,
+            62
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 96,
+          "test_head": [
+            101,
+            102,
+            103
+          ],
+          "test_tail": [
+            131,
+            132,
+            133
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            93,
+            94,
+            95
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 129,
+          "test_head": [
+            134,
+            135,
+            136
+          ],
+          "test_tail": [
+            164,
+            165,
+            166
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            126,
+            127,
+            128
+          ]
+        },
+        {
+          "n_test": 33,
+          "n_train": 162,
+          "test_head": [
+            167,
+            168,
+            169
+          ],
+          "test_tail": [
+            197,
+            198,
+            199
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            159,
+            160,
+            161
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "e8cb01ac3cf61f0e49395fb48fb9194c68a4697ba6604508d924b5db9b2b6eaf"
+    },
+    "tscv_n50_s3_g0": {
+      "folds": [
+        {
+          "n_test": 12,
+          "n_train": 14,
+          "test_head": [
+            14,
+            15,
+            16
+          ],
+          "test_tail": [
+            23,
+            24,
+            25
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            11,
+            12,
+            13
+          ]
+        },
+        {
+          "n_test": 12,
+          "n_train": 26,
+          "test_head": [
+            26,
+            27,
+            28
+          ],
+          "test_tail": [
+            35,
+            36,
+            37
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            23,
+            24,
+            25
+          ]
+        },
+        {
+          "n_test": 12,
+          "n_train": 38,
+          "test_head": [
+            38,
+            39,
+            40
+          ],
+          "test_tail": [
+            47,
+            48,
+            49
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            35,
+            36,
+            37
+          ]
+        }
+      ],
+      "n_folds": 3,
+      "sha256": "d437cf4a80cc6244eee625ab40e428641f8e5988c898a6a55f054d96e39722af"
+    },
+    "tscv_n50_s3_g5": {
+      "folds": [
+        {
+          "n_test": 12,
+          "n_train": 9,
+          "test_head": [
+            14,
+            15,
+            16
+          ],
+          "test_tail": [
+            23,
+            24,
+            25
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "n_test": 12,
+          "n_train": 21,
+          "test_head": [
+            26,
+            27,
+            28
+          ],
+          "test_tail": [
+            35,
+            36,
+            37
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            18,
+            19,
+            20
+          ]
+        },
+        {
+          "n_test": 12,
+          "n_train": 33,
+          "test_head": [
+            38,
+            39,
+            40
+          ],
+          "test_tail": [
+            47,
+            48,
+            49
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            30,
+            31,
+            32
+          ]
+        }
+      ],
+      "n_folds": 3,
+      "sha256": "e2be4b050d8c962b7001e55e4341129758138457c57ea80d6ae889cd6925eb37"
+    },
+    "tscv_n50_s5_g0": {
+      "folds": [
+        {
+          "n_test": 8,
+          "n_train": 10,
+          "test_head": [
+            10,
+            11,
+            12
+          ],
+          "test_tail": [
+            15,
+            16,
+            17
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "n_test": 8,
+          "n_train": 18,
+          "test_head": [
+            18,
+            19,
+            20
+          ],
+          "test_tail": [
+            23,
+            24,
+            25
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            15,
+            16,
+            17
+          ]
+        },
+        {
+          "n_test": 8,
+          "n_train": 26,
+          "test_head": [
+            26,
+            27,
+            28
+          ],
+          "test_tail": [
+            31,
+            32,
+            33
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            23,
+            24,
+            25
+          ]
+        },
+        {
+          "n_test": 8,
+          "n_train": 34,
+          "test_head": [
+            34,
+            35,
+            36
+          ],
+          "test_tail": [
+            39,
+            40,
+            41
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            31,
+            32,
+            33
+          ]
+        },
+        {
+          "n_test": 8,
+          "n_train": 42,
+          "test_head": [
+            42,
+            43,
+            44
+          ],
+          "test_tail": [
+            47,
+            48,
+            49
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            39,
+            40,
+            41
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "310cc2d6b9309ecb651d13ded9a4a314cc5cc8c7bebf11a6ac278b87ca8a1119"
+    },
+    "tscv_n50_s5_g5": {
+      "folds": [
+        {
+          "n_test": 8,
+          "n_train": 5,
+          "test_head": [
+            10,
+            11,
+            12
+          ],
+          "test_tail": [
+            15,
+            16,
+            17
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "n_test": 8,
+          "n_train": 13,
+          "test_head": [
+            18,
+            19,
+            20
+          ],
+          "test_tail": [
+            23,
+            24,
+            25
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            10,
+            11,
+            12
+          ]
+        },
+        {
+          "n_test": 8,
+          "n_train": 21,
+          "test_head": [
+            26,
+            27,
+            28
+          ],
+          "test_tail": [
+            31,
+            32,
+            33
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            18,
+            19,
+            20
+          ]
+        },
+        {
+          "n_test": 8,
+          "n_train": 29,
+          "test_head": [
+            34,
+            35,
+            36
+          ],
+          "test_tail": [
+            39,
+            40,
+            41
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            26,
+            27,
+            28
+          ]
+        },
+        {
+          "n_test": 8,
+          "n_train": 37,
+          "test_head": [
+            42,
+            43,
+            44
+          ],
+          "test_tail": [
+            47,
+            48,
+            49
+          ],
+          "train_head": [
+            0,
+            1,
+            2
+          ],
+          "train_tail": [
+            34,
+            35,
+            36
+          ]
+        }
+      ],
+      "n_folds": 5,
+      "sha256": "d4983920fe2e6b6aaab9d40a201be3dbb7d38e90fcdcb538cf41686e8b88ae40"
+    }
+  }
+}
