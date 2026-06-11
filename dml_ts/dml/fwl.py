@@ -49,6 +49,7 @@ from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
+from temporalcv import coverage_in_unit, finite_se
 
 from ._results import ResultBase
 
@@ -85,6 +86,13 @@ class FWLResult(ResultBase):
     T_residual: NDArray[np.float64]
     r2_Y: float
     r2_T: float
+
+    def _validate(self) -> None:
+        """B3 numeric hard-fails at the result boundary."""
+        if not np.isfinite(self.theta):
+            raise ValueError(f"FWLResult.theta is not finite: {self.theta!r}")
+        finite_se(self.se, name="FWLResult.se")
+        coverage_in_unit(self.p_value, name="FWLResult.p_value")
 
     def __repr__(self) -> str:
         return (

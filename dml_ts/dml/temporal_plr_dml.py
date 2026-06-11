@@ -45,6 +45,9 @@ from temporalcv import (
     BlockedTimeSeriesCV,
     PurgedWalkForward,
     TimeSeriesCrossValidator,
+    ci_ordered,
+    coverage_in_unit,
+    finite_se,
     newey_west_se,
 )
 
@@ -101,6 +104,14 @@ class TemporalPLRDMLResult(ResultBase):
     influence_scores: NDArray[np.float64]
     dropped_initial_rows: int = 0
     lagged_rows_dropped: int = 0
+
+    def _validate(self) -> None:
+        """B3 numeric hard-fails at the result boundary."""
+        if not np.isfinite(self.theta):
+            raise ValueError(f"TemporalPLRDMLResult.theta is not finite: {self.theta!r}")
+        finite_se(self.se, name="TemporalPLRDMLResult.se")
+        ci_ordered(self.ci_lower, self.ci_upper, name="TemporalPLRDMLResult.ci")
+        coverage_in_unit(self.p_value, name="TemporalPLRDMLResult.p_value")
 
     def __repr__(self) -> str:
         return (
@@ -518,7 +529,9 @@ class TemporalPLRDML:
         bandwidth_used = int(hac_res.bandwidth)
 
         # Compute inference statistics
-        t_stat = theta / hac_se if hac_se > 1e-10 else 0.0
+        # Degenerate SEs must raise, never fabricate t=0/p=1 (issue #11).
+        finite_se(hac_se, name="HAC standard error")
+        t_stat = theta / hac_se
         p_value = float(2 * (1 - stats.norm.cdf(abs(t_stat))))
 
         # Confidence interval
@@ -714,6 +727,8 @@ class RollingWindowDML:
 
         theta_list: list[float] = []
         se_list: list[float] = []
+        kept_centers: list[int] = []
+        skipped: list[tuple[int, str]] = []
 
         for center in centers:
             start_idx = max(0, center - half_window)
@@ -723,8 +738,8 @@ class RollingWindowDML:
             T_window = T[start_idx:end_idx]
             X_window = X[start_idx:end_idx]
 
-            # Skip if window too small
             if len(Y_window) < 30:
+                skipped.append((center, f"window too small (n={len(Y_window)} < 30)"))
                 continue
 
             # Fit TemporalPLRDML on window
@@ -739,15 +754,30 @@ class RollingWindowDML:
                     random_state=self.random_state,
                 )
                 result = dml.fit(Y_window, T_window, X_window)
-                theta_list.append(result.theta)
-                se_list.append(result.se)
-            except ValueError:
-                # Skip windows where estimation fails
+            except ValueError as e:
+                skipped.append((center, str(e)))
                 continue
+            # Centers are appended ONLY on success: truncating the center
+            # list to len(theta_list) silently relabeled every estimate after
+            # a skipped middle window with the wrong timestamp (issue #10).
+            theta_list.append(result.theta)
+            se_list.append(result.se)
+            kept_centers.append(center)
+
+        if skipped:
+            details = "; ".join(f"center {c}: {msg}" for c, msg in skipped[:5])
+            more = f" (+{len(skipped) - 5} more)" if len(skipped) > 5 else ""
+            warnings.warn(
+                f"RollingWindowDML skipped {len(skipped)} of {len(centers)} "
+                f"windows — {details}{more}. Reported estimates cover only "
+                "the successful windows at their correct centers.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
         self._theta_series = np.array(theta_list)
         self._se_series = np.array(se_list)
-        self._time_centers = np.array(centers[: len(theta_list)])
+        self._time_centers = np.array(kept_centers)
         self._is_fitted = True
 
         return self
@@ -953,21 +983,23 @@ class PanelDML:
             cluster_var = (
                 (n_clusters_eff / (n_clusters_eff - 1)) * float(np.sum(cluster_psi**2)) / (n_eff**2)
             )
+            finite_se(cluster_var, name="cluster-robust variance")
             cluster_se = float(np.sqrt(cluster_var))
+
+            # Degenerate cluster SEs must raise, never fabricate t=0/p=1.0
+            # (issue #11; the <2-retained-clusters guard above catches the
+            # all-trimmed case, this catches degenerate-by-value).
+            finite_se(cluster_se, name="cluster-robust standard error")
 
             # Update result with cluster SE
             z_crit = stats.norm.ppf(0.975)
             result = TemporalPLRDMLResult(
                 theta=result.theta,
                 se=cluster_se,
-                t_stat=result.theta / cluster_se if cluster_se > 1e-10 else 0.0,
+                t_stat=result.theta / cluster_se,
                 ci_lower=result.theta - z_crit * cluster_se,
                 ci_upper=result.theta + z_crit * cluster_se,
-                p_value=(
-                    float(2 * (1 - stats.norm.cdf(abs(result.theta / cluster_se))))
-                    if cluster_se > 1e-10
-                    else 1.0
-                ),
+                p_value=float(2 * (1 - stats.norm.cdf(abs(result.theta / cluster_se)))),
                 n_samples=result.n_samples,
                 n_periods=result.n_periods,
                 outcome_r2_cv=result.outcome_r2_cv,

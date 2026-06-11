@@ -430,3 +430,20 @@ class TestPipelineEdgeCases:
 
             with pytest.raises(ValueError, match="Monitoring must be enabled"):
                 pipeline.evaluate_retrain_need(X, T)
+
+
+@pytest.mark.tier1
+def test_use_hac_unavailable_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    """use_hac=True with HAC components unavailable must REFUSE loudly,
+    never silently report naive iid SEs (issue #11, B3)."""
+    import dml_ts.production.dml_pipeline as mod
+
+    monkeypatch.setattr(mod, "DML_AVAILABLE", False)
+    rng = np.random.default_rng(0)
+    n = 80
+    X = rng.normal(size=(n, 3))
+    T = (rng.random(n) > 0.5).astype(float)
+    Y = T + X[:, 0] + rng.normal(size=n)
+    pipeline = mod.InsuranceDMLPipeline(mod.PipelineConfig(use_hac=True))
+    with pytest.raises(RuntimeError, match="use_hac=True"):
+        pipeline.fit(X, T, Y)

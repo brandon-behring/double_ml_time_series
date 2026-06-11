@@ -55,6 +55,7 @@ from numpy.typing import NDArray
 from scipy import stats
 from sklearn.base import BaseEstimator, clone
 from sklearn.model_selection import KFold
+from temporalcv import ci_ordered, coverage_in_unit, finite_se
 
 from ._results import ResultBase
 from ._utils import (
@@ -110,6 +111,14 @@ class DMLResult(ResultBase):
     outcome_r2_cv: float
     treatment_r2_cv: float
     n_folds: int
+
+    def _validate(self) -> None:
+        """B3 numeric hard-fails at the result boundary."""
+        if not np.isfinite(self.theta):
+            raise ValueError(f"DMLResult.theta is not finite: {self.theta!r}")
+        finite_se(self.se, name="DMLResult.se")
+        ci_ordered(self.ci_lower, self.ci_upper, name="DMLResult.ci")
+        coverage_in_unit(self.p_value, name="DMLResult.p_value")
 
     def __repr__(self) -> str:
         return (
