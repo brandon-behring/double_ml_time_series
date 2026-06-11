@@ -9,7 +9,7 @@ description: "Synthesizing the toolkit on insurance/annuity competitor pricing: 
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_08.tex
-source_sha256: f13d35946546b2147c975b408378213247a700abfc4a899070e0a14a9e594bb0
+source_sha256: 60ec9a74a3c268b63bedd9fc685046286be6b40bd2fee33b85ff3725809897da
 provenance:
   ai_tools:
     - Claude Code
@@ -220,11 +220,11 @@ model = PanelDML(
 )
 
 result = model.fit(
-    Y=dgp.Y,
-    T=dgp.T,
-    X=dgp.X,
-    entity_ids=dgp.product_index,
-    time_ids=dgp.time_index
+    dgp.Y,
+    dgp.T,
+    dgp.X,
+    individual_id=dgp.product_index,
+    time_id=dgp.time_index,
 )
 
 print(result.summary())
@@ -233,26 +233,36 @@ print(result.summary())
 ```
 True tau: -0.8
 
-Panel DML Results
-=================
-Treatment Effect (theta):  -0.7847
-Cluster-Robust SE:          0.0923
-t-statistic:               -8.50
-p-value:                    0.0000
-95% CI:                    [-0.9656, -0.6038]
+RuntimeWarning: 1 of 10 clusters have no observations retained after
+lag/temporal-CV trimming; cluster-robust inference uses the
+remaining 9 clusters.
 
-Fixed Effects: individual
-Number of clusters: 10
-Within-cluster observations: 120
+Temporal PLR DML Results
+========================
+Treatment Effect (θ):    -0.8553
+HAC Standard Error:      0.0330
+t-statistic:             -25.96
+p-value:                 0.0000
+95% Confidence Interval: [-0.9199, -0.7907]
+
+Sample Information:
+  Observations:          1200
+  Used observations:     1000
+  Lag rows dropped:      0
+  CV rows dropped:       200
 
 Nuisance Model Diagnostics:
-  Outcome R² (within):      0.412
-  Treatment R² (within):    0.228
+  Outcome R² (CV):       0.033
+  Treatment R² (CV):     -0.029
+
+HAC Inference:
+  Bandwidth:             9
+  CV Strategy:           time_series_split_clustered
 ```
 
 <Theorem kind="remark">
 
-The estimate $\hat{\tau} = -0.784$ is close to the true $\tau = -0.8$, and the 95% CI $[-0.97, -0.60]$ correctly covers the true value. The modest $R^2$ values indicate substantial noise, but DML remains unbiased.
+The estimate $\hat{\tau} = -0.855$ is close to the true $\tau = -0.8$, and the 95% CI $[-0.92, -0.79]$ correctly covers the true value. The low $R^2$ values indicate substantial noise, but DML remains approximately unbiased. Note the warning: one product's observations fall entirely inside the temporal-CV prefix, so cluster-robust inference uses the 9 retained clusters — disclosed, never silent.
 
 </Theorem>
 
@@ -546,11 +556,11 @@ def run_panel_dml(data: Dict, config: CompetitorAnalysisConfig):
     )
 
     result = model.fit(
-        Y=data["Y"],
-        T=data["T"],
-        X=data["X"],
-        entity_ids=data["product_ids"],
-        time_ids=data["time_ids"]
+        data["Y"],
+        data["T"],
+        data["X"],
+        individual_id=data["product_ids"],
+        time_id=data["time_ids"],
     )
 
     return result
