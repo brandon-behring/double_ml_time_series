@@ -33,7 +33,6 @@ Usage:
 
 from __future__ import annotations
 
-import os
 import warnings
 from dataclasses import dataclass
 from typing import Literal
@@ -41,11 +40,12 @@ from typing import Literal
 import numpy as np
 from numpy.typing import NDArray
 from scipy import stats
-from sklearn.base import BaseEstimator, clone
-from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
-from sklearn.linear_model import Lasso, Ridge
+from sklearn.base import BaseEstimator
 
 from ._results import ResultBase
+from ._utils import ModelType, cross_fit_predictions, theta_via_fwl, validate_lengths
+from ._utils import compute_r2 as _compute_r2
+from ._utils import get_nuisance_model as _get_nuisance_model
 from .cross_fitting import (
     BlockedTimeSeriesCV,
     PurgedGroupTimeSeriesCV,
@@ -55,12 +55,8 @@ from .hac import HACEstimator
 
 # Type aliases
 ArrayLike = np.ndarray | list[float]
-ModelType = Literal["ridge", "lasso", "random_forest", "gradient_boosting"]
 CVStrategy = Literal["time_series_split", "blocked_cv", "purged_cv"]
 KernelType = Literal["bartlett", "parzen", "quadratic_spectral"]
-
-# Configurable parallelism: default uses all cores; tests can set DML_N_JOBS=1.
-_DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -145,49 +141,6 @@ Interpretation:
 """
 
 
-def _get_nuisance_model(
-    model_type: ModelType,
-    random_state: int | None = None,
-) -> BaseEstimator:
-    """Get a nuisance model for E[Y|X] or E[T|X] estimation.
-
-    Args:
-        model_type: Type of model to use
-        random_state: Random seed for reproducibility
-
-    Returns:
-        Sklearn estimator instance
-    """
-    if model_type == "ridge":
-        return Ridge(alpha=1.0)
-    elif model_type == "lasso":
-        return Lasso(alpha=0.1, max_iter=2000)
-    elif model_type == "random_forest":
-        return RandomForestRegressor(
-            n_estimators=100,
-            max_depth=5,
-            min_samples_leaf=10,
-            random_state=random_state,
-            n_jobs=_DEFAULT_N_JOBS,
-        )
-    elif model_type == "gradient_boosting":
-        return GradientBoostingRegressor(
-            n_estimators=100,
-            max_depth=3,
-            learning_rate=0.1,
-            random_state=random_state,
-        )
-    else:
-        raise ValueError(f"Unknown model type: {model_type}")
-
-
-def _compute_r2(y_true: NDArray[np.float64], y_pred: NDArray[np.float64]) -> float:
-    """Compute R² (coefficient of determination)."""
-    ss_res = np.sum((y_true - y_pred) ** 2)
-    ss_tot = np.sum((y_true - y_true.mean()) ** 2)
-    return float(1 - ss_res / ss_tot) if ss_tot > 1e-10 else 0.0
-
-
 def _create_lagged_features(
     X: NDArray[np.float64],
     T: NDArray[np.float64],
@@ -255,10 +208,6 @@ def _cross_fit_nuisance_time_series(
     Returns:
         Tuple of (Y_hat, T_hat) cross-fitted predictions
     """
-    n = len(Y)
-    Y_hat = np.full(n, np.nan)
-    T_hat = np.full(n, np.nan)
-
     # Get splits - different CV classes have different signatures
     if isinstance(cv, TimeSeriesCrossValidator):
         splits = cv.split(X, Y, time_index=time_index)
@@ -266,25 +215,10 @@ def _cross_fit_nuisance_time_series(
         # BlockedTimeSeriesCV and PurgedGroupTimeSeriesCV don't take time_index
         splits = cv.split(X, Y)
 
-    for train_idx, test_idx in splits:
-        X_train, X_test = X[train_idx], X[test_idx]
-        Y_train = Y[train_idx]
-        T_train = T[train_idx]
-
-        # Train on training fold (temporally before test)
-        outcome_mod = clone(outcome_model)
-        outcome_mod.fit(X_train, Y_train)
-        Y_hat[test_idx] = outcome_mod.predict(X_test)
-
-        treatment_mod = clone(treatment_model)
-        treatment_mod.fit(X_train, T_train)
-        T_hat[test_idx] = treatment_mod.predict(X_test)
-
-    # Early observations may be uncovered by expanding-window temporal CV.
-    # Leave these predictions as NaN so the estimator can exclude them rather
-    # than training on future observations to fill the gaps.
-
-    return Y_hat, T_hat
+    # Early observations may be uncovered by expanding-window temporal CV;
+    # cross_fit_predictions leaves them NaN so the estimator excludes them
+    # rather than training on future observations to fill the gaps.
+    return cross_fit_predictions(X, Y, T, splits, outcome_model, treatment_model)
 
 
 class TemporalPLRDML:
@@ -440,10 +374,7 @@ class TemporalPLRDML:
         n_samples = len(Y)
 
         # Validate inputs
-        if len(T) != n_samples:
-            raise ValueError(f"T length ({len(T)}) must match Y length ({n_samples})")
-        if X.shape[0] != n_samples:
-            raise ValueError(f"X rows ({X.shape[0]}) must match Y length ({n_samples})")
+        validate_lengths(Y, T, X)
 
         # Create time index if not provided
         if time_index is None:
@@ -524,14 +455,16 @@ class TemporalPLRDML:
         self._X_augmented = X_used
 
         # Estimate theta via FWL
-        T_tilde_sq_sum = np.sum(T_tilde**2)
-        T_tilde_sq_mean = np.mean(T_tilde**2)
-
-        if T_tilde_sq_sum < 1e-10:
-            raise ValueError(
+        theta, T_tilde_sq_sum = theta_via_fwl(
+            Y_tilde,
+            T_tilde,
+            no_variation_msg=(
                 "Treatment has no variation after controlling for X and lags. "
                 "This may indicate perfect prediction of T by X."
-            )
+            ),
+        )
+        T_tilde_sq_mean = np.mean(T_tilde**2)
+
         if T_tilde_sq_mean < 1e-6:
             warnings.warn(
                 "Treatment residual variation is very low after controlling for "
@@ -539,8 +472,6 @@ class TemporalPLRDML:
                 RuntimeWarning,
                 stacklevel=2,
             )
-
-        theta = float(np.sum(Y_tilde * T_tilde) / T_tilde_sq_sum)
 
         # Compute influence scores
         influence_scores = (Y_tilde - theta * T_tilde) * T_tilde / T_tilde_sq_mean
