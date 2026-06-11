@@ -10,6 +10,12 @@ are the compatibility contract).
 
 ### Removed
 
+- **`dml_ts/validation/stationarity.py` retired onto temporalcv v2.0.0**
+  (Track B): `StationarityDiagnostic`, `StationarityResult`, and
+  `ComprehensiveStationarityResult` are gone from `dml_ts.validation` — use
+  `from temporalcv import adf_test, kpss_test, pp_test, check_stationarity`
+  (results: `StationarityTestResult` / `JointStationarityResult`). The module
+  had no internal consumers; its capability is tested upstream.
 - **`dml_ts/dml/hac.py` retired onto temporalcv v2.0.0** (Track B):
   `HACEstimator`, `newey_west_se`, and `newey_west_covariance` are gone from
   `dml_ts.dml` — use `from temporalcv import newey_west_se,

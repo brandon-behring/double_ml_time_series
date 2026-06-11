@@ -93,11 +93,12 @@ dml_ts/dml/
   robinson.py            Robinson partially linear estimator
   double_ml.py           Cross-fitted i.i.d.-style PLR DML
   cross_fitting.py       Time-series CV helpers
-  hac.py                 HAC/Newey-West inference
+  inference.py           HAC causal-layer helper (primitives via temporalcv)
   temporal_plr_dml.py    TemporalPLRDML, RollingWindowDML, PanelDML
 
 dml_ts/data/                FRED loader, OJ loader, synthetic macro controls
-dml_ts/validation/          DGPs, stationarity diagnostics, validation helpers
+dml_ts/validation/          DGPs and validation helpers (stationarity diagnostics
+                            retired to temporalcv)
 dml_ts/production/          Research/demo utilities only
 examples/                Runnable public examples
 docs/sphinx/             Sphinx docs

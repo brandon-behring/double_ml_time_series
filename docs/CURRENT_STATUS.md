@@ -24,7 +24,7 @@ Stable core:
 - `TemporalPLRDML`: scalar temporal PLR DML with lagged controls, temporal
   cross-fitting, and HAC inference (not recursive dynamic g-estimation).
 - `RollingWindowDML` and `PanelDML` companion estimators.
-- HAC, time-series splitters, stationarity diagnostics, synthetic DGPs, test suite.
+- HAC inference (consumed from temporalcv — the estimators call `newey_west_se` directly), stationarity diagnostics (retired; available via `from temporalcv import adf_test, check_stationarity`), time-series splitters, synthetic DGPs, test suite.
 - LaTeX manuscript (10 chapters, 205-page PDF) as the canonical book.
 - `web/` Astro companion, live at `dml.brandon-behring.dev` (pilot).
 
