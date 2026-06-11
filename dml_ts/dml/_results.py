@@ -16,9 +16,12 @@ from typing import Any
 class ResultBase:
     """Base class for frozen estimator result dataclasses.
 
-    ``__post_init__`` dispatches to :meth:`_validate`, which is a deliberate
-    no-op today — the B3 numeric-validators pass fills it with hard-fails at
-    the arithmetic boundary (non-finite SEs, inverted CIs, ...).
+    ``__post_init__`` dispatches to :meth:`_validate`; subclasses fill it
+    with numeric hard-fails (non-positive/non-finite SEs, inverted CIs,
+    p-values outside [0, 1], non-PSD covariance — the B3 validators pass).
+    CAVEAT: validation fires at construction only — ``pickle.loads`` bypasses
+    ``__init__``/``__post_init__``, so unpickled instances are NOT
+    re-validated.
     """
 
     __slots__ = ()
@@ -27,7 +30,7 @@ class ResultBase:
         self._validate()
 
     def _validate(self) -> None:
-        """Numeric validity hook — filled by the B3 validators PR."""
+        """Numeric validity hook — overridden per result class (B3)."""
 
     def to_dict(self) -> dict[str, Any]:
         """Shallow dict of result fields (arrays returned as-is, not copied)."""

@@ -50,6 +50,25 @@ are the compatibility contract).
 
 ### Changed
 
+- **Numeric hard-fails at the arithmetic boundary (B3, closes #11).** Every
+  result object's `_validate()` hook (the B1 seam) now rejects degenerate
+  numerics at construction via temporalcv validators: non-finite theta,
+  non-positive/non-finite SEs, inverted CIs, p-values outside [0,1],
+  non-PSD covariance. The four inventoried silent-fallback sites are gone:
+  TemporalPLRDML and PanelDML no longer fabricate t=0/p=1.0 from degenerate
+  SEs (they raise); DynamicGEstimationDML no longer clips negative variances
+  to zero nor launders NaN through `max(0, .)` in the cumulative SE (it
+  raises); the demo pipeline now REFUSES to run with `use_hac=True` when HAC
+  components are unavailable instead of silently reporting naive iid SEs,
+  and refuses the silent shuffled-KFold downgrade when `time_column` is set
+  without temporal CV available.
+- **RollingWindowDML no longer silently skips windows (closes #10):** a
+  failed or undersized window previously vanished AND shifted every later
+  estimate onto the wrong time center (the center list was truncated, not
+  filtered). Skips now warn with per-window reasons, and centers are kept
+  aligned with the successful fits. DynamicG's covariance is symmetrized
+  before validation (float roundoff at large scales is not asymmetry).
+
 - `TemporalPLRDML` validates `hac_bandwidth` at construction (None or
   non-negative int, parameter-named error) and raises with context on
   non-finite influence scores. `hac_bandwidth=0` now means zero lags

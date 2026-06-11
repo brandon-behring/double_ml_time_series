@@ -51,6 +51,7 @@ from typing import Literal, cast
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator, clone
+from temporalcv import finite_se
 
 from ._results import ResultBase
 from ._utils import compute_r2 as _compute_r2
@@ -83,6 +84,12 @@ class RobinsonResult(ResultBase):
     T_residual: NDArray[np.float64]
     outcome_r2: float
     treatment_r2: float
+
+    def _validate(self) -> None:
+        """B3 numeric hard-fails at the result boundary."""
+        if not np.isfinite(self.theta):
+            raise ValueError(f"RobinsonResult.theta is not finite: {self.theta!r}")
+        finite_se(self.se, name="RobinsonResult.se")
 
     def __repr__(self) -> str:
         return (

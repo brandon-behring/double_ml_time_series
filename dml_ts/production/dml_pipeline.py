@@ -252,6 +252,14 @@ class InsuranceDMLPipeline:
         Returns:
             Cross-validator instance
         """
+        if self.config.time_column is not None and not DML_AVAILABLE:
+            # Refuse the silent downgrade: shuffled KFold on time-series
+            # data is leakage, not a fallback (same family as issue #11).
+            raise RuntimeError(
+                "time_column is set but temporal CV components are "
+                "unavailable (imports failed at module load). Refusing to "
+                "silently fall back to shuffled KFold on time-series data."
+            )
         if self.config.time_column is not None and DML_AVAILABLE:
             return TimeSeriesCrossValidator(
                 n_splits=self.config.n_folds,
@@ -386,11 +394,12 @@ class InsuranceDMLPipeline:
             se = float(newey_west_se(psi, bandwidth=bw).se)
         else:
             if self.config.use_hac and not DML_AVAILABLE:
-                warnings.warn(
-                    "use_hac=True but HAC components are unavailable; "
-                    "reporting NAIVE iid standard errors instead.",
-                    RuntimeWarning,
-                    stacklevel=2,
+                raise RuntimeError(
+                    "use_hac=True but HAC components are unavailable (the "
+                    "temporalcv/dml imports failed at module load — see the "
+                    "earlier RuntimeWarning). Refusing to silently report "
+                    "naive iid standard errors; set use_hac=False to opt "
+                    "into them explicitly."
                 )
             se = np.std(psi) / np.sqrt(n_samples)
 

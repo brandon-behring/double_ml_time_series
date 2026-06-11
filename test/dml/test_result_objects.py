@@ -102,19 +102,147 @@ def test_eq_is_identity(result_instances: list[Any]) -> None:
     assert a != b
 
 
-def test_validate_hook_fires_for_every_result_class(monkeypatch: pytest.MonkeyPatch) -> None:
-    """__post_init__ dispatches to _validate on construction of ALL classes.
+# ---------------------------------------------------------------------------
+# B3: _validate is no longer a no-op — degenerate numerics fail at
+# construction (issue #11). These replace the pre-B3 seam-fires test.
+# ---------------------------------------------------------------------------
 
-    This is the seam the B3 validators fill; if a future result class
-    defines its own __post_init__ without chaining, _validate silently
-    never runs — this test makes that loud for every shipped class.
-    """
-    from dml_ts.dml._results import ResultBase
 
-    calls: list[str] = []
-    monkeypatch.setattr(ResultBase, "_validate", lambda self: calls.append(type(self).__name__))
+def _fwl_kwargs(**over: Any) -> dict[str, Any]:
+    z = np.zeros(3)
+    kw: dict[str, Any] = {
+        "theta": 1.0,
+        "se": 0.1,
+        "t_stat": 10.0,
+        "p_value": 0.0,
+        "Y_residual": z,
+        "T_residual": z,
+        "r2_Y": 0.5,
+        "r2_T": 0.5,
+    }
+    kw.update(over)
+    return kw
 
-    instances = _result_instances()
-    constructed = [type(r).__name__ for r in instances]
-    for name in constructed:
-        assert name in calls, f"_validate did not fire for {name}"
+
+def _dyn_kwargs(**over: Any) -> dict[str, Any]:
+    kw: dict[str, Any] = {
+        "theta_t": np.array([1.0, 2.0]),
+        "se_t": np.array([0.1, 0.1]),
+        "ci_lower_t": np.array([0.8, 1.8]),
+        "ci_upper_t": np.array([1.2, 2.2]),
+        "p_value_t": np.array([0.001, 0.001]),
+        "cumulative_effect": 3.0,
+        "cumulative_se": 0.15,
+        "n_units": 100,
+        "n_periods": 2,
+        "alpha": 0.05,
+        "cov": np.eye(2),
+        "nuisance_r2_t": np.array([0.9, 0.85]),
+    }
+    kw.update(over)
+    return kw
+
+
+def _scalar_inference_kwargs(**over: Any) -> dict[str, Any]:
+    """Common scalar-inference fields shared by DMLResult-style classes."""
+    z = np.zeros(3)
+    kw: dict[str, Any] = {
+        "theta": 1.0,
+        "se": 0.1,
+        "t_stat": 10.0,
+        "p_value": 0.0,
+        "ci_lower": 0.8,
+        "ci_upper": 1.2,
+        "Y_residual": z,
+        "T_residual": z,
+    }
+    kw.update(over)
+    return kw
+
+
+def _make_dml(**over: Any) -> Any:
+    from dml_ts.dml import DMLResult
+
+    kw = _scalar_inference_kwargs(**over)
+    kw.update(influence_scores=np.zeros(3), outcome_r2_cv=0.5, treatment_r2_cv=0.5, n_folds=3)
+    return DMLResult(**kw)
+
+
+def _make_tplr(**over: Any) -> Any:
+    from dml_ts.dml import TemporalPLRDMLResult
+
+    kw = _scalar_inference_kwargs(**over)
+    kw.update(
+        influence_scores=np.zeros(3),
+        outcome_r2_cv=0.5,
+        treatment_r2_cv=0.5,
+        n_samples=3,
+        n_periods=3,
+        hac_bandwidth=1,
+        cv_strategy="time_series_split",
+    )
+    return TemporalPLRDMLResult(**kw)
+
+
+def _make_robinson(**over: Any) -> Any:
+    from dml_ts.dml.robinson import RobinsonResult
+
+    z = np.zeros(3)
+    kw: dict[str, Any] = {
+        "theta": 1.0,
+        "se": 0.1,
+        "Y_residual": z,
+        "T_residual": z,
+        "outcome_r2": 0.5,
+        "treatment_r2": 0.5,
+    }
+    kw.update(over)
+    return RobinsonResult(**kw)
+
+
+class TestValidateRejectsDegenerateNumerics:
+    @pytest.mark.parametrize("bad_se", [0.0, -0.5, float("nan"), float("inf")])
+    def test_fwl_degenerate_se_raises(self, bad_se: float) -> None:
+        with pytest.raises(ValueError, match="se"):
+            FWLResult(**_fwl_kwargs(se=bad_se))
+
+    def test_fwl_nonfinite_theta_raises(self) -> None:
+        with pytest.raises(ValueError, match="theta"):
+            FWLResult(**_fwl_kwargs(theta=float("nan")))
+
+    def test_fwl_pvalue_outside_unit_raises(self) -> None:
+        with pytest.raises(ValueError, match="p_value"):
+            FWLResult(**_fwl_kwargs(p_value=1.5))
+
+    def test_dynamic_degenerate_se_raises(self) -> None:
+        with pytest.raises(ValueError, match="se_t"):
+            DynamicGEstimationResult(**_dyn_kwargs(se_t=np.array([0.1, 0.0])))
+
+    def test_dynamic_inverted_ci_raises(self) -> None:
+        with pytest.raises(ValueError, match="ci_t"):
+            DynamicGEstimationResult(**_dyn_kwargs(ci_lower_t=np.array([2.0, 1.8])))
+
+    def test_dynamic_non_psd_cov_raises(self) -> None:
+        with pytest.raises(ValueError, match="cov"):
+            DynamicGEstimationResult(**_dyn_kwargs(cov=np.array([[1.0, 2.0], [2.0, 1.0]])))
+
+    def test_estimator_results_pass_validation(self, result_instances: list[Any]) -> None:
+        """Every real fit constructs cleanly — validators reject only
+        degenerate numerics, never healthy paths (golden-gated too)."""
+        assert len(result_instances) >= 4
+
+    @pytest.mark.parametrize("factory", [_make_dml, _make_tplr, _make_robinson])
+    def test_scalar_results_degenerate_se_raises(self, factory: Any) -> None:
+        """Every scalar result class hard-fails on degenerate SEs — a deleted
+        hook would let these constructions pass (mutation-probe finding)."""
+        with pytest.raises(ValueError, match=r"\.se"):
+            factory(se=0.0)
+        with pytest.raises(ValueError, match=r"\.se"):
+            factory(se=float("nan"))
+        with pytest.raises(ValueError, match="theta"):
+            factory(theta=float("inf"))
+
+    @pytest.mark.parametrize("factory", [_make_dml, _make_tplr])
+    def test_scalar_results_inverted_ci_raises(self, factory: Any) -> None:
+        with pytest.raises(ValueError, match=r"\.ci"):
+            factory(ci_lower=2.0, ci_upper=1.0)

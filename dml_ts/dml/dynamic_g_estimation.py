@@ -47,7 +47,14 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.model_selection import KFold
-from temporalcv import TimeSeriesCrossValidator, optimal_bandwidth
+from temporalcv import (
+    TimeSeriesCrossValidator,
+    ci_ordered,
+    coverage_in_unit,
+    finite_se,
+    optimal_bandwidth,
+    psd,
+)
 
 from ._results import ResultBase
 
@@ -96,6 +103,17 @@ class DynamicGEstimationResult(ResultBase):
     nuisance_r2_t: NDArray[np.float64]
     backend: str = "custom"
     mode: str = "panel"
+
+    def _validate(self) -> None:
+        """B3 numeric hard-fails at the result boundary."""
+        if not np.all(np.isfinite(self.theta_t)):
+            raise ValueError("DynamicGEstimationResult.theta_t contains non-finite values")
+        finite_se(self.se_t, name="DynamicGEstimationResult.se_t")
+        finite_se(self.cumulative_se, name="DynamicGEstimationResult.cumulative_se")
+        ci_ordered(self.ci_lower_t, self.ci_upper_t, name="DynamicGEstimationResult.ci_t")
+        coverage_in_unit(self.p_value_t, name="DynamicGEstimationResult.p_value_t")
+        if self.cov is not None:
+            psd(self.cov, name="DynamicGEstimationResult.cov")
 
     def __repr__(self) -> str:
         blips = ", ".join(f"{v:.3f}" for v in self.theta_t)
@@ -455,13 +473,24 @@ class DynamicGEstimationDML:
         nuis_r2: NDArray,
         mode: str,
     ) -> DynamicGEstimationResult:
-        se = np.sqrt(np.clip(np.diag(cov), 0.0, None))
+        # Degenerate variances must raise, never be clipped to 0 and then
+        # silently reported as t=0/p=1 (issue #11). max(0.0, nan) == 0.0
+        # would additionally have laundered NaN into a zero cumulative SE.
+        # The sandwich G_inv @ meat @ G_inv.T is symmetric by construction;
+        # float roundoff breaks exact symmetry at large covariance scales,
+        # which psd()'s absolute tolerance would flag as a false positive.
+        # Symmetrizing launders nothing.
+        cov = (cov + cov.T) / 2.0
+        diag = np.asarray(np.diag(cov), dtype=float)
+        finite_se(diag, name="blip variance diagonal")
+        se = np.sqrt(diag)
         z = stats.norm.ppf(1 - alpha / 2)
-        with np.errstate(divide="ignore", invalid="ignore"):
-            tstat = np.where(se > 0, theta / se, 0.0)
-            pvals = 2 * (1 - stats.norm.cdf(np.abs(tstat)))
+        tstat = theta / se
+        pvals = 2 * (1 - stats.norm.cdf(np.abs(tstat)))
         cum = float(theta.sum())
-        cum_se = float(np.sqrt(max(0.0, np.ones(m) @ cov @ np.ones(m))))
+        cum_var = float(np.ones(m) @ cov @ np.ones(m))
+        finite_se(cum_var, name="cumulative-effect variance")
+        cum_se = float(np.sqrt(cum_var))
         return DynamicGEstimationResult(
             theta_t=theta,
             se_t=se,
