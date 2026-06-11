@@ -27,13 +27,6 @@ from .parallel import (
     parallel_monte_carlo,
     parallelize,
 )
-
-# Phase 2A (fully implemented)
-from .stationarity import (
-    ComprehensiveStationarityResult,
-    StationarityDiagnostic,
-    StationarityResult,
-)
 from .storage import ResultStorage
 from .validation_result import ValidationResult
 
@@ -64,9 +57,6 @@ __all__ = [
     "get_optimal_n_jobs",
     "BiasValidation",
     # Phase 2A
-    "StationarityDiagnostic",
-    "StationarityResult",
-    "ComprehensiveStationarityResult",
     # Insurance DGP
     "InsuranceDGPParams",
     "InsuranceDGPResult",

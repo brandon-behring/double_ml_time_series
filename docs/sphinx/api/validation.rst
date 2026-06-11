@@ -62,19 +62,6 @@ for competitor pricing causal inference.
 
 ----
 
-Stationarity Diagnostics (``dml_ts.validation.stationarity``)
--------------------------------------------------------------
-
-ADF, KPSS, and Phillips-Perron stationarity tests with
-comprehensive diagnostic reporting.
-
-.. automodule:: dml_ts.validation.stationarity
-   :members:
-   :undoc-members: False
-   :show-inheritance:
-
-----
-
 Bias Validation (``dml_ts.validation.bias_validation``)
 -------------------------------------------------------
 

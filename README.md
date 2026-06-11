@@ -9,7 +9,7 @@ The current verified core is:
 - FWL and Robinson-estimator teaching implementations
 - Temporal partially linear DML via `TemporalPLRDML`
 - Time-series cross-validation helpers and HAC/Newey-West inference utilities
-- Synthetic data generators, stationarity diagnostics, and book examples
+- Synthetic data generators and book examples (stationarity diagnostics via temporalcv)
 
 The temporal estimator `TemporalPLRDML` estimates a scalar partially linear treatment
 effect with lagged treatment controls, temporal cross-fitting, and HAC inference. True
@@ -151,7 +151,7 @@ dml_ts/dml/
   robinson.py            Robinson partially linear estimator
   double_ml.py           Cross-fitted i.i.d.-style PLR DML
   cross_fitting.py       Time-series CV helpers
-  hac.py                 HAC/Newey-West inference
+  inference.py           HAC causal-layer helper (primitives via temporalcv)
   temporal_plr_dml.py    TemporalPLRDML, RollingWindowDML, PanelDML
 
 dml_ts/data/                FRED loader, OJ loader, synthetic macro data
