@@ -77,13 +77,16 @@ information leakage under autocorrelation.
 
 ----
 
-HAC Standard Errors (``dml_ts.dml.hac``)
-----------------------------------------
+HAC Inference Helpers (``dml_ts.dml.inference``)
+------------------------------------------------
 
-Heteroskedasticity and autocorrelation consistent (HAC) covariance estimation
-via Newey-West with automatic bandwidth selection.
+The HAC machinery itself (kernels, bandwidth selection, Newey-West long-run
+variance) lives upstream in `temporalcv <https://github.com/brandon-behring/temporalcv>`_
+(``from temporalcv import newey_west_se, optimal_bandwidth``); this module
+keeps the causal-layer convenience that interprets a point estimate together
+with its HAC standard error.
 
-.. automodule:: dml_ts.dml.hac
+.. automodule:: dml_ts.dml.inference
    :members:
    :undoc-members: False
    :show-inheritance:

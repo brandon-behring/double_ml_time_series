@@ -18,7 +18,7 @@ The current implementation supports:
 - lagged treatment controls through ``n_lags``
 - expanding-window temporal cross-fitting
 - gap handling through ``gap``
-- HAC/Newey-West-style inference through :class:`~dml_ts.dml.hac.HACEstimator`
+- HAC/Newey-West-style inference via ``temporalcv.newey_west_se``
 - explicit reporting of early rows excluded because temporal CV cannot produce
   out-of-fold predictions without training on future observations
 

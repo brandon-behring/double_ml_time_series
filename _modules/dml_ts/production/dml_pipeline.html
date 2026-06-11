@@ -332,6 +332,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC</span><span class="p">,</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -342,14 +343,22 @@
 
 <span class="c1"># Import our DML components</span>
 <span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">temporalcv</span><span class="w"> </span><span class="kn">import</span> <span class="n">newey_west_se</span>
+
     <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>  <span class="c1"># noqa: F401</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.double_ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>  <span class="c1"># noqa: F401</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.hac</span><span class="w"> </span><span class="kn">import</span> <span class="n">newey_west_se</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.temporal_plr_dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>  <span class="c1"># noqa: F401</span>
 
     <span class="n">DML_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">_import_error</span><span class="p">:</span>
     <span class="n">DML_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;DML/HAC components unavailable (</span><span class="si">{</span><span class="n">_import_error</span><span class="si">!r}</span><span class="s2">); the demo &quot;</span>
+        <span class="s2">&quot;pipeline will fall back to NAIVE iid standard errors, which &quot;</span>
+        <span class="s2">&quot;understate uncertainty under autocorrelation.&quot;</span><span class="p">,</span>
+        <span class="ne">RuntimeWarning</span><span class="p">,</span>
+        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span>
 
 <span class="c1"># Import registry and monitoring components</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.production.causal_monitor</span><span class="w"> </span><span class="kn">import</span> <span class="n">CausalMonitor</span><span class="p">,</span> <span class="n">MonitoringResult</span>
@@ -372,7 +381,7 @@
 <span class="sd">        propensity_model: Model for treatment propensity</span>
 <span class="sd">        outcome_model: Model for outcome regression</span>
 <span class="sd">        use_hac: Use HAC standard errors for time series</span>
-<span class="sd">        hac_bandwidth: Bandwidth for HAC (None = auto)</span>
+<span class="sd">        hac_bandwidth: Bandwidth for HAC (None = Andrews data-driven selection)</span>
 <span class="sd">        monitoring_enabled: Enable companion monitoring utilities</span>
 <span class="sd">        feature_columns: List of feature/covariate column names</span>
 <span class="sd">        treatment_column: Treatment variable name</span>
@@ -695,8 +704,21 @@
 
         <span class="c1"># Compute standard error</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span> <span class="ow">and</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
-            <span class="n">se</span> <span class="o">=</span> <span class="n">newey_west_se</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hac_bandwidth</span><span class="p">)</span>
+            <span class="c1"># Historical quirk preserved: the retired dml_ts hac treated</span>
+            <span class="c1"># bandwidth=None as Andrews selection (an else-branch accident).</span>
+            <span class="c1"># temporalcv rejects None, so map it explicitly; note temporalcv&#39;s</span>
+            <span class="c1"># Andrews uses the literature alpha(1) constant for Bartlett</span>
+            <span class="c1"># (documented deviation from the old implementation).</span>
+            <span class="n">bw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hac_bandwidth</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hac_bandwidth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;andrews&quot;</span>
+            <span class="n">se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">newey_west_se</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="n">bw</span><span class="p">)</span><span class="o">.</span><span class="n">se</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;use_hac=True but HAC components are unavailable; &quot;</span>
+                    <span class="s2">&quot;reporting NAIVE iid standard errors instead.&quot;</span><span class="p">,</span>
+                    <span class="ne">RuntimeWarning</span><span class="p">,</span>
+                    <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="n">se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_ate_se</span> <span class="o">=</span> <span class="n">se</span>

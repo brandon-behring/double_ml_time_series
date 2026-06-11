@@ -360,10 +360,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientBoostingRegressor</span><span class="p">,</span> <span class="n">RandomForestRegressor</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">KFold</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">temporalcv</span><span class="w"> </span><span class="kn">import</span> <span class="n">optimal_bandwidth</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.hac</span><span class="w"> </span><span class="kn">import</span> <span class="n">optimal_bandwidth</span>
 
 <span class="n">ArrayLike</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
 <span class="n">ModelSpec</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">BaseEstimator</span>
