@@ -579,6 +579,14 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Cross-validator instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">time_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
+            <span class="c1"># Refuse the silent downgrade: shuffled KFold on time-series</span>
+            <span class="c1"># data is leakage, not a fallback (same family as issue #11).</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;time_column is set but temporal CV components are &quot;</span>
+                <span class="s2">&quot;unavailable (imports failed at module load). Refusing to &quot;</span>
+                <span class="s2">&quot;silently fall back to shuffled KFold on time-series data.&quot;</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">time_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">(</span>
                 <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
@@ -715,11 +723,12 @@
             <span class="n">se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">newey_west_se</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="n">bw</span><span class="p">)</span><span class="o">.</span><span class="n">se</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                    <span class="s2">&quot;use_hac=True but HAC components are unavailable; &quot;</span>
-                    <span class="s2">&quot;reporting NAIVE iid standard errors instead.&quot;</span><span class="p">,</span>
-                    <span class="ne">RuntimeWarning</span><span class="p">,</span>
-                    <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;use_hac=True but HAC components are unavailable (the &quot;</span>
+                    <span class="s2">&quot;temporalcv/dml imports failed at module load — see the &quot;</span>
+                    <span class="s2">&quot;earlier RuntimeWarning). Refusing to silently report &quot;</span>
+                    <span class="s2">&quot;naive iid standard errors; set use_hac=False to opt &quot;</span>
+                    <span class="s2">&quot;into them explicitly.&quot;</span>
                 <span class="p">)</span>
             <span class="n">se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
 

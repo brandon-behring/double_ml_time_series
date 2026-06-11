@@ -358,6 +358,9 @@
     <span class="n">BlockedTimeSeriesCV</span><span class="p">,</span>
     <span class="n">PurgedWalkForward</span><span class="p">,</span>
     <span class="n">TimeSeriesCrossValidator</span><span class="p">,</span>
+    <span class="n">ci_ordered</span><span class="p">,</span>
+    <span class="n">coverage_in_unit</span><span class="p">,</span>
+    <span class="n">finite_se</span><span class="p">,</span>
     <span class="n">newey_west_se</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -416,6 +419,14 @@
     <span class="n">influence_scores</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
     <span class="n">dropped_initial_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">lagged_rows_dropped</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;B3 numeric hard-fails at the result boundary.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TemporalPLRDMLResult.theta is not finite: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">finite_se</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;TemporalPLRDMLResult.se&quot;</span><span class="p">)</span>
+        <span class="n">ci_ordered</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci_lower</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci_upper</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;TemporalPLRDMLResult.ci&quot;</span><span class="p">)</span>
+        <span class="n">coverage_in_unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;TemporalPLRDMLResult.p_value&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
@@ -844,7 +855,9 @@
         <span class="n">bandwidth_used</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hac_res</span><span class="o">.</span><span class="n">bandwidth</span><span class="p">)</span>
 
         <span class="c1"># Compute inference statistics</span>
-        <span class="n">t_stat</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">hac_se</span> <span class="k">if</span> <span class="n">hac_se</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="c1"># Degenerate SEs must raise, never fabricate t=0/p=1 (issue #11).</span>
+        <span class="n">finite_se</span><span class="p">(</span><span class="n">hac_se</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;HAC standard error&quot;</span><span class="p">)</span>
+        <span class="n">t_stat</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">hac_se</span>
         <span class="n">p_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">t_stat</span><span class="p">))))</span>
 
         <span class="c1"># Confidence interval</span>
@@ -1055,6 +1068,8 @@
 
         <span class="n">theta_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">se_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">kept_centers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">skipped</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">center</span> <span class="ow">in</span> <span class="n">centers</span><span class="p">:</span>
             <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">center</span> <span class="o">-</span> <span class="n">half_window</span><span class="p">)</span>
@@ -1064,8 +1079,8 @@
             <span class="n">T_window</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
             <span class="n">X_window</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
 
-            <span class="c1"># Skip if window too small</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y_window</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">30</span><span class="p">:</span>
+                <span class="n">skipped</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">center</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;window too small (n=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">Y_window</span><span class="p">)</span><span class="si">}</span><span class="s2"> &lt; 30)&quot;</span><span class="p">))</span>
                 <span class="k">continue</span>
 
             <span class="c1"># Fit TemporalPLRDML on window</span>
@@ -1080,15 +1095,30 @@
                     <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y_window</span><span class="p">,</span> <span class="n">T_window</span><span class="p">,</span> <span class="n">X_window</span><span class="p">)</span>
-                <span class="n">theta_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
-                <span class="n">se_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="c1"># Skip windows where estimation fails</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">skipped</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">center</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
                 <span class="k">continue</span>
+            <span class="c1"># Centers are appended ONLY on success: truncating the center</span>
+            <span class="c1"># list to len(theta_list) silently relabeled every estimate after</span>
+            <span class="c1"># a skipped middle window with the wrong timestamp (issue #10).</span>
+            <span class="n">theta_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+            <span class="n">se_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="p">)</span>
+            <span class="n">kept_centers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">center</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">skipped</span><span class="p">:</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;center </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">skipped</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+            <span class="n">more</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; (+</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">skipped</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">5</span><span class="si">}</span><span class="s2"> more)&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">skipped</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;RollingWindowDML skipped </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">skipped</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;windows — </span><span class="si">{</span><span class="n">details</span><span class="si">}{</span><span class="n">more</span><span class="si">}</span><span class="s2">. Reported estimates cover only &quot;</span>
+                <span class="s2">&quot;the successful windows at their correct centers.&quot;</span><span class="p">,</span>
+                <span class="ne">RuntimeWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_theta_series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta_list</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_se_series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">se_list</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_time_centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">centers</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">theta_list</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">kept_centers</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
@@ -1306,21 +1336,23 @@
             <span class="n">cluster_var</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="p">(</span><span class="n">n_clusters_eff</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_clusters_eff</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cluster_psi</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_eff</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="p">)</span>
+            <span class="n">finite_se</span><span class="p">(</span><span class="n">cluster_var</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cluster-robust variance&quot;</span><span class="p">)</span>
             <span class="n">cluster_se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cluster_var</span><span class="p">))</span>
+
+            <span class="c1"># Degenerate cluster SEs must raise, never fabricate t=0/p=1.0</span>
+            <span class="c1"># (issue #11; the &lt;2-retained-clusters guard above catches the</span>
+            <span class="c1"># all-trimmed case, this catches degenerate-by-value).</span>
+            <span class="n">finite_se</span><span class="p">(</span><span class="n">cluster_se</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cluster-robust standard error&quot;</span><span class="p">)</span>
 
             <span class="c1"># Update result with cluster SE</span>
             <span class="n">z_crit</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">0.975</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">TemporalPLRDMLResult</span><span class="p">(</span>
                 <span class="n">theta</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span>
                 <span class="n">se</span><span class="o">=</span><span class="n">cluster_se</span><span class="p">,</span>
-                <span class="n">t_stat</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">/</span> <span class="n">cluster_se</span> <span class="k">if</span> <span class="n">cluster_se</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="n">t_stat</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">/</span> <span class="n">cluster_se</span><span class="p">,</span>
                 <span class="n">ci_lower</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">-</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="n">cluster_se</span><span class="p">,</span>
                 <span class="n">ci_upper</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">+</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="n">cluster_se</span><span class="p">,</span>
-                <span class="n">p_value</span><span class="o">=</span><span class="p">(</span>
-                    <span class="nb">float</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">/</span> <span class="n">cluster_se</span><span class="p">))))</span>
-                    <span class="k">if</span> <span class="n">cluster_se</span> <span class="o">&gt;</span> <span class="mf">1e-10</span>
-                    <span class="k">else</span> <span class="mf">1.0</span>
-                <span class="p">),</span>
+                <span class="n">p_value</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span> <span class="o">/</span> <span class="n">cluster_se</span><span class="p">)))),</span>
                 <span class="n">n_samples</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">n_samples</span><span class="p">,</span>
                 <span class="n">n_periods</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">n_periods</span><span class="p">,</span>
                 <span class="n">outcome_r2_cv</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">outcome_r2_cv</span><span class="p">,</span>
