@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dml_ts"
-version = "1.0.0"
+version = "1.1.0"
 description = "Book companion code for Double Machine Learning with temporal PLR examples"
 authors = [{name = "Brandon Behring"}]
 requires-python = ">=3.11"

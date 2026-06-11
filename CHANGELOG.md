@@ -8,6 +8,19 @@ are the compatibility contract).
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [1.1.0] - 2026-06-11
+
+dml_ts is now a thin causal consumer of
+[temporalcv](https://github.com/brandon-behring/temporalcv) v2.0.0: the
+generic time-series infrastructure (CV splitters, HAC, stationarity
+diagnostics) is consumed from the pinned upstream, each retirement gated on
+golden snapshots captured after the 1.0.0 inference fixes. Net effect:
+~4,000 lines retired, one temporal-leakage bug fixed (`purged_cv`), every
+silent numeric fallback replaced with a raise or a warning, and the
+manuscript corrected wherever it taught something the code never did.
+
 ### Removed
 
 - **`dml_ts/dml/cross_fitting.py` retired onto temporalcv v2.0.0** (Track B):

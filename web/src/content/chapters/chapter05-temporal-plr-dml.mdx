@@ -9,7 +9,7 @@ description: "Extending DML to time series: why random K-fold leaks future data,
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_05.tex
-source_sha256: d1bee047c3df2ab18b5748e41efeea8deb2f410cc6b2b69d7b1bcd266b66fd40
+source_sha256: da89c20a3b177789e7da228ad2d18030f6f3225bb8747ee2308520e73d52ff84
 provenance:
   ai_tools:
     - Claude Code
@@ -112,6 +112,12 @@ Now testing never uses future training data.
 </Theorem>
 
 ### Time series cross-validation strategies
+
+<Theorem kind="remark" name="Companion v1.1.0">
+
+As of companion release 1.1.0, the temporal-validation infrastructure in this chapter — cross-validation splitters, HAC/Newey–West inference, and stationarity diagnostics — is consumed from the `temporalcv` library rather than maintained inside the companion. Each migration was gated on golden snapshots of the estimators' numerical output; the one deliberate behavioral change (the forward-only purged walk replacing a bidirectional purged K-fold) is a leakage *correction*, documented where it appears below.
+
+</Theorem>
 
 Three strategies are available (implemented upstream in `temporalcv`; the companion's estimators select among them via `cv_strategy`):
 

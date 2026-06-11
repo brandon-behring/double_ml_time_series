@@ -7,5 +7,5 @@ authors:
     given-names: Brandon
 repository-code: "https://github.com/brandon-behring/double_ml_time_series"
 license: MIT
-version: "1.0.0"
-date-released: "2026-06-10"
+version: "1.1.0"
+date-released: "2026-06-11"
