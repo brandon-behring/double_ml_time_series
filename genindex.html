@@ -353,14 +353,6 @@
 </li>
         <li><a href="api/data.html#dml_ts.data.oj_loader.OJDataset.__init__">(dml_ts.data.oj_loader.OJDataset method)</a>
 </li>
-        <li><a href="api/dml.html#dml_ts.dml.cross_fitting.BlockedTimeSeriesCV.__init__">(dml_ts.dml.cross_fitting.BlockedTimeSeriesCV method)</a>
-</li>
-        <li><a href="api/dml.html#dml_ts.dml.cross_fitting.CVFold.__init__">(dml_ts.dml.cross_fitting.CVFold method)</a>
-</li>
-        <li><a href="api/dml.html#dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV.__init__">(dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV method)</a>
-</li>
-        <li><a href="api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator.__init__">(dml_ts.dml.cross_fitting.TimeSeriesCrossValidator method)</a>
-</li>
         <li><a href="api/dml.html#dml_ts.dml.double_ml.DMLResult.__init__">(dml_ts.dml.double_ml.DMLResult method)</a>
 </li>
         <li><a href="api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationDML.__init__">(dml_ts.dml.dynamic_g_estimation.DynamicGEstimationDML method)</a>
@@ -472,11 +464,9 @@
 </li>
       <li><a href="api/validation.html#dml_ts.validation.insurance_dgp.InsuranceDGPParams.beta_product">beta_product (dml_ts.validation.insurance_dgp.InsuranceDGPParams attribute)</a>
 </li>
-      <li><a href="api/validation.html#dml_ts.validation.bias_validation.BiasValidation">BiasValidation (class in dml_ts.validation.bias_validation)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.BlockedTimeSeriesCV">BlockedTimeSeriesCV (class in dml_ts.dml.cross_fitting)</a>
+      <li><a href="api/validation.html#dml_ts.validation.bias_validation.BiasValidation">BiasValidation (class in dml_ts.validation.bias_validation)</a>
 </li>
       <li><a href="api/validation.html#dml_ts.validation.dgp_generator_ts.BreakDGPResult.break_points">break_points (dml_ts.validation.dgp_generator_ts.BreakDGPResult attribute)</a>
 </li>
@@ -564,7 +554,7 @@
 </li>
       <li><a href="api/data.html#dml_ts.data.fred_loader.create_synthetic_fred_data">create_synthetic_fred_data() (in module dml_ts.data.fred_loader)</a>
 </li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.create_time_series_cv">create_time_series_cv() (in module dml_ts.dml.cross_fitting)</a>
+      <li><a href="api/dml.html#dml_ts.dml.cv_factory.create_time_series_cv">create_time_series_cv() (in module dml_ts.dml.cv_factory)</a>
 </li>
       <li><a href="api/production.html#dml_ts.production.model_registry.DMLModelVersion.created_at">created_at (dml_ts.production.model_registry.DMLModelVersion attribute)</a>
 </li>
@@ -581,8 +571,6 @@
       <li><a href="api/dml.html#dml_ts.dml.dynamic_g_estimation.DynamicGEstimationResult.cumulative_se">cumulative_se (dml_ts.dml.dynamic_g_estimation.DynamicGEstimationResult attribute)</a>
 </li>
       <li><a href="api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDMLResult.cv_strategy">cv_strategy (dml_ts.dml.temporal_plr_dml.TemporalPLRDMLResult attribute)</a>
-</li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.CVFold">CVFold (class in dml_ts.dml.cross_fitting)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -633,10 +621,10 @@
 </li>
       </ul></li>
       <li>
-    dml_ts.dml.cross_fitting
+    dml_ts.dml.cv_factory
 
       <ul>
-        <li><a href="api/dml.html#module-dml_ts.dml.cross_fitting">module</a>
+        <li><a href="api/dml.html#module-dml_ts.dml.cv_factory">module</a>
 </li>
       </ul></li>
       <li>
@@ -842,11 +830,9 @@
         <li><a href="api/production.html#dml_ts.production.dml_pipeline.InsuranceDMLPipeline.fit">(dml_ts.production.dml_pipeline.InsuranceDMLPipeline method)</a>
 </li>
       </ul></li>
-      <li><a href="api/production.html#dml_ts.production.dml_pipeline.PipelineResult.fit_timestamp">fit_timestamp (dml_ts.production.dml_pipeline.PipelineResult attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.CVFold.fold_number">fold_number (dml_ts.dml.cross_fitting.CVFold attribute)</a>
+      <li><a href="api/production.html#dml_ts.production.dml_pipeline.PipelineResult.fit_timestamp">fit_timestamp (dml_ts.production.dml_pipeline.PipelineResult attribute)</a>
 </li>
       <li><a href="api/data.html#dml_ts.data.fred_loader.FREDLoader">FREDLoader (class in dml_ts.data.fred_loader)</a>
 </li>
@@ -896,22 +882,12 @@
 </li>
       <li><a href="api/production.html#dml_ts.production.model_registry.DMLModelVersion.get_feature_transformer">get_feature_transformer() (dml_ts.production.model_registry.DMLModelVersion method)</a>
 </li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator.get_fold_info">get_fold_info() (dml_ts.dml.cross_fitting.TimeSeriesCrossValidator method)</a>
-</li>
-      <li><a href="api/data.html#dml_ts.data.fred_loader.FREDLoader.get_macro_controls">get_macro_controls() (dml_ts.data.fred_loader.FREDLoader method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/data.html#dml_ts.data.fred_loader.FREDLoader.get_macro_controls">get_macro_controls() (dml_ts.data.fred_loader.FREDLoader method)</a>
+</li>
       <li><a href="api/data.html#dml_ts.data.fred_loader.FREDLoader.get_multiple_series">get_multiple_series() (dml_ts.data.fred_loader.FREDLoader method)</a>
 </li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.BlockedTimeSeriesCV.get_n_splits">get_n_splits() (dml_ts.dml.cross_fitting.BlockedTimeSeriesCV method)</a>
-
-      <ul>
-        <li><a href="api/dml.html#dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV.get_n_splits">(dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV method)</a>
-</li>
-        <li><a href="api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator.get_n_splits">(dml_ts.dml.cross_fitting.TimeSeriesCrossValidator method)</a>
-</li>
-      </ul></li>
       <li><a href="api/production.html#dml_ts.production.model_registry.DMLModelVersion.get_nuisance_models">get_nuisance_models() (dml_ts.production.model_registry.DMLModelVersion method)</a>
 </li>
       <li><a href="api/validation.html#dml_ts.validation.parallel.get_optimal_n_jobs">get_optimal_n_jobs() (in module dml_ts.validation.parallel)</a>
@@ -1062,7 +1038,7 @@
 </li>
         <li><a href="api/data.html#module-dml_ts.data.oj_loader">dml_ts.data.oj_loader</a>
 </li>
-        <li><a href="api/dml.html#module-dml_ts.dml.cross_fitting">dml_ts.dml.cross_fitting</a>
+        <li><a href="api/dml.html#module-dml_ts.dml.cv_factory">dml_ts.dml.cv_factory</a>
 </li>
         <li><a href="api/dml.html#module-dml_ts.dml.double_ml">dml_ts.dml.double_ml</a>
 </li>
@@ -1239,10 +1215,10 @@
 </li>
       <li><a href="api/validation.html#dml_ts.validation.parallel.parallel_monte_carlo">parallel_monte_carlo() (in module dml_ts.validation.parallel)</a>
 </li>
-      <li><a href="api/validation.html#dml_ts.validation.parallel.ParallelExecutor">ParallelExecutor (class in dml_ts.validation.parallel)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/validation.html#dml_ts.validation.parallel.ParallelExecutor">ParallelExecutor (class in dml_ts.validation.parallel)</a>
+</li>
       <li><a href="api/validation.html#dml_ts.validation.parallel.parallelize">parallelize() (in module dml_ts.validation.parallel)</a>
 </li>
       <li><a href="api/production.html#dml_ts.production.dml_pipeline.PipelineConfig">PipelineConfig (class in dml_ts.production.dml_pipeline)</a>
@@ -1270,8 +1246,6 @@
       <li><a href="api/production.html#dml_ts.production.causal_monitor.CausalMonitorConfig.propensity_clip_min">propensity_clip_min (dml_ts.production.causal_monitor.CausalMonitorConfig attribute)</a>
 </li>
       <li><a href="api/production.html#dml_ts.production.dml_pipeline.PipelineConfig.propensity_model">propensity_model (dml_ts.production.dml_pipeline.PipelineConfig attribute)</a>
-</li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV">PurgedGroupTimeSeriesCV (class in dml_ts.dml.cross_fitting)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1357,30 +1331,16 @@
 </li>
       <li><a href="api/validation.html#dml_ts.validation.insurance_dgp.InsuranceDGPParams.seasonal_amplitude">seasonal_amplitude (dml_ts.validation.insurance_dgp.InsuranceDGPParams attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/sensitivity.html#dml_ts.sensitivity.rosenbaum.SensitivityResult">SensitivityResult (class in dml_ts.sensitivity.rosenbaum)</a>
 </li>
       <li><a href="api/data.html#dml_ts.data.fred_loader.FREDSeries.series_id">series_id (dml_ts.data.fred_loader.FREDSeries attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/production.html#dml_ts.production.retrain_pipeline.RetrainScheduler.set_current_model">set_current_model() (dml_ts.production.retrain_pipeline.RetrainScheduler method)</a>
 </li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV.set_split_request">set_split_request() (dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV method)</a>
-
-      <ul>
-        <li><a href="api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator.set_split_request">(dml_ts.dml.cross_fitting.TimeSeriesCrossValidator method)</a>
-</li>
-      </ul></li>
       <li><a href="api/production.html#dml_ts.production.retrain_pipeline.RetrainTrigger.severity">severity (dml_ts.production.retrain_pipeline.RetrainTrigger attribute)</a>
 </li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.BlockedTimeSeriesCV.split">split() (dml_ts.dml.cross_fitting.BlockedTimeSeriesCV method)</a>
-
-      <ul>
-        <li><a href="api/dml.html#dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV.split">(dml_ts.dml.cross_fitting.PurgedGroupTimeSeriesCV method)</a>
-</li>
-        <li><a href="api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator.split">(dml_ts.dml.cross_fitting.TimeSeriesCrossValidator method)</a>
-</li>
-      </ul></li>
       <li><a href="api/data.html#dml_ts.data.fred_loader.MacroControlsResult.start_date">start_date (dml_ts.data.fred_loader.MacroControlsResult attribute)</a>
 </li>
       <li><a href="api/validation.html#dml_ts.validation.dynamic_dgp.DynamicTreatmentDGPResult.state_feedback">state_feedback (dml_ts.validation.dynamic_dgp.DynamicTreatmentDGPResult attribute)</a>
@@ -1443,12 +1403,6 @@
 </li>
       <li><a href="api/dml.html#dml_ts.dml.temporal_plr_dml.TemporalPLRDMLResult">TemporalPLRDMLResult (class in dml_ts.dml.temporal_plr_dml)</a>
 </li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.CVFold.test_end">test_end (dml_ts.dml.cross_fitting.CVFold attribute)</a>
-</li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.CVFold.test_idx">test_idx (dml_ts.dml.cross_fitting.CVFold attribute)</a>
-</li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.CVFold.test_start">test_start (dml_ts.dml.cross_fitting.CVFold attribute)</a>
-</li>
       <li><a href="api/dml.html#dml_ts.dml.double_ml.DMLResult.theta">theta (dml_ts.dml.double_ml.DMLResult attribute)</a>
 
       <ul>
@@ -1471,6 +1425,8 @@
 </li>
       <li><a href="api/production.html#dml_ts.production.dml_pipeline.PipelineConfig.time_column">time_column (dml_ts.production.dml_pipeline.PipelineConfig attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/validation.html#dml_ts.validation.dgp_generator_ts.TimeSeriesDGPResult.time_index">time_index (dml_ts.validation.dgp_generator_ts.TimeSeriesDGPResult attribute)</a>
 
       <ul>
@@ -1479,10 +1435,6 @@
         <li><a href="api/validation.html#dml_ts.validation.insurance_dgp.InsuranceDGPResult.time_index">(dml_ts.validation.insurance_dgp.InsuranceDGPResult attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.TimeSeriesCrossValidator">TimeSeriesCrossValidator (class in dml_ts.dml.cross_fitting)</a>
-</li>
       <li><a href="api/validation.html#dml_ts.validation.dgp_generator_ts.TimeSeriesDGPGenerator">TimeSeriesDGPGenerator (class in dml_ts.validation.dgp_generator_ts)</a>
 </li>
       <li><a href="api/validation.html#dml_ts.validation.dgp_generator_ts.TimeSeriesDGPResult">TimeSeriesDGPResult (class in dml_ts.validation.dgp_generator_ts)</a>
@@ -1498,12 +1450,6 @@
 </li>
       </ul></li>
       <li><a href="api/validation.html#dml_ts.validation.dynamic_dgp.DynamicTreatmentDGPResult.to_econml">to_econml() (dml_ts.validation.dynamic_dgp.DynamicTreatmentDGPResult method)</a>
-</li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.CVFold.train_end">train_end (dml_ts.dml.cross_fitting.CVFold attribute)</a>
-</li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.CVFold.train_idx">train_idx (dml_ts.dml.cross_fitting.CVFold attribute)</a>
-</li>
-      <li><a href="api/dml.html#dml_ts.dml.cross_fitting.CVFold.train_start">train_start (dml_ts.dml.cross_fitting.CVFold attribute)</a>
 </li>
       <li><a href="api/production.html#dml_ts.production.dml_pipeline.PipelineConfig.treatment_column">treatment_column (dml_ts.production.dml_pipeline.PipelineConfig attribute)</a>
 </li>

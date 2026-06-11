@@ -354,17 +354,17 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">temporalcv</span><span class="w"> </span><span class="kn">import</span> <span class="n">newey_west_se</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">temporalcv</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BlockedTimeSeriesCV</span><span class="p">,</span>
+    <span class="n">PurgedWalkForward</span><span class="p">,</span>
+    <span class="n">TimeSeriesCrossValidator</span><span class="p">,</span>
+    <span class="n">newey_west_se</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelType</span><span class="p">,</span> <span class="n">cross_fit_predictions</span><span class="p">,</span> <span class="n">theta_via_fwl</span><span class="p">,</span> <span class="n">validate_lengths</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_r2</span> <span class="k">as</span> <span class="n">_compute_r2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_nuisance_model</span> <span class="k">as</span> <span class="n">_get_nuisance_model</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BlockedTimeSeriesCV</span><span class="p">,</span>
-    <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">,</span>
-    <span class="n">TimeSeriesCrossValidator</span><span class="p">,</span>
-<span class="p">)</span>
 
 <span class="c1"># Type aliases</span>
 <span class="n">ArrayLike</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
@@ -504,10 +504,9 @@
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">cv</span><span class="p">:</span> <span class="n">TimeSeriesCrossValidator</span> <span class="o">|</span> <span class="n">BlockedTimeSeriesCV</span> <span class="o">|</span> <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">,</span>
+    <span class="n">cv</span><span class="p">:</span> <span class="n">TimeSeriesCrossValidator</span> <span class="o">|</span> <span class="n">BlockedTimeSeriesCV</span> <span class="o">|</span> <span class="n">PurgedWalkForward</span><span class="p">,</span>
     <span class="n">outcome_model</span><span class="p">:</span> <span class="n">BaseEstimator</span><span class="p">,</span>
     <span class="n">treatment_model</span><span class="p">:</span> <span class="n">BaseEstimator</span><span class="p">,</span>
-    <span class="n">time_index</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate cross-fitted predictions for nuisance models using time series CV.</span>
 
@@ -522,17 +521,25 @@
 <span class="sd">        cv: Time series cross-validator</span>
 <span class="sd">        outcome_model: Model for E[Y|X]</span>
 <span class="sd">        treatment_model: Model for E[T|X]</span>
-<span class="sd">        time_index: Optional time index for observations</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Tuple of (Y_hat, T_hat) cross-fitted predictions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Get splits - different CV classes have different signatures</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">):</span>
-        <span class="n">splits</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="n">time_index</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># BlockedTimeSeriesCV and PurgedGroupTimeSeriesCV don&#39;t take time_index</span>
-        <span class="n">splits</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="c1"># temporalcv splitters share split(X, y=None, groups=None) — splitting</span>
+    <span class="c1"># is positional. Materialize the folds to detect silent shortfall:</span>
+    <span class="c1"># PurgedWalkForward skips under-provisioned folds while get_n_splits()</span>
+    <span class="c1"># stays nominal (temporalcv#32).</span>
+    <span class="n">splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">cv</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;CV yielded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">cv</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">()</span><span class="si">}</span><span class="s2"> requested folds; &quot;</span>
+            <span class="s2">&quot;the configuration is under-provisioned for this sample size &quot;</span>
+            <span class="s2">&quot;(temporalcv#32: PurgedWalkForward silently skips folds with empty &quot;</span>
+            <span class="s2">&quot;train windows). Uncovered rows are excluded via &quot;</span>
+            <span class="s2">&quot;dropped_initial_rows.&quot;</span><span class="p">,</span>
+            <span class="ne">RuntimeWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
 
     <span class="c1"># Early observations may be uncovered by expanding-window temporal CV;</span>
     <span class="c1"># cross_fit_predictions leaves them NaN so the estimator excludes them</span>
@@ -644,7 +651,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_create_cv</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeSeriesCrossValidator</span> <span class="o">|</span> <span class="n">BlockedTimeSeriesCV</span> <span class="o">|</span> <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeSeriesCrossValidator</span> <span class="o">|</span> <span class="n">BlockedTimeSeriesCV</span> <span class="o">|</span> <span class="n">PurgedWalkForward</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the appropriate cross-validator based on strategy.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span> <span class="o">==</span> <span class="s2">&quot;time_series_split&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">TimeSeriesCrossValidator</span><span class="p">(</span>
@@ -660,12 +667,18 @@
                 <span class="n">gap_blocks</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span> <span class="o">==</span> <span class="s2">&quot;purged_cv&quot;</span><span class="p">:</span>
-            <span class="c1"># PurgedGroupTimeSeriesCV uses embargo_pct</span>
-            <span class="c1"># Convert gap to embargo percentage</span>
-            <span class="n">embargo_pct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">/</span> <span class="n">n_samples</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">n_samples</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.01</span>
-            <span class="k">return</span> <span class="n">PurgedGroupTimeSeriesCV</span><span class="p">(</span>
+            <span class="c1"># Forward-only purged walk (temporalcv). The retired</span>
+            <span class="c1"># PurgedGroupTimeSeriesCV trained on observations AFTER each test</span>
+            <span class="c1"># fold — temporal leakage — so this strategy now purges `gap`</span>
+            <span class="c1"># observations before each test window and never trains on the</span>
+            <span class="c1"># future. gap maps directly to the absolute purge_gap.</span>
+            <span class="k">return</span> <span class="n">PurgedWalkForward</span><span class="p">(</span>
                 <span class="n">n_splits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_splits</span><span class="p">,</span>
-                <span class="n">embargo_pct</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">embargo_pct</span><span class="p">)),</span>
+                <span class="n">purge_gap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gap</span><span class="p">,</span>
+                <span class="c1"># Explicit: gap maps EXACTLY to the purge distance; without</span>
+                <span class="c1"># this, PurgedWalkForward&#39;s default 1%-of-test embargo would</span>
+                <span class="c1"># add undisclosed extra separation.</span>
+                <span class="n">embargo_pct</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown CV strategy: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_strategy</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -692,7 +705,8 @@
 <span class="sd">            Y: Outcome variable (n_samples,)</span>
 <span class="sd">            T: Treatment variable (n_samples,)</span>
 <span class="sd">            X: Confounders (n_samples, n_features)</span>
-<span class="sd">            time_index: Time index for each observation (optional, uses row order if None)</span>
+<span class="sd">            time_index: Accepted for API compatibility and length-validated;</span>
+<span class="sd">                splitting is positional (row order), so the values are not used</span>
 <span class="sd">            alpha: Significance level for confidence intervals (default 0.05)</span>
 
 <span class="sd">        Returns:</span>
@@ -715,22 +729,21 @@
         <span class="n">validate_lengths</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 
         <span class="c1"># Create time index if not provided</span>
-        <span class="k">if</span> <span class="n">time_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">time_index_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">time_index_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">time_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_index</span><span class="p">))</span> <span class="o">!=</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;time_index length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_index</span><span class="p">))</span><span class="si">}</span><span class="s2">) must match &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Y length (</span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Create lagged features</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">X_augmented</span><span class="p">,</span> <span class="n">n_dropped</span> <span class="o">=</span> <span class="n">_create_lagged_features</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span><span class="p">)</span>
             <span class="n">Y_eff</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="p">:]</span>
             <span class="n">T_eff</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="p">:]</span>
-            <span class="n">time_eff</span> <span class="o">=</span> <span class="n">time_index_arr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="p">:]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">X_augmented</span> <span class="o">=</span> <span class="n">X</span>
             <span class="n">Y_eff</span> <span class="o">=</span> <span class="n">Y</span>
             <span class="n">T_eff</span> <span class="o">=</span> <span class="n">T</span>
-            <span class="n">time_eff</span> <span class="o">=</span> <span class="n">time_index_arr</span>
             <span class="n">n_dropped</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">n_effective</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y_eff</span><span class="p">)</span>
@@ -750,7 +763,6 @@
             <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
             <span class="n">outcome_model</span><span class="o">=</span><span class="n">outcome_model</span><span class="p">,</span>
             <span class="n">treatment_model</span><span class="o">=</span><span class="n">treatment_model</span><span class="p">,</span>
-            <span class="n">time_index</span><span class="o">=</span><span class="n">time_eff</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># Expanding-window temporal CV cannot predict the earliest rows without</span>
@@ -1232,7 +1244,8 @@
             <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># Use time_id as time index for proper CV</span>
+        <span class="c1"># time_index is accepted for API compatibility only — splitting is</span>
+        <span class="c1"># positional, so rows must already be in temporal order per unit</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y_fe</span><span class="p">,</span> <span class="n">T_fe</span><span class="p">,</span> <span class="n">X_fe</span><span class="p">,</span> <span class="n">time_index</span><span class="o">=</span><span class="n">time_id</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
 
         <span class="c1"># If cluster SE requested, recompute with clustering</span>

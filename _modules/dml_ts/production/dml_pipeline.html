@@ -343,9 +343,11 @@
 
 <span class="c1"># Import our DML components</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">temporalcv</span><span class="w"> </span><span class="kn">import</span> <span class="n">newey_west_se</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">temporalcv</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">TimeSeriesCrossValidator</span><span class="p">,</span>  <span class="c1"># noqa: F401</span>
+        <span class="n">newey_west_se</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.cross_fitting</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesCrossValidator</span>  <span class="c1"># noqa: F401</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.double_ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>  <span class="c1"># noqa: F401</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.temporal_plr_dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>  <span class="c1"># noqa: F401</span>
 
