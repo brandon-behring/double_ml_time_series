@@ -18,8 +18,9 @@ from dml_ts.data.oj_loader import OJDataLoader, OJDataset
 class TestOJDataLoader:
     """Test suite for OJDataLoader.
 
-    The class-scoped dataset fixture downloads the Dominick's OJ CSV on a
-    cold cache, so the whole class carries the network marker.
+    OJDataLoader defaults to cache_dir=None (no caching), so every load()
+    downloads the Dominick's OJ CSV — the whole class carries the network
+    marker.
     """
 
     @pytest.fixture(scope="class")

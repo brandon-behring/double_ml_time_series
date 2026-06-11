@@ -57,6 +57,9 @@ jobs:
         run: |
           pip install -e ".[dev,full]"
 
+      # The weekly lane is intentionally network-free. Network-marked tests
+      # (OJ loader, chapter-4 workflow, empirical replication) still run on
+      # every PR (tier1/tier2 jobs) and in the daily tier3 job above.
       - name: Run full test suite (tier1-tier4, excluding network-dependent)
         run: python -m pytest -m "not network" --cov=dml_ts --cov-report=xml --cov-fail-under=70 -v
 

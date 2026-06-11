@@ -107,12 +107,14 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:
     """Apply per-tier timeouts and enforce tier-marker discipline.
 
     Tests marked with @pytest.mark.tierN receive timeout = TIER_CONFIGS[tierN].timeout.
-    More specific tier markers override less specific ones.
+    When markers overlap (e.g. class tier2 + method tier3), the HIGHEST tier
+    found anywhere on the item wins (tier4 > tier3 > tier2 > tier1).
 
     Collection FAILS if any test lacks a tier marker — an unmarked test would be
     invisible to the tiered CI gates and only run in full-suite contexts (see
-    CONTRIBUTING.md). The `--collect-only` step in the CI lint job is the
-    enforcement point that sees every test regardless of `-m` filtering.
+    CONTRIBUTING.md). This hook runs before pytest's mark-deselection, so every
+    run over the testpaths enforces it; the CI lint job's bare `--collect-only`
+    step additionally guarantees unfiltered full-tree coverage.
     """
     unmarked: list[str] = []
     for item in items:

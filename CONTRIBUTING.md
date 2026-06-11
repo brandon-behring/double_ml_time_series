@@ -37,10 +37,11 @@ MDX twin (`scripts/check_tex_mdx_drift.py` enforces this).
 
 ## Test tiers
 
-Every test must carry a tier marker (collection-time enforcement lands with the
-B0 tier-enforcement PR). Class- and method-level markers may overlap; the most
-specific (highest) tier wins — `test/conftest.py` resolves tier4 > tier3 >
-tier2 > tier1:
+Every test must carry a tier marker — enforced at collection time: the
+`test/conftest.py` hook raises `pytest.UsageError` listing any unmarked tests
+(the CI lint job's bare `--collect-only` step covers the full tree). Class- and
+method-level markers may overlap; the highest tier found on the item wins —
+tier4 > tier3 > tier2 > tier1:
 
 - `tier1` — unit, no estimation, <100ms (pre-commit hook)
 - `tier2` — integration, light estimation, <60s (pre-push hook + PR CI)
