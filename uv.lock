@@ -484,7 +484,7 @@ wheels = [
 
 [[package]]
 name = "dml-ts"
-version = "1.0.0"
+version = "1.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "joblib" },
@@ -556,7 +556,7 @@ requires-dist = [
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5" },
     { name = "sphinx-design", marker = "extra == 'docs'", specifier = ">=0.5" },
     { name = "statsmodels", specifier = ">=0.14" },
-    { name = "temporalcv", git = "https://github.com/brandon-behring/temporalcv?rev=v2.0.0" },
+    { name = "temporalcv", specifier = ">=2.0.0,<3" },
     { name = "tqdm", specifier = ">=4.65" },
     { name = "xgboost", marker = "extra == 'full'", specifier = ">=2.0" },
 ]
@@ -2462,13 +2462,17 @@ wheels = [
 [[package]]
 name = "temporalcv"
 version = "2.0.0"
-source = { git = "https://github.com/brandon-behring/temporalcv?rev=v2.0.0#3e438498c07b255f548ba259d4d2a97adc5e40b6" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "scikit-learn" },
     { name = "scipy" },
     { name = "statsmodels" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/70/11/c980bf25e12d88b088b5876f4dc2225183c5ffcb433c04eaaa9b487ea1d2/temporalcv-2.0.0.tar.gz", hash = "sha256:df2a1933edad40d49497fdddfbc8f7bd6884bc96a9f3ede0b41e251bab63c55b", size = 532029, upload-time = "2026-06-12T13:11:44.299Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6d/24/f71ae47db24f75c05385ba8ebd9cfb79ad4dbb1b6e07f1697c343d1e74c7/temporalcv-2.0.0-py3-none-any.whl", hash = "sha256:7d600b93ec5a9ead70032de8e13c098684bf3cbc386760fc7a2c1c0a228605f9", size = 268852, upload-time = "2026-06-12T13:11:42.718Z" },
 ]
 
 [[package]]

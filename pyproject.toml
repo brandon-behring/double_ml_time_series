@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dml_ts"
-version = "1.1.0"
+version = "1.1.1"
 description = "Book companion code for Double Machine Learning with temporal PLR examples"
 authors = [{name = "Brandon Behring"}]
 requires-python = ">=3.11"
@@ -29,9 +29,10 @@ dependencies = [
     "tqdm>=4.65",
     "matplotlib>=3.7",
     "seaborn>=0.12",
-    # Universal time-series toolkit (Track B migration target). Git pin until
-    # temporalcv publishes to PyPI; pinned to the v2.0.0 release tag.
-    "temporalcv @ git+https://github.com/brandon-behring/temporalcv@v2.0.0",
+    # Universal time-series toolkit (Track B migration target). Resolves from
+    # PyPI; uv.lock carries the exact resolution, the golden-parity suite gates
+    # behavioral drift on any upgrade.
+    "temporalcv>=2.0.0,<3",
 ]
 
 [project.optional-dependencies]

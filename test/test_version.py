@@ -35,7 +35,16 @@ def test_version_sites_agree() -> None:
 
 
 def test_temporalcv_pin_resolves() -> None:
-    """The temporalcv git pin must import at the pinned release version."""
+    """The installed temporalcv must satisfy the declared range (>=2.0.0,<3).
+
+    Exact behavioral agreement is enforced separately by the golden-parity
+    suite; this gate only catches a wrong-major or pre-v2 environment.
+    """
     import temporalcv
 
-    assert temporalcv.__version__ == "2.0.0"
+    version = temporalcv.__version__
+    match = re.match(r"(\d+)\.(\d+)\.(\d+)", version)
+    assert match is not None, f"unparseable temporalcv version: {version!r}"
+    major, minor, patch = (int(g) for g in match.groups())
+    assert major == 2, f"temporalcv major must be 2, got {version}"
+    assert (major, minor, patch) >= (2, 0, 0)

@@ -10,6 +10,23 @@ are the compatibility contract).
 
 No unreleased changes.
 
+## [1.1.1] - 2026-06-12
+
+### Changed
+
+- **`temporalcv` now resolves from PyPI** (`temporalcv>=2.0.0,<3`) instead of
+  the git tag pin. temporalcv 2.0.0 reached PyPI on 2026-06-12 after repairing
+  the trusted-publisher config, which had been severed by that repo's
+  mirror→canonical migration (the v1.0.1 and v2.0.0 publish runs both failed
+  with `invalid-publisher`; PyPI was serving a stale 1.0.0). Before the flip,
+  the PyPI wheel was proven behaviorally identical to the git tag: 71/71
+  golden-parity tests and the full tier1 suite (339 tests) pass against a
+  PyPI-only install. Installing no longer requires git access, and removing
+  the direct-URL dependency unblocks a future dml_ts PyPI upload.
+  `test_temporalcv_pin_resolves` now asserts the declared range rather than
+  an exact version — exact behavioral agreement remains the golden suite's
+  job.
+
 ## [1.1.0] - 2026-06-11
 
 dml_ts is now a thin causal consumer of

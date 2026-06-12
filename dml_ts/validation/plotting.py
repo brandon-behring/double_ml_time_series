@@ -6,7 +6,7 @@ All functions use the same color scheme, fonts, and layout.
 """
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -44,8 +44,9 @@ def set_plot_style() -> None:
     sns.set_style("whitegrid")
     sns.set_palette("colorblind")
 
-    # Apply custom parameters
-    plt.rcParams.update(PLOT_STYLE)
+    # Apply custom parameters; cast because matplotlib's stubs type rcParams
+    # keys as a per-key Literal union that plain str keys cannot satisfy
+    plt.rcParams.update(cast("dict[Any, Any]", PLOT_STYLE))
 
 
 def plot_bias_distribution(
