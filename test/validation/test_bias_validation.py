@@ -14,7 +14,7 @@ Usage:
 import numpy as np
 import pytest
 
-from dml_ts.validation.bias_validation import BiasValidation
+from dml_ts.validation.bias_validation import BiasValidation, _corrected_rejections
 from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.validation_result import ValidationResult
 
@@ -613,7 +613,87 @@ class TestBiasValidationMultipleTestingCorrection:
 
 
 # =============================================================================
-# Test Class 9: Performance Tests (Optional)
+# Test Class 9: Correction Helper (pure logic, no estimation)
+# =============================================================================
+
+
+@pytest.mark.tier1
+class TestCorrectedRejections:
+    """Pin the per-hypothesis rejection semantics of _corrected_rejections (#14)."""
+
+    def test_holm_differs_from_bonferroni_per_hypothesis(self):
+        """The distinguishing case the mislabeled hand-rolled 'holm' lacked.
+
+        p = [0.02, 0.04], alpha = 0.05, k = 2:
+        - Holm: 0.02 <= 0.05/2 rejects the first, then 0.04 <= 0.05/1
+          rejects the second -> both rejected.
+        - Bonferroni: only 0.02 <= 0.025 -> first rejected only.
+        """
+        p_values = [0.02, 0.04]
+
+        holm = _corrected_rejections(p_values, alpha=0.05, method="holm")
+        bonf = _corrected_rejections(p_values, alpha=0.05, method="bonferroni")
+
+        assert holm.tolist() == [True, True]
+        assert bonf.tolist() == [True, False]
+
+    def test_holm_step_down_stops_at_first_failure(self):
+        """Holm cannot reject a later hypothesis once an earlier one survives."""
+        p_values = [0.04, 0.30]
+
+        holm = _corrected_rejections(p_values, alpha=0.05, method="holm")
+
+        # Smallest p (0.04) > 0.05/2 fails the first step -> nothing is
+        # rejected, even though 0.04 < 0.05 uncorrected.
+        assert holm.tolist() == [False, False]
+
+    def test_none_is_uncorrected(self):
+        p_values = [0.04, 0.30]
+
+        none = _corrected_rejections(p_values, alpha=0.05, method="none")
+
+        assert none.tolist() == [True, False]
+
+    def test_unknown_method_raises(self):
+        with pytest.raises(ValueError, match="Unknown correction_method"):
+            _corrected_rejections([0.01], alpha=0.05, method="invalid")  # type: ignore[arg-type]
+
+    def test_holm_and_bonferroni_status_coincide_for_k2(self):
+        """With k=2 and the any-rejection status rule, holm == bonferroni status.
+
+        Documents the observational equivalence: Holm's first step IS the
+        Bonferroni threshold, so 'any rejection' (all the tri-state status
+        consumes) cannot differ. Per-hypothesis rejections do differ (see
+        test_holm_differs_from_bonferroni_per_hypothesis).
+        """
+        rng = np.random.default_rng(42)
+        validator = BiasValidation(n_simulations=100, random_state=42)
+        true_effect = 2.0
+        # 95 of 100 CIs cover the true effect; bias samples small but tight.
+        ci_bounds = np.column_stack(
+            [np.full(100, true_effect - 0.5), np.full(100, true_effect + 0.5)]
+        )
+        ci_bounds[:5] = [true_effect + 1.0, true_effect + 2.0]  # 5 misses
+        bias_samples = rng.normal(loc=0.05, scale=0.01, size=100)
+
+        results = {
+            method: validator._determine_statistical_status(
+                bias_samples,
+                coverage=0.95,
+                n_simulations=100,
+                ci_bounds=ci_bounds,
+                true_effect=true_effect,
+                alpha_test=0.05,
+                correction_method=method,
+            )
+            for method in ("holm", "bonferroni")
+        }
+
+        assert results["holm"] == results["bonferroni"]
+
+
+# =============================================================================
+# Test Class 10: Performance Tests (Optional)
 # =============================================================================
 
 
