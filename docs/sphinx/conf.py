@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 project = "Double ML Time Series"
 copyright = "2026, Brandon Behring"
 author = "Brandon Behring"
-release = "1.1.0"
+release = "1.1.1"
 
 # -- General configuration ----------------------------------------------------
 extensions = [
@@ -117,7 +117,7 @@ html_css_files = ["custom.css"]
 html_title = "Double ML Time Series"
 
 html_theme_options = {
-    "repository_url": "https://github.com/bbehring/double_ml_time_series",
+    "repository_url": "https://github.com/brandon-behring/double_ml_time_series",
     "use_repository_button": True,
     "use_issues_button": True,
     "use_download_button": False,

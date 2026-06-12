@@ -17,8 +17,9 @@ venv/bin/pre-commit install --hook-type pre-commit --hook-type pre-push
 `uv.lock` records the locked resolution (refresh with `uv lock` after dependency
 changes); the install commands above and CI resolve fresh from `pyproject.toml`,
 which is why the gate tools are pinned exactly there (`ruff==0.15.16`,
-`mypy==2.1.0`). The `temporalcv` dependency is a git tag pin (`@v2.0.0`) —
-environments need git access to resolve it.
+`mypy==2.1.0`). The `temporalcv` dependency resolves from PyPI
+(`temporalcv>=2.0.0,<3`); `uv.lock` records the exact version, and the
+golden-parity suite gates behavioral drift on any upgrade.
 
 ## Gates (run from the repo venv)
 
@@ -63,9 +64,11 @@ are tracked in #12).
 Under this policy, **minor versions may remove internal or companion APIs**
 (strict semver resumes at the PyPI debut). Versions must agree across
 `pyproject.toml`, `docs/sphinx/conf.py`, `CITATION.cff`, and
-`dml_ts.__version__` — `test/test_version.py` enforces this. Direct-URL (git)
-dependencies are not accepted by PyPI; the temporalcv pin converts to a normal
-version constraint at its PyPI debut.
+`dml_ts.__version__` — `test/test_version.py` enforces this. The temporalcv
+dependency converted from a git tag pin to a normal version constraint
+(`>=2.0.0,<3`) at temporalcv's PyPI debut (2026-06-12, dml_ts v1.1.1);
+`dml_ts` itself remains pre-PyPI, but no direct-URL dependency blocks a
+future upload anymore.
 
 ## Commits
 
