@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 project = "Double ML Time Series"
 copyright = "2026, Brandon Behring"
 author = "Brandon Behring"
-release = "1.1.1"
+release = "1.1.2"
 
 # -- General configuration ----------------------------------------------------
 extensions = [
