@@ -324,9 +324,55 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.stats.multitest</span><span class="w"> </span><span class="kn">import</span> <span class="n">multipletests</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.dgp_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">DGPGenerator</span><span class="p">,</span> <span class="n">DGPResult</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.validation_result</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationResult</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_corrected_rejections</span><span class="p">(</span>
+    <span class="n">p_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span> <span class="s2">&quot;holm&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-hypothesis rejection decisions under a multiple-testing correction.</span>
+
+<span class="sd">    Bonferroni and Holm delegate to statsmodels&#39; canonical implementation</span>
+<span class="sd">    rather than hand-rolling the thresholds (the mislabeled hand-rolled</span>
+<span class="sd">    &#39;holm&#39; was plain Bonferroni, #14). Holm&#39;s step-down rejects the sorted</span>
+<span class="sd">    p_(i) while p_(i) &lt;= alpha / (k - i + 1), so it is less conservative</span>
+<span class="sd">    than Bonferroni per hypothesis — though its FIRST step is exactly the</span>
+<span class="sd">    Bonferroni threshold, so &quot;any rejection&quot; coincides for both methods.</span>
+
+<span class="sd">    Boundary semantics: the statsmodels methods reject at p &lt;= threshold</span>
+<span class="sd">    (inclusive); &quot;none&quot; keeps the pre-#14 strict p &lt; alpha. Pinned in tests.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        p_values: Raw per-test p-values. Must be non-empty and finite —</span>
+<span class="sd">            statsmodels would otherwise silently REJECT NaN under &#39;holm&#39;</span>
+<span class="sd">            but not under &#39;bonferroni&#39; (divergent garbage), so degenerate</span>
+<span class="sd">            input fails loudly here instead.</span>
+<span class="sd">        alpha: Familywise significance level.</span>
+<span class="sd">        method: &quot;bonferroni&quot;, &quot;holm&quot;, or &quot;none&quot; (uncorrected).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Boolean array, True where the hypothesis is rejected.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: On an unknown method name, empty input, or non-finite</span>
+<span class="sd">            p-values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">p_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">p_values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">p_arr</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;p_values is empty; cannot apply multiple-testing correction&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">p_arr</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;p_values must be finite, got </span><span class="si">{</span><span class="n">p_values</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span> <span class="s2">&quot;holm&quot;</span><span class="p">):</span>
+        <span class="n">reject</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">multipletests</span><span class="p">(</span><span class="n">p_arr</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">reject</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">p_arr</span> <span class="o">&lt;</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown correction_method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">. Use &#39;bonferroni&#39;, &#39;holm&#39;, or &#39;none&#39;&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="BiasValidation">
@@ -337,7 +383,8 @@
 <span class="sd">    Runs ``n_simulations`` DML fits on fresh DGP draws, computing point</span>
 <span class="sd">    estimates and confidence intervals per draw. Aggregates bias, MSE,</span>
 <span class="sd">    and CI coverage, then applies statistical hypothesis tests (t-test</span>
-<span class="sd">    for bias, binomial test for coverage) with Bonferroni correction.</span>
+<span class="sd">    for bias, binomial test for coverage) with multiple-testing</span>
+<span class="sd">    correction (Bonferroni by default, or Holm; both via statsmodels).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        n_simulations: Number of Monte Carlo runs</span>
@@ -608,19 +655,25 @@
 <span class="sd">        After C2 fix (using RandomForestClassifier for binary treatment), bias reduced by 86.5%.</span>
 <span class="sd">        Remaining bias (~0.004) is statistically significant but practically negligible.</span>
 
-<span class="sd">        **Status Determination Rules**:</span>
+<span class="sd">        **Status Determination Rules** (thresholds shown for the Bonferroni</span>
+<span class="sd">        default; rejection boundaries are inclusive, per statsmodels):</span>
 <span class="sd">        1. If |bias| &gt; 0.15 → FAIL (unacceptably large bias)</span>
 <span class="sd">        2. If |bias| &lt; practical_epsilon (default 0.1):</span>
-<span class="sd">           - If bias_p &lt; 0.005/k or coverage_p &lt; 0.005/k → WARNING (tiny bias, statistically detectable)</span>
+<span class="sd">           - If bias_p ≤ 0.025 or coverage_p ≤ 0.025 → WARNING (tiny bias, statistically detectable)</span>
 <span class="sd">           - Else → PASS (tiny bias, not significant)</span>
 <span class="sd">        3. If 0.1 &lt;= |bias| &lt;= 0.15:</span>
-<span class="sd">           - If bias_p &lt; 0.005/k or coverage_p &lt; 0.005/k → FAIL (moderate bias, highly significant)</span>
-<span class="sd">           - Elif bias_p &lt; 0.025/k or coverage_p &lt; 0.025/k → WARNING</span>
+<span class="sd">           - If bias_p ≤ 0.005 or coverage_p ≤ 0.005 → FAIL (moderate bias, highly significant)</span>
+<span class="sd">           - Elif bias_p ≤ 0.025 or coverage_p ≤ 0.025 → WARNING</span>
 <span class="sd">           - Else → PASS</span>
 
 <span class="sd">        **Multiple Testing Correction**: Controls familywise error rate ≤ 5%</span>
-<span class="sd">        - **bonferroni** (default): α_corrected = α / k</span>
-<span class="sd">        - **holm** (sequential): Less conservative than Bonferroni</span>
+<span class="sd">        (rejections delegated to ``statsmodels.stats.multitest.multipletests``)</span>
+<span class="sd">        - **bonferroni** (default): reject H_i if p_i ≤ α / k</span>
+<span class="sd">        - **holm** (step-down): reject sorted p_(i) while p_(i) ≤ α / (k - i + 1);</span>
+<span class="sd">          less conservative than Bonferroni per hypothesis. With k=2 and the</span>
+<span class="sd">          any-rejection status rule below, Holm and Bonferroni yield the SAME</span>
+<span class="sd">          status (Holm&#39;s first step is exactly the Bonferroni threshold) —</span>
+<span class="sd">          only per-hypothesis rejections differ.</span>
 <span class="sd">        - **none** (no correction): ONLY for single-method validation</span>
 
 <span class="sd">        Args:</span>
@@ -668,36 +721,17 @@
         <span class="n">binom_result</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">binomtest</span><span class="p">(</span><span class="n">n_cover</span><span class="p">,</span> <span class="n">n_simulations</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;two-sided&quot;</span><span class="p">)</span>
         <span class="n">coverage_p_value</span> <span class="o">=</span> <span class="n">binom_result</span><span class="o">.</span><span class="n">pvalue</span>
 
-        <span class="c1"># Apply multiple testing correction</span>
-        <span class="n">k_tests</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># Number of hypothesis tests being performed</span>
-
-        <span class="k">if</span> <span class="n">correction_method</span> <span class="o">==</span> <span class="s2">&quot;bonferroni&quot;</span><span class="p">:</span>
-            <span class="c1"># Bonferroni correction: α_corrected = α / k</span>
-            <span class="n">corrected_alpha</span> <span class="o">=</span> <span class="n">alpha_test</span> <span class="o">/</span> <span class="n">k_tests</span>
-            <span class="n">corrected_alpha_strict</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">/</span> <span class="n">k_tests</span>  <span class="c1"># For FAIL threshold</span>
-        <span class="k">elif</span> <span class="n">correction_method</span> <span class="o">==</span> <span class="s2">&quot;holm&quot;</span><span class="p">:</span>
-            <span class="c1"># Holm-Bonferroni (sequential): Sort p-values and compare sequentially</span>
-            <span class="c1"># Check if smallest p-value &lt; α/k, then next p-value &lt; α/(k-1), etc.</span>
-            <span class="c1"># For simplicity, use Bonferroni-Holm adjusted thresholds</span>
-            <span class="n">corrected_alpha</span> <span class="o">=</span> <span class="n">alpha_test</span> <span class="o">/</span> <span class="n">k_tests</span>  <span class="c1"># Most conservative for first test</span>
-            <span class="n">corrected_alpha_strict</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">/</span> <span class="n">k_tests</span>
-        <span class="k">elif</span> <span class="n">correction_method</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
-            <span class="c1"># No correction (ONLY valid when testing single method in isolation)</span>
-            <span class="n">corrected_alpha</span> <span class="o">=</span> <span class="n">alpha_test</span>
-            <span class="n">corrected_alpha_strict</span> <span class="o">=</span> <span class="mf">0.01</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Unknown correction_method: </span><span class="si">{</span><span class="n">correction_method</span><span class="si">}</span><span class="s2">. Use &#39;bonferroni&#39;, &#39;holm&#39;, or &#39;none&#39;&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># Apply multiple testing correction (k=2 tests: bias t-test, coverage</span>
+        <span class="c1"># binomial). Per-hypothesis rejections delegate to statsmodels (#14);</span>
+        <span class="c1"># the tri-state status below only consumes &quot;any rejection&quot;, under</span>
+        <span class="c1"># which Holm and Bonferroni coincide for k=2 — Holm&#39;s first step IS</span>
+        <span class="c1"># the Bonferroni threshold.</span>
+        <span class="n">p_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">bias_p_value</span><span class="p">,</span> <span class="n">coverage_p_value</span><span class="p">]</span>
+        <span class="n">significant</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">_corrected_rejections</span><span class="p">(</span><span class="n">p_values</span><span class="p">,</span> <span class="n">alpha_test</span><span class="p">,</span> <span class="n">correction_method</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
+        <span class="n">highly_significant</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">_corrected_rejections</span><span class="p">(</span><span class="n">p_values</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">correction_method</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
 
         <span class="c1"># Determine status with PRACTICAL + STATISTICAL significance</span>
         <span class="n">abs_bias</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">mean_bias</span><span class="p">)</span>
-
-        <span class="c1"># Check if any test is significant at different thresholds</span>
-        <span class="n">highly_significant</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">bias_p_value</span> <span class="o">&lt;</span> <span class="n">corrected_alpha_strict</span> <span class="ow">or</span> <span class="n">coverage_p_value</span> <span class="o">&lt;</span> <span class="n">corrected_alpha_strict</span>
-        <span class="p">)</span>
-        <span class="n">significant</span> <span class="o">=</span> <span class="n">bias_p_value</span> <span class="o">&lt;</span> <span class="n">corrected_alpha</span> <span class="ow">or</span> <span class="n">coverage_p_value</span> <span class="o">&lt;</span> <span class="n">corrected_alpha</span>
 
         <span class="c1"># Rule 1: Unacceptably large bias always FAILS</span>
         <span class="k">if</span> <span class="n">abs_bias</span> <span class="o">&gt;</span> <span class="mf">0.15</span><span class="p">:</span>

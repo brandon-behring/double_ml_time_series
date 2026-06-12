@@ -1498,7 +1498,8 @@ practical significance.</p>
 <p>Runs <code class="docutils literal notranslate"><span class="pre">n_simulations</span></code> DML fits on fresh DGP draws, computing point
 estimates and confidence intervals per draw. Aggregates bias, MSE,
 and CI coverage, then applies statistical hypothesis tests (t-test
-for bias, binomial test for coverage) with Bonferroni correction.</p>
+for bias, binomial test for coverage) with multiple-testing
+correction (Bonferroni by default, or Holm; both via statsmodels).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
