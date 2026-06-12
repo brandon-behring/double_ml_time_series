@@ -11,9 +11,55 @@ from typing import Literal
 
 import numpy as np
 from scipy import stats
+from statsmodels.stats.multitest import multipletests
 
 from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
 from dml_ts.validation.validation_result import ValidationResult
+
+
+def _corrected_rejections(
+    p_values: list[float],
+    alpha: float,
+    method: Literal["bonferroni", "holm", "none"],
+) -> np.ndarray:
+    """Per-hypothesis rejection decisions under a multiple-testing correction.
+
+    Bonferroni and Holm delegate to statsmodels' canonical implementation
+    rather than hand-rolling the thresholds (the mislabeled hand-rolled
+    'holm' was plain Bonferroni, #14). Holm's step-down rejects the sorted
+    p_(i) while p_(i) <= alpha / (k - i + 1), so it is less conservative
+    than Bonferroni per hypothesis — though its FIRST step is exactly the
+    Bonferroni threshold, so "any rejection" coincides for both methods.
+
+    Boundary semantics: the statsmodels methods reject at p <= threshold
+    (inclusive); "none" keeps the pre-#14 strict p < alpha. Pinned in tests.
+
+    Args:
+        p_values: Raw per-test p-values. Must be non-empty and finite —
+            statsmodels would otherwise silently REJECT NaN under 'holm'
+            but not under 'bonferroni' (divergent garbage), so degenerate
+            input fails loudly here instead.
+        alpha: Familywise significance level.
+        method: "bonferroni", "holm", or "none" (uncorrected).
+
+    Returns:
+        Boolean array, True where the hypothesis is rejected.
+
+    Raises:
+        ValueError: On an unknown method name, empty input, or non-finite
+            p-values.
+    """
+    p_arr = np.asarray(p_values, dtype=float)
+    if p_arr.size == 0:
+        raise ValueError("p_values is empty; cannot apply multiple-testing correction")
+    if not np.all(np.isfinite(p_arr)):
+        raise ValueError(f"p_values must be finite, got {p_values}")
+    if method in ("bonferroni", "holm"):
+        reject, _, _, _ = multipletests(p_arr, alpha=alpha, method=method)
+        return np.asarray(reject, dtype=bool)
+    if method == "none":
+        return np.asarray(p_arr < alpha, dtype=bool)
+    raise ValueError(f"Unknown correction_method: {method}. Use 'bonferroni', 'holm', or 'none'")
 
 
 class BiasValidation:
@@ -22,7 +68,8 @@ class BiasValidation:
     Runs ``n_simulations`` DML fits on fresh DGP draws, computing point
     estimates and confidence intervals per draw. Aggregates bias, MSE,
     and CI coverage, then applies statistical hypothesis tests (t-test
-    for bias, binomial test for coverage) with Bonferroni correction.
+    for bias, binomial test for coverage) with multiple-testing
+    correction (Bonferroni by default, or Holm; both via statsmodels).
 
     Args:
         n_simulations: Number of Monte Carlo runs
@@ -287,19 +334,25 @@ class BiasValidation:
         After C2 fix (using RandomForestClassifier for binary treatment), bias reduced by 86.5%.
         Remaining bias (~0.004) is statistically significant but practically negligible.
 
-        **Status Determination Rules**:
+        **Status Determination Rules** (thresholds shown for the Bonferroni
+        default; rejection boundaries are inclusive, per statsmodels):
         1. If |bias| > 0.15 → FAIL (unacceptably large bias)
         2. If |bias| < practical_epsilon (default 0.1):
-           - If bias_p < 0.005/k or coverage_p < 0.005/k → WARNING (tiny bias, statistically detectable)
+           - If bias_p ≤ 0.025 or coverage_p ≤ 0.025 → WARNING (tiny bias, statistically detectable)
            - Else → PASS (tiny bias, not significant)
         3. If 0.1 <= |bias| <= 0.15:
-           - If bias_p < 0.005/k or coverage_p < 0.005/k → FAIL (moderate bias, highly significant)
-           - Elif bias_p < 0.025/k or coverage_p < 0.025/k → WARNING
+           - If bias_p ≤ 0.005 or coverage_p ≤ 0.005 → FAIL (moderate bias, highly significant)
+           - Elif bias_p ≤ 0.025 or coverage_p ≤ 0.025 → WARNING
            - Else → PASS
 
         **Multiple Testing Correction**: Controls familywise error rate ≤ 5%
-        - **bonferroni** (default): α_corrected = α / k
-        - **holm** (sequential): Less conservative than Bonferroni
+        (rejections delegated to ``statsmodels.stats.multitest.multipletests``)
+        - **bonferroni** (default): reject H_i if p_i ≤ α / k
+        - **holm** (step-down): reject sorted p_(i) while p_(i) ≤ α / (k - i + 1);
+          less conservative than Bonferroni per hypothesis. With k=2 and the
+          any-rejection status rule below, Holm and Bonferroni yield the SAME
+          status (Holm's first step is exactly the Bonferroni threshold) —
+          only per-hypothesis rejections differ.
         - **none** (no correction): ONLY for single-method validation
 
         Args:
@@ -347,36 +400,17 @@ class BiasValidation:
         binom_result = stats.binomtest(n_cover, n_simulations, p=0.95, alternative="two-sided")
         coverage_p_value = binom_result.pvalue
 
-        # Apply multiple testing correction
-        k_tests = 2  # Number of hypothesis tests being performed
-
-        if correction_method == "bonferroni":
-            # Bonferroni correction: α_corrected = α / k
-            corrected_alpha = alpha_test / k_tests
-            corrected_alpha_strict = 0.01 / k_tests  # For FAIL threshold
-        elif correction_method == "holm":
-            # Holm-Bonferroni (sequential): Sort p-values and compare sequentially
-            # Check if smallest p-value < α/k, then next p-value < α/(k-1), etc.
-            # For simplicity, use Bonferroni-Holm adjusted thresholds
-            corrected_alpha = alpha_test / k_tests  # Most conservative for first test
-            corrected_alpha_strict = 0.01 / k_tests
-        elif correction_method == "none":
-            # No correction (ONLY valid when testing single method in isolation)
-            corrected_alpha = alpha_test
-            corrected_alpha_strict = 0.01
-        else:
-            raise ValueError(
-                f"Unknown correction_method: {correction_method}. Use 'bonferroni', 'holm', or 'none'"
-            )
+        # Apply multiple testing correction (k=2 tests: bias t-test, coverage
+        # binomial). Per-hypothesis rejections delegate to statsmodels (#14);
+        # the tri-state status below only consumes "any rejection", under
+        # which Holm and Bonferroni coincide for k=2 — Holm's first step IS
+        # the Bonferroni threshold.
+        p_values = [bias_p_value, coverage_p_value]
+        significant = bool(_corrected_rejections(p_values, alpha_test, correction_method).any())
+        highly_significant = bool(_corrected_rejections(p_values, 0.01, correction_method).any())
 
         # Determine status with PRACTICAL + STATISTICAL significance
         abs_bias = abs(mean_bias)
-
-        # Check if any test is significant at different thresholds
-        highly_significant = (
-            bias_p_value < corrected_alpha_strict or coverage_p_value < corrected_alpha_strict
-        )
-        significant = bias_p_value < corrected_alpha or coverage_p_value < corrected_alpha
 
         # Rule 1: Unacceptably large bias always FAILS
         if abs_bias > 0.15:

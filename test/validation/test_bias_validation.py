@@ -14,7 +14,7 @@ Usage:
 import numpy as np
 import pytest
 
-from dml_ts.validation.bias_validation import BiasValidation
+from dml_ts.validation.bias_validation import BiasValidation, _corrected_rejections
 from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.validation_result import ValidationResult
 
@@ -613,7 +613,147 @@ class TestBiasValidationMultipleTestingCorrection:
 
 
 # =============================================================================
-# Test Class 9: Performance Tests (Optional)
+# Test Class 9: Correction Helper (pure logic, no estimation)
+# =============================================================================
+
+
+@pytest.mark.tier1
+class TestCorrectedRejections:
+    """Pin the per-hypothesis rejection semantics of _corrected_rejections (#14)."""
+
+    def test_holm_differs_from_bonferroni_per_hypothesis(self):
+        """The distinguishing case the mislabeled hand-rolled 'holm' lacked.
+
+        p = [0.02, 0.04], alpha = 0.05, k = 2:
+        - Holm: 0.02 <= 0.05/2 rejects the first, then 0.04 <= 0.05/1
+          rejects the second -> both rejected.
+        - Bonferroni: only 0.02 <= 0.025 -> first rejected only.
+        """
+        p_values = [0.02, 0.04]
+
+        holm = _corrected_rejections(p_values, alpha=0.05, method="holm")
+        bonf = _corrected_rejections(p_values, alpha=0.05, method="bonferroni")
+
+        assert holm.tolist() == [True, True]
+        assert bonf.tolist() == [True, False]
+
+    def test_holm_step_down_stops_at_first_failure(self):
+        """Holm cannot reject a later hypothesis once an earlier one survives."""
+        p_values = [0.04, 0.30]
+
+        holm = _corrected_rejections(p_values, alpha=0.05, method="holm")
+
+        # Smallest p (0.04) > 0.05/2 fails the first step -> nothing is
+        # rejected, even though 0.04 < 0.05 uncorrected.
+        assert holm.tolist() == [False, False]
+
+    def test_none_is_uncorrected(self):
+        p_values = [0.04, 0.30]
+
+        none = _corrected_rejections(p_values, alpha=0.05, method="none")
+
+        assert none.tolist() == [True, False]
+
+    def test_boundary_inclusive_for_corrected_strict_for_none(self):
+        """Pin the mixed boundary semantics so they can't drift silently.
+
+        statsmodels rejects at p <= threshold (inclusive); 'none' keeps the
+        pre-#14 strict p < alpha.
+        """
+        assert _corrected_rejections([0.025, 0.5], 0.05, "bonferroni").tolist() == [True, False]
+        assert _corrected_rejections([0.025, 0.5], 0.05, "holm").tolist() == [True, False]
+        assert _corrected_rejections([0.05, 0.5], 0.05, "none").tolist() == [False, False]
+
+    def test_unknown_method_raises(self):
+        with pytest.raises(ValueError, match="Unknown correction_method"):
+            _corrected_rejections([0.01], alpha=0.05, method="invalid")  # type: ignore[arg-type]
+
+    def test_nan_p_values_raise(self):
+        """statsmodels silently REJECTS NaN under holm but not bonferroni —
+        the helper must fail loudly instead of returning divergent garbage."""
+        with pytest.raises(ValueError, match="must be finite"):
+            _corrected_rejections([float("nan"), 0.001], alpha=0.05, method="holm")
+
+    def test_empty_p_values_raise(self):
+        with pytest.raises(ValueError, match="empty"):
+            _corrected_rejections([], alpha=0.05, method="none")
+
+
+def _status_fixture_ci_bounds(true_effect: float) -> np.ndarray:
+    """95 of 100 CIs covering the true effect -> coverage_p = 1.0 exactly,
+    so the coverage test never drives the status in these fixtures."""
+    ci_bounds = np.column_stack([np.full(100, true_effect - 0.5), np.full(100, true_effect + 0.5)])
+    ci_bounds[:5] = [true_effect + 1.0, true_effect + 2.0]  # 5 misses
+    return ci_bounds
+
+
+@pytest.mark.tier1
+class TestStatusCorrectionWiring:
+    """Pin correction_method and alpha wiring through _determine_statistical_status.
+
+    Fixtures put bias_p in discriminating bands; an underflowed p=0.0 would
+    pass under any method at any alpha and pin nothing.
+    """
+
+    TRUE_EFFECT = 2.0
+
+    def _status(self, bias_samples: np.ndarray, method: str) -> tuple:
+        validator = BiasValidation(n_simulations=100, random_state=42)
+        return validator._determine_statistical_status(
+            bias_samples,
+            coverage=0.95,
+            n_simulations=100,
+            ci_bounds=_status_fixture_ci_bounds(self.TRUE_EFFECT),
+            true_effect=self.TRUE_EFFECT,
+            alpha_test=0.05,
+            correction_method=method,  # type: ignore[arg-type]
+        )
+
+    def test_holm_and_bonferroni_status_coincide_and_none_differs(self):
+        """holm == bonferroni status (k=2 any-rejection equivalence), and the
+        same fixture separates them from 'none' — proving the method actually
+        reaches the threshold logic.
+
+        bias_p ~= 0.038 sits between alpha/2 = 0.025 (corrected: not
+        significant -> PASS) and alpha = 0.05 (uncorrected: significant,
+        |bias| < 0.1 -> WARNING).
+        """
+        # mean 0.0021, std 0.01 -> t ~= 2.1, two-sided p ~= 0.038
+        bias_samples = 0.0021 + 0.01 * np.tile([1.0, -1.0], 50)
+
+        results = {m: self._status(bias_samples, m) for m in ("holm", "bonferroni", "none")}
+
+        assert results["holm"] == results["bonferroni"]
+        assert results["holm"][0] == "PASS"
+        assert results["none"][0] == "WARNING"
+
+    def test_rule3_fail_via_strict_alpha(self):
+        """Moderate bias + p below the strict 0.01-level threshold -> FAIL.
+
+        Exercises the hardcoded alpha=0.01 highly_significant path that
+        splits Rule 3 FAIL from WARNING.
+        """
+        # mean 0.12 (in [0.1, 0.15]), std 0.01 -> t ~= 120, p ~= 0
+        bias_samples = 0.12 + 0.01 * np.tile([1.0, -1.0], 50)
+
+        status, _, _ = self._status(bias_samples, "bonferroni")
+
+        assert status == "FAIL"
+
+    def test_rule3_warning_between_thresholds(self):
+        """Moderate bias, significant at 0.025 but not at 0.005 -> WARNING."""
+        # mean 0.12, std 0.4848 -> t ~= 2.475, two-sided p ~= 0.015:
+        # 0.005 < p <= 0.025 -> significant but not highly_significant
+        bias_samples = 0.12 + 0.4848 * np.tile([1.0, -1.0], 50)
+
+        status, p_bias, _ = self._status(bias_samples, "bonferroni")
+
+        assert 0.005 < p_bias <= 0.025
+        assert status == "WARNING"
+
+
+# =============================================================================
+# Test Class 10: Performance Tests (Optional)
 # =============================================================================
 
 
