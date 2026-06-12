@@ -31,8 +31,14 @@ def _corrected_rejections(
     than Bonferroni per hypothesis — though its FIRST step is exactly the
     Bonferroni threshold, so "any rejection" coincides for both methods.
 
+    Boundary semantics: the statsmodels methods reject at p <= threshold
+    (inclusive); "none" keeps the pre-#14 strict p < alpha. Pinned in tests.
+
     Args:
-        p_values: Raw per-test p-values.
+        p_values: Raw per-test p-values. Must be non-empty and finite —
+            statsmodels would otherwise silently REJECT NaN under 'holm'
+            but not under 'bonferroni' (divergent garbage), so degenerate
+            input fails loudly here instead.
         alpha: Familywise significance level.
         method: "bonferroni", "holm", or "none" (uncorrected).
 
@@ -40,13 +46,19 @@ def _corrected_rejections(
         Boolean array, True where the hypothesis is rejected.
 
     Raises:
-        ValueError: On an unknown method name.
+        ValueError: On an unknown method name, empty input, or non-finite
+            p-values.
     """
+    p_arr = np.asarray(p_values, dtype=float)
+    if p_arr.size == 0:
+        raise ValueError("p_values is empty; cannot apply multiple-testing correction")
+    if not np.all(np.isfinite(p_arr)):
+        raise ValueError(f"p_values must be finite, got {p_values}")
     if method in ("bonferroni", "holm"):
-        reject, _, _, _ = multipletests(p_values, alpha=alpha, method=method)
+        reject, _, _, _ = multipletests(p_arr, alpha=alpha, method=method)
         return np.asarray(reject, dtype=bool)
     if method == "none":
-        return np.asarray([p < alpha for p in p_values], dtype=bool)
+        return np.asarray(p_arr < alpha, dtype=bool)
     raise ValueError(f"Unknown correction_method: {method}. Use 'bonferroni', 'holm', or 'none'")
 
 
@@ -57,7 +69,7 @@ class BiasValidation:
     estimates and confidence intervals per draw. Aggregates bias, MSE,
     and CI coverage, then applies statistical hypothesis tests (t-test
     for bias, binomial test for coverage) with multiple-testing
-    correction (Bonferroni by default; Holm via statsmodels).
+    correction (Bonferroni by default, or Holm; both via statsmodels).
 
     Args:
         n_simulations: Number of Monte Carlo runs
@@ -326,7 +338,7 @@ class BiasValidation:
         default; rejection boundaries are inclusive, per statsmodels):
         1. If |bias| > 0.15 → FAIL (unacceptably large bias)
         2. If |bias| < practical_epsilon (default 0.1):
-           - If bias_p ≤ 0.005 or coverage_p ≤ 0.005 → WARNING (tiny bias, statistically detectable)
+           - If bias_p ≤ 0.025 or coverage_p ≤ 0.025 → WARNING (tiny bias, statistically detectable)
            - Else → PASS (tiny bias, not significant)
         3. If 0.1 <= |bias| <= 0.15:
            - If bias_p ≤ 0.005 or coverage_p ≤ 0.005 → FAIL (moderate bias, highly significant)
