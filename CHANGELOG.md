@@ -10,6 +10,31 @@ are the compatibility contract).
 
 No unreleased changes.
 
+## [1.1.2] - 2026-06-12
+
+### Fixed
+
+- **`bias_validation` 'holm' now performs real Holm step-down** (#14): the
+  branch labeled 'holm' applied plain Bonferroni thresholds (the sorted
+  p-values were never used). Per-hypothesis rejections now delegate to
+  `statsmodels.stats.multitest.multipletests` for both 'bonferroni' and
+  'holm'. Truth-in-labeling fix with no observable status change: with k=2
+  tests and the any-rejection status rule, Holm's first step IS the
+  Bonferroni threshold, so the tri-state status coincides under both
+  methods — pinned by tests, alongside the distinguishing per-hypothesis
+  case the old code got wrong (`p=[0.02, 0.04]`, α=0.05: Holm rejects
+  both, Bonferroni one). Degenerate inputs (NaN, empty) now raise instead
+  of inheriting statsmodels' divergent silent NaN handling.
+
+### Changed
+
+- **temporalcv 2.0.1** (lock refresh within the `>=2.0.0,<3` pin):
+  `PurgedWalkForward` now raises on under-provisioned configs instead of
+  silently dropping folds (temporalcv#32) — the failure mode dml_ts's
+  cross-fit shortfall warning was working around. The warning stays as
+  splitter-agnostic defense-in-depth; its comment no longer cites #32.
+  Golden parity 71/71 byte-identical across the bump.
+
 ## [1.1.1] - 2026-06-12
 
 ### Changed

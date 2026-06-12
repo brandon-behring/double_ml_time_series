@@ -218,17 +218,17 @@ def _cross_fit_nuisance_time_series(
         Tuple of (Y_hat, T_hat) cross-fitted predictions
     """
     # temporalcv splitters share split(X, y=None, groups=None) — splitting
-    # is positional. Materialize the folds to detect silent shortfall:
-    # PurgedWalkForward skips under-provisioned folds while get_n_splits()
-    # stays nominal (temporalcv#32).
+    # is positional. Materialize the folds to detect silent shortfall.
+    # temporalcv>=2.0.1 raises natively on under-provisioned configs
+    # (PurgedWalkForward since #32, its siblings since v2.0), so this is
+    # splitter-agnostic defense-in-depth for any conforming splitter that
+    # under-yields rather than raising.
     splits = list(cv.split(X, Y))
     if len(splits) < cv.get_n_splits():
         warnings.warn(
             f"CV yielded {len(splits)} of {cv.get_n_splits()} requested folds; "
-            "the configuration is under-provisioned for this sample size "
-            "(temporalcv#32: PurgedWalkForward silently skips folds with empty "
-            "train windows). Uncovered rows are excluded via "
-            "dropped_initial_rows.",
+            "the configuration is under-provisioned for this sample size. "
+            "Uncovered rows are excluded via dropped_initial_rows.",
             RuntimeWarning,
             stacklevel=2,
         )
