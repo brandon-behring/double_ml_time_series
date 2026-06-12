@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=fcec534b"></script>
+    <script src="../../../_static/documentation_options.js?v=3fd276d5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -537,17 +537,17 @@
 <span class="sd">        Tuple of (Y_hat, T_hat) cross-fitted predictions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># temporalcv splitters share split(X, y=None, groups=None) — splitting</span>
-    <span class="c1"># is positional. Materialize the folds to detect silent shortfall:</span>
-    <span class="c1"># PurgedWalkForward skips under-provisioned folds while get_n_splits()</span>
-    <span class="c1"># stays nominal (temporalcv#32).</span>
+    <span class="c1"># is positional. Materialize the folds to detect silent shortfall.</span>
+    <span class="c1"># temporalcv&gt;=2.0.1 raises natively on under-provisioned configs</span>
+    <span class="c1"># (PurgedWalkForward since #32, its siblings since v2.0), so this is</span>
+    <span class="c1"># splitter-agnostic defense-in-depth for any conforming splitter that</span>
+    <span class="c1"># under-yields rather than raising.</span>
     <span class="n">splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">))</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">cv</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">():</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;CV yielded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">cv</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">()</span><span class="si">}</span><span class="s2"> requested folds; &quot;</span>
-            <span class="s2">&quot;the configuration is under-provisioned for this sample size &quot;</span>
-            <span class="s2">&quot;(temporalcv#32: PurgedWalkForward silently skips folds with empty &quot;</span>
-            <span class="s2">&quot;train windows). Uncovered rows are excluded via &quot;</span>
-            <span class="s2">&quot;dropped_initial_rows.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;the configuration is under-provisioned for this sample size. &quot;</span>
+            <span class="s2">&quot;Uncovered rows are excluded via dropped_initial_rows.&quot;</span><span class="p">,</span>
             <span class="ne">RuntimeWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
