@@ -477,9 +477,11 @@ class DynamicGEstimationDML:
         # silently reported as t=0/p=1 (issue #11). max(0.0, nan) == 0.0
         # would additionally have laundered NaN into a zero cumulative SE.
         # The sandwich G_inv @ meat @ G_inv.T is symmetric by construction;
-        # float roundoff breaks exact symmetry at large covariance scales,
-        # which psd()'s absolute tolerance would flag as a false positive.
-        # Symmetrizing launders nothing.
+        # float roundoff breaks exact symmetry at large covariance scales.
+        # temporalcv>=2.1.0 psd() is scale-aware (rtol) and would no longer
+        # false-positive here, but we symmetrize anyway: it is mathematically
+        # exact at this scale and keeps the guarantee independent of the
+        # validator's tolerance policy. Symmetrizing launders nothing.
         cov = (cov + cov.T) / 2.0
         diag = np.asarray(np.diag(cov), dtype=float)
         finite_se(diag, name="blip variance diagonal")

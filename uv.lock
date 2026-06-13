@@ -484,7 +484,7 @@ wheels = [
 
 [[package]]
 name = "dml-ts"
-version = "1.1.1"
+version = "1.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "joblib" },
@@ -2461,7 +2461,7 @@ wheels = [
 
 [[package]]
 name = "temporalcv"
-version = "2.0.1"
+version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "matplotlib" },
@@ -2470,9 +2470,9 @@ dependencies = [
     { name = "scipy" },
     { name = "statsmodels" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fe/10/ef11444e130e0a503d88820a012d0e5f43db717d104a7a375f3ffd918d67/temporalcv-2.0.1.tar.gz", hash = "sha256:d1a8aa85f02caf2e74636708b2c2883c2e7f53adbd8f9189fd94a5a687dce2a4", size = 533499, upload-time = "2026-06-12T15:21:39.278Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/db/33/5bcb234e2f250f6185a3cd340504f0f351eda651d1bb09f3027755d4ac57/temporalcv-2.1.0.tar.gz", hash = "sha256:4341ee06833b47af2be6cc2746be119069a616ddadebf4c93a6f701a14345661", size = 541307, upload-time = "2026-06-13T03:03:07.023Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/09/d3/bc4b3717faa3f577ba8056019845c2be33b5a5c496d9fbcaf61bcf9f1457/temporalcv-2.0.1-py3-none-any.whl", hash = "sha256:054f2a7adb478c7fd5a7dac5f8ed465589427d43296ed288da4d6e89f91fc3f8", size = 269479, upload-time = "2026-06-12T15:21:37.9Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/3b/a1da03bf515c172c5c47b2757e93632511e7c16fd13ecb41600e9dfe233c/temporalcv-2.1.0-py3-none-any.whl", hash = "sha256:fa1505c79348e4124dc1afb584a844ff44ae762d9806a7a1da62556c63428260", size = 272271, upload-time = "2026-06-13T03:03:05.356Z" },
 ]
 
 [[package]]
