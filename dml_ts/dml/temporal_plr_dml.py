@@ -219,10 +219,11 @@ def _cross_fit_nuisance_time_series(
     """
     # temporalcv splitters share split(X, y=None, groups=None) — splitting
     # is positional. Materialize the folds to detect silent shortfall.
-    # temporalcv>=2.0.1 raises natively on under-provisioned configs
-    # (PurgedWalkForward since #32, its siblings since v2.0), so this is
-    # splitter-agnostic defense-in-depth for any conforming splitter that
-    # under-yields rather than raising.
+    # temporalcv>=2.1.0 raises natively on under-provisioned configs across
+    # the whole purged family (PurgedWalkForward since #32, its fixed-window
+    # and embargo guards since #35/#36, the forward-only siblings since
+    # v2.0), so this is splitter-agnostic defense-in-depth for any conforming
+    # splitter that under-yields rather than raising.
     splits = list(cv.split(X, Y))
     if len(splits) < cv.get_n_splits():
         warnings.warn(

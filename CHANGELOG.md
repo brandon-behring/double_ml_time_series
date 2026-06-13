@@ -8,7 +8,14 @@ are the compatibility contract).
 
 ## [Unreleased]
 
-No unreleased changes.
+### Changed
+
+- Bumped the locked `temporalcv` to **2.1.0** (the `>=2.0.0,<3` pin already admitted it).
+  2.1.0 hardens the purged-splitter family to raise on under-provisioned configs
+  (temporalcv #35/#36), makes `validators.psd` scale-aware (temporalcv #33), and adds a
+  lossless serialization shape and a `BaseCrossValidator` base for the purged splitters
+  (temporalcv #21/#25). The `DynamicGEstimation` covariance symmetrize is retained as
+  defense-in-depth; goldens stay 71/71 byte-identical. No public-behavior change here.
 
 ## [1.1.2] - 2026-06-12
 
