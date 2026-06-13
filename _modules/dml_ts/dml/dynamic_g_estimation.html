@@ -810,9 +810,11 @@
         <span class="c1"># silently reported as t=0/p=1 (issue #11). max(0.0, nan) == 0.0</span>
         <span class="c1"># would additionally have laundered NaN into a zero cumulative SE.</span>
         <span class="c1"># The sandwich G_inv @ meat @ G_inv.T is symmetric by construction;</span>
-        <span class="c1"># float roundoff breaks exact symmetry at large covariance scales,</span>
-        <span class="c1"># which psd()&#39;s absolute tolerance would flag as a false positive.</span>
-        <span class="c1"># Symmetrizing launders nothing.</span>
+        <span class="c1"># float roundoff breaks exact symmetry at large covariance scales.</span>
+        <span class="c1"># temporalcv&gt;=2.1.0 psd() is scale-aware (rtol) and would no longer</span>
+        <span class="c1"># false-positive here, but we symmetrize anyway: it is mathematically</span>
+        <span class="c1"># exact at this scale and keeps the guarantee independent of the</span>
+        <span class="c1"># validator&#39;s tolerance policy. Symmetrizing launders nothing.</span>
         <span class="n">cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">cov</span> <span class="o">+</span> <span class="n">cov</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
         <span class="n">diag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cov</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">finite_se</span><span class="p">(</span><span class="n">diag</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;blip variance diagonal&quot;</span><span class="p">)</span>

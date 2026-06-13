@@ -538,10 +538,11 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># temporalcv splitters share split(X, y=None, groups=None) — splitting</span>
     <span class="c1"># is positional. Materialize the folds to detect silent shortfall.</span>
-    <span class="c1"># temporalcv&gt;=2.0.1 raises natively on under-provisioned configs</span>
-    <span class="c1"># (PurgedWalkForward since #32, its siblings since v2.0), so this is</span>
-    <span class="c1"># splitter-agnostic defense-in-depth for any conforming splitter that</span>
-    <span class="c1"># under-yields rather than raising.</span>
+    <span class="c1"># temporalcv&gt;=2.1.0 raises natively on under-provisioned configs across</span>
+    <span class="c1"># the whole purged family (PurgedWalkForward since #32, its fixed-window</span>
+    <span class="c1"># and embargo guards since #35/#36, the forward-only siblings since</span>
+    <span class="c1"># v2.0), so this is splitter-agnostic defense-in-depth for any conforming</span>
+    <span class="c1"># splitter that under-yields rather than raising.</span>
     <span class="n">splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">))</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">splits</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">cv</span><span class="o">.</span><span class="n">get_n_splits</span><span class="p">():</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
