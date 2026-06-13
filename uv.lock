@@ -2461,7 +2461,7 @@ wheels = [
 
 [[package]]
 name = "temporalcv"
-version = "2.1.0"
+version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "matplotlib" },
@@ -2470,9 +2470,9 @@ dependencies = [
     { name = "scipy" },
     { name = "statsmodels" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/db/33/5bcb234e2f250f6185a3cd340504f0f351eda651d1bb09f3027755d4ac57/temporalcv-2.1.0.tar.gz", hash = "sha256:4341ee06833b47af2be6cc2746be119069a616ddadebf4c93a6f701a14345661", size = 541307, upload-time = "2026-06-13T03:03:07.023Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/f4/10eca50b9009941d6ef87afc697f36055e1ac76521ce2bf3cdaf754ab2f0/temporalcv-2.2.0.tar.gz", hash = "sha256:7783a3a9ea9085c64fe5e80d8c3f7749b78420a592d2032ace5e0cb08c139ce3", size = 546161, upload-time = "2026-06-13T17:55:17.738Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/3b/a1da03bf515c172c5c47b2757e93632511e7c16fd13ecb41600e9dfe233c/temporalcv-2.1.0-py3-none-any.whl", hash = "sha256:fa1505c79348e4124dc1afb584a844ff44ae762d9806a7a1da62556c63428260", size = 272271, upload-time = "2026-06-13T03:03:05.356Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/80/54c25327357c876559231be2f8e337904cb82491b4caf7b4e11defc377ad/temporalcv-2.2.0-py3-none-any.whl", hash = "sha256:4f846c210b28708b99154cbb9a3026d6e9ddf85d2c61653e9b2dd7c9ee77318c", size = 273409, upload-time = "2026-06-13T17:55:16.252Z" },
 ]
 
 [[package]]
