@@ -10,12 +10,19 @@ are the compatibility contract).
 
 ### Changed
 
-- Bumped the locked `temporalcv` to **2.1.0** (the `>=2.0.0,<3` pin already admitted it).
-  2.1.0 hardens the purged-splitter family to raise on under-provisioned configs
-  (temporalcv #35/#36), makes `validators.psd` scale-aware (temporalcv #33), and adds a
-  lossless serialization shape and a `BaseCrossValidator` base for the purged splitters
-  (temporalcv #21/#25). The `DynamicGEstimation` covariance symmetrize is retained as
-  defense-in-depth; goldens stay 71/71 byte-identical. No public-behavior change here.
+- Bumped the locked `temporalcv` to **2.2.0** (the `>=2.0.0,<3` pin already admitted it).
+  Relative to the last released lock (2.0.1), 2.2.0 hardens the purged-splitter family to
+  raise on under-provisioned configs (temporalcv #35/#36), makes `validators.psd`
+  scale-aware (temporalcv #33), adds a lossless serialization shape and a
+  `BaseCrossValidator` base for the purged splitters (temporalcv #21/#25), and — in 2.2.0
+  itself — fixes a `CombinatorialPurgedCV` embargo-leakage bug by making the embargo
+  one-sided per contiguous test run (temporalcv #38), deprecates `PurgedKFold(shuffle=True)`
+  (temporalcv #39), and tightens `estimate_purge_gap`/`compute_label_overlap` validation
+  (temporalcv #40). The temporalcv #38 embargo change is **golden-neutral for dml_ts**,
+  which uses `embargo_pct=0` on the forward-only `PurgedWalkForward` everywhere: goldens
+  stay 71/71 byte-identical and the full tier1+2 suite (666 tests) passes against 2.2.0.
+  The `DynamicGEstimation` covariance symmetrize is retained as defense-in-depth. No
+  public-behavior change here.
 
 ## [1.1.2] - 2026-06-12
 
