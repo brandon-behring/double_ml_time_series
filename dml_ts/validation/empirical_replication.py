@@ -21,12 +21,16 @@ Dataset:
     - Controls: 11 covariates (age, inc, fsize, educ, db, marr, twoearn, pira, hown, etc.)
 
 Usage:
-    >>> from dml_ts.validation.empirical_replication import FourZeroOneKReplication
-    >>> replicator = FourZeroOneKReplication(random_state=42)
-    >>> result = replicator.replicate_plr_rf()
-    >>> print(f"ATE: ${result.ate_estimate:.2f} (Published: ${result.published_ate:.2f})")
-    >>> print(f"Difference: {result.rel_difference:.1%}")
-    >>> print(f"Status: {result.status}")
+    Requires the real 401(k) dataset (downloaded via ``doubleml.fetch_401K``)
+    and an econml DML fit, so the example is skipped under doctest.
+
+    >>> from dml_ts.validation.empirical_replication import (  # doctest: +SKIP
+    ...     FourZeroOneKReplication,
+    ... )
+    >>> replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP
+    >>> result = replicator.replicate_plr_rf()  # doctest: +SKIP
+    >>> result.method  # doctest: +SKIP
+    'PLR_RF'
 """
 
 from dataclasses import dataclass
@@ -85,11 +89,13 @@ class FourZeroOneKReplication:
         tolerance: Relative difference threshold for matching (default 0.15 = 15%)
 
     Examples:
-        >>> replicator = FourZeroOneKReplication(random_state=42)
-        >>> result = replicator.replicate_plr_rf()
-        >>> result.status
+        Requires the real 401(k) dataset and an econml DML fit:
+
+        >>> replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP
+        >>> result = replicator.replicate_plr_rf()  # doctest: +SKIP
+        >>> result.status  # doctest: +SKIP
         'MATCH'
-        >>> result.rel_difference < 0.15
+        >>> result.rel_difference < 0.15  # doctest: +SKIP
         True
     """
 
@@ -129,11 +135,13 @@ class FourZeroOneKReplication:
             DataFrame with 401(k) data (n=9,915, 14 variables)
 
         Examples:
-            >>> replicator = FourZeroOneKReplication()
-            >>> df = replicator.load_data()
-            >>> df.shape
+            Downloads the real 401(k) dataset via ``doubleml.fetch_401K``:
+
+            >>> replicator = FourZeroOneKReplication()  # doctest: +SKIP
+            >>> df = replicator.load_data()  # doctest: +SKIP
+            >>> df.shape  # doctest: +SKIP
             (9915, 14)
-            >>> 'net_tfa' in df.columns
+            >>> 'net_tfa' in df.columns  # doctest: +SKIP
             True
         """
         if self._data is not None:
@@ -170,13 +178,15 @@ class FourZeroOneKReplication:
                 - X: Controls (11 covariates)
 
         Examples:
-            >>> replicator = FourZeroOneKReplication(random_state=42)
-            >>> Y, T, X = replicator.preprocess_data(treatment="e401")
-            >>> Y.shape
+            Downloads the real 401(k) dataset via ``doubleml.fetch_401K``:
+
+            >>> replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP
+            >>> Y, T, X = replicator.preprocess_data(treatment="e401")  # doctest: +SKIP
+            >>> Y.shape  # doctest: +SKIP
             (9915,)
-            >>> T.shape
+            >>> T.shape  # doctest: +SKIP
             (9915,)
-            >>> X.shape
+            >>> X.shape  # doctest: +SKIP
             (9915, 11)
         """
         df = self.load_data()
@@ -214,11 +224,13 @@ class FourZeroOneKReplication:
             ReplicationResult with comparison to published estimate
 
         Examples:
-            >>> replicator = FourZeroOneKReplication(random_state=42)
-            >>> result = replicator.replicate_plr_rf()
-            >>> result.method
+            Requires the real 401(k) dataset and an econml DML fit:
+
+            >>> replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP
+            >>> result = replicator.replicate_plr_rf()  # doctest: +SKIP
+            >>> result.method  # doctest: +SKIP
             'PLR_RF'
-            >>> abs(result.ate_estimate - 9127) < 1500  # Within reasonable range
+            >>> abs(result.ate_estimate - 9127) < 1500  # doctest: +SKIP
             True
         """
         from econml.dml import LinearDML
@@ -296,11 +308,13 @@ class FourZeroOneKReplication:
             ReplicationResult with comparison to published estimate
 
         Examples:
-            >>> replicator = FourZeroOneKReplication(random_state=42)
-            >>> result = replicator.replicate_plr_lasso()
-            >>> result.method
+            Requires the real 401(k) dataset and an econml DML fit:
+
+            >>> replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP
+            >>> result = replicator.replicate_plr_lasso()  # doctest: +SKIP
+            >>> result.method  # doctest: +SKIP
             'PLR_Lasso'
-            >>> abs(result.ate_estimate - 9580) < 1500  # Within reasonable range
+            >>> abs(result.ate_estimate - 9580) < 1500  # doctest: +SKIP
             True
         """
         from econml.dml import LinearDML

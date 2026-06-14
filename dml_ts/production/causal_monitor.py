@@ -129,19 +129,23 @@ class CausalMonitor:
     for causal identification, not predictive accuracy.
 
     Example:
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> e_hat = rng.uniform(0.1, 0.9, size=200)
+        >>> T = rng.binomial(1, 0.5, size=200)
+        >>> T_train = rng.binomial(1, 0.5, size=200)
         >>> monitor = CausalMonitor()
         >>> results = monitor.run_all_checks(
         ...     propensity_scores=e_hat,
-        ...     treatment=T,
+        ...     treatment_current=T,
         ...     treatment_baseline=T_train,
-        ...     nuisance_r2_propensity=0.65,
-        ...     nuisance_r2_outcome=0.72,
+        ...     r2_propensity=0.65,
+        ...     r2_outcome=0.72,
         ...     current_effect=0.15,
         ...     baseline_effect=0.12,
         ... )
-        >>> for r in results:
-        ...     if not r.is_ok():
-        ...         print(f"ALERT: {r.message}")
+        >>> all(isinstance(r.is_ok(), bool) for r in results)
+        True
     """
 
     def __init__(self, config: CausalMonitorConfig | None = None):

@@ -87,6 +87,23 @@ class DynamicGEstimationResult(ResultBase):
         nuisance_r2_t: Out-of-fold R^2 of the outcome nuisance at each stage.
         backend: ``"custom"`` (this estimator) or ``"econml"`` (reference).
         mode: ``"panel"`` or ``"series"``.
+
+    Examples:
+        >>> import numpy as np
+        >>> from dml_ts.dml.dynamic_g_estimation import DynamicGEstimationDML
+        >>> rng = np.random.default_rng(0)
+        >>> L = 400
+        >>> X = rng.standard_normal((L, 1))
+        >>> T = 0.5 * X[:, 0] + rng.standard_normal(L)
+        >>> Y = np.zeros(L)
+        >>> Y[1:] = 1.0 * T[1:] + 0.5 * T[:-1] + X[1:, 0] + rng.standard_normal(L - 1)
+        >>> est = DynamicGEstimationDML(n_periods=2, model_y="ridge", model_t="ridge",
+        ...                             n_folds=3, random_state=0)
+        >>> result = est.fit(Y, T, X, mode="series")
+        >>> result.theta_t.shape
+        (2,)
+        >>> isinstance(result.cumulative_effect, float)
+        True
     """
 
     theta_t: NDArray[np.float64]
@@ -239,6 +256,25 @@ class DynamicGEstimationDML:
     The estimator is honest about its scope: it recovers a *constant* per-period
     blip (linear SNMM). Heterogeneous blips ``theta_tau(X)`` (the paper's Dynamic
     RLearner) are out of scope.
+
+    Examples:
+        Panel mode (n i.i.d. unit trajectories, unit-major rows):
+
+        >>> import numpy as np
+        >>> from dml_ts.dml.dynamic_g_estimation import DynamicGEstimationDML
+        >>> rng = np.random.default_rng(0)
+        >>> n_units, m = 150, 2
+        >>> groups = np.repeat(np.arange(n_units), m)
+        >>> X = rng.standard_normal((n_units * m, 1))
+        >>> T = 0.5 * X[:, 0] + rng.standard_normal(n_units * m)
+        >>> Y = 1.0 * T + X[:, 0] + rng.standard_normal(n_units * m)
+        >>> est = DynamicGEstimationDML(model_y="ridge", model_t="ridge",
+        ...                             n_folds=3, random_state=0)
+        >>> result = est.fit(Y, T, X, groups=groups)
+        >>> result.theta_t.shape
+        (2,)
+        >>> bool(est.cumulative_effect() == result.cumulative_effect)
+        True
     """
 
     def __init__(

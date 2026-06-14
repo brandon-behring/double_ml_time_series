@@ -76,6 +76,21 @@ class RobinsonResult(ResultBase):
         R² of outcome model E[Y|X].
     treatment_r2 : float
         R² of treatment model E[T|X].
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from dml_ts.dml.robinson import robinson_estimator
+    >>> np.random.seed(0)
+    >>> n = 200
+    >>> X = np.random.randn(n, 2)
+    >>> T = 0.5 * X[:, 0] + np.random.randn(n)
+    >>> Y = 1.5 * T + X[:, 1] + np.random.randn(n)
+    >>> result = robinson_estimator(Y, T, X, model="ridge")
+    >>> isinstance(result.theta, float)
+    True
+    >>> bool(result.se > 0)
+    True
     """
 
     theta: float
@@ -147,13 +162,15 @@ def robinson_estimator(
 
     Examples
     --------
+    >>> import numpy as np
+    >>> from dml_ts.dml.robinson import robinson_estimator
     >>> np.random.seed(42)
-    >>> n = 1000
+    >>> n = 600
     >>> X = np.random.randn(n, 3)
     >>> T = np.sin(X[:, 0]) + np.random.randn(n)  # Nonlinear confounding
     >>> Y = 2.0 * T + np.exp(X[:, 1]) + np.random.randn(n)  # Nonlinear outcome
     >>> result = robinson_estimator(Y, T, X, model="random_forest")
-    >>> abs(result.theta - 2.0) < 0.2  # Should recover ~2.0
+    >>> bool(abs(result.theta - 2.0) < 0.3)  # Should recover ~2.0
     True
     """
     # Validate inputs

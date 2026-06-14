@@ -477,7 +477,8 @@ class BreakDGPGenerator:
         ...     random_state=42
         ... )
         >>> result = dgp.generate()
-        >>> result.effect_periods  # [(0, 100), (100, 200), (200, 300)]
+        >>> result.effect_periods
+        [(0, 100), (100, 200), (200, 300)]
     """
 
     def __init__(

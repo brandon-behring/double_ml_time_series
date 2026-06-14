@@ -35,11 +35,19 @@ class RandomForestEstimator:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> rf = RandomForestEstimator(n_simulations=100, random_state=42)
-        >>> dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)
+        >>> from dml_ts.validation.bootstrap_config import BootstrapConfig
+        >>> rf = RandomForestEstimator(
+        ...     n_simulations=3,
+        ...     n_estimators=20,
+        ...     bootstrap_config=BootstrapConfig.tier2(),
+        ...     random_state=42,
+        ... )
+        >>> dgp = DGPGenerator(n=150, p=5, true_effect=2.0, random_state=42)
         >>> result = rf.validate(dgp)
-        >>> result.status
-        'PASS'
+        >>> result.method
+        'RandomForestEstimator'
+        >>> bool(np.isfinite(result.bias))
+        True
     """
 
     def __init__(
@@ -247,11 +255,19 @@ class XGBoostEstimator:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> xgb = XGBoostEstimator(n_simulations=100, random_state=42)
-        >>> dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)
+        >>> from dml_ts.validation.bootstrap_config import BootstrapConfig
+        >>> xgb = XGBoostEstimator(
+        ...     n_simulations=3,
+        ...     n_estimators=20,
+        ...     bootstrap_config=BootstrapConfig.tier2(),
+        ...     random_state=42,
+        ... )
+        >>> dgp = DGPGenerator(n=150, p=5, true_effect=2.0, random_state=42)
         >>> result = xgb.validate(dgp)
-        >>> result.status
-        'PASS'
+        >>> result.method
+        'XGBoostEstimator'
+        >>> bool(np.isfinite(result.bias))
+        True
     """
 
     def __init__(

@@ -105,3 +105,33 @@ jobs:
           for f in examples/*.py; do
             python "$f"
           done
+
+  doctest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev,full]"
+
+      - name: Run doctests (global)
+        # Every docstring example across dml_ts/ is runnable; a global
+        # --doctest-modules gate keeps them honest. MPLBACKEND=Agg runs the
+        # plotting examples headless; [full] installs econml so the validation
+        # modules that import it collect cleanly. Genuinely network / real-data /
+        # multi-thousand-bootstrap examples carry inline `# doctest: +SKIP`.
+        # Dedicated job so the econml/numpy install can't pollute lint or mypy.
+        # Clear addopts (--override-ini) so the project's default pytest
+        # options (-v) don't interfere with the doctest run.
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python -m pytest --doctest-modules dml_ts/ --override-ini="addopts=" -q

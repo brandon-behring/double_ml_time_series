@@ -150,20 +150,27 @@ class InsuranceDMLPipeline:
     - Retraining triggers
 
     Example:
-        >>> from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-        >>>
+        >>> import tempfile
+        >>> import numpy as np
+        >>> from sklearn.linear_model import LinearRegression, LogisticRegression
+        >>> rng = np.random.default_rng(0)
+        >>> X = rng.normal(size=(60, 2))
+        >>> T = rng.binomial(1, 0.5, size=60)
+        >>> Y = rng.normal(size=60)
         >>> config = PipelineConfig(
-        ...     feature_columns=["age", "income", "tenure", "macro_gdp"],
+        ...     feature_columns=["age", "income"],
         ...     treatment_column="competitor_price",
         ...     outcome_column="retention",
-        ...     time_column="quarter",
-        ...     propensity_model=RandomForestClassifier(n_estimators=100),
-        ...     outcome_model=RandomForestRegressor(n_estimators=100),
+        ...     n_folds=2,
+        ...     use_hac=False,
+        ...     model_registry_path=tempfile.mkdtemp(),
+        ...     propensity_model=LogisticRegression(),
+        ...     outcome_model=LinearRegression(),
         ... )
-        >>>
         >>> pipeline = InsuranceDMLPipeline(config)
         >>> result = pipeline.fit(X, T, Y)
-        >>> print(f"ATE: {result.ate:.3f} ({result.ate_ci_lower:.3f}, {result.ate_ci_upper:.3f})")
+        >>> bool(np.isfinite(result.ate))
+        True
     """
 
     def __init__(self, config: PipelineConfig | None = None):

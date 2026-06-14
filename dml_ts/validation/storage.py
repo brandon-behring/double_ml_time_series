@@ -30,9 +30,27 @@ class ResultStorage:
     - Cache management for DGPs
 
     Examples:
-        >>> storage = ResultStorage(base_dir="results/validation")
-        >>> storage.save_result(validation_result, method="bias")
-        >>> results = storage.load_results(method="bias")
+        >>> import tempfile
+        >>> from datetime import datetime
+        >>> from dml_ts.validation.validation_result import ValidationResult
+        >>> validation_result = ValidationResult(
+        ...     method="bias",
+        ...     status="PASS",
+        ...     bias=0.02,
+        ...     mse=0.15,
+        ...     coverage=0.95,
+        ...     ci_lower=-0.05,
+        ...     ci_upper=0.09,
+        ...     n_simulations=1000,
+        ...     timestamp=datetime.now(),
+        ...     metadata={"dgp": "linear", "n": 1000},
+        ... )
+        >>> with tempfile.TemporaryDirectory() as tmp:
+        ...     storage = ResultStorage(base_dir=tmp)
+        ...     _ = storage.save_result(validation_result, method="bias")
+        ...     results = storage.load_results(method="bias")
+        >>> len(results)
+        1
     """
 
     def __init__(self, base_dir: Path = Path("results/validation")):

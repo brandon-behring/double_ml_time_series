@@ -80,8 +80,8 @@ class EnhancedDGPGenerator:
         ...     hte_strength=1.0, random_state=42
         ... )
         >>> result = dgp.generate()
-        >>> result.true_effect.mean()  # Average effect ≈ 2.0
-        2.05
+        >>> float(round(result.true_effect.mean(), 2))  # Average effect ~ 2.0
+        2.01
 
         >>> # Omitted variable bias
         >>> dgp = EnhancedDGPGenerator(
