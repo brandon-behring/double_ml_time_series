@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-06-13
+Last updated: 2026-06-14
 
 This file is the canonical project-status source. Historical reports and roadmaps
 were moved to `docs/archive/superseded_2026-05-02/` during the 2026-05-02 truth-first
@@ -53,14 +53,18 @@ deployed to Cloudflare Workers at `dml.brandon-behring.dev` (PR previews enabled
 - **Known web risk (W4):** open upstream `book-scaffold-astro#69` keeps the
   `web/src/pages/chapters/[...slug].astro` route shim load-bearing. See `web/UPSTREAM_ISSUES.md`.
 
-## Verified Baseline (live, 2026-06-13, main @ 2c90dd3; temporalcv 2.2.0; v1.1.3 pending)
+## Verified Baseline (live, 2026-06-14; temporalcv 2.2.0; v1.1.4 pending)
 
 dml_ts is a thin causal consumer of temporalcv, now locked at **2.2.0**
 (splitters/HAC/stationarity consumed upstream, golden-snapshot gated; the Track B
 migration onto temporalcv v2.0.0 landed in 1.1.0 — see CHANGELOG 1.0.0/1.1.0 for the
 inference fixes and the purged_cv leakage correction). The 2.2.0 lock is **golden-neutral
-for dml_ts** (see "temporalcv 2.2.0 consumption" below). Every gate below was re-run live
-on this commit; environment `pip install -e ".[dev,docs,full]"`, Python 3.13:
+for dml_ts** (see "temporalcv 2.2.0 consumption" below). Environment
+`pip install -e ".[dev,docs,full]"`, Python 3.13. The v1.1.4 delta (the global doctest
+gate, two new examples, full validation API docs, and the `RuntimeError`->`ValueError`
+accessor change) re-ran ruff / mypy / tier1+2 / examples / doctest / Sphinx live on
+2026-06-14; the full-suite, book, and web rows carry from the 2026-06-13 baseline
+(untouched by v1.1.4's docstring/docs-only changes):
 
 | Gate | Command | Result |
 | --- | --- | --- |
@@ -71,8 +75,9 @@ on this commit; environment `pip install -e ".[dev,docs,full]"`, Python 3.13:
 | Coverage (tier1+2) | `pytest -m "tier1 or tier2" --cov=dml_ts` | **75%** (gate `fail_under=70`) |
 | Ruff check + format | `ruff check` / `ruff format --check` | pass (94 files) |
 | Mypy | `mypy dml_ts/ --ignore-missing-imports --no-strict-optional --explicit-package-bases` | **0 issues, 41 source files** |
-| Examples | `for f in examples/*.py; do … "$f"; done` | **6/6** execute |
-| Sphinx | `sphinx -b html -W --keep-going docs/sphinx` | build succeeded (Sphinx 9.1.0) |
+| Examples | `for f in examples/*.py; do … "$f"; done` | **8/8** execute |
+| Doctest | `pytest --doctest-modules dml_ts/` | **50** passed, 19 `+SKIP` (~15s) |
+| Sphinx | `sphinx -b html -W --keep-going docs/sphinx` | build succeeded; validation API now **18/18** modules |
 | Book | `make` (LuaLaTeX×4 + biber) | **209 pages**, 0 fatal |
 | Web | `npm run validate && npm run build` | validate ✓ 10 chapters (academic); build ✓ 15 pages |
 | Drift guard | `scripts/check_tex_mdx_drift.py` | exit 0 (all ported chapters match their `.tex`) |
@@ -110,8 +115,9 @@ Three tracks. Track 3 stays deferred until tracks 1–2 are comfortable.
 Closed in the 2026-05-30 reconciliation (see the audit's Reconciliation section):
 F14 (`results/` frozen in `.gitignore`), F5 (leakage regression test added), F15
 (coverage gate `30 → 70`), R1 (toolchain pinned to mypy 2.1.0 / Python 3.13).
-Remaining optional: a doctest gate for README/Sphinx fenced snippets beyond the
-in-suite contract tests.
+Landed in **1.1.4**: a global `pytest --doctest-modules dml_ts/` doctest gate (dedicated
+CI `doctest` job; 50 runnable examples, 19 `+SKIP`), full Sphinx API coverage (18/18
+validation modules), and two new runnable examples (`rolling_window`, `panel`).
 
 ### Track 2 — Web pilot
 

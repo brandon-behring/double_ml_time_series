@@ -85,7 +85,7 @@ class TestResultAndValidation:
     def test_effect_accessor_methods(self, deterministic_panel):
         d = deterministic_panel
         est = _linear_estimator()
-        with pytest.raises(RuntimeError, match="not fitted"):
+        with pytest.raises(ValueError, match="not fitted"):
             est.effect_by_period()
         res = est.fit(d.Y, d.T, d.X, groups=d.groups)
         np.testing.assert_array_equal(est.effect_by_period(), res.theta_t)

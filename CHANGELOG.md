@@ -10,6 +10,39 @@ are the compatibility contract).
 
 No unreleased changes.
 
+## [1.1.4] - 2026-06-14
+
+### Added
+
+- **Global doctest gate.** A dedicated `doctest` CI job runs `pytest --doctest-modules dml_ts/`
+  (`.[dev,full]`, `MPLBACKEND=Agg`); every docstring example across the package is now runnable
+  (50 executed, 19 `# doctest: +SKIP` for network / real-401(k) / multi-thousand-bootstrap
+  examples). Folded in the previously-missing `Examples` for the public result/estimator classes
+  (`FWLResult`, `RobinsonResult`, `DMLResult`, `TemporalPLRDMLResult`, `RollingWindowDML`,
+  `PanelDML`, `DynamicGEstimationDML`/`Result`). (#36)
+- **Sphinx API coverage** for the 12 previously-undocumented `dml_ts.validation` modules
+  (OLS/IPW/ML baselines, baseline comparison, bootstrap config/diagnostics, enhanced DGP,
+  empirical replication, lasso diagnostic, validation result, storage, plotting) — the API
+  reference now documents 18/18 validation modules. (#35)
+- **Runnable examples** `example_rolling_window_dml.py` and `example_panel_dml.py`; the
+  `examples/` gate now covers 8/8 scripts.
+
+### Changed
+
+- `DynamicGEstimationDML` accessors (`effect_by_period`, `cumulative_effect`) now raise
+  `ValueError` (was `RuntimeError`) when called before `fit()`, matching the `TemporalPLRDML`
+  not-fitted convention.
+
+### Fixed
+
+- Doc-vs-code mismatches surfaced by the new doctest gate (docstring-only): `lasso_diagnostic`
+  advertised an unsupported `alpha` hyperparameter (the code raises `ValueError`) → docs reduced
+  to `(cv_folds, max_iter)`; the `insurance_dgp` example unpacked the `InsuranceDGPResult`
+  dataclass as a tuple; the `causal_monitor` example used stale kwarg names. (#36)
+
+Behavior-neutral except the `RuntimeError`->`ValueError` accessor change; no public estimation
+result changes. No PyPI publication (pre-PyPI per CONTRIBUTING).
+
 ## [1.1.3] - 2026-06-13
 
 ### Changed
