@@ -559,7 +559,10 @@ class CausalMonitor:
         X_current: np.ndarray | None = None,
         X_baseline: np.ndarray | None = None,
         feature_names: list[str] | None = None,
-        **kwargs: Any,
+        r2_propensity_baseline: float | None = None,
+        r2_outcome_baseline: float | None = None,
+        current_se: float | None = None,
+        baseline_se: float | None = None,
     ) -> list[MonitoringResult]:
         """
         Run all applicable monitoring checks.
@@ -577,7 +580,10 @@ class CausalMonitor:
             X_current: For covariate shift check
             X_baseline: For covariate shift check
             feature_names: Feature names for covariate shift
-            **kwargs: Additional arguments passed to individual checks
+            r2_propensity_baseline: Optional baseline propensity R² (nuisance check)
+            r2_outcome_baseline: Optional baseline outcome R² (nuisance check)
+            current_se: Optional SE for the current effect (stability check)
+            baseline_se: Optional SE for the baseline effect (stability check)
 
         Returns:
             List of MonitoringResult for all executed checks
@@ -598,8 +604,8 @@ class CausalMonitor:
                 self.check_nuisance_degradation(
                     r2_propensity,
                     r2_outcome,
-                    kwargs.get("r2_propensity_baseline"),
-                    kwargs.get("r2_outcome_baseline"),
+                    r2_propensity_baseline,
+                    r2_outcome_baseline,
                 )
             )
 
@@ -609,8 +615,8 @@ class CausalMonitor:
                 self.check_effect_stability(
                     current_effect,
                     baseline_effect,
-                    kwargs.get("current_se"),
-                    kwargs.get("baseline_se"),
+                    current_se,
+                    baseline_se,
                 )
             )
 
