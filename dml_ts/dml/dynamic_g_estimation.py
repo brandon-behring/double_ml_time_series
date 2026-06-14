@@ -364,7 +364,7 @@ class DynamicGEstimationDML:
     def _fitted(self) -> DynamicGEstimationResult:
         """Return the stored fit result, or raise if ``fit`` has not been called."""
         if self.result_ is None:
-            raise RuntimeError("This estimator is not fitted yet; call fit() first.")
+            raise ValueError("This estimator is not fitted yet; call fit() first.")
         return self.result_
 
     # ------------------------------------------------------------------ panel

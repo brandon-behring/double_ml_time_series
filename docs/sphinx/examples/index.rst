@@ -47,6 +47,30 @@ EconML ``DynamicDML`` cross-check.
 
 ----
 
+Rolling-Window DML
+------------------
+
+``RollingWindowDML`` refits a partially-linear DML estimate on a sliding
+window of the series to trace a time-varying treatment effect.
+
+.. literalinclude:: ../../../examples/example_rolling_window_dml.py
+   :language: python
+   :caption: examples/example_rolling_window_dml.py
+
+----
+
+Panel DML
+---------
+
+``PanelDML`` with an individual fixed-effects (within) transformation and
+cluster-robust standard errors on a synthetic panel.
+
+.. literalinclude:: ../../../examples/example_panel_dml.py
+   :language: python
+   :caption: examples/example_panel_dml.py
+
+----
+
 Insurance DGP
 -------------
 
