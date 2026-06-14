@@ -43,7 +43,7 @@ class IPWEstimator:
         >>> result = ipw.validate(dgp)
         >>> result.method
         'IPWEstimator'
-        >>> result.status in {"PASS", "WARNING", "FAIL"}
+        >>> bool(np.isfinite(result.bias))
         True
     """
 

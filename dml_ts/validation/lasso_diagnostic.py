@@ -12,7 +12,7 @@ Problem:
 
 Diagnostic Goals:
     1. Bootstrap distribution analysis (convergence, outliers, normality)
-    2. Hyperparameter sensitivity (alpha, CV folds, max_iter)
+    2. Hyperparameter sensitivity (cv_folds, max_iter)
     3. Cross-fitting seed analysis (random_state variability)
     4. Implementation configuration comparison with published paper
 
@@ -131,7 +131,7 @@ class ComprehensiveDiagnosticResult:
 
     Attributes:
         bootstrap_diagnostic: Bootstrap distribution analysis
-        hyperparameter_sensitivity: Dict of sensitivity analyses (alpha, cv, max_iter)
+        hyperparameter_sensitivity: Dict of sensitivity analyses (cv_folds, max_iter)
         seed_sensitivity: Cross-fitting seed analysis
         root_cause_analysis: Identified root cause(s) of mismatch
         recommendations: List of recommendations for fixing or documenting issue

@@ -169,7 +169,7 @@ class InsuranceDMLPipeline:
         ... )
         >>> pipeline = InsuranceDMLPipeline(config)
         >>> result = pipeline.fit(X, T, Y)
-        >>> isinstance(float(result.ate), float)
+        >>> bool(np.isfinite(result.ate))
         True
     """
 

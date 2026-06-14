@@ -84,6 +84,8 @@ class SensitivityResult:
     >>> from dml_ts.sensitivity import RosenbaumBounds
     >>> bounds = RosenbaumBounds()
     >>> result = bounds.analyze(theta=2.5, se=0.5, n_treated=500, n_control=500)
+    >>> # 3.0 == gamma_max: significance survives the whole tested Gamma range
+    >>> # (no tipping point found), so the finding is reported as "Robust".
     >>> float(result.gamma_critical)
     3.0
     >>> result.interpretation
@@ -493,6 +495,7 @@ def compute_sensitivity_for_dml(
     ...     n_samples=1000,
     ...     treatment_r2=0.2,
     ... )
+    >>> # 3.0 == gamma_max: no tipping point within the tested Gamma range.
     >>> float(sensitivity.gamma_critical)
     3.0
     """

@@ -129,7 +129,8 @@ jobs:
         # modules that import it collect cleanly. Genuinely network / real-data /
         # multi-thousand-bootstrap examples carry inline `# doctest: +SKIP`.
         # Dedicated job so the econml/numpy install can't pollute lint or mypy.
-        # Clear addopts (--override-ini) so the project --cov flags don't leak in.
+        # Clear addopts (--override-ini) so the project's default pytest
+        # options (-v) don't interfere with the doctest run.
         env:
           MPLBACKEND: Agg
         run: |

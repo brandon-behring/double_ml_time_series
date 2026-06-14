@@ -78,12 +78,12 @@ class BiasValidation:
 
     Examples:
         >>> # Production runs use n_simulations=1000; shrunk here so the
-        >>> # example stays fast. Status is stochastic, so we only check it
-        >>> # is one of the valid labels.
+        >>> # example stays fast. The per-seed status is stochastic, so we
+        >>> # assert the recovered bias is finite rather than a fixed label.
         >>> validator = BiasValidation(n_simulations=10, random_state=42)
         >>> dgp = DGPGenerator(n=150, p=5, true_effect=2.0, random_state=42)
         >>> result = validator.validate(dgp)
-        >>> result.status in ("PASS", "WARNING", "FAIL")
+        >>> bool(np.isfinite(result.bias))
         True
     """
 

@@ -42,7 +42,7 @@ class NaiveOLS:
         >>> result = naive.validate(dgp)
         >>> result.method
         'NaiveOLS'
-        >>> result.status in {"PASS", "WARNING", "FAIL"}
+        >>> bool(abs(result.bias) > 0.1)  # naive OLS is biased by the confounding
         True
         >>> bool(result.metadata["controls_used"] is False)
         True

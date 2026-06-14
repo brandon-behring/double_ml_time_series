@@ -46,7 +46,7 @@ class RandomForestEstimator:
         >>> result = rf.validate(dgp)
         >>> result.method
         'RandomForestEstimator'
-        >>> result.status in {"PASS", "WARNING", "FAIL"}
+        >>> bool(np.isfinite(result.bias))
         True
     """
 
@@ -266,7 +266,7 @@ class XGBoostEstimator:
         >>> result = xgb.validate(dgp)
         >>> result.method
         'XGBoostEstimator'
-        >>> result.status in {"PASS", "WARNING", "FAIL"}
+        >>> bool(np.isfinite(result.bias))
         True
     """
 
