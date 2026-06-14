@@ -909,7 +909,10 @@
         <span class="n">X_current</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">X_baseline</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">feature_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">r2_propensity_baseline</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">r2_outcome_baseline</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">current_se</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">baseline_se</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">MonitoringResult</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run all applicable monitoring checks.</span>
@@ -927,7 +930,10 @@
 <span class="sd">            X_current: For covariate shift check</span>
 <span class="sd">            X_baseline: For covariate shift check</span>
 <span class="sd">            feature_names: Feature names for covariate shift</span>
-<span class="sd">            **kwargs: Additional arguments passed to individual checks</span>
+<span class="sd">            r2_propensity_baseline: Optional baseline propensity R² (nuisance check)</span>
+<span class="sd">            r2_outcome_baseline: Optional baseline outcome R² (nuisance check)</span>
+<span class="sd">            current_se: Optional SE for the current effect (stability check)</span>
+<span class="sd">            baseline_se: Optional SE for the baseline effect (stability check)</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List of MonitoringResult for all executed checks</span>
@@ -948,8 +954,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">check_nuisance_degradation</span><span class="p">(</span>
                     <span class="n">r2_propensity</span><span class="p">,</span>
                     <span class="n">r2_outcome</span><span class="p">,</span>
-                    <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;r2_propensity_baseline&quot;</span><span class="p">),</span>
-                    <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;r2_outcome_baseline&quot;</span><span class="p">),</span>
+                    <span class="n">r2_propensity_baseline</span><span class="p">,</span>
+                    <span class="n">r2_outcome_baseline</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
@@ -959,8 +965,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">check_effect_stability</span><span class="p">(</span>
                     <span class="n">current_effect</span><span class="p">,</span>
                     <span class="n">baseline_effect</span><span class="p">,</span>
-                    <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;current_se&quot;</span><span class="p">),</span>
-                    <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;baseline_se&quot;</span><span class="p">),</span>
+                    <span class="n">current_se</span><span class="p">,</span>
+                    <span class="n">baseline_se</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
