@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-06-04
+Last updated: 2026-06-13
 
 This file is the canonical project-status source. Historical reports and roadmaps
 were moved to `docs/archive/superseded_2026-05-02/` during the 2026-05-02 truth-first
@@ -53,27 +53,46 @@ deployed to Cloudflare Workers at `dml.brandon-behring.dev` (PR previews enabled
 - **Known web risk (W4):** open upstream `book-scaffold-astro#69` keeps the
   `web/src/pages/chapters/[...slug].astro` route shim load-bearing. See `web/UPSTREAM_ISSUES.md`.
 
-## Verified Baseline (live, 2026-06-11, v1.1.0)
+## Verified Baseline (live, 2026-06-13, main @ 2c90dd3; temporalcv 2.2.0; v1.1.3 pending)
 
-Track B complete: dml_ts is a thin causal consumer of temporalcv v2.0.0
-(splitters/HAC/stationarity consumed upstream, golden-snapshot gated; see
-CHANGELOG 1.0.0 + 1.1.0 for the inference fixes and the purged_cv leakage
-correction). Gates re-run at release:
+dml_ts is a thin causal consumer of temporalcv, now locked at **2.2.0**
+(splitters/HAC/stationarity consumed upstream, golden-snapshot gated; the Track B
+migration onto temporalcv v2.0.0 landed in 1.1.0 — see CHANGELOG 1.0.0/1.1.0 for the
+inference fixes and the purged_cv leakage correction). The 2.2.0 lock is **golden-neutral
+for dml_ts** (see "temporalcv 2.2.0 consumption" below). Every gate below was re-run live
+on this commit; environment `pip install -e ".[dev,docs,full]"`, Python 3.13:
 
-- Test collection: **841 collected** (golden parity gate, validators, factory).
-- Tier 1 lane: **339 tests**.
-- Tier 1 + Tier 2: **656 passed**; full non-network suite **795 passed**
-  (2026-06-11 pre-B3-merge run).
-- Lint/format: ruff check + `ruff format --check` pass (tooling migrated from black, 2026-06-10).
-- Mypy: **pass** — `Success: no issues found in 41 source files`. After the R1
-  reconciliation, local venv, pre-commit hook, and CI all run mypy 2.1.0 on Python 3.13.
-- Coverage: tier1+2 = **74.89%**; gate raised to `fail_under = 70` (F15).
-- Examples: all 5 `examples/*.py` execute.
-- Sphinx: `-W --keep-going` build succeeded (Sphinx 9.1.0).
-- Book: forced clean rebuild → **209 pages, 0 fatal errors** (LuaTeX; boxes remain non-blocking report items).
-- Web: `npm run validate` ✓ 0 errors (academic profile); `npm run build` ✓.
-- Drift guard: `scripts/check_tex_mdx_drift.py` ✓ exit 0 (Ch1 MDX `source_sha256`
-  matches `chapters/chapter_01.tex`); 7 tier1 tests; enforced in pre-commit + CI.
+| Gate | Command | Result |
+| --- | --- | --- |
+| Test collection | `pytest --collect-only -q` | **851** collected |
+| Tier 1 (unit) | `pytest -m tier1` | **349** passed |
+| Tier 1 + Tier 2 (dev lane) | `pytest -m "tier1 or tier2"` | **666** passed, 185 deselected |
+| Full suite (non-network) | `pytest -m "not network"` | **810** passed, 41 net deselected (incl. tier3/tier4 econml MC + stress)* |
+| Coverage (tier1+2) | `pytest -m "tier1 or tier2" --cov=dml_ts` | **75%** (gate `fail_under=70`) |
+| Ruff check + format | `ruff check` / `ruff format --check` | pass (94 files) |
+| Mypy | `mypy dml_ts/ --ignore-missing-imports --no-strict-optional --explicit-package-bases` | **0 issues, 41 source files** |
+| Examples | `for f in examples/*.py; do … "$f"; done` | **6/6** execute |
+| Sphinx | `sphinx -b html -W --keep-going docs/sphinx` | build succeeded (Sphinx 9.1.0) |
+| Book | `make` (LuaLaTeX×4 + biber) | **209 pages**, 0 fatal |
+| Web | `npm run validate && npm run build` | validate ✓ 10 chapters (academic); build ✓ 15 pages |
+| Drift guard | `scripts/check_tex_mdx_drift.py` | exit 0 (all ported chapters match their `.tex`) |
+
+\* The tier3/tier4 validation + stress lane (167 + 40 tests) requires the `[full]` extra
+(EconML) and runs real Monte-Carlo estimation; the full non-network run took **1h31m**
+(810 passed, 0 failures) and also runs in `nightly.yml` CI. Without EconML these tests
+raise `ModuleNotFoundError` rather than skip-gating (a pre-existing test-quality nit, not a
+logic failure).
+
+### temporalcv 2.2.0 consumption
+
+temporalcv 2.2.0 (locked here; shipping as dml_ts 1.1.3) fixed a `CombinatorialPurgedCV`
+embargo-leakage bug — the embargo is now one-sided per contiguous test run (temporalcv #38)
+— deprecated `PurgedKFold(shuffle=True)` (#39), and tightened
+`estimate_purge_gap`/`compute_label_overlap` validation (#40). It is **golden-neutral for
+dml_ts**, which sets `embargo_pct=0` on the forward-only `PurgedWalkForward` everywhere
+(`_create_cv`, the cv factory, and the golden snapshots): the 71/71 golden-parity snapshots
+and the full tier1+2 suite (666) are byte-identical against 2.2.0, verified pre-release. See
+the temporalcv CHANGELOG 2.2.0.
 
 CI gates the full stack: `tests.yml` (ruff + mypy + collect + tier1 + tier1/2 +
 an examples job), `book.yml` (LuaLaTeX+biber), `docs.yml` (Sphinx `-W` + Pages),
