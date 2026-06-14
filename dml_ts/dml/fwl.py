@@ -161,8 +161,21 @@ def fwl_residualize(
         X = X.reshape(-1, 1)
 
     if method == "qr":
-        # Numerically stable: Y_resid = Y - Q @ (Q.T @ Y)
+        # Numerically stable: Y_resid = Y - Q @ (Q.T @ Y).
+        # np.linalg.qr returns a full-width Q even when X is rank-deficient, so
+        # Q @ Q.T then over-projects onto spurious directions and silently
+        # returns the WRONG residuals (a different theta) instead of failing.
+        # Detect rank deficiency from the R diagonal and raise loudly rather than
+        # fabricate a plausible-but-wrong fit (method="ols" is rank-safe).
         Q, R = np.linalg.qr(X)
+        diag_r = np.abs(np.diag(R))
+        ref = float(diag_r.max()) if diag_r.size else 0.0
+        if ref == 0.0 or float(diag_r.min()) <= 1e-10 * ref:
+            raise ValueError(
+                "Rank-deficient control matrix X (collinear columns) in QR "
+                "residualization: the FWL residuals are undefined. De-collinearize "
+                'X, or call with method="ols" (rank-safe least squares).'
+            )
         Y_hat = Q @ (Q.T @ Y)
         residuals = Y - Y_hat
     else:

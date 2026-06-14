@@ -110,7 +110,15 @@ def theta_via_fwl(
         )
     if T_tilde_sq_sum < 1e-10:
         raise ValueError(no_variation_msg)
-    theta = float(np.sum(Y_tilde * T_tilde) / T_tilde_sq_sum)
+    numerator = float(np.sum(Y_tilde * T_tilde))
+    if not np.isfinite(numerator):
+        # Symmetric to the treatment-side guard above: a NaN/inf on the OUTCOME
+        # side must not silently produce a NaN theta that rides downstream.
+        raise ValueError(
+            "Non-finite outcome residuals (Y_tilde·T_tilde sum = "
+            f"{numerator}); check for NaN/inf in inputs or uncovered cross-fit rows."
+        )
+    theta = numerator / T_tilde_sq_sum
     return theta, T_tilde_sq_sum
 
 
