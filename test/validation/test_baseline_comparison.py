@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from dml_ts.dml import econml_available
 from dml_ts.validation.baseline_comparison import BaselineComparison
 from dml_ts.validation.dgp_generator import DGPGenerator
 
@@ -215,6 +216,7 @@ class TestBaselineComparisonSummaryStats:
 
 
 @pytest.mark.tier4
+@pytest.mark.skipif(not econml_available(), reason="econml not installed (optional '[full]' extra)")
 class TestBaselineComparisonWithDML:
     """Test comparison framework with DML included (requires econml)."""
 
