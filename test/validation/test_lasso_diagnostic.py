@@ -15,6 +15,7 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
+from dml_ts.dml import econml_available
 from dml_ts.validation.lasso_diagnostic import (
     BootstrapDiagnosticResult,
     ComprehensiveDiagnosticResult,
@@ -287,6 +288,7 @@ class TestRootCauseAnalysis:
         assert len(recommendations) >= 3
 
 
+@pytest.mark.skipif(not econml_available(), reason="econml not installed (optional '[full]' extra)")
 class TestComprehensiveDiagnostic:
     """Test comprehensive diagnostic (integration test)."""
 

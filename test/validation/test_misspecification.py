@@ -12,6 +12,7 @@ Tests how baseline methods and DML perform when model assumptions are violated:
 import numpy as np
 import pytest
 
+from dml_ts.dml import econml_available
 from dml_ts.validation.bias_validation import BiasValidation
 from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.ipw_baseline import AugmentedIPW, IPWEstimator
@@ -337,6 +338,7 @@ class TestUnobservedConfounding:
 
 
 @pytest.mark.tier3
+@pytest.mark.skipif(not econml_available(), reason="econml not installed (optional '[full]' extra)")
 class TestCombinedMisspecifications:
     """Test methods under multiple simultaneous misspecifications."""
 

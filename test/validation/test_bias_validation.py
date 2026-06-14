@@ -14,9 +14,18 @@ Usage:
 import numpy as np
 import pytest
 
+from dml_ts.dml import econml_available
 from dml_ts.validation.bias_validation import BiasValidation, _corrected_rejections
 from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.validation_result import ValidationResult
+
+# BiasValidation.validate() estimates effects via EconML LinearDML, so the classes
+# that call it require the optional ``[full]`` extra. Skip them (rather than hard-fail
+# with ModuleNotFoundError) when econml is absent; the pure-logic classes below
+# (parameter validation, _corrected_rejections, status wiring) run without it.
+requires_econml = pytest.mark.skipif(
+    not econml_available(), reason="econml not installed (optional '[full]' extra)"
+)
 
 # =============================================================================
 # Test Class 1: Basic Functionality
@@ -43,6 +52,7 @@ class TestBiasValidationBasicFunctionality:
         assert validator.random_state == 42
 
     @pytest.mark.tier3
+    @requires_econml
     def test_validate_returns_validation_result(self):
         """Test that validate() returns ValidationResult."""
         validator = BiasValidation(n_simulations=10, random_state=42)
@@ -62,6 +72,7 @@ class TestBiasValidationBasicFunctionality:
 
 
 @pytest.mark.tier3
+@requires_econml
 class TestBiasValidationValidationLogic:
     """Test validation logic and correctness."""
 
@@ -96,6 +107,7 @@ class TestBiasValidationValidationLogic:
 
 
 @pytest.mark.tier3
+@requires_econml
 class TestBiasValidationReproducibility:
     """Test reproducibility with random seeds."""
 
@@ -147,6 +159,7 @@ class TestBiasValidationReproducibility:
 
 
 @pytest.mark.tier3
+@requires_econml
 class TestBiasValidationEdgeCases:
     """Test edge cases and boundary conditions."""
 
@@ -271,6 +284,7 @@ class TestBiasValidationParameterValidation:
 
 
 @pytest.mark.tier3
+@requires_econml
 class TestBiasValidationStatisticalProperties:
     """Test statistical properties of validation method."""
 
@@ -356,6 +370,7 @@ class TestBiasValidationStatisticalProperties:
 
 
 @pytest.mark.tier3
+@requires_econml
 class TestBiasValidationIntegration:
     """Integration tests with other components."""
 
@@ -409,6 +424,7 @@ class TestBiasValidationIntegration:
 
 
 @pytest.mark.tier3
+@requires_econml
 class TestBiasValidationMultipleTestingCorrection:
     """Test multiple testing correction functionality (critical fix 2025-11-14)."""
 

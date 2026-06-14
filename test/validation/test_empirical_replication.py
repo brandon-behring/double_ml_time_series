@@ -12,9 +12,16 @@ Tier assignments:
 import numpy as np
 import pytest
 
+from dml_ts.dml import econml_available
 from dml_ts.validation.empirical_replication import (
     FourZeroOneKReplication,
     ReplicationResult,
+)
+
+# replicate_plr_rf / replicate_plr_lasso estimate via EconML LinearDML, so these
+# classes need the optional [full] extra; skip rather than hard-fail when absent.
+requires_econml = pytest.mark.skipif(
+    not econml_available(), reason="econml not installed (optional '[full]' extra)"
 )
 
 
@@ -137,6 +144,7 @@ class TestFourZeroOneKReplicationPreprocessing:
 
 @pytest.mark.tier4
 @pytest.mark.network
+@requires_econml
 class TestFourZeroOneKReplicationPLRRandomForest:
     """Test PLR Random Forest replication."""
 
@@ -204,6 +212,7 @@ class TestFourZeroOneKReplicationPLRRandomForest:
 
 @pytest.mark.tier4
 @pytest.mark.network
+@requires_econml
 class TestFourZeroOneKReplicationPLRLasso:
     """Test PLR Lasso replication."""
 
@@ -236,6 +245,7 @@ class TestFourZeroOneKReplicationPLRLasso:
 
 @pytest.mark.tier4
 @pytest.mark.network
+@requires_econml
 class TestFourZeroOneKReplicationComparison:
     """Test comparison with published results."""
 
@@ -286,6 +296,7 @@ class TestFourZeroOneKReplicationComparison:
 
 @pytest.mark.tier4
 @pytest.mark.network
+@requires_econml
 class TestFourZeroOneKReplicationResultDataclass:
     """Test ReplicationResult dataclass."""
 
@@ -322,6 +333,7 @@ class TestFourZeroOneKReplicationResultDataclass:
 
 @pytest.mark.tier4
 @pytest.mark.network
+@requires_econml
 class TestFourZeroOneKReplicationEdgeCases:
     """Test edge cases and robustness."""
 
@@ -360,6 +372,7 @@ class TestFourZeroOneKReplicationEdgeCases:
 
 @pytest.mark.tier4
 @pytest.mark.network
+@requires_econml
 class TestFourZeroOneKReplicationIntegration:
     """Integration tests with realistic scenarios."""
 
