@@ -347,10 +347,19 @@
 <span class="sd">        random_state: Random seed for reproducibility</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; ipw = IPWEstimator(n_simulations=100, random_state=42)</span>
-<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.validation.bootstrap_config import BootstrapConfig</span>
+<span class="sd">        &gt;&gt;&gt; ipw = IPWEstimator(</span>
+<span class="sd">        ...     n_simulations=5,</span>
+<span class="sd">        ...     bootstrap_config=BootstrapConfig.tier2(),</span>
+<span class="sd">        ...     random_state=42,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=200, p=5, true_effect=2.0,</span>
+<span class="sd">        ...                    confounding_strength=1.0, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt; result = ipw.validate(dgp)</span>
-<span class="sd">        &gt;&gt;&gt; result.status  # Status depends on confounding and overlap</span>
+<span class="sd">        &gt;&gt;&gt; result.method</span>
+<span class="sd">        &#39;IPWEstimator&#39;</span>
+<span class="sd">        &gt;&gt;&gt; bool(np.isfinite(result.bias))</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="IPWEstimator.__init__">
@@ -547,10 +556,19 @@
 <span class="sd">        random_state: Random seed for reproducibility</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; aipw = AugmentedIPW(n_simulations=100, random_state=42)</span>
-<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.validation.bootstrap_config import BootstrapConfig</span>
+<span class="sd">        &gt;&gt;&gt; aipw = AugmentedIPW(</span>
+<span class="sd">        ...     n_simulations=5,</span>
+<span class="sd">        ...     bootstrap_config=BootstrapConfig.tier2(),</span>
+<span class="sd">        ...     random_state=42,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=200, p=5, true_effect=2.0,</span>
+<span class="sd">        ...                    confounding_strength=1.0, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt; result = aipw.validate(dgp)</span>
-<span class="sd">        &gt;&gt;&gt; result.status  # Usually PASS due to double robustness</span>
+<span class="sd">        &gt;&gt;&gt; result.method</span>
+<span class="sd">        &#39;AugmentedIPW&#39;</span>
+<span class="sd">        &gt;&gt;&gt; bool(result.metadata[&quot;doubly_robust&quot;])</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AugmentedIPW.__init__">

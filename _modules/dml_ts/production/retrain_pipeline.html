@@ -440,16 +440,18 @@
 <span class="sd">    monitoring integration.</span>
 
 <span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">        &gt;&gt;&gt; scheduler = RetrainScheduler()</span>
 <span class="sd">        &gt;&gt;&gt; monitor = CausalMonitor()</span>
 <span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; # Check if retraining needed</span>
-<span class="sd">        &gt;&gt;&gt; results = monitor.run_all_checks(...)</span>
+<span class="sd">        &gt;&gt;&gt; # Check if retraining needed (no previous retrain -&gt; scheduled trigger)</span>
+<span class="sd">        &gt;&gt;&gt; results = monitor.run_all_checks(r2_propensity=0.65, r2_outcome=0.72)</span>
 <span class="sd">        &gt;&gt;&gt; trigger = scheduler.evaluate_monitoring_results(results)</span>
-<span class="sd">        &gt;&gt;&gt; if trigger is not None:</span>
-<span class="sd">        ...     print(f&quot;Retrain triggered: {trigger.reason}&quot;)</span>
-<span class="sd">        ...     # Execute retraining pipeline</span>
-<span class="sd">        ...     scheduler.record_retrain(trigger, new_version_id)</span>
+<span class="sd">        &gt;&gt;&gt; trigger is not None  # initial scheduled retrain is due</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; scheduler.record_retrain(trigger, &quot;v1&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; scheduler.get_status()[&quot;current_model_version&quot;]</span>
+<span class="sd">        &#39;v1&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RetrainScheduler.__init__">

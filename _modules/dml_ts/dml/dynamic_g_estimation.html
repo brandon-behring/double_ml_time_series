@@ -402,6 +402,23 @@
 <span class="sd">        nuisance_r2_t: Out-of-fold R^2 of the outcome nuisance at each stage.</span>
 <span class="sd">        backend: ``&quot;custom&quot;`` (this estimator) or ``&quot;econml&quot;`` (reference).</span>
 <span class="sd">        mode: ``&quot;panel&quot;`` or ``&quot;series&quot;``.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.dml.dynamic_g_estimation import DynamicGEstimationDML</span>
+<span class="sd">        &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">        &gt;&gt;&gt; L = 400</span>
+<span class="sd">        &gt;&gt;&gt; X = rng.standard_normal((L, 1))</span>
+<span class="sd">        &gt;&gt;&gt; T = 0.5 * X[:, 0] + rng.standard_normal(L)</span>
+<span class="sd">        &gt;&gt;&gt; Y = np.zeros(L)</span>
+<span class="sd">        &gt;&gt;&gt; Y[1:] = 1.0 * T[1:] + 0.5 * T[:-1] + X[1:, 0] + rng.standard_normal(L - 1)</span>
+<span class="sd">        &gt;&gt;&gt; est = DynamicGEstimationDML(n_periods=2, model_y=&quot;ridge&quot;, model_t=&quot;ridge&quot;,</span>
+<span class="sd">        ...                             n_folds=3, random_state=0)</span>
+<span class="sd">        &gt;&gt;&gt; result = est.fit(Y, T, X, mode=&quot;series&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; result.theta_t.shape</span>
+<span class="sd">        (2,)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(result.cumulative_effect, float)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">theta_t</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
@@ -560,6 +577,25 @@
 <span class="sd">    The estimator is honest about its scope: it recovers a *constant* per-period</span>
 <span class="sd">    blip (linear SNMM). Heterogeneous blips ``theta_tau(X)`` (the paper&#39;s Dynamic</span>
 <span class="sd">    RLearner) are out of scope.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Panel mode (n i.i.d. unit trajectories, unit-major rows):</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.dml.dynamic_g_estimation import DynamicGEstimationDML</span>
+<span class="sd">        &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">        &gt;&gt;&gt; n_units, m = 150, 2</span>
+<span class="sd">        &gt;&gt;&gt; groups = np.repeat(np.arange(n_units), m)</span>
+<span class="sd">        &gt;&gt;&gt; X = rng.standard_normal((n_units * m, 1))</span>
+<span class="sd">        &gt;&gt;&gt; T = 0.5 * X[:, 0] + rng.standard_normal(n_units * m)</span>
+<span class="sd">        &gt;&gt;&gt; Y = 1.0 * T + X[:, 0] + rng.standard_normal(n_units * m)</span>
+<span class="sd">        &gt;&gt;&gt; est = DynamicGEstimationDML(model_y=&quot;ridge&quot;, model_t=&quot;ridge&quot;,</span>
+<span class="sd">        ...                             n_folds=3, random_state=0)</span>
+<span class="sd">        &gt;&gt;&gt; result = est.fit(Y, T, X, groups=groups)</span>
+<span class="sd">        &gt;&gt;&gt; result.theta_t.shape</span>
+<span class="sd">        (2,)</span>
+<span class="sd">        &gt;&gt;&gt; bool(est.cumulative_effect() == result.cumulative_effect)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="DynamicGEstimationDML.__init__">

@@ -346,11 +346,21 @@
 <span class="sd">        random_state: Random seed for reproducibility</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; naive = NaiveOLS(n_simulations=100, random_state=42)</span>
-<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, confounding_strength=1.0)</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.validation.bootstrap_config import BootstrapConfig</span>
+<span class="sd">        &gt;&gt;&gt; naive = NaiveOLS(</span>
+<span class="sd">        ...     n_simulations=5,</span>
+<span class="sd">        ...     bootstrap_config=BootstrapConfig.tier2(),</span>
+<span class="sd">        ...     random_state=42,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=200, p=5, true_effect=2.0,</span>
+<span class="sd">        ...                    confounding_strength=1.0, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt; result = naive.validate(dgp)</span>
-<span class="sd">        &gt;&gt;&gt; result.status  # Likely &#39;FAIL&#39; due to confounding bias</span>
-<span class="sd">        &#39;FAIL&#39;</span>
+<span class="sd">        &gt;&gt;&gt; result.method</span>
+<span class="sd">        &#39;NaiveOLS&#39;</span>
+<span class="sd">        &gt;&gt;&gt; bool(abs(result.bias) &gt; 0.1)  # naive OLS is biased by the confounding</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; bool(result.metadata[&quot;controls_used&quot;] is False)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="NaiveOLS.__init__">
@@ -511,10 +521,21 @@
 <span class="sd">        random_state: Random seed for reproducibility</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; ols_controls = OLSWithControls(n_simulations=100, random_state=42)</span>
-<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, confounding_strength=1.0)</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.validation.bootstrap_config import BootstrapConfig</span>
+<span class="sd">        &gt;&gt;&gt; ols_controls = OLSWithControls(</span>
+<span class="sd">        ...     n_simulations=5,</span>
+<span class="sd">        ...     bootstrap_config=BootstrapConfig.tier2(),</span>
+<span class="sd">        ...     random_state=42,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=200, p=5, true_effect=2.0,</span>
+<span class="sd">        ...                    confounding_strength=1.0, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt; result = ols_controls.validate(dgp)</span>
-<span class="sd">        &gt;&gt;&gt; result.bias  # Much smaller than NaiveOLS</span>
+<span class="sd">        &gt;&gt;&gt; result.method</span>
+<span class="sd">        &#39;OLSWithControls&#39;</span>
+<span class="sd">        &gt;&gt;&gt; bool(result.metadata[&quot;controls_used&quot;] is True)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; bool(np.isfinite(result.bias))</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="OLSWithControls.__init__">

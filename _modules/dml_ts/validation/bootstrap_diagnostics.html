@@ -324,18 +324,24 @@
 <span class="sd">    &gt;&gt;&gt; from dml_ts.validation.bootstrap_diagnostics import BootstrapDiagnostics</span>
 <span class="sd">    &gt;&gt;&gt; from dml_ts.validation.dgp_generator import DGPGenerator</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)</span>
+<span class="sd">    &gt;&gt;&gt; dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)</span>
 <span class="sd">    &gt;&gt;&gt; data = dgp.generate()</span>
 <span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; # Diagnose bootstrap convergence for bias estimation</span>
-<span class="sd">    &gt;&gt;&gt; diagnostics = BootstrapDiagnostics(data=data, estimator_type=&quot;LinearDML&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; # Diagnose bootstrap convergence for bias estimation.</span>
+<span class="sd">    &gt;&gt;&gt; # &quot;OLS&quot; keeps the example fast; &quot;LinearDML&quot; uses econml nuisance models.</span>
+<span class="sd">    &gt;&gt;&gt; diagnostics = BootstrapDiagnostics(</span>
+<span class="sd">    ...     data=data, estimator_type=&quot;OLS&quot;, random_state=42</span>
+<span class="sd">    ... )</span>
 <span class="sd">    &gt;&gt;&gt; result = diagnostics.diagnose_convergence(</span>
 <span class="sd">    ...     target=&quot;bias&quot;,</span>
-<span class="sd">    ...     n_bootstrap_range=[100, 500, 1000, 2000, 5000],</span>
-<span class="sd">    ...     true_value=2.0</span>
+<span class="sd">    ...     n_bootstrap_range=[20, 40],</span>
+<span class="sd">    ...     true_value=2.0,</span>
+<span class="sd">    ...     n_replications=2,</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; print(f&quot;Recommended n_bootstrap: {result[&#39;recommended_n&#39;]}&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; print(f&quot;Converged: {result[&#39;converged&#39;]}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; bool(result.recommended_n in {20, 40})</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; isinstance(result.converged, bool)</span>
+<span class="sd">    True</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
@@ -416,17 +422,24 @@
 <span class="sd">        random_state: Random seed for reproducibility</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.validation.dgp_generator import DGPGenerator</span>
+<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt; data = dgp.generate()</span>
-<span class="sd">        &gt;&gt;&gt; diag = BootstrapDiagnostics(data, &quot;LinearDML&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; diag = BootstrapDiagnostics(data, &quot;OLS&quot;, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt;</span>
-<span class="sd">        &gt;&gt;&gt; # Check convergence</span>
-<span class="sd">        &gt;&gt;&gt; conv = diag.diagnose_convergence(&quot;bias&quot;, [100, 500, 1000], true_value=2.0)</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;Converged: {conv.converged}, Recommended: {conv.recommended_n}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; # Check convergence (OLS keeps the example fast)</span>
+<span class="sd">        &gt;&gt;&gt; conv = diag.diagnose_convergence(</span>
+<span class="sd">        ...     &quot;bias&quot;, [20, 40], true_value=2.0, n_replications=2</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(conv.converged, bool)</span>
+<span class="sd">        True</span>
 <span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; # Check distribution quality</span>
-<span class="sd">        &gt;&gt;&gt; dist = diag.diagnose_distribution(n_bootstrap=1000)</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;Normal: {dist.is_normal}, Skewness: {dist.skewness:.3f}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; dist = diag.diagnose_distribution(n_bootstrap=40)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(dist.is_normal, bool)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; bool(np.isfinite(dist.skewness))</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BootstrapDiagnostics.__init__">
@@ -476,7 +489,11 @@
 <span class="sd">            ConvergenceDiagnostic with convergence assessment and recommendations</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; diag.diagnose_convergence(&quot;bias&quot;, [100, 500, 1000, 2000], true_value=2.0)</span>
+<span class="sd">            Illustrative (see the class docstring for a runnable example):</span>
+
+<span class="sd">            &gt;&gt;&gt; diag.diagnose_convergence(  # doctest: +SKIP</span>
+<span class="sd">            ...     &quot;bias&quot;, [100, 500, 1000, 2000], true_value=2.0</span>
+<span class="sd">            ... )</span>
 <span class="sd">            ConvergenceDiagnostic(converged=True, recommended_n=1000, ...)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">target</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">true_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -579,7 +596,9 @@
 <span class="sd">            DistributionDiagnostic with distribution properties</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; diag.diagnose_distribution(n_bootstrap=1000)</span>
+<span class="sd">            Illustrative (see the class docstring for a runnable example):</span>
+
+<span class="sd">            &gt;&gt;&gt; diag.diagnose_distribution(n_bootstrap=1000)  # doctest: +SKIP</span>
 <span class="sd">            DistributionDiagnostic(is_normal=True, skewness=0.12, ...)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Generate bootstrap distribution</span>
@@ -641,7 +660,9 @@
 <span class="sd">            Dict with recommended n_bootstrap for each task</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; diag.recommend_n_bootstrap([&quot;bias&quot;, &quot;ci&quot;], &quot;default&quot;)</span>
+<span class="sd">            Illustrative; runs the configured estimator many times and is slow:</span>
+
+<span class="sd">            &gt;&gt;&gt; diag.recommend_n_bootstrap([&quot;bias&quot;, &quot;ci&quot;], &quot;default&quot;)  # doctest: +SKIP</span>
 <span class="sd">            {&#39;bias&#39;: 1000, &#39;ci&#39;: 500, &#39;both&#39;: 1000}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">target_tasks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

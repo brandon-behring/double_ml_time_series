@@ -325,16 +325,21 @@
 
 <span class="sd">Diagnostic Goals:</span>
 <span class="sd">    1. Bootstrap distribution analysis (convergence, outliers, normality)</span>
-<span class="sd">    2. Hyperparameter sensitivity (alpha, CV folds, max_iter)</span>
+<span class="sd">    2. Hyperparameter sensitivity (cv_folds, max_iter)</span>
 <span class="sd">    3. Cross-fitting seed analysis (random_state variability)</span>
 <span class="sd">    4. Implementation configuration comparison with published paper</span>
 
 <span class="sd">Usage:</span>
-<span class="sd">    &gt;&gt;&gt; from dml_ts.validation.lasso_diagnostic import LassoDiagnostic</span>
-<span class="sd">    &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)</span>
-<span class="sd">    &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()</span>
-<span class="sd">    &gt;&gt;&gt; print(f&quot;Bootstrap convergence: {results.bootstrap_converged}&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; print(f&quot;Seed sensitivity: {results.seed_std_dev:.2f}&quot;)</span>
+<span class="sd">    Requires the real 401(k) dataset (downloaded via ``doubleml.fetch_401K``)</span>
+<span class="sd">    and many econml DML fits, so the example is skipped under doctest.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dml_ts.validation.lasso_diagnostic import LassoDiagnostic  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; bool(results.bootstrap_diagnostic.converged)  # doctest: +SKIP</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; float(round(results.seed_sensitivity.cv_ate, 2))  # doctest: +SKIP</span>
+<span class="sd">    0.35</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
@@ -389,7 +394,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Results from hyperparameter sensitivity analysis.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        parameter_name: Name of varied parameter (alpha, cv_folds, max_iter)</span>
+<span class="sd">        parameter_name: Name of varied parameter (cv_folds, max_iter)</span>
 <span class="sd">        parameter_values: Array of tested parameter values</span>
 <span class="sd">        ate_estimates: Array of ATE estimates for each parameter value</span>
 <span class="sd">        std_errors: Array of standard errors for each parameter value</span>
@@ -450,7 +455,7 @@
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        bootstrap_diagnostic: Bootstrap distribution analysis</span>
-<span class="sd">        hyperparameter_sensitivity: Dict of sensitivity analyses (alpha, cv, max_iter)</span>
+<span class="sd">        hyperparameter_sensitivity: Dict of sensitivity analyses (cv_folds, max_iter)</span>
 <span class="sd">        seed_sensitivity: Cross-fitting seed analysis</span>
 <span class="sd">        root_cause_analysis: Identified root cause(s) of mismatch</span>
 <span class="sd">        recommendations: List of recommendations for fixing or documenting issue</span>
@@ -480,9 +485,11 @@
 <span class="sd">        verbose: Whether to print diagnostic progress</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42, verbose=True)</span>
-<span class="sd">        &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()</span>
-<span class="sd">        &gt;&gt;&gt; if not results.bootstrap_diagnostic.converged:</span>
+<span class="sd">        Requires the real 401(k) dataset and many econml DML fits:</span>
+
+<span class="sd">        &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42, verbose=True)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; if not results.bootstrap_diagnostic.converged:  # doctest: +SKIP</span>
 <span class="sd">        ...     print(&quot;Bootstrap distribution not converged - increase n_bootstrap&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -586,11 +593,15 @@
 <span class="sd">            BootstrapDiagnosticResult with distribution analysis</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)</span>
-<span class="sd">            &gt;&gt;&gt; result = diagnostic.analyze_bootstrap_distribution(n_bootstrap=1000)</span>
-<span class="sd">            &gt;&gt;&gt; result.is_normal</span>
+<span class="sd">            Requires the real 401(k) dataset and an econml DML fit per sample:</span>
+
+<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; result = diagnostic.analyze_bootstrap_distribution(  # doctest: +SKIP</span>
+<span class="sd">            ...     n_bootstrap=1000</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; result.is_normal  # doctest: +SKIP</span>
 <span class="sd">            False</span>
-<span class="sd">            &gt;&gt;&gt; result.n_outliers</span>
+<span class="sd">            &gt;&gt;&gt; result.n_outliers  # doctest: +SKIP</span>
 <span class="sd">            23</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
@@ -692,20 +703,23 @@
 <span class="sd">        Tests how ATE estimate varies with different hyperparameter values.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            parameter: Parameter to vary (alpha, cv_folds, max_iter)</span>
+<span class="sd">            parameter: Parameter to vary (cv_folds, max_iter)</span>
 <span class="sd">            values: List of values to test (uses defaults if None)</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            HyperparameterSensitivityResult with sensitivity analysis</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)</span>
-<span class="sd">            &gt;&gt;&gt; result = diagnostic.analyze_hyperparameter_sensitivity(</span>
-<span class="sd">            ...     parameter=&quot;alpha&quot;, values=[0.001, 0.01, 0.1, 1.0]</span>
+<span class="sd">            Requires the real 401(k) dataset and an econml DML fit per value.</span>
+<span class="sd">            Note ``parameter`` must be one of &quot;cv_folds&quot; or &quot;max_iter&quot;:</span>
+
+<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; result = diagnostic.analyze_hyperparameter_sensitivity(  # doctest: +SKIP</span>
+<span class="sd">            ...     parameter=&quot;max_iter&quot;, values=[500, 1000, 2000]</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; result.is_sensitive</span>
+<span class="sd">            &gt;&gt;&gt; result.is_sensitive  # doctest: +SKIP</span>
 <span class="sd">            True</span>
-<span class="sd">            &gt;&gt;&gt; result.sensitivity_score</span>
+<span class="sd">            &gt;&gt;&gt; result.sensitivity_score  # doctest: +SKIP</span>
 <span class="sd">            0.25</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Default values for each parameter</span>
@@ -830,11 +844,13 @@
 <span class="sd">            SeedSensitivityResult with seed sensitivity analysis</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic()</span>
-<span class="sd">            &gt;&gt;&gt; result = diagnostic.analyze_seed_sensitivity(n_seeds=20)</span>
-<span class="sd">            &gt;&gt;&gt; result.is_stable</span>
+<span class="sd">            Requires the real 401(k) dataset and an econml DML fit per seed:</span>
+
+<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic()  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; result = diagnostic.analyze_seed_sensitivity(n_seeds=20)  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; result.is_stable  # doctest: +SKIP</span>
 <span class="sd">            False</span>
-<span class="sd">            &gt;&gt;&gt; result.cv_ate</span>
+<span class="sd">            &gt;&gt;&gt; result.cv_ate  # doctest: +SKIP</span>
 <span class="sd">            0.35</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
@@ -925,10 +941,12 @@
 <span class="sd">            ComprehensiveDiagnosticResult with all analyses</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42, verbose=True)</span>
-<span class="sd">            &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()</span>
-<span class="sd">            &gt;&gt;&gt; print(results.root_cause_analysis)</span>
-<span class="sd">            &gt;&gt;&gt; for rec in results.recommendations:</span>
+<span class="sd">            Requires the real 401(k) dataset and many econml DML fits:</span>
+
+<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42, verbose=True)  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; print(results.root_cause_analysis)  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; for rec in results.recommendations:  # doctest: +SKIP</span>
 <span class="sd">            ...     print(f&quot;- {rec}&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>

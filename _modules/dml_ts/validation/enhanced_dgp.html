@@ -398,8 +398,8 @@
 <span class="sd">        ...     hte_strength=1.0, random_state=42</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; result = dgp.generate()</span>
-<span class="sd">        &gt;&gt;&gt; result.true_effect.mean()  # Average effect ≈ 2.0</span>
-<span class="sd">        2.05</span>
+<span class="sd">        &gt;&gt;&gt; float(round(result.true_effect.mean(), 2))  # Average effect ~ 2.0</span>
+<span class="sd">        2.01</span>
 
 <span class="sd">        &gt;&gt;&gt; # Omitted variable bias</span>
 <span class="sd">        &gt;&gt;&gt; dgp = EnhancedDGPGenerator(</span>

@@ -1336,7 +1336,8 @@ time-varying effects.</p>
 <span class="gp">... </span>    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">effect_periods</span>  <span class="c1"># [(0, 100), (100, 200), (200, 300)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">effect_periods</span>
+<span class="go">[(0, 100), (100, 200), (200, 300)]</span>
 </pre></div>
 </div>
 </div>
@@ -1553,7 +1554,10 @@ before applying to real competitor pricing data.</p>
 <span class="gp">... </span>    <span class="n">n_products</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">time_idx</span><span class="p">,</span> <span class="n">product_idx</span><span class="p">,</span> <span class="n">true_params</span> <span class="o">=</span> <span class="n">dgp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">X</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">time_idx</span><span class="p">,</span> <span class="n">product_idx</span><span class="p">,</span> <span class="n">true_params</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">time_index</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">product_index</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_params</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(1200,)</span>
 </pre></div>
 </div>
 </dd>
@@ -1721,7 +1725,9 @@ Default -0.8: 1 bps competitor rate increase -&gt; 0.8 unit sales increase for u
 <p class="admonition-title">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">create_insurance_dgp</span><span class="p">(</span><span class="n">realism</span><span class="o">=</span><span class="s2">&quot;moderate&quot;</span><span class="p">,</span> <span class="n">n_periods</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;True effect: </span><span class="si">{</span><span class="n">dgp</span><span class="o">.</span><span class="n">true_params</span><span class="o">.</span><span class="n">tau</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">True effect: -0.8</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Observations: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dgp</span><span class="o">.</span><span class="n">Y</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">Observations: 1200</span>
 </pre></div>
 </div>
 </div>
@@ -1791,11 +1797,14 @@ correction (Bonferroni by default, or Holm; both via statsmodels).</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">validator</span> <span class="o">=</span> <span class="n">BiasValidation</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Production runs use n_simulations=1000; shrunk here so the</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># example stays fast. The per-seed status is stochastic, so we</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># assert the recovered bias is finite rather than a fixed label.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">validator</span> <span class="o">=</span> <span class="n">BiasValidation</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">status</span>
-<span class="go">&#39;PASS&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">))</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -2087,11 +2096,21 @@ Expected to be severely biased when confounding_strength &gt; 0.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">naive</span> <span class="o">=</span> <span class="n">NaiveOLS</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">confounding_strength</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bootstrap_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BootstrapConfig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">naive</span> <span class="o">=</span> <span class="n">NaiveOLS</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">n_simulations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">bootstrap_config</span><span class="o">=</span><span class="n">BootstrapConfig</span><span class="o">.</span><span class="n">tier2</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">confounding_strength</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">naive</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">status</span>  <span class="c1"># Likely &#39;FAIL&#39; due to confounding bias</span>
-<span class="go">&#39;FAIL&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
+<span class="go">&#39;NaiveOLS&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># naive OLS is biased by the confounding</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;controls_used&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -2139,10 +2158,21 @@ Should have less bias than NaiveOLS but more than DML (less efficient).</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ols_controls</span> <span class="o">=</span> <span class="n">OLSWithControls</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">confounding_strength</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bootstrap_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BootstrapConfig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ols_controls</span> <span class="o">=</span> <span class="n">OLSWithControls</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">n_simulations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">bootstrap_config</span><span class="o">=</span><span class="n">BootstrapConfig</span><span class="o">.</span><span class="n">tier2</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">confounding_strength</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ols_controls</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">bias</span>  <span class="c1"># Much smaller than NaiveOLS</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
+<span class="go">&#39;OLSWithControls&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;controls_used&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">))</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -2200,10 +2230,19 @@ Sensitive to overlap violations (extreme propensity scores).</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ipw</span> <span class="o">=</span> <span class="n">IPWEstimator</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bootstrap_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BootstrapConfig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ipw</span> <span class="o">=</span> <span class="n">IPWEstimator</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">n_simulations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">bootstrap_config</span><span class="o">=</span><span class="n">BootstrapConfig</span><span class="o">.</span><span class="n">tier2</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">confounding_strength</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ipw</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">status</span>  <span class="c1"># Status depends on confounding and overlap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
+<span class="go">&#39;IPWEstimator&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">))</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -2252,10 +2291,19 @@ More robust to model misspecification than pure IPW or regression alone.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">aipw</span> <span class="o">=</span> <span class="n">AugmentedIPW</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bootstrap_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BootstrapConfig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aipw</span> <span class="o">=</span> <span class="n">AugmentedIPW</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">n_simulations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">bootstrap_config</span><span class="o">=</span><span class="n">BootstrapConfig</span><span class="o">.</span><span class="n">tier2</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">confounding_strength</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">aipw</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">status</span>  <span class="c1"># Usually PASS due to double robustness</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
+<span class="go">&#39;AugmentedIPW&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;doubly_robust&quot;</span><span class="p">])</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -2315,11 +2363,19 @@ Provides non-parametric alternative to linear regression.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestEstimator</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bootstrap_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BootstrapConfig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestEstimator</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">n_simulations</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">bootstrap_config</span><span class="o">=</span><span class="n">BootstrapConfig</span><span class="o">.</span><span class="n">tier2</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">status</span>
-<span class="go">&#39;PASS&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
+<span class="go">&#39;RandomForestEstimator&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">))</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -2367,11 +2423,19 @@ Provides high-capacity non-parametric alternative to random forests.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">xgb</span> <span class="o">=</span> <span class="n">XGBoostEstimator</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bootstrap_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">BootstrapConfig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xgb</span> <span class="o">=</span> <span class="n">XGBoostEstimator</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">n_simulations</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">bootstrap_config</span><span class="o">=</span><span class="n">BootstrapConfig</span><span class="o">.</span><span class="n">tier2</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">xgb</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">status</span>
-<span class="go">&#39;PASS&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
+<span class="go">&#39;XGBoostEstimator&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">))</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -2706,18 +2770,24 @@ distribution normality / symmetry, and Monte-Carlo variance stability.</p>
 <dt>Usage:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bootstrap_diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">BootstrapDiagnostics</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.dgp_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">DGPGenerator</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Diagnose bootstrap convergence for bias estimation</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">diagnostics</span> <span class="o">=</span> <span class="n">BootstrapDiagnostics</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">estimator_type</span><span class="o">=</span><span class="s2">&quot;LinearDML&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Diagnose bootstrap convergence for bias estimation.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># &quot;OLS&quot; keeps the example fast; &quot;LinearDML&quot; uses econml nuisance models.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">diagnostics</span> <span class="o">=</span> <span class="n">BootstrapDiagnostics</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">estimator_type</span><span class="o">=</span><span class="s2">&quot;OLS&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
+<span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">diagnostics</span><span class="o">.</span><span class="n">diagnose_convergence</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">target</span><span class="o">=</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">n_bootstrap_range</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">true_value</span><span class="o">=</span><span class="mf">2.0</span>
+<span class="gp">... </span>    <span class="n">n_bootstrap_range</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">true_value</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_replications</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recommended n_bootstrap: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;recommended_n&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converged: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;converged&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">recommended_n</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">})</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd>
@@ -2863,17 +2933,24 @@ distribution normality / symmetry, and Monte-Carlo variance stability.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.dgp_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">DGPGenerator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">diag</span> <span class="o">=</span> <span class="n">BootstrapDiagnostics</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;LinearDML&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">diag</span> <span class="o">=</span> <span class="n">BootstrapDiagnostics</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;OLS&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check convergence</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">conv</span> <span class="o">=</span> <span class="n">diag</span><span class="o">.</span><span class="n">diagnose_convergence</span><span class="p">(</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span> <span class="n">true_value</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converged: </span><span class="si">{</span><span class="n">conv</span><span class="o">.</span><span class="n">converged</span><span class="si">}</span><span class="s2">, Recommended: </span><span class="si">{</span><span class="n">conv</span><span class="o">.</span><span class="n">recommended_n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check convergence (OLS keeps the example fast)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conv</span> <span class="o">=</span> <span class="n">diag</span><span class="o">.</span><span class="n">diagnose_convergence</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">],</span> <span class="n">true_value</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">n_replications</span><span class="o">=</span><span class="mi">2</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">conv</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+<span class="go">True</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check distribution quality</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dist</span> <span class="o">=</span> <span class="n">diag</span><span class="o">.</span><span class="n">diagnose_distribution</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Normal: </span><span class="si">{</span><span class="n">dist</span><span class="o">.</span><span class="n">is_normal</span><span class="si">}</span><span class="s2">, Skewness: </span><span class="si">{</span><span class="n">dist</span><span class="o">.</span><span class="n">skewness</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dist</span> <span class="o">=</span> <span class="n">diag</span><span class="o">.</span><span class="n">diagnose_distribution</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">is_normal</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">skewness</span><span class="p">))</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -2917,7 +2994,10 @@ Uses multiple replications to assess Monte Carlo variability.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diag</span><span class="o">.</span><span class="n">diagnose_convergence</span><span class="p">(</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">],</span> <span class="n">true_value</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<p>Illustrative (see the class docstring for a runnable example):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diag</span><span class="o">.</span><span class="n">diagnose_convergence</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">],</span> <span class="n">true_value</span><span class="o">=</span><span class="mf">2.0</span>
+<span class="gp">... </span><span class="p">)</span>
 <span class="go">ConvergenceDiagnostic(converged=True, recommended_n=1000, ...)</span>
 </pre></div>
 </div>
@@ -2948,6 +3028,7 @@ Uses multiple replications to assess Monte Carlo variability.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Illustrative (see the class docstring for a runnable example):</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diag</span><span class="o">.</span><span class="n">diagnose_distribution</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 <span class="go">DistributionDiagnostic(is_normal=True, skewness=0.12, ...)</span>
 </pre></div>
@@ -2978,6 +3059,7 @@ Defaults to [“both”].</p></li>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Illustrative; runs the configured estimator many times and is slow:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diag</span><span class="o">.</span><span class="n">recommend_n_bootstrap</span><span class="p">([</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="s2">&quot;ci&quot;</span><span class="p">],</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span>
 <span class="go">{&#39;bias&#39;: 1000, &#39;ci&#39;: 500, &#39;both&#39;: 1000}</span>
 </pre></div>
@@ -3126,8 +3208,8 @@ treatment effects, misspecification scenarios, and propensity extremeness.</p>
 <span class="gp">... </span>    <span class="n">hte_strength</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">true_effect</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>  <span class="c1"># Average effect ≈ 2.0</span>
-<span class="go">2.05</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">true_effect</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="mi">2</span><span class="p">))</span>  <span class="c1"># Average effect ~ 2.0</span>
+<span class="go">2.01</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Omitted variable bias</span>
@@ -3224,12 +3306,15 @@ Newey, Robins, 2018) using 401(k) dataset to validate DML implementation.</p>
 <li><p>Controls: 11 covariates (age, inc, fsize, educ, db, marr, twoearn, pira, hown, etc.)</p></li>
 </ul>
 </dd>
-<dt>Usage:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.empirical_replication</span><span class="w"> </span><span class="kn">import</span> <span class="n">FourZeroOneKReplication</span>
+<dt>Usage:</dt><dd><p>Requires the real 401(k) dataset (downloaded via <code class="docutils literal notranslate"><span class="pre">doubleml.fetch_401K</span></code>)
+and an econml DML fit, so the example is skipped under doctest.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.empirical_replication</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">FourZeroOneKReplication</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">replicate_plr_rf</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ATE: $</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ate_estimate</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> (Published: $</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">published_ate</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Difference: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">rel_difference</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Status: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
+<span class="go">&#39;PLR_RF&#39;</span>
 </pre></div>
 </div>
 </dd>
@@ -3348,6 +3433,7 @@ from seminal paper on double/debiased machine learning.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Requires the real 401(k) dataset and an econml DML fit:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">replicate_plr_rf</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">status</span>
@@ -3391,6 +3477,7 @@ from seminal paper on double/debiased machine learning.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Downloads the real 401(k) dataset via <code class="docutils literal notranslate"><span class="pre">doubleml.fetch_401K</span></code>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">shape</span>
@@ -3424,6 +3511,7 @@ from seminal paper on double/debiased machine learning.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Downloads the real 401(k) dataset via <code class="docutils literal notranslate"><span class="pre">doubleml.fetch_401K</span></code>:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">preprocess_data</span><span class="p">(</span><span class="n">treatment</span><span class="o">=</span><span class="s2">&quot;e401&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span>
@@ -3460,11 +3548,12 @@ using Partially Linear Regression with Random Forest.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Requires the real 401(k) dataset and an econml DML fit:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">replicate_plr_rf</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
 <span class="go">&#39;PLR_RF&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">ate_estimate</span> <span class="o">-</span> <span class="mi">9127</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1500</span>  <span class="c1"># Within reasonable range</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">ate_estimate</span> <span class="o">-</span> <span class="mi">9127</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1500</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -3493,11 +3582,12 @@ using Partially Linear Regression with Lasso.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Requires the real 401(k) dataset and an econml DML fit:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">replicate_plr_lasso</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
 <span class="go">&#39;PLR_Lasso&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">ate_estimate</span> <span class="o">-</span> <span class="mi">9580</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1500</span>  <span class="c1"># Within reasonable range</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">ate_estimate</span> <span class="o">-</span> <span class="mi">9580</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1500</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -3526,16 +3616,20 @@ in Chernozhukov et al. (2018) 401(k) study.</p>
 </dd>
 <dt>Diagnostic Goals:</dt><dd><ol class="arabic simple">
 <li><p>Bootstrap distribution analysis (convergence, outliers, normality)</p></li>
-<li><p>Hyperparameter sensitivity (alpha, CV folds, max_iter)</p></li>
+<li><p>Hyperparameter sensitivity (cv_folds, max_iter)</p></li>
 <li><p>Cross-fitting seed analysis (random_state variability)</p></li>
 <li><p>Implementation configuration comparison with published paper</p></li>
 </ol>
 </dd>
-<dt>Usage:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.lasso_diagnostic</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoDiagnostic</span>
+<dt>Usage:</dt><dd><p>Requires the real 401(k) dataset (downloaded via <code class="docutils literal notranslate"><span class="pre">doubleml.fetch_401K</span></code>)
+and many econml DML fits, so the example is skipped under doctest.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.lasso_diagnostic</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoDiagnostic</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">diagnostic</span> <span class="o">=</span> <span class="n">LassoDiagnostic</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">diagnostic</span><span class="o">.</span><span class="n">run_comprehensive_diagnostic</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bootstrap convergence: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">bootstrap_converged</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Seed sensitivity: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">seed_std_dev</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">bootstrap_diagnostic</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">seed_sensitivity</span><span class="o">.</span><span class="n">cv_ate</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="go">0.35</span>
 </pre></div>
 </div>
 </dd>
@@ -3638,7 +3732,7 @@ in Chernozhukov et al. (2018) 401(k) study.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>parameter_name</strong> – Name of varied parameter (alpha, cv_folds, max_iter)</p></li>
+<li><p><strong>parameter_name</strong> – Name of varied parameter (cv_folds, max_iter)</p></li>
 <li><p><strong>parameter_values</strong> – Array of tested parameter values</p></li>
 <li><p><strong>ate_estimates</strong> – Array of ATE estimates for each parameter value</p></li>
 <li><p><strong>std_errors</strong> – Array of standard errors for each parameter value</p></li>
@@ -3783,7 +3877,7 @@ in Chernozhukov et al. (2018) 401(k) study.</p>
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>bootstrap_diagnostic</strong> – Bootstrap distribution analysis</p></li>
-<li><p><strong>hyperparameter_sensitivity</strong> – Dict of sensitivity analyses (alpha, cv, max_iter)</p></li>
+<li><p><strong>hyperparameter_sensitivity</strong> – Dict of sensitivity analyses (cv_folds, max_iter)</p></li>
 <li><p><strong>seed_sensitivity</strong> – Cross-fitting seed analysis</p></li>
 <li><p><strong>root_cause_analysis</strong> – Identified root cause(s) of mismatch</p></li>
 <li><p><strong>recommendations</strong> – List of recommendations for fixing or documenting issue</p></li>
@@ -3846,6 +3940,7 @@ between published and replicated Lasso ATE estimates.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Requires the real 401(k) dataset and many econml DML fits:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diagnostic</span> <span class="o">=</span> <span class="n">LassoDiagnostic</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">diagnostic</span><span class="o">.</span><span class="n">run_comprehensive_diagnostic</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="o">.</span><span class="n">bootstrap_diagnostic</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
@@ -3918,8 +4013,11 @@ between published and replicated Lasso ATE estimates.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Requires the real 401(k) dataset and an econml DML fit per sample:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diagnostic</span> <span class="o">=</span> <span class="n">LassoDiagnostic</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">diagnostic</span><span class="o">.</span><span class="n">analyze_bootstrap_distribution</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">diagnostic</span><span class="o">.</span><span class="n">analyze_bootstrap_distribution</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">n_bootstrap</span><span class="o">=</span><span class="mi">1000</span>
+<span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">is_normal</span>
 <span class="go">False</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">n_outliers</span>
@@ -3937,7 +4035,7 @@ between published and replicated Lasso ATE estimates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>parameter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Parameter to vary (alpha, cv_folds, max_iter)</p></li>
+<li><p><strong>parameter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Parameter to vary (cv_folds, max_iter)</p></li>
 <li><p><strong>values</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – List of values to test (uses defaults if None)</p></li>
 </ul>
 </dd>
@@ -3950,9 +4048,11 @@ between published and replicated Lasso ATE estimates.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Requires the real 401(k) dataset and an econml DML fit per value.
+Note <code class="docutils literal notranslate"><span class="pre">parameter</span></code> must be one of “cv_folds” or “max_iter”:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diagnostic</span> <span class="o">=</span> <span class="n">LassoDiagnostic</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">diagnostic</span><span class="o">.</span><span class="n">analyze_hyperparameter_sensitivity</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">parameter</span><span class="o">=</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">parameter</span><span class="o">=</span><span class="s2">&quot;max_iter&quot;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">]</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">is_sensitive</span>
 <span class="go">True</span>
@@ -3981,6 +4081,7 @@ between published and replicated Lasso ATE estimates.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Requires the real 401(k) dataset and an econml DML fit per seed:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diagnostic</span> <span class="o">=</span> <span class="n">LassoDiagnostic</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">diagnostic</span><span class="o">.</span><span class="n">analyze_seed_sensitivity</span><span class="p">(</span><span class="n">n_seeds</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">is_stable</span>
@@ -4018,6 +4119,7 @@ between published and replicated Lasso ATE estimates.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
+<p>Requires the real 401(k) dataset and many econml DML fits:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">diagnostic</span> <span class="o">=</span> <span class="n">LassoDiagnostic</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">diagnostic</span><span class="o">.</span><span class="n">run_comprehensive_diagnostic</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">root_cause_analysis</span><span class="p">)</span>
@@ -4280,9 +4382,27 @@ and simulation outputs.</p>
 - Cache management for DGPs</p>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">storage</span> <span class="o">=</span> <span class="n">ResultStorage</span><span class="p">(</span><span class="n">base_dir</span><span class="o">=</span><span class="s2">&quot;results/validation&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">storage</span><span class="o">.</span><span class="n">save_result</span><span class="p">(</span><span class="n">validation_result</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bias&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">load_results</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;bias&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.validation_result</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationResult</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">validation_result</span> <span class="o">=</span> <span class="n">ValidationResult</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">status</span><span class="o">=</span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">bias</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mse</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">coverage</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">ci_lower</span><span class="o">=-</span><span class="mf">0.05</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">ci_upper</span><span class="o">=</span><span class="mf">0.09</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_simulations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dgp&quot;</span><span class="p">:</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">storage</span> <span class="o">=</span> <span class="n">ResultStorage</span><span class="p">(</span><span class="n">base_dir</span><span class="o">=</span><span class="n">tmp</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">save_result</span><span class="p">(</span><span class="n">validation_result</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;bias&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">results</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">load_results</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;bias&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+<span class="go">1</span>
 </pre></div>
 </div>
 </div>

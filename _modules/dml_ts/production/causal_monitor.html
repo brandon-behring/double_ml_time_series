@@ -459,19 +459,23 @@
 <span class="sd">    for causal identification, not predictive accuracy.</span>
 
 <span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">        &gt;&gt;&gt; e_hat = rng.uniform(0.1, 0.9, size=200)</span>
+<span class="sd">        &gt;&gt;&gt; T = rng.binomial(1, 0.5, size=200)</span>
+<span class="sd">        &gt;&gt;&gt; T_train = rng.binomial(1, 0.5, size=200)</span>
 <span class="sd">        &gt;&gt;&gt; monitor = CausalMonitor()</span>
 <span class="sd">        &gt;&gt;&gt; results = monitor.run_all_checks(</span>
 <span class="sd">        ...     propensity_scores=e_hat,</span>
-<span class="sd">        ...     treatment=T,</span>
+<span class="sd">        ...     treatment_current=T,</span>
 <span class="sd">        ...     treatment_baseline=T_train,</span>
-<span class="sd">        ...     nuisance_r2_propensity=0.65,</span>
-<span class="sd">        ...     nuisance_r2_outcome=0.72,</span>
+<span class="sd">        ...     r2_propensity=0.65,</span>
+<span class="sd">        ...     r2_outcome=0.72,</span>
 <span class="sd">        ...     current_effect=0.15,</span>
 <span class="sd">        ...     baseline_effect=0.12,</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; for r in results:</span>
-<span class="sd">        ...     if not r.is_ok():</span>
-<span class="sd">        ...         print(f&quot;ALERT: {r.message}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; all(isinstance(r.is_ok(), bool) for r in results)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="CausalMonitor.__init__">

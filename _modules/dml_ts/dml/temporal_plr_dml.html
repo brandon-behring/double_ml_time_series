@@ -333,15 +333,24 @@
 <span class="sd">3. PanelDML - Fixed effects + DML for panel data structures</span>
 
 <span class="sd">Usage:</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">    &gt;&gt;&gt; from dml_ts.dml import TemporalPLRDML</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">    &gt;&gt;&gt; n = 200</span>
+<span class="sd">    &gt;&gt;&gt; time = np.arange(n)</span>
+<span class="sd">    &gt;&gt;&gt; X = rng.standard_normal((n, 2))</span>
+<span class="sd">    &gt;&gt;&gt; T = 0.5 * X[:, 0] + rng.standard_normal(n)</span>
+<span class="sd">    &gt;&gt;&gt; Y = 2.0 * T + X[:, 1] + rng.standard_normal(n)</span>
 <span class="sd">    &gt;&gt;&gt; model = TemporalPLRDML(</span>
-<span class="sd">    ...     n_lags=5,</span>
-<span class="sd">    ...     model_y=&quot;random_forest&quot;,</span>
-<span class="sd">    ...     model_t=&quot;random_forest&quot;,</span>
+<span class="sd">    ...     n_lags=1,</span>
+<span class="sd">    ...     model_y=&quot;ridge&quot;,</span>
+<span class="sd">    ...     model_t=&quot;ridge&quot;,</span>
 <span class="sd">    ...     cv_strategy=&quot;time_series_split&quot;,</span>
+<span class="sd">    ...     n_splits=3,</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; model.fit(Y=Y, T=T, X=X, time_index=time)</span>
-<span class="sd">    &gt;&gt;&gt; result = model.effect(X=X_test)</span>
+<span class="sd">    &gt;&gt;&gt; result = model.fit(Y=Y, T=T, X=X, time_index=time)</span>
+<span class="sd">    &gt;&gt;&gt; isinstance(result.theta, float)</span>
+<span class="sd">    True</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -400,6 +409,21 @@
 <span class="sd">        dropped_initial_rows: Rows excluded because temporal CV cannot produce</span>
 <span class="sd">            out-of-fold predictions without training on future observations</span>
 <span class="sd">        lagged_rows_dropped: Rows excluded by lag-feature construction</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.dml import TemporalPLRDML</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(0)</span>
+<span class="sd">        &gt;&gt;&gt; n = 200</span>
+<span class="sd">        &gt;&gt;&gt; X = np.random.randn(n, 2)</span>
+<span class="sd">        &gt;&gt;&gt; T = 0.5 * X[:, 0] + np.random.randn(n)</span>
+<span class="sd">        &gt;&gt;&gt; Y = 2.0 * T + X[:, 1] + np.random.randn(n)</span>
+<span class="sd">        &gt;&gt;&gt; result = TemporalPLRDML(n_lags=1, model_y=&quot;ridge&quot;, model_t=&quot;ridge&quot;,</span>
+<span class="sd">        ...                         n_splits=3).fit(Y, T, X)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(result.theta, float)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; bool(result.ci_lower &lt; result.ci_upper)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span>
@@ -589,15 +613,18 @@
 <span class="sd">        random_state: Random seed for reproducibility</span>
 
 <span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.dml import TemporalPLRDML</span>
 <span class="sd">        &gt;&gt;&gt; np.random.seed(42)</span>
-<span class="sd">        &gt;&gt;&gt; n = 500</span>
+<span class="sd">        &gt;&gt;&gt; n = 300</span>
 <span class="sd">        &gt;&gt;&gt; time = np.arange(n)</span>
 <span class="sd">        &gt;&gt;&gt; X = np.random.randn(n, 3)</span>
 <span class="sd">        &gt;&gt;&gt; T = 0.5 * X[:, 0] + 0.3 * np.sin(time / 50) + np.random.randn(n)</span>
 <span class="sd">        &gt;&gt;&gt; Y = 2.0 * T + np.exp(X[:, 1] / 2) + np.random.randn(n)</span>
-<span class="sd">        &gt;&gt;&gt; model = TemporalPLRDML(n_lags=3)</span>
+<span class="sd">        &gt;&gt;&gt; model = TemporalPLRDML(n_lags=3, model_y=&quot;ridge&quot;, model_t=&quot;ridge&quot;, n_splits=3)</span>
 <span class="sd">        &gt;&gt;&gt; result = model.fit(Y, T, X, time_index=time)</span>
-<span class="sd">        &gt;&gt;&gt; print(result.theta)  # Should be close to 2.0</span>
+<span class="sd">        &gt;&gt;&gt; bool(abs(result.theta - 2.0) &lt; 0.3)  # Should be close to 2.0</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="TemporalPLRDML.__init__">
@@ -1005,6 +1032,21 @@
 <span class="sd">        n_folds: Number of CV folds within each window</span>
 <span class="sd">        hac_bandwidth: HAC bandwidth (None = auto)</span>
 <span class="sd">        random_state: Random seed</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.dml import RollingWindowDML</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(0)</span>
+<span class="sd">        &gt;&gt;&gt; n = 200</span>
+<span class="sd">        &gt;&gt;&gt; X = np.random.randn(n, 2)</span>
+<span class="sd">        &gt;&gt;&gt; T = 0.5 * X[:, 0] + np.random.randn(n)</span>
+<span class="sd">        &gt;&gt;&gt; Y = 1.5 * T + X[:, 1] + np.random.randn(n)</span>
+<span class="sd">        &gt;&gt;&gt; model = RollingWindowDML(window_size=80, step_size=40, model_y=&quot;ridge&quot;,</span>
+<span class="sd">        ...                          model_t=&quot;ridge&quot;, n_folds=3)</span>
+<span class="sd">        &gt;&gt;&gt; _ = model.fit(Y, T, X)</span>
+<span class="sd">        &gt;&gt;&gt; centers, thetas, ses = model.get_effects()</span>
+<span class="sd">        &gt;&gt;&gt; bool(len(centers) == len(thetas) == len(ses))</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RollingWindowDML.__init__">
@@ -1171,6 +1213,26 @@
 <span class="sd">        model_t: ML model for treatment nuisance function</span>
 <span class="sd">        n_folds: Number of CV folds</span>
 <span class="sd">        random_state: Random seed</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.dml import PanelDML</span>
+<span class="sd">        &gt;&gt;&gt; np.random.seed(0)</span>
+<span class="sd">        &gt;&gt;&gt; n_units, m = 40, 5</span>
+<span class="sd">        &gt;&gt;&gt; individual_id = np.repeat(np.arange(n_units), m)</span>
+<span class="sd">        &gt;&gt;&gt; time_id = np.tile(np.arange(m), n_units)</span>
+<span class="sd">        &gt;&gt;&gt; N = n_units * m</span>
+<span class="sd">        &gt;&gt;&gt; X = np.random.randn(N, 2)</span>
+<span class="sd">        &gt;&gt;&gt; T = 0.5 * X[:, 0] + np.random.randn(N)</span>
+<span class="sd">        &gt;&gt;&gt; Y = 2.0 * T + X[:, 1] + np.random.randn(N)</span>
+<span class="sd">        &gt;&gt;&gt; import warnings</span>
+<span class="sd">        &gt;&gt;&gt; model = PanelDML(fixed_effects=&quot;individual&quot;, model_y=&quot;ridge&quot;,</span>
+<span class="sd">        ...                  model_t=&quot;ridge&quot;, n_folds=3)</span>
+<span class="sd">        &gt;&gt;&gt; with warnings.catch_warnings():  # early temporal-CV rows are uncovered</span>
+<span class="sd">        ...     warnings.simplefilter(&quot;ignore&quot;, RuntimeWarning)</span>
+<span class="sd">        ...     result = model.fit(Y, T, X, individual_id, time_id)</span>
+<span class="sd">        &gt;&gt;&gt; isinstance(result.theta, float)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PanelDML.__init__">

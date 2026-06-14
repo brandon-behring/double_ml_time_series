@@ -1151,19 +1151,23 @@ monitor the <em>conditions</em> under which our estimates are valid.</p>
 for causal identification, not predictive accuracy.</p>
 <div class="admonition-example admonition">
 <p class="admonition-title">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">monitor</span> <span class="o">=</span> <span class="n">CausalMonitor</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_hat</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">T_train</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">monitor</span> <span class="o">=</span> <span class="n">CausalMonitor</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">run_all_checks</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">propensity_scores</span><span class="o">=</span><span class="n">e_hat</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">treatment</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">treatment_current</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">treatment_baseline</span><span class="o">=</span><span class="n">T_train</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">nuisance_r2_propensity</span><span class="o">=</span><span class="mf">0.65</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">nuisance_r2_outcome</span><span class="o">=</span><span class="mf">0.72</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">r2_propensity</span><span class="o">=</span><span class="mf">0.65</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">r2_outcome</span><span class="o">=</span><span class="mf">0.72</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">current_effect</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">baseline_effect</span><span class="o">=</span><span class="mf">0.12</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">r</span><span class="o">.</span><span class="n">is_ok</span><span class="p">():</span>
-<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ALERT: </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">is_ok</span><span class="p">(),</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -1536,16 +1540,18 @@ counterfactual outcomes are never observed. We can only monitor proxies.</p>
 monitoring integration.</p>
 <div class="admonition-example admonition">
 <p class="admonition-title">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">RetrainScheduler</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">RetrainScheduler</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">monitor</span> <span class="o">=</span> <span class="n">CausalMonitor</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check if retraining needed</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">run_all_checks</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check if retraining needed (no previous retrain -&gt; scheduled trigger)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">run_all_checks</span><span class="p">(</span><span class="n">r2_propensity</span><span class="o">=</span><span class="mf">0.65</span><span class="p">,</span> <span class="n">r2_outcome</span><span class="o">=</span><span class="mf">0.72</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">trigger</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">evaluate_monitoring_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">trigger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Retrain triggered: </span><span class="si">{</span><span class="n">trigger</span><span class="o">.</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="c1"># Execute retraining pipeline</span>
-<span class="gp">... </span>    <span class="n">scheduler</span><span class="o">.</span><span class="n">record_retrain</span><span class="p">(</span><span class="n">trigger</span><span class="p">,</span> <span class="n">new_version_id</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trigger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># initial scheduled retrain is due</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scheduler</span><span class="o">.</span><span class="n">record_retrain</span><span class="p">(</span><span class="n">trigger</span><span class="p">,</span> <span class="s2">&quot;v1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scheduler</span><span class="o">.</span><span class="n">get_status</span><span class="p">()[</span><span class="s2">&quot;current_model_version&quot;</span><span class="p">]</span>
+<span class="go">&#39;v1&#39;</span>
 </pre></div>
 </div>
 </div>
@@ -1979,20 +1985,27 @@ as DML requires different handling than standard ML prediction.</p>
 - Retraining triggers</p>
 <div class="admonition-example admonition">
 <p class="admonition-title">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span><span class="p">,</span> <span class="n">RandomForestClassifier</span>
-<span class="gp">&gt;&gt;&gt;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">LogisticRegression</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">feature_columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;income&quot;</span><span class="p">,</span> <span class="s2">&quot;tenure&quot;</span><span class="p">,</span> <span class="s2">&quot;macro_gdp&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">feature_columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;income&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">treatment_column</span><span class="o">=</span><span class="s2">&quot;competitor_price&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">outcome_column</span><span class="o">=</span><span class="s2">&quot;retention&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">time_column</span><span class="o">=</span><span class="s2">&quot;quarter&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">propensity_model</span><span class="o">=</span><span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">outcome_model</span><span class="o">=</span><span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">n_folds</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">use_hac</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">model_registry_path</span><span class="o">=</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">propensity_model</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">(),</span>
+<span class="gp">... </span>    <span class="n">outcome_model</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">(),</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">InsuranceDMLPipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ATE: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ate_ci_lower</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ate_ci_upper</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">ate</span><span class="p">))</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>

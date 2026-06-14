@@ -348,9 +348,12 @@
 <span class="sd">        ValueError: If se_hac is not a positive finite number.</span>
 
 <span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.dml.inference import hac_inference</span>
 <span class="sd">        &gt;&gt;&gt; result = hac_inference(theta=2.5, se_hac=0.5, alpha=0.05)</span>
-<span class="sd">        &gt;&gt;&gt; result[&#39;ci_lower&#39;], result[&#39;ci_upper&#39;]</span>
-<span class="sd">        (1.52..., 3.47...)</span>
+<span class="sd">        &gt;&gt;&gt; (round(float(result[&#39;ci_lower&#39;]), 2), round(float(result[&#39;ci_upper&#39;]), 2))</span>
+<span class="sd">        (1.52, 3.48)</span>
+<span class="sd">        &gt;&gt;&gt; bool(result[&#39;p_value&#39;] &lt; 0.001)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">se_hac</span><span class="p">)</span> <span class="ow">or</span> <span class="n">se_hac</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>

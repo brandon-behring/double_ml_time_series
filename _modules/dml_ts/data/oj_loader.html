@@ -387,12 +387,13 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; loader = OJDataLoader()</span>
-<span class="sd">    &gt;&gt;&gt; data = loader.load()</span>
-<span class="sd">    &gt;&gt;&gt; print(f&quot;Samples: {data.n_samples}, Features: {data.n_features}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; # Requires network download of the OJ dataset; skipped in the doctest gate</span>
+<span class="sd">    &gt;&gt;&gt; loader = OJDataLoader()  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; data = loader.load()  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Samples: {data.n_samples}, Features: {data.n_features}&quot;)  # doctest: +SKIP</span>
 <span class="sd">    Samples: 28947, Features: 3</span>
-<span class="sd">    &gt;&gt;&gt; from dml_ts.dml import double_ml</span>
-<span class="sd">    &gt;&gt;&gt; result = double_ml(data.Y, data.T, data.X)</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml import double_ml  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; result = double_ml(data.Y, data.T, data.X)  # doctest: +SKIP</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
@@ -462,14 +463,15 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; loader = OJDataLoader()</span>
-<span class="sd">    &gt;&gt;&gt; data = loader.load()</span>
-<span class="sd">    &gt;&gt;&gt; print(data)</span>
+<span class="sd">    &gt;&gt;&gt; # Requires network download of the OJ dataset; skipped in the doctest gate</span>
+<span class="sd">    &gt;&gt;&gt; loader = OJDataLoader()  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; data = loader.load()  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; print(data)  # doctest: +SKIP</span>
 <span class="sd">    OJDataset(n_samples=28947, n_features=3, features=[&#39;feat&#39;, &#39;INCOME&#39;, &#39;AGE60&#39;])</span>
 
 <span class="sd">    &gt;&gt;&gt; # Custom features</span>
-<span class="sd">    &gt;&gt;&gt; loader = OJDataLoader(features=[&quot;feat&quot;, &quot;INCOME&quot;, &quot;AGE60&quot;, &quot;EDUC&quot;])</span>
-<span class="sd">    &gt;&gt;&gt; data = loader.load()</span>
+<span class="sd">    &gt;&gt;&gt; loader = OJDataLoader(features=[&quot;feat&quot;, &quot;INCOME&quot;, &quot;AGE60&quot;, &quot;EDUC&quot;])  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; data = loader.load()  # doctest: +SKIP</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">DEFAULT_FEATURES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;feat&quot;</span><span class="p">,</span> <span class="s2">&quot;INCOME&quot;</span><span class="p">,</span> <span class="s2">&quot;AGE60&quot;</span><span class="p">]</span>

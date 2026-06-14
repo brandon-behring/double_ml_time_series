@@ -334,12 +334,16 @@
 <span class="sd">    - Controls: 11 covariates (age, inc, fsize, educ, db, marr, twoearn, pira, hown, etc.)</span>
 
 <span class="sd">Usage:</span>
-<span class="sd">    &gt;&gt;&gt; from dml_ts.validation.empirical_replication import FourZeroOneKReplication</span>
-<span class="sd">    &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)</span>
-<span class="sd">    &gt;&gt;&gt; result = replicator.replicate_plr_rf()</span>
-<span class="sd">    &gt;&gt;&gt; print(f&quot;ATE: ${result.ate_estimate:.2f} (Published: ${result.published_ate:.2f})&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; print(f&quot;Difference: {result.rel_difference:.1%}&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; print(f&quot;Status: {result.status}&quot;)</span>
+<span class="sd">    Requires the real 401(k) dataset (downloaded via ``doubleml.fetch_401K``)</span>
+<span class="sd">    and an econml DML fit, so the example is skipped under doctest.</span>
+
+<span class="sd">    &gt;&gt;&gt; from dml_ts.validation.empirical_replication import (  # doctest: +SKIP</span>
+<span class="sd">    ...     FourZeroOneKReplication,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; result = replicator.replicate_plr_rf()  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; result.method  # doctest: +SKIP</span>
+<span class="sd">    &#39;PLR_RF&#39;</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
@@ -403,11 +407,13 @@
 <span class="sd">        tolerance: Relative difference threshold for matching (default 0.15 = 15%)</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)</span>
-<span class="sd">        &gt;&gt;&gt; result = replicator.replicate_plr_rf()</span>
-<span class="sd">        &gt;&gt;&gt; result.status</span>
+<span class="sd">        Requires the real 401(k) dataset and an econml DML fit:</span>
+
+<span class="sd">        &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; result = replicator.replicate_plr_rf()  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; result.status  # doctest: +SKIP</span>
 <span class="sd">        &#39;MATCH&#39;</span>
-<span class="sd">        &gt;&gt;&gt; result.rel_difference &lt; 0.15</span>
+<span class="sd">        &gt;&gt;&gt; result.rel_difference &lt; 0.15  # doctest: +SKIP</span>
 <span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -452,11 +458,13 @@
 <span class="sd">            DataFrame with 401(k) data (n=9,915, 14 variables)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; replicator = FourZeroOneKReplication()</span>
-<span class="sd">            &gt;&gt;&gt; df = replicator.load_data()</span>
-<span class="sd">            &gt;&gt;&gt; df.shape</span>
+<span class="sd">            Downloads the real 401(k) dataset via ``doubleml.fetch_401K``:</span>
+
+<span class="sd">            &gt;&gt;&gt; replicator = FourZeroOneKReplication()  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; df = replicator.load_data()  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; df.shape  # doctest: +SKIP</span>
 <span class="sd">            (9915, 14)</span>
-<span class="sd">            &gt;&gt;&gt; &#39;net_tfa&#39; in df.columns</span>
+<span class="sd">            &gt;&gt;&gt; &#39;net_tfa&#39; in df.columns  # doctest: +SKIP</span>
 <span class="sd">            True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -496,13 +504,15 @@
 <span class="sd">                - X: Controls (11 covariates)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)</span>
-<span class="sd">            &gt;&gt;&gt; Y, T, X = replicator.preprocess_data(treatment=&quot;e401&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; Y.shape</span>
+<span class="sd">            Downloads the real 401(k) dataset via ``doubleml.fetch_401K``:</span>
+
+<span class="sd">            &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; Y, T, X = replicator.preprocess_data(treatment=&quot;e401&quot;)  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; Y.shape  # doctest: +SKIP</span>
 <span class="sd">            (9915,)</span>
-<span class="sd">            &gt;&gt;&gt; T.shape</span>
+<span class="sd">            &gt;&gt;&gt; T.shape  # doctest: +SKIP</span>
 <span class="sd">            (9915,)</span>
-<span class="sd">            &gt;&gt;&gt; X.shape</span>
+<span class="sd">            &gt;&gt;&gt; X.shape  # doctest: +SKIP</span>
 <span class="sd">            (9915, 11)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
@@ -543,11 +553,13 @@
 <span class="sd">            ReplicationResult with comparison to published estimate</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)</span>
-<span class="sd">            &gt;&gt;&gt; result = replicator.replicate_plr_rf()</span>
-<span class="sd">            &gt;&gt;&gt; result.method</span>
+<span class="sd">            Requires the real 401(k) dataset and an econml DML fit:</span>
+
+<span class="sd">            &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; result = replicator.replicate_plr_rf()  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; result.method  # doctest: +SKIP</span>
 <span class="sd">            &#39;PLR_RF&#39;</span>
-<span class="sd">            &gt;&gt;&gt; abs(result.ate_estimate - 9127) &lt; 1500  # Within reasonable range</span>
+<span class="sd">            &gt;&gt;&gt; abs(result.ate_estimate - 9127) &lt; 1500  # doctest: +SKIP</span>
 <span class="sd">            True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
@@ -628,11 +640,13 @@
 <span class="sd">            ReplicationResult with comparison to published estimate</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)</span>
-<span class="sd">            &gt;&gt;&gt; result = replicator.replicate_plr_lasso()</span>
-<span class="sd">            &gt;&gt;&gt; result.method</span>
+<span class="sd">            Requires the real 401(k) dataset and an econml DML fit:</span>
+
+<span class="sd">            &gt;&gt;&gt; replicator = FourZeroOneKReplication(random_state=42)  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; result = replicator.replicate_plr_lasso()  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; result.method  # doctest: +SKIP</span>
 <span class="sd">            &#39;PLR_Lasso&#39;</span>
-<span class="sd">            &gt;&gt;&gt; abs(result.ate_estimate - 9580) &lt; 1500  # Within reasonable range</span>
+<span class="sd">            &gt;&gt;&gt; abs(result.ate_estimate - 9580) &lt; 1500  # doctest: +SKIP</span>
 <span class="sd">            True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>

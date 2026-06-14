@@ -474,20 +474,27 @@
 <span class="sd">    - Retraining triggers</span>
 
 <span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier</span>
-<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; import tempfile</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from sklearn.linear_model import LinearRegression, LogisticRegression</span>
+<span class="sd">        &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">        &gt;&gt;&gt; X = rng.normal(size=(60, 2))</span>
+<span class="sd">        &gt;&gt;&gt; T = rng.binomial(1, 0.5, size=60)</span>
+<span class="sd">        &gt;&gt;&gt; Y = rng.normal(size=60)</span>
 <span class="sd">        &gt;&gt;&gt; config = PipelineConfig(</span>
-<span class="sd">        ...     feature_columns=[&quot;age&quot;, &quot;income&quot;, &quot;tenure&quot;, &quot;macro_gdp&quot;],</span>
+<span class="sd">        ...     feature_columns=[&quot;age&quot;, &quot;income&quot;],</span>
 <span class="sd">        ...     treatment_column=&quot;competitor_price&quot;,</span>
 <span class="sd">        ...     outcome_column=&quot;retention&quot;,</span>
-<span class="sd">        ...     time_column=&quot;quarter&quot;,</span>
-<span class="sd">        ...     propensity_model=RandomForestClassifier(n_estimators=100),</span>
-<span class="sd">        ...     outcome_model=RandomForestRegressor(n_estimators=100),</span>
+<span class="sd">        ...     n_folds=2,</span>
+<span class="sd">        ...     use_hac=False,</span>
+<span class="sd">        ...     model_registry_path=tempfile.mkdtemp(),</span>
+<span class="sd">        ...     propensity_model=LogisticRegression(),</span>
+<span class="sd">        ...     outcome_model=LinearRegression(),</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt;</span>
 <span class="sd">        &gt;&gt;&gt; pipeline = InsuranceDMLPipeline(config)</span>
 <span class="sd">        &gt;&gt;&gt; result = pipeline.fit(X, T, Y)</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;ATE: {result.ate:.3f} ({result.ate_ci_lower:.3f}, {result.ate_ci_upper:.3f})&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; bool(np.isfinite(result.ate))</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="InsuranceDMLPipeline.__init__">

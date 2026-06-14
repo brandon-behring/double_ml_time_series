@@ -343,7 +343,10 @@
 <span class="sd">    ...     n_products=10,</span>
 <span class="sd">    ...     seed=42</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; Y, T, X, time_idx, product_idx, true_params = dgp</span>
+<span class="sd">    &gt;&gt;&gt; Y, T, X = dgp.Y, dgp.T, dgp.X</span>
+<span class="sd">    &gt;&gt;&gt; time_idx, product_idx, true_params = dgp.time_index, dgp.product_index, dgp.true_params</span>
+<span class="sd">    &gt;&gt;&gt; Y.shape</span>
+<span class="sd">    (1200,)</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -843,7 +846,9 @@
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; dgp = create_insurance_dgp(realism=&quot;moderate&quot;, n_periods=120, seed=42)</span>
 <span class="sd">        &gt;&gt;&gt; print(f&quot;True effect: {dgp.true_params.tau}&quot;)</span>
+<span class="sd">        True effect: -0.8</span>
 <span class="sd">        &gt;&gt;&gt; print(f&quot;Observations: {len(dgp.Y)}&quot;)</span>
+<span class="sd">        Observations: 1200</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">realism</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;simple&quot;</span><span class="p">,</span> <span class="s2">&quot;moderate&quot;</span><span class="p">,</span> <span class="s2">&quot;full&quot;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;realism must be &#39;simple&#39;, &#39;moderate&#39;, or &#39;full&#39;, got &#39;</span><span class="si">{</span><span class="n">realism</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>

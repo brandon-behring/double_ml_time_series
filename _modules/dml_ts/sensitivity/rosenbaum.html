@@ -396,11 +396,15 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.sensitivity import RosenbaumBounds</span>
+<span class="sd">    &gt;&gt;&gt; bounds = RosenbaumBounds()</span>
 <span class="sd">    &gt;&gt;&gt; result = bounds.analyze(theta=2.5, se=0.5, n_treated=500, n_control=500)</span>
-<span class="sd">    &gt;&gt;&gt; print(result.gamma_critical)</span>
-<span class="sd">    1.85</span>
-<span class="sd">    &gt;&gt;&gt; print(result.interpretation)</span>
-<span class="sd">    &#39;Moderately Robust&#39;</span>
+<span class="sd">    &gt;&gt;&gt; # 3.0 == gamma_max: significance survives the whole tested Gamma range</span>
+<span class="sd">    &gt;&gt;&gt; # (no tipping point found), so the finding is reported as &quot;Robust&quot;.</span>
+<span class="sd">    &gt;&gt;&gt; float(result.gamma_critical)</span>
+<span class="sd">    3.0</span>
+<span class="sd">    &gt;&gt;&gt; result.interpretation</span>
+<span class="sd">    &#39;Robust&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">gamma_critical</span><span class="p">:</span> <span class="nb">float</span>
@@ -474,20 +478,18 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; from dml_ts.sensitivity import RosenbaumBounds</span>
-<span class="sd">    &gt;&gt;&gt; from dml_ts.dml import double_ml</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; # Run DML</span>
-<span class="sd">    &gt;&gt;&gt; result = double_ml(Y, T, X)</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; # Sensitivity analysis</span>
+<span class="sd">    &gt;&gt;&gt; # Given a DML estimate (theta, se) and approximate group sizes:</span>
 <span class="sd">    &gt;&gt;&gt; bounds = RosenbaumBounds()</span>
 <span class="sd">    &gt;&gt;&gt; sensitivity = bounds.analyze(</span>
-<span class="sd">    ...     theta=result.theta,</span>
-<span class="sd">    ...     se=result.se,</span>
-<span class="sd">    ...     n_treated=len(Y) // 2,  # Approximate</span>
-<span class="sd">    ...     n_control=len(Y) // 2,</span>
+<span class="sd">    ...     theta=2.5,</span>
+<span class="sd">    ...     se=0.5,</span>
+<span class="sd">    ...     n_treated=500,  # Approximate</span>
+<span class="sd">    ...     n_control=500,</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; print(sensitivity.summary())</span>
+<span class="sd">    &gt;&gt;&gt; sensitivity.interpretation</span>
+<span class="sd">    &#39;Robust&#39;</span>
+<span class="sd">    &gt;&gt;&gt; isinstance(sensitivity.summary(), str)</span>
+<span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RosenbaumBounds.__init__">
@@ -818,17 +820,17 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; from dml_ts.dml import double_ml</span>
 <span class="sd">    &gt;&gt;&gt; from dml_ts.sensitivity import compute_sensitivity_for_dml</span>
-<span class="sd">    &gt;&gt;&gt;</span>
-<span class="sd">    &gt;&gt;&gt; result = double_ml(Y, T, X)</span>
+<span class="sd">    &gt;&gt;&gt; # Given a DML estimate (theta, se, treatment R^2) on n_samples rows:</span>
 <span class="sd">    &gt;&gt;&gt; sensitivity = compute_sensitivity_for_dml(</span>
-<span class="sd">    ...     theta=result.theta,</span>
-<span class="sd">    ...     se=result.se,</span>
-<span class="sd">    ...     n_samples=len(Y),</span>
-<span class="sd">    ...     treatment_r2=result.treatment_r2_cv,</span>
+<span class="sd">    ...     theta=1.2,</span>
+<span class="sd">    ...     se=0.3,</span>
+<span class="sd">    ...     n_samples=1000,</span>
+<span class="sd">    ...     treatment_r2=0.2,</span>
 <span class="sd">    ... )</span>
-<span class="sd">    &gt;&gt;&gt; print(sensitivity.gamma_critical)</span>
+<span class="sd">    &gt;&gt;&gt; # 3.0 == gamma_max: no tipping point within the tested Gamma range.</span>
+<span class="sd">    &gt;&gt;&gt; float(sensitivity.gamma_critical)</span>
+<span class="sd">    3.0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># For continuous treatments, we split sample approximately in half</span>
     <span class="c1"># adjusted for treatment model R²</span>

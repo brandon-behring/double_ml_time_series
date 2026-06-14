@@ -334,8 +334,9 @@
 
 <span class="sd">Usage:</span>
 <span class="sd">    &gt;&gt;&gt; from dml_ts.data import FREDLoader</span>
-<span class="sd">    &gt;&gt;&gt; loader = FREDLoader(api_key=&quot;your_api_key&quot;)  # or from env</span>
-<span class="sd">    &gt;&gt;&gt; macro_data = loader.get_macro_controls(</span>
+<span class="sd">    &gt;&gt;&gt; # Requires live FRED API key + network; skipped in the doctest gate</span>
+<span class="sd">    &gt;&gt;&gt; loader = FREDLoader(api_key=&quot;your_api_key&quot;)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; macro_data = loader.get_macro_controls(  # doctest: +SKIP</span>
 <span class="sd">    ...     start_date=&quot;2010-01-01&quot;,</span>
 <span class="sd">    ...     end_date=&quot;2020-12-31&quot;,</span>
 <span class="sd">    ...     frequency=&quot;M&quot;</span>
@@ -538,9 +539,10 @@
 <span class="sd">        cache_dir: Directory for caching data (None to disable)</span>
 
 <span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; loader = FREDLoader()</span>
-<span class="sd">        &gt;&gt;&gt; data = loader.get_macro_controls(&quot;2015-01-01&quot;, &quot;2023-12-31&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; print(data.data.columns)</span>
+<span class="sd">        &gt;&gt;&gt; # Requires live FRED API key + network; skipped in the doctest gate</span>
+<span class="sd">        &gt;&gt;&gt; loader = FREDLoader()  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; data = loader.get_macro_controls(&quot;2015-01-01&quot;, &quot;2023-12-31&quot;)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; print(data.data.columns)  # doctest: +SKIP</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="FREDLoader.__init__">
@@ -822,13 +824,14 @@
 <span class="sd">            MacroControlsResult with aligned DataFrame and metadata</span>
 
 <span class="sd">        Example:</span>
-<span class="sd">            &gt;&gt;&gt; loader = FREDLoader()</span>
-<span class="sd">            &gt;&gt;&gt; result = loader.get_macro_controls(</span>
+<span class="sd">            &gt;&gt;&gt; # Requires live FRED API key + network; skipped in the doctest gate</span>
+<span class="sd">            &gt;&gt;&gt; loader = FREDLoader()  # doctest: +SKIP</span>
+<span class="sd">            &gt;&gt;&gt; result = loader.get_macro_controls(  # doctest: +SKIP</span>
 <span class="sd">            ...     &quot;2015-01-01&quot;, &quot;2023-12-31&quot;,</span>
 <span class="sd">            ...     series_set=&quot;comprehensive&quot;,</span>
 <span class="sd">            ...     frequency=&quot;Q&quot;</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; X_macro = result.data.values</span>
+<span class="sd">            &gt;&gt;&gt; X_macro = result.data.values  # doctest: +SKIP</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Determine series to fetch</span>
         <span class="n">series_ids</span> <span class="o">=</span> <span class="n">MACRO_CONTROL_SETS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">series_set</span><span class="p">,</span> <span class="n">MACRO_CONTROL_SETS</span><span class="p">[</span><span class="s2">&quot;basic&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -961,6 +964,10 @@
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; data = create_synthetic_fred_data(seed=42)</span>
 <span class="sd">        &gt;&gt;&gt; X_macro = data.data.values  # Use as controls in DML</span>
+<span class="sd">        &gt;&gt;&gt; list(data.data.columns)</span>
+<span class="sd">        [&#39;GDPC1&#39;, &#39;CPIAUCSL&#39;, &#39;UNRATE&#39;, &#39;FEDFUNDS&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; bool(X_macro.shape[1] == 4)</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 

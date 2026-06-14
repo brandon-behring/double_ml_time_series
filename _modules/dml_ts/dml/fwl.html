@@ -391,6 +391,21 @@
 <span class="sd">        R² from regressing Y on X (outcome model fit).</span>
 <span class="sd">    r2_T : float</span>
 <span class="sd">        R² from regressing T on X (propensity model fit).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml.fwl import fwl_estimate</span>
+<span class="sd">    &gt;&gt;&gt; np.random.seed(0)</span>
+<span class="sd">    &gt;&gt;&gt; n = 200</span>
+<span class="sd">    &gt;&gt;&gt; X = np.random.randn(n, 2)</span>
+<span class="sd">    &gt;&gt;&gt; T = 0.5 * X[:, 0] + np.random.randn(n)</span>
+<span class="sd">    &gt;&gt;&gt; Y = 2.0 * T + X @ [1.0, -0.5] + np.random.randn(n)</span>
+<span class="sd">    &gt;&gt;&gt; result = fwl_estimate(Y, T, X)</span>
+<span class="sd">    &gt;&gt;&gt; isinstance(result.theta, float)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; bool(result.se &gt; 0)</span>
+<span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span>
@@ -452,10 +467,12 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml.fwl import fwl_residualize</span>
 <span class="sd">    &gt;&gt;&gt; Y = np.array([1, 2, 3, 4, 5.0])</span>
 <span class="sd">    &gt;&gt;&gt; X = np.column_stack([np.ones(5), np.arange(5)])</span>
 <span class="sd">    &gt;&gt;&gt; residuals, r2 = fwl_residualize(Y, X)</span>
-<span class="sd">    &gt;&gt;&gt; np.allclose(residuals.sum(), 0)  # Residuals sum to ~0</span>
+<span class="sd">    &gt;&gt;&gt; bool(np.allclose(residuals.sum(), 0))  # Residuals sum to ~0</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -528,13 +545,15 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml.fwl import fwl_estimate</span>
 <span class="sd">    &gt;&gt;&gt; np.random.seed(42)</span>
 <span class="sd">    &gt;&gt;&gt; n = 1000</span>
 <span class="sd">    &gt;&gt;&gt; X = np.random.randn(n, 3)  # 3 confounders</span>
 <span class="sd">    &gt;&gt;&gt; T = 0.5 * X[:, 0] + np.random.randn(n)  # Treatment depends on X₀</span>
 <span class="sd">    &gt;&gt;&gt; Y = 2.0 * T + X @ [1, 0.5, -0.3] + np.random.randn(n)  # True effect = 2.0</span>
 <span class="sd">    &gt;&gt;&gt; result = fwl_estimate(Y, T, X)</span>
-<span class="sd">    &gt;&gt;&gt; abs(result.theta - 2.0) &lt; 0.1  # Should recover ~2.0</span>
+<span class="sd">    &gt;&gt;&gt; bool(abs(result.theta - 2.0) &lt; 0.1)  # Should recover ~2.0</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
@@ -648,13 +667,15 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml.fwl import fwl_vs_ols_comparison</span>
 <span class="sd">    &gt;&gt;&gt; np.random.seed(42)</span>
 <span class="sd">    &gt;&gt;&gt; n = 500</span>
 <span class="sd">    &gt;&gt;&gt; X = np.random.randn(n, 2)</span>
 <span class="sd">    &gt;&gt;&gt; T = np.random.randn(n)</span>
 <span class="sd">    &gt;&gt;&gt; Y = 1.5 * T + X @ [0.5, -0.3] + np.random.randn(n)</span>
 <span class="sd">    &gt;&gt;&gt; result = fwl_vs_ols_comparison(Y, T, X)</span>
-<span class="sd">    &gt;&gt;&gt; result[&quot;match&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; bool(result[&quot;match&quot;])</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>

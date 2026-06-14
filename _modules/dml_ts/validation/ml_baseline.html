@@ -350,11 +350,19 @@
 <span class="sd">        random_state: Random seed for reproducibility</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; rf = RandomForestEstimator(n_simulations=100, random_state=42)</span>
-<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.validation.bootstrap_config import BootstrapConfig</span>
+<span class="sd">        &gt;&gt;&gt; rf = RandomForestEstimator(</span>
+<span class="sd">        ...     n_simulations=3,</span>
+<span class="sd">        ...     n_estimators=20,</span>
+<span class="sd">        ...     bootstrap_config=BootstrapConfig.tier2(),</span>
+<span class="sd">        ...     random_state=42,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=150, p=5, true_effect=2.0, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt; result = rf.validate(dgp)</span>
-<span class="sd">        &gt;&gt;&gt; result.status</span>
-<span class="sd">        &#39;PASS&#39;</span>
+<span class="sd">        &gt;&gt;&gt; result.method</span>
+<span class="sd">        &#39;RandomForestEstimator&#39;</span>
+<span class="sd">        &gt;&gt;&gt; bool(np.isfinite(result.bias))</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RandomForestEstimator.__init__">
@@ -571,11 +579,19 @@
 <span class="sd">        random_state: Random seed for reproducibility</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; xgb = XGBoostEstimator(n_simulations=100, random_state=42)</span>
-<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)</span>
+<span class="sd">        &gt;&gt;&gt; from dml_ts.validation.bootstrap_config import BootstrapConfig</span>
+<span class="sd">        &gt;&gt;&gt; xgb = XGBoostEstimator(</span>
+<span class="sd">        ...     n_simulations=3,</span>
+<span class="sd">        ...     n_estimators=20,</span>
+<span class="sd">        ...     bootstrap_config=BootstrapConfig.tier2(),</span>
+<span class="sd">        ...     random_state=42,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=150, p=5, true_effect=2.0, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt; result = xgb.validate(dgp)</span>
-<span class="sd">        &gt;&gt;&gt; result.status</span>
-<span class="sd">        &#39;PASS&#39;</span>
+<span class="sd">        &gt;&gt;&gt; result.method</span>
+<span class="sd">        &#39;XGBoostEstimator&#39;</span>
+<span class="sd">        &gt;&gt;&gt; bool(np.isfinite(result.bias))</span>
+<span class="sd">        True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="XGBoostEstimator.__init__">

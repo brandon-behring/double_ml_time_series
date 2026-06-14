@@ -426,11 +426,15 @@ sensitivity analysis with matched data. Unpublished manuscript.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">se</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_treated</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">n_control</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">gamma_critical</span><span class="p">)</span>
-<span class="go">1.85</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">interpretation</span><span class="p">)</span>
-<span class="go">&#39;Moderately Robust&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.sensitivity</span><span class="w"> </span><span class="kn">import</span> <span class="n">RosenbaumBounds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bounds</span> <span class="o">=</span> <span class="n">RosenbaumBounds</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">se</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_treated</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">n_control</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 3.0 == gamma_max: significance survives the whole tested Gamma range</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># (no tipping point found), so the finding is reported as &quot;Robust&quot;.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">gamma_critical</span><span class="p">)</span>
+<span class="go">3.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">interpretation</span>
+<span class="go">&#39;Robust&#39;</span>
 </pre></div>
 </div>
 </div>
@@ -507,20 +511,18 @@ are to violations of the unconfoundedness assumption.</p>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.sensitivity</span><span class="w"> </span><span class="kn">import</span> <span class="n">RosenbaumBounds</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Run DML</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">double_ml</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Sensitivity analysis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Given a DML estimate (theta, se) and approximate group sizes:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bounds</span> <span class="o">=</span> <span class="n">RosenbaumBounds</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sensitivity</span> <span class="o">=</span> <span class="n">bounds</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">theta</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">se</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">n_treated</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># Approximate</span>
-<span class="gp">... </span>    <span class="n">n_control</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">theta</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">se</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_treated</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>  <span class="c1"># Approximate</span>
+<span class="gp">... </span>    <span class="n">n_control</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">sensitivity</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sensitivity</span><span class="o">.</span><span class="n">interpretation</span>
+<span class="go">&#39;Robust&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">sensitivity</span><span class="o">.</span><span class="n">summary</span><span class="p">(),</span> <span class="nb">str</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </div>
@@ -602,17 +604,17 @@ are to violations of the unconfoundedness assumption.</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.sensitivity</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_sensitivity_for_dml</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">double_ml</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.sensitivity</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_sensitivity_for_dml</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Given a DML estimate (theta, se, treatment R^2) on n_samples rows:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sensitivity</span> <span class="o">=</span> <span class="n">compute_sensitivity_for_dml</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">theta</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">se</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">n_samples</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">treatment_r2</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">treatment_r2_cv</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">theta</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">se</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">treatment_r2</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">sensitivity</span><span class="o">.</span><span class="n">gamma_critical</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 3.0 == gamma_max: no tipping point within the tested Gamma range.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="n">sensitivity</span><span class="o">.</span><span class="n">gamma_critical</span><span class="p">)</span>
+<span class="go">3.0</span>
 </pre></div>
 </div>
 </div>

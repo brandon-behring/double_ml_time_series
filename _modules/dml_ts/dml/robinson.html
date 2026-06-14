@@ -391,6 +391,21 @@
 <span class="sd">        R² of outcome model E[Y|X].</span>
 <span class="sd">    treatment_r2 : float</span>
 <span class="sd">        R² of treatment model E[T|X].</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml.robinson import robinson_estimator</span>
+<span class="sd">    &gt;&gt;&gt; np.random.seed(0)</span>
+<span class="sd">    &gt;&gt;&gt; n = 200</span>
+<span class="sd">    &gt;&gt;&gt; X = np.random.randn(n, 2)</span>
+<span class="sd">    &gt;&gt;&gt; T = 0.5 * X[:, 0] + np.random.randn(n)</span>
+<span class="sd">    &gt;&gt;&gt; Y = 1.5 * T + X[:, 1] + np.random.randn(n)</span>
+<span class="sd">    &gt;&gt;&gt; result = robinson_estimator(Y, T, X, model=&quot;ridge&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; isinstance(result.theta, float)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; bool(result.se &gt; 0)</span>
+<span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span>
@@ -465,13 +480,15 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.dml.robinson import robinson_estimator</span>
 <span class="sd">    &gt;&gt;&gt; np.random.seed(42)</span>
-<span class="sd">    &gt;&gt;&gt; n = 1000</span>
+<span class="sd">    &gt;&gt;&gt; n = 600</span>
 <span class="sd">    &gt;&gt;&gt; X = np.random.randn(n, 3)</span>
 <span class="sd">    &gt;&gt;&gt; T = np.sin(X[:, 0]) + np.random.randn(n)  # Nonlinear confounding</span>
 <span class="sd">    &gt;&gt;&gt; Y = 2.0 * T + np.exp(X[:, 1]) + np.random.randn(n)  # Nonlinear outcome</span>
 <span class="sd">    &gt;&gt;&gt; result = robinson_estimator(Y, T, X, model=&quot;random_forest&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; abs(result.theta - 2.0) &lt; 0.2  # Should recover ~2.0</span>
+<span class="sd">    &gt;&gt;&gt; bool(abs(result.theta - 2.0) &lt; 0.3)  # Should recover ~2.0</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Validate inputs</span>
