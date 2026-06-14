@@ -187,7 +187,7 @@ class BaselineComparison:
 
         Args:
             dgp_configs: List of DGPGenerator configuration dicts
-                        (passed as **kwargs to DGPGenerator)
+                        (passed as ``**kwargs`` to DGPGenerator)
 
         Returns:
             Dictionary mapping config string → comparison table

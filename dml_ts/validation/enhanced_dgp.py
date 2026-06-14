@@ -51,20 +51,25 @@ class EnhancedDGPGenerator:
     """Generate synthetic data with realistic assumption violations.
 
     Features:
+
     1. **Heterogeneous Treatment Effects (HTE)**:
+
        - Effect varies by X: τ(X) = base_effect + β^T X
        - Tests DML robustness to effect heterogeneity
 
     2. **Misspecification**:
+
        - Omitted variables: confounders not included in X
        - Non-linear relationships with polynomial terms
        - Interaction effects between confounders
 
     3. **Propensity Score Extremeness**:
+
        - Very high/low treatment probabilities
        - Tests overlap assumption violations
 
     4. **Measurement Error**:
+
        - Classical errors: X_obs = X_true + ε
        - Tests robustness to noisy covariates
 
