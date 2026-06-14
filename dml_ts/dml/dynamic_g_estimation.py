@@ -258,7 +258,7 @@ class DynamicGEstimationDML:
     RLearner) are out of scope.
 
     Examples:
-        Panel mode (n i.i.d. unit trajectories, unit-major rows)::
+        Panel mode (n i.i.d. unit trajectories, unit-major rows):
 
         >>> import numpy as np
         >>> from dml_ts.dml.dynamic_g_estimation import DynamicGEstimationDML
