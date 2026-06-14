@@ -34,6 +34,19 @@ on autocorrelated data.
 
 ----
 
+Dynamic G-Estimation
+--------------------
+
+Recursive dynamic g-estimation (``DynamicGEstimationDML``) recovering
+period-specific blips ``theta_1..theta_m`` for a linear SNMM, with a gated
+EconML ``DynamicDML`` cross-check.
+
+.. literalinclude:: ../../../examples/example_dynamic_g_estimation.py
+   :language: python
+   :caption: examples/example_dynamic_g_estimation.py
+
+----
+
 Insurance DGP
 -------------
 

@@ -1,0 +1,848 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dml_ts.validation.bootstrap_diagnostics &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=c8176860"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/validation/bootstrap_diagnostics';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Temporal PLR DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Research Pipeline Utilities</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Research Pipeline Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/brandon-behring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/brandon-behring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/validation/bootstrap_diagnostics.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for dml_ts.validation.bootstrap_diagnostics</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Bootstrap diagnostics for assessing resampling quality and convergence.</span>
+
+<span class="sd">Provides tools to validate bootstrap procedures used in DML validation:</span>
+<span class="sd">- Convergence diagnostics (stability as n_bootstrap increases)</span>
+<span class="sd">- Distribution diagnostics (normality, symmetry)</span>
+<span class="sd">- Variance stability (Monte Carlo error in estimates)</span>
+<span class="sd">- Recommendations for appropriate n_bootstrap values</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.validation.bootstrap_diagnostics import BootstrapDiagnostics</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.validation.dgp_generator import DGPGenerator</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)</span>
+<span class="sd">    &gt;&gt;&gt; data = dgp.generate()</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # Diagnose bootstrap convergence for bias estimation</span>
+<span class="sd">    &gt;&gt;&gt; diagnostics = BootstrapDiagnostics(data=data, estimator_type=&quot;LinearDML&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; result = diagnostics.diagnose_convergence(</span>
+<span class="sd">    ...     target=&quot;bias&quot;,</span>
+<span class="sd">    ...     n_bootstrap_range=[100, 500, 1000, 2000, 5000],</span>
+<span class="sd">    ...     true_value=2.0</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Recommended n_bootstrap: {result[&#39;recommended_n&#39;]}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Converged: {result[&#39;converged&#39;]}&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.dgp_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">DGPResult</span>
+
+
+<div class="viewcode-block" id="ConvergenceDiagnostic">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bootstrap_diagnostics.ConvergenceDiagnostic">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvergenceDiagnostic</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Results from bootstrap convergence analysis.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        n_bootstrap_tested: List of bootstrap sample sizes tested</span>
+<span class="sd">        estimates: Bootstrap estimates at each sample size</span>
+<span class="sd">        std_errors: Standard errors at each sample size</span>
+<span class="sd">        convergence_score: Score indicating convergence quality (0-1, higher is better)</span>
+<span class="sd">        converged: Whether bootstrap has converged</span>
+<span class="sd">        recommended_n: Recommended n_bootstrap for stable results</span>
+<span class="sd">        diagnostics: Additional diagnostic information</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">n_bootstrap_tested</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">estimates</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">std_errors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">convergence_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">recommended_n</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">diagnostics</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="DistributionDiagnostic">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bootstrap_diagnostics.DistributionDiagnostic">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DistributionDiagnostic</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Results from bootstrap distribution analysis.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        n_bootstrap: Number of bootstrap samples used</span>
+<span class="sd">        normality_pvalue: P-value from Shapiro-Wilk normality test</span>
+<span class="sd">        is_normal: Whether distribution appears normal (p &gt; 0.05)</span>
+<span class="sd">        skewness: Sample skewness</span>
+<span class="sd">        kurtosis: Sample excess kurtosis</span>
+<span class="sd">        symmetry_score: Score indicating distributional symmetry (0-1)</span>
+<span class="sd">        diagnostics: Additional diagnostic information</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">normality_pvalue</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">is_normal</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">skewness</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">kurtosis</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">symmetry_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">diagnostics</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="BootstrapDiagnostics">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BootstrapDiagnostics</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bootstrap quality diagnostics for DML validation.</span>
+
+<span class="sd">    Provides comprehensive diagnostics for bootstrap procedures including:</span>
+<span class="sd">    - Convergence analysis (optimal n_bootstrap)</span>
+<span class="sd">    - Distribution diagnostics (normality, skewness, kurtosis)</span>
+<span class="sd">    - Variance stability assessment</span>
+<span class="sd">    - Recommendations for bootstrap configuration</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: DGP result containing (Y, T, X)</span>
+<span class="sd">        estimator_type: Type of estimator (&quot;LinearDML&quot;, &quot;IPW&quot;, &quot;AIPW&quot;, &quot;OLS&quot;)</span>
+<span class="sd">        random_state: Random seed for reproducibility</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)</span>
+<span class="sd">        &gt;&gt;&gt; data = dgp.generate()</span>
+<span class="sd">        &gt;&gt;&gt; diag = BootstrapDiagnostics(data, &quot;LinearDML&quot;)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Check convergence</span>
+<span class="sd">        &gt;&gt;&gt; conv = diag.diagnose_convergence(&quot;bias&quot;, [100, 500, 1000], true_value=2.0)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Converged: {conv.converged}, Recommended: {conv.recommended_n}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; # Check distribution quality</span>
+<span class="sd">        &gt;&gt;&gt; dist = diag.diagnose_distribution(n_bootstrap=1000)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Normal: {dist.is_normal}, Skewness: {dist.skewness:.3f}&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BootstrapDiagnostics.__init__">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">DGPResult</span><span class="p">,</span>
+        <span class="n">estimator_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;LinearDML&quot;</span><span class="p">,</span> <span class="s2">&quot;IPW&quot;</span><span class="p">,</span> <span class="s2">&quot;AIPW&quot;</span><span class="p">,</span> <span class="s2">&quot;OLS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;LinearDML&quot;</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize bootstrap diagnostics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Generated dataset (Y, T, X)</span>
+<span class="sd">            estimator_type: Which estimator to use for bootstrap</span>
+<span class="sd">            random_state: Random seed for reproducibility</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">=</span> <span class="n">estimator_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BootstrapDiagnostics.diagnose_convergence">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics.diagnose_convergence">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">diagnose_convergence</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="s2">&quot;variance&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">],</span>
+        <span class="n">n_bootstrap_range</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">true_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_replications</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvergenceDiagnostic</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Diagnose bootstrap convergence across different sample sizes.</span>
+
+<span class="sd">        Tests whether bootstrap estimates stabilize as n_bootstrap increases.</span>
+<span class="sd">        Uses multiple replications to assess Monte Carlo variability.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target: What to diagnose (&quot;bias&quot;, &quot;variance&quot;, &quot;coverage&quot;)</span>
+<span class="sd">            n_bootstrap_range: List of n_bootstrap values to test</span>
+<span class="sd">            true_value: True parameter value (required for bias/coverage)</span>
+<span class="sd">            n_replications: Number of replications per n_bootstrap</span>
+<span class="sd">            tolerance: Relative change threshold for convergence (default 5%)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ConvergenceDiagnostic with convergence assessment and recommendations</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; diag.diagnose_convergence(&quot;bias&quot;, [100, 500, 1000, 2000], true_value=2.0)</span>
+<span class="sd">            ConvergenceDiagnostic(converged=True, recommended_n=1000, ...)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">true_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;true_value required for </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2"> diagnostics&quot;</span><span class="p">)</span>
+
+        <span class="n">estimates_by_n</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">std_errors_by_n</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">n_boot</span> <span class="ow">in</span> <span class="n">n_bootstrap_range</span><span class="p">:</span>
+            <span class="c1"># Run multiple replications to assess stability</span>
+            <span class="n">replication_estimates</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_replications</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;bias&quot;</span><span class="p">:</span>
+                    <span class="c1"># Bootstrap estimate of bias</span>
+                    <span class="n">boot_estimates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_boot</span><span class="p">)</span>
+                    <span class="n">bias_estimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_value</span>
+                    <span class="n">replication_estimates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bias_estimate</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;variance&quot;</span><span class="p">:</span>
+                    <span class="c1"># Bootstrap estimate of variance</span>
+                    <span class="n">boot_estimates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_boot</span><span class="p">)</span>
+                    <span class="n">var_estimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">replication_estimates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_estimate</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;coverage&quot;</span><span class="p">:</span>
+                    <span class="c1"># Bootstrap coverage rate</span>
+                    <span class="n">boot_cis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_confidence_intervals</span><span class="p">(</span><span class="n">n_boot</span><span class="p">)</span>
+                    <span class="n">coverage</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">true_value</span> <span class="o">&lt;=</span> <span class="n">ci</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">ci</span> <span class="ow">in</span> <span class="n">boot_cis</span><span class="p">])</span>
+                    <span class="n">replication_estimates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coverage</span><span class="p">)</span>
+
+            <span class="n">estimates_by_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">replication_estimates</span><span class="p">))</span>
+            <span class="n">std_errors_by_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">replication_estimates</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Assess convergence: relative change between consecutive n_bootstrap values</span>
+        <span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">recommended_n</span> <span class="o">=</span> <span class="n">n_bootstrap_range</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">convergence_score</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_bootstrap_range</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">relative_changes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">estimates_by_n</span><span class="p">)):</span>
+                <span class="n">prev_est</span> <span class="o">=</span> <span class="n">estimates_by_n</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">curr_est</span> <span class="o">=</span> <span class="n">estimates_by_n</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">prev_est</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+                    <span class="n">rel_change</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">((</span><span class="n">curr_est</span> <span class="o">-</span> <span class="n">prev_est</span><span class="p">)</span> <span class="o">/</span> <span class="n">prev_est</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">rel_change</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">curr_est</span> <span class="o">-</span> <span class="n">prev_est</span><span class="p">)</span>
+                <span class="n">relative_changes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rel_change</span><span class="p">)</span>
+
+            <span class="c1"># Converged if last 2 changes are below tolerance</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">relative_changes</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">recent_changes</span> <span class="o">=</span> <span class="n">relative_changes</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">rc</span> <span class="o">&lt;</span> <span class="n">tolerance</span> <span class="k">for</span> <span class="n">rc</span> <span class="ow">in</span> <span class="n">recent_changes</span><span class="p">):</span>
+                    <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="c1"># Find first n where convergence maintained</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">rc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">relative_changes</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">rc</span> <span class="o">&lt;</span> <span class="n">tolerance</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">tolerance</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relative_changes</span><span class="p">[</span><span class="n">i</span><span class="p">:]):</span>
+                            <span class="n">recommended_n</span> <span class="o">=</span> <span class="n">n_bootstrap_range</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                            <span class="k">break</span>
+
+            <span class="c1"># Convergence score: inverse of average relative change (capped at 1.0)</span>
+            <span class="n">avg_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">relative_changes</span><span class="p">)</span> <span class="k">if</span> <span class="n">relative_changes</span> <span class="k">else</span> <span class="mf">1.0</span>
+            <span class="n">convergence_score</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">tolerance</span> <span class="o">/</span> <span class="p">(</span><span class="n">avg_change</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">ConvergenceDiagnostic</span><span class="p">(</span>
+            <span class="n">n_bootstrap_tested</span><span class="o">=</span><span class="n">n_bootstrap_range</span><span class="p">,</span>
+            <span class="n">estimates</span><span class="o">=</span><span class="n">estimates_by_n</span><span class="p">,</span>
+            <span class="n">std_errors</span><span class="o">=</span><span class="n">std_errors_by_n</span><span class="p">,</span>
+            <span class="n">convergence_score</span><span class="o">=</span><span class="n">convergence_score</span><span class="p">,</span>
+            <span class="n">converged</span><span class="o">=</span><span class="n">converged</span><span class="p">,</span>
+            <span class="n">recommended_n</span><span class="o">=</span><span class="n">recommended_n</span><span class="p">,</span>
+            <span class="n">diagnostics</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span>
+                <span class="s2">&quot;tolerance&quot;</span><span class="p">:</span> <span class="n">tolerance</span><span class="p">,</span>
+                <span class="s2">&quot;n_replications&quot;</span><span class="p">:</span> <span class="n">n_replications</span><span class="p">,</span>
+                <span class="s2">&quot;true_value&quot;</span><span class="p">:</span> <span class="n">true_value</span><span class="p">,</span>
+                <span class="s2">&quot;monte_carlo_error&quot;</span><span class="p">:</span> <span class="n">std_errors_by_n</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BootstrapDiagnostics.diagnose_distribution">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics.diagnose_distribution">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">diagnose_distribution</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DistributionDiagnostic</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Diagnose bootstrap distribution properties.</span>
+
+<span class="sd">        Assesses whether bootstrap distribution is appropriate:</span>
+<span class="sd">        - Normality (Shapiro-Wilk test)</span>
+<span class="sd">        - Skewness and kurtosis</span>
+<span class="sd">        - Symmetry around mean</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_bootstrap: Number of bootstrap samples</span>
+<span class="sd">            alpha: Significance level for normality test</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DistributionDiagnostic with distribution properties</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; diag.diagnose_distribution(n_bootstrap=1000)</span>
+<span class="sd">            DistributionDiagnostic(is_normal=True, skewness=0.12, ...)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate bootstrap distribution</span>
+        <span class="n">boot_estimates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
+
+        <span class="c1"># Normality test (Shapiro-Wilk)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">stat</span><span class="p">,</span> <span class="n">normality_pvalue</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">shapiro</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">normality_pvalue</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">is_normal</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">normality_pvalue</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">alpha</span><span class="p">)</span>
+
+        <span class="c1"># Skewness and kurtosis</span>
+        <span class="n">skewness</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">skew</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">))</span>
+        <span class="n">kurtosis</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">))</span>  <span class="c1"># Excess kurtosis</span>
+
+        <span class="c1"># Symmetry score: based on skewness (0 = perfect symmetry)</span>
+        <span class="n">symmetry_score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">skewness</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>  <span class="c1"># Cap at skewness=2</span>
+
+        <span class="k">return</span> <span class="n">DistributionDiagnostic</span><span class="p">(</span>
+            <span class="n">n_bootstrap</span><span class="o">=</span><span class="n">n_bootstrap</span><span class="p">,</span>
+            <span class="n">normality_pvalue</span><span class="o">=</span><span class="n">normality_pvalue</span><span class="p">,</span>
+            <span class="n">is_normal</span><span class="o">=</span><span class="n">is_normal</span><span class="p">,</span>
+            <span class="n">skewness</span><span class="o">=</span><span class="n">skewness</span><span class="p">,</span>
+            <span class="n">kurtosis</span><span class="o">=</span><span class="n">kurtosis</span><span class="p">,</span>
+            <span class="n">symmetry_score</span><span class="o">=</span><span class="n">symmetry_score</span><span class="p">,</span>
+            <span class="n">diagnostics</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)),</span>
+                <span class="s2">&quot;median&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)),</span>
+                <span class="s2">&quot;std&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+                <span class="s2">&quot;percentiles&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;p05&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="mi">5</span><span class="p">)),</span>
+                    <span class="s2">&quot;p25&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="mi">25</span><span class="p">)),</span>
+                    <span class="s2">&quot;p75&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="mi">75</span><span class="p">)),</span>
+                    <span class="s2">&quot;p95&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="mi">95</span><span class="p">)),</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BootstrapDiagnostics.recommend_n_bootstrap">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics.recommend_n_bootstrap">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">recommend_n_bootstrap</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="s2">&quot;ci&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">precision_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;fast&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="s2">&quot;precise&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recommend n_bootstrap values based on convergence diagnostics.</span>
+
+<span class="sd">        Runs convergence diagnostics to determine appropriate bootstrap sample</span>
+<span class="sd">        sizes for different tasks (bias estimation vs confidence intervals).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target_tasks: Which tasks to optimize for (&quot;bias&quot;, &quot;ci&quot;, &quot;both&quot;).</span>
+<span class="sd">                Defaults to [&quot;both&quot;].</span>
+<span class="sd">            precision_level: Desired precision (&quot;fast&quot;, &quot;default&quot;, &quot;precise&quot;)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict with recommended n_bootstrap for each task</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; diag.recommend_n_bootstrap([&quot;bias&quot;, &quot;ci&quot;], &quot;default&quot;)</span>
+<span class="sd">            {&#39;bias&#39;: 1000, &#39;ci&#39;: 500, &#39;both&#39;: 1000}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">target_tasks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">target_tasks</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;both&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Default ranges based on precision level</span>
+        <span class="n">ranges_bias</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;fast&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">],</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">],</span>
+            <span class="s2">&quot;precise&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">ranges_ci</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;fast&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span>
+            <span class="s2">&quot;precise&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">],</span>
+        <span class="p">}</span>
+
+        <span class="n">recommendations</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="s2">&quot;bias&quot;</span> <span class="ow">in</span> <span class="n">target_tasks</span> <span class="ow">or</span> <span class="s2">&quot;both&quot;</span> <span class="ow">in</span> <span class="n">target_tasks</span><span class="p">:</span>
+            <span class="c1"># Estimate true effect for bias calculation</span>
+            <span class="n">point_est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_point</span><span class="p">()</span>
+            <span class="n">conv_diag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diagnose_convergence</span><span class="p">(</span>
+                <span class="n">target</span><span class="o">=</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span>
+                <span class="n">n_bootstrap_range</span><span class="o">=</span><span class="n">ranges_bias</span><span class="p">[</span><span class="n">precision_level</span><span class="p">],</span>
+                <span class="n">true_value</span><span class="o">=</span><span class="n">point_est</span><span class="p">,</span>
+                <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">recommendations</span><span class="p">[</span><span class="s2">&quot;bias&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">conv_diag</span><span class="o">.</span><span class="n">recommended_n</span>
+
+        <span class="k">if</span> <span class="s2">&quot;ci&quot;</span> <span class="ow">in</span> <span class="n">target_tasks</span> <span class="ow">or</span> <span class="s2">&quot;both&quot;</span> <span class="ow">in</span> <span class="n">target_tasks</span><span class="p">:</span>
+            <span class="c1"># CI diagnostics based on variance stability</span>
+            <span class="n">conv_diag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diagnose_convergence</span><span class="p">(</span>
+                <span class="n">target</span><span class="o">=</span><span class="s2">&quot;variance&quot;</span><span class="p">,</span>
+                <span class="n">n_bootstrap_range</span><span class="o">=</span><span class="n">ranges_ci</span><span class="p">[</span><span class="n">precision_level</span><span class="p">],</span>
+                <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>  <span class="c1"># CI can tolerate slightly more variability</span>
+            <span class="p">)</span>
+            <span class="n">recommendations</span><span class="p">[</span><span class="s2">&quot;ci&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">conv_diag</span><span class="o">.</span><span class="n">recommended_n</span>
+
+        <span class="k">if</span> <span class="s2">&quot;both&quot;</span> <span class="ow">in</span> <span class="n">target_tasks</span><span class="p">:</span>
+            <span class="c1"># Conservative: use larger of the two</span>
+            <span class="n">recommendations</span><span class="p">[</span><span class="s2">&quot;both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="n">recommendations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">recommendations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ci&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">recommendations</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bootstrap_estimates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate bootstrap distribution of point estimates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_bootstrap: Number of bootstrap samples</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Array of bootstrap estimates</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">boot_estimates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">):</span>
+            <span class="c1"># Resample data</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">Y_boot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+            <span class="n">T_boot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+            <span class="n">X_boot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+
+            <span class="c1"># Estimate on bootstrap sample</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">==</span> <span class="s2">&quot;LinearDML&quot;</span><span class="p">:</span>
+                <span class="n">estimate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_dml</span><span class="p">(</span><span class="n">Y_boot</span><span class="p">,</span> <span class="n">T_boot</span><span class="p">,</span> <span class="n">X_boot</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">==</span> <span class="s2">&quot;OLS&quot;</span><span class="p">:</span>
+                <span class="n">estimate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_ols</span><span class="p">(</span><span class="n">Y_boot</span><span class="p">,</span> <span class="n">T_boot</span><span class="p">,</span> <span class="n">X_boot</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;IPW&quot;</span><span class="p">,</span> <span class="s2">&quot;AIPW&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span><span class="si">}</span><span class="s2"> not yet implemented&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown estimator: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">boot_estimates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">estimate</span>
+
+        <span class="k">return</span> <span class="n">boot_estimates</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bootstrap_confidence_intervals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate bootstrap confidence intervals (percentile method).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_bootstrap: Number of bootstrap samples</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of (lower, upper) CI bounds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">boot_estimates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
+        <span class="n">ci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span>
+        <span class="n">ci_upper</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">ci_lower</span><span class="p">,</span> <span class="n">ci_upper</span><span class="p">)]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_estimate_point</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate point estimate on full data.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">==</span> <span class="s2">&quot;LinearDML&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_dml</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">==</span> <span class="s2">&quot;OLS&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_ols</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span><span class="si">}</span><span class="s2"> not yet implemented&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_estimate_dml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate treatment effect using LinearDML.&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+
+        <span class="n">model_y</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
+        <span class="p">)</span>
+        <span class="n">model_t</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
+        <span class="p">)</span>
+
+        <span class="n">dml</span> <span class="o">=</span> <span class="n">LinearDML</span><span class="p">(</span>
+            <span class="n">model_y</span><span class="o">=</span><span class="n">model_y</span><span class="p">,</span>
+            <span class="n">model_t</span><span class="o">=</span><span class="n">model_t</span><span class="p">,</span>
+            <span class="n">discrete_treatment</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">dml</span><span class="o">.</span><span class="n">effect</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_estimate_ols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate treatment effect using OLS with controls.&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
+
+        <span class="n">X_with_T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">])</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_with_T</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

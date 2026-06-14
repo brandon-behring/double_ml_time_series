@@ -1,0 +1,1126 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dml_ts.validation.lasso_diagnostic &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=c8176860"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/validation/lasso_diagnostic';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Temporal PLR DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Research Pipeline Utilities</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Research Pipeline Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/brandon-behring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/brandon-behring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/validation/lasso_diagnostic.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for dml_ts.validation.lasso_diagnostic</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Diagnostic module for investigating 401(k) Lasso mismatch.</span>
+
+<span class="sd">Analyzes the -44.4% difference between published and replicated Lasso ATE estimates</span>
+<span class="sd">in Chernozhukov et al. (2018) 401(k) study.</span>
+
+<span class="sd">Problem:</span>
+<span class="sd">    - Published ATE: $9,580</span>
+<span class="sd">    - Our ATE: $5,330 (-44.4% difference)</span>
+<span class="sd">    - SE: $6,930 (130% of point estimate - extremely wide!)</span>
+<span class="sd">    - CI: $-8,253 to $18,913 (spans $27,167)</span>
+
+<span class="sd">Diagnostic Goals:</span>
+<span class="sd">    1. Bootstrap distribution analysis (convergence, outliers, normality)</span>
+<span class="sd">    2. Hyperparameter sensitivity (alpha, CV folds, max_iter)</span>
+<span class="sd">    3. Cross-fitting seed analysis (random_state variability)</span>
+<span class="sd">    4. Implementation configuration comparison with published paper</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    &gt;&gt;&gt; from dml_ts.validation.lasso_diagnostic import LassoDiagnostic</span>
+<span class="sd">    &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)</span>
+<span class="sd">    &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Bootstrap convergence: {results.bootstrap_converged}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; print(f&quot;Seed sensitivity: {results.seed_std_dev:.2f}&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+
+
+<div class="viewcode-block" id="BootstrapDiagnosticResult">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.BootstrapDiagnosticResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BootstrapDiagnosticResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Results from bootstrap distribution analysis.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        ate_estimates: Array of ATE estimates from bootstrap samples</span>
+<span class="sd">        mean_ate: Mean of bootstrap distribution</span>
+<span class="sd">        std_ate: Standard deviation of bootstrap distribution</span>
+<span class="sd">        ci_lower: Lower CI bound (2.5th percentile)</span>
+<span class="sd">        ci_upper: Upper CI bound (97.5th percentile)</span>
+<span class="sd">        normality_pvalue: P-value from Shapiro-Wilk normality test</span>
+<span class="sd">        is_normal: Whether distribution passes normality test (p &gt; 0.05)</span>
+<span class="sd">        has_outliers: Whether distribution has extreme outliers (&gt;3 SD)</span>
+<span class="sd">        n_outliers: Number of outliers detected</span>
+<span class="sd">        converged: Whether bootstrap distribution appears converged</span>
+<span class="sd">        n_bootstrap: Number of bootstrap samples used</span>
+<span class="sd">        metadata: Additional diagnostic info</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ate_estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">mean_ate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">std_ate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">ci_lower</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">ci_upper</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">normality_pvalue</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">is_normal</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">has_outliers</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">n_outliers</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="HyperparameterSensitivityResult">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.HyperparameterSensitivityResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HyperparameterSensitivityResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Results from hyperparameter sensitivity analysis.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        parameter_name: Name of varied parameter (alpha, cv_folds, max_iter)</span>
+<span class="sd">        parameter_values: Array of tested parameter values</span>
+<span class="sd">        ate_estimates: Array of ATE estimates for each parameter value</span>
+<span class="sd">        std_errors: Array of standard errors for each parameter value</span>
+<span class="sd">        sensitivity_score: Coefficient of variation (std/mean) of ATE estimates</span>
+<span class="sd">        is_sensitive: Whether ATE is sensitive to this parameter (CV &gt; 0.1)</span>
+<span class="sd">        recommended_value: Recommended parameter value based on stability</span>
+<span class="sd">        metadata: Additional analysis info</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parameter_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">parameter_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">ate_estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">std_errors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">sensitivity_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">is_sensitive</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">recommended_value</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="SeedSensitivityResult">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.SeedSensitivityResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SeedSensitivityResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Results from cross-fitting seed sensitivity analysis.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        random_states: Array of tested random_state values</span>
+<span class="sd">        ate_estimates: Array of ATE estimates for each seed</span>
+<span class="sd">        mean_ate: Mean ATE across seeds</span>
+<span class="sd">        std_ate: Standard deviation of ATE across seeds</span>
+<span class="sd">        min_ate: Minimum ATE observed</span>
+<span class="sd">        max_ate: Maximum ATE observed</span>
+<span class="sd">        range_ate: Range of ATE estimates (max - min)</span>
+<span class="sd">        cv_ate: Coefficient of variation (std/mean)</span>
+<span class="sd">        is_stable: Whether estimates are stable across seeds (CV &lt; 0.1)</span>
+<span class="sd">        metadata: Additional analysis info</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">random_states</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">ate_estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">mean_ate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">std_ate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">min_ate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">max_ate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">range_ate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">cv_ate</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">is_stable</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="ComprehensiveDiagnosticResult">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.ComprehensiveDiagnosticResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ComprehensiveDiagnosticResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Comprehensive diagnostic results for 401(k) Lasso mismatch.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bootstrap_diagnostic: Bootstrap distribution analysis</span>
+<span class="sd">        hyperparameter_sensitivity: Dict of sensitivity analyses (alpha, cv, max_iter)</span>
+<span class="sd">        seed_sensitivity: Cross-fitting seed analysis</span>
+<span class="sd">        root_cause_analysis: Identified root cause(s) of mismatch</span>
+<span class="sd">        recommendations: List of recommendations for fixing or documenting issue</span>
+<span class="sd">        timestamp: When diagnostic was performed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">bootstrap_diagnostic</span><span class="p">:</span> <span class="n">BootstrapDiagnosticResult</span>
+    <span class="n">hyperparameter_sensitivity</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HyperparameterSensitivityResult</span><span class="p">]</span>
+    <span class="n">seed_sensitivity</span><span class="p">:</span> <span class="n">SeedSensitivityResult</span>
+    <span class="n">root_cause_analysis</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">recommendations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="n">datetime</span></div>
+
+
+
+<div class="viewcode-block" id="LassoDiagnostic">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.LassoDiagnostic">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LassoDiagnostic</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Diagnostic tool for investigating 401(k) Lasso mismatch.</span>
+
+<span class="sd">    Performs comprehensive diagnostic analysis to explain the -44.4% difference</span>
+<span class="sd">    between published and replicated Lasso ATE estimates.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data_path: Path to 401(k) dataset (optional, loads from doubleml if None)</span>
+<span class="sd">        random_state: Base random seed for reproducibility</span>
+<span class="sd">        verbose: Whether to print diagnostic progress</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42, verbose=True)</span>
+<span class="sd">        &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()</span>
+<span class="sd">        &gt;&gt;&gt; if not results.bootstrap_diagnostic.converged:</span>
+<span class="sd">        ...     print(&quot;Bootstrap distribution not converged - increase n_bootstrap&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LassoDiagnostic.__init__">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.LassoDiagnostic.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize diagnostic tool.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data_path: Path to 401(k) dataset</span>
+<span class="sd">            random_state: Base random seed</span>
+<span class="sd">            verbose: Print progress messages</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span> <span class="o">=</span> <span class="n">data_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Y</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_T</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print message if verbose mode enabled.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LassoDiagnostic.load_data">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.LassoDiagnostic.load_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load 401(k) dataset.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame with 401(k) data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">doubleml.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_401K</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">fetch_401K</span><span class="p">(</span><span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;DataFrame&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                    <span class="s2">&quot;doubleml package required. Install with: pip install doubleml&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span></div>
+
+
+<div class="viewcode-block" id="LassoDiagnostic.preprocess_data">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.LassoDiagnostic.preprocess_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preprocess_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Preprocess 401(k) data for DML estimation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of (Y, T, X) arrays</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+
+        <span class="c1"># Outcome</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;net_tfa&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="c1"># Treatment (e401 eligibility)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_T</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;e401&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="c1"># Controls (exclude outcome and treatments)</span>
+        <span class="c1"># FIXED (Issue C5): Include all 11 published covariates (removed &#39;nifa&#39;, &#39;tw&#39; from exclusion)</span>
+        <span class="c1"># Published design: age, inc, fsize, educ, male, db, marr, twoearn, pira, hown</span>
+        <span class="n">control_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;net_tfa&quot;</span><span class="p">,</span> <span class="s2">&quot;e401&quot;</span><span class="p">,</span> <span class="s2">&quot;p401&quot;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">control_vars</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X</span></div>
+
+
+<div class="viewcode-block" id="LassoDiagnostic.analyze_bootstrap_distribution">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.LassoDiagnostic.analyze_bootstrap_distribution">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analyze_bootstrap_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BootstrapDiagnosticResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Analyze bootstrap distribution of Lasso ATE estimates.</span>
+
+<span class="sd">        Performs bootstrap resampling to check:</span>
+<span class="sd">        - Distribution convergence</span>
+<span class="sd">        - Normality (Shapiro-Wilk test)</span>
+<span class="sd">        - Outlier detection (&gt;3 SD from mean)</span>
+<span class="sd">        - CI stability</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_bootstrap: Number of bootstrap samples</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            BootstrapDiagnosticResult with distribution analysis</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)</span>
+<span class="sd">            &gt;&gt;&gt; result = diagnostic.analyze_bootstrap_distribution(n_bootstrap=1000)</span>
+<span class="sd">            &gt;&gt;&gt; result.is_normal</span>
+<span class="sd">            False</span>
+<span class="sd">            &gt;&gt;&gt; result.n_outliers</span>
+<span class="sd">            23</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoCV</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running bootstrap distribution analysis (B=</span><span class="si">{</span><span class="n">n_bootstrap</span><span class="si">}</span><span class="s2">)...&quot;</span><span class="p">)</span>
+
+        <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_data</span><span class="p">()</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+
+        <span class="n">ate_estimates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="ow">and</span> <span class="p">(</span><span class="n">b</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Bootstrap sample </span><span class="si">{</span><span class="n">b</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_bootstrap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Resample with replacement</span>
+            <span class="n">boot_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">Y_boot</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">boot_idx</span><span class="p">]</span>
+            <span class="n">T_boot</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">boot_idx</span><span class="p">]</span>
+            <span class="n">X_boot</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">boot_idx</span><span class="p">,</span> <span class="p">:]</span>
+
+            <span class="c1"># Fit Lasso DML</span>
+            <span class="n">model_y</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+            <span class="c1"># FIXED (Issue C2): Use logistic regression for binary treatment</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegressionCV</span>
+
+            <span class="n">model_t</span> <span class="o">=</span> <span class="n">LogisticRegressionCV</span><span class="p">(</span>
+                <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;saga&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span>
+            <span class="p">)</span>
+
+            <span class="c1"># FIXED (Issue C2): discrete_treatment=True for binary treatment</span>
+            <span class="n">dml</span> <span class="o">=</span> <span class="n">LinearDML</span><span class="p">(</span>
+                <span class="n">model_y</span><span class="o">=</span><span class="n">model_y</span><span class="p">,</span>
+                <span class="n">model_t</span><span class="o">=</span><span class="n">model_t</span><span class="p">,</span>
+                <span class="n">discrete_treatment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="o">=</span><span class="n">Y_boot</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T_boot</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X_boot</span><span class="p">)</span>
+            <span class="n">ate_estimates</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dml</span><span class="o">.</span><span class="n">effect</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X_boot</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+        <span class="c1"># Distribution statistics</span>
+        <span class="n">mean_ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">))</span>
+        <span class="n">std_ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">ci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span>
+        <span class="n">ci_upper</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">))</span>
+
+        <span class="c1"># Normality test</span>
+        <span class="n">normality_stat</span><span class="p">,</span> <span class="n">normality_pvalue</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">shapiro</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">)</span>
+        <span class="n">is_normal</span> <span class="o">=</span> <span class="n">normality_pvalue</span> <span class="o">&gt;</span> <span class="mf">0.05</span>
+
+        <span class="c1"># Outlier detection (&gt;3 SD)</span>
+        <span class="n">z_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">ate_estimates</span> <span class="o">-</span> <span class="n">mean_ate</span><span class="p">)</span> <span class="o">/</span> <span class="n">std_ate</span><span class="p">)</span>
+        <span class="n">outlier_mask</span> <span class="o">=</span> <span class="n">z_scores</span> <span class="o">&gt;</span> <span class="mi">3</span>
+        <span class="n">n_outliers</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">outlier_mask</span><span class="p">))</span>
+        <span class="n">has_outliers</span> <span class="o">=</span> <span class="n">n_outliers</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="c1"># Convergence check (CV of running mean &lt; 1%)</span>
+        <span class="n">running_means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bootstrap</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">cv_running</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">running_means</span><span class="p">[</span><span class="o">-</span><span class="mi">100</span><span class="p">:])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">running_means</span><span class="p">[</span><span class="o">-</span><span class="mi">100</span><span class="p">:]))</span>
+        <span class="n">converged</span> <span class="o">=</span> <span class="n">cv_running</span> <span class="o">&lt;</span> <span class="mf">0.01</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Mean ATE: $</span><span class="si">{</span><span class="n">mean_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Std ATE: $</span><span class="si">{</span><span class="n">std_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  95% CI: ($</span><span class="si">{</span><span class="n">ci_lower</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">, $</span><span class="si">{</span><span class="n">ci_upper</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Normality: </span><span class="si">{</span><span class="n">is_normal</span><span class="si">}</span><span class="s2"> (p=</span><span class="si">{</span><span class="n">normality_pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Outliers: </span><span class="si">{</span><span class="n">n_outliers</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_bootstrap</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n_outliers</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n_bootstrap</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Converged: </span><span class="si">{</span><span class="n">converged</span><span class="si">}</span><span class="s2"> (CV=</span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cv_running</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">BootstrapDiagnosticResult</span><span class="p">(</span>
+            <span class="n">ate_estimates</span><span class="o">=</span><span class="n">ate_estimates</span><span class="p">,</span>
+            <span class="n">mean_ate</span><span class="o">=</span><span class="n">mean_ate</span><span class="p">,</span>
+            <span class="n">std_ate</span><span class="o">=</span><span class="n">std_ate</span><span class="p">,</span>
+            <span class="n">ci_lower</span><span class="o">=</span><span class="n">ci_lower</span><span class="p">,</span>
+            <span class="n">ci_upper</span><span class="o">=</span><span class="n">ci_upper</span><span class="p">,</span>
+            <span class="n">normality_pvalue</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">normality_pvalue</span><span class="p">),</span>
+            <span class="n">is_normal</span><span class="o">=</span><span class="n">is_normal</span><span class="p">,</span>
+            <span class="n">has_outliers</span><span class="o">=</span><span class="n">has_outliers</span><span class="p">,</span>
+            <span class="n">n_outliers</span><span class="o">=</span><span class="n">n_outliers</span><span class="p">,</span>
+            <span class="n">converged</span><span class="o">=</span><span class="n">converged</span><span class="p">,</span>
+            <span class="n">n_bootstrap</span><span class="o">=</span><span class="n">n_bootstrap</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;cv_running_mean&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">cv_running</span><span class="p">),</span>
+                <span class="s2">&quot;outlier_threshold&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+                <span class="s2">&quot;normality_test&quot;</span><span class="p">:</span> <span class="s2">&quot;Shapiro-Wilk&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LassoDiagnostic.analyze_hyperparameter_sensitivity">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.LassoDiagnostic.analyze_hyperparameter_sensitivity">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analyze_hyperparameter_sensitivity</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HyperparameterSensitivityResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Analyze ATE sensitivity to hyperparameter changes.</span>
+
+<span class="sd">        Tests how ATE estimate varies with different hyperparameter values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter: Parameter to vary (alpha, cv_folds, max_iter)</span>
+<span class="sd">            values: List of values to test (uses defaults if None)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            HyperparameterSensitivityResult with sensitivity analysis</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)</span>
+<span class="sd">            &gt;&gt;&gt; result = diagnostic.analyze_hyperparameter_sensitivity(</span>
+<span class="sd">            ...     parameter=&quot;alpha&quot;, values=[0.001, 0.01, 0.1, 1.0]</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; result.is_sensitive</span>
+<span class="sd">            True</span>
+<span class="sd">            &gt;&gt;&gt; result.sensitivity_score</span>
+<span class="sd">            0.25</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Default values for each parameter</span>
+        <span class="n">default_values</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;cv_folds&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+            <span class="s2">&quot;max_iter&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">],</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Validate parameter before expensive imports (fail fast)</span>
+        <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">default_values</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Unknown parameter: </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">. Must be one of </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">default_values</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">default_values</span><span class="p">[</span><span class="n">parameter</span><span class="p">]</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoCV</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Analyzing </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2"> sensitivity (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2"> values)...&quot;</span><span class="p">)</span>
+
+        <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_data</span><span class="p">()</span>
+
+        <span class="n">ate_estimates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+        <span class="n">std_errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Testing </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Configure models based on parameter</span>
+            <span class="c1"># FIXED (Issue C2): Import LogisticRegressionCV</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegressionCV</span>
+
+            <span class="k">if</span> <span class="n">parameter</span> <span class="o">==</span> <span class="s2">&quot;cv_folds&quot;</span><span class="p">:</span>
+                <span class="n">model_y</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+                <span class="c1"># FIXED (Issue C2): Use logistic regression for binary treatment</span>
+                <span class="n">model_t</span> <span class="o">=</span> <span class="n">LogisticRegressionCV</span><span class="p">(</span>
+                    <span class="n">cv</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+                    <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span>
+                    <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;saga&quot;</span><span class="p">,</span>
+                    <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+                    <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">cv</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">elif</span> <span class="n">parameter</span> <span class="o">==</span> <span class="s2">&quot;max_iter&quot;</span><span class="p">:</span>
+                <span class="n">model_y</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+                <span class="c1"># FIXED (Issue C2): Use logistic regression for binary treatment</span>
+                <span class="n">model_t</span> <span class="o">=</span> <span class="n">LogisticRegressionCV</span><span class="p">(</span>
+                    <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                    <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span>
+                    <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;saga&quot;</span><span class="p">,</span>
+                    <span class="n">max_iter</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+                    <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">cv</span> <span class="o">=</span> <span class="mi">5</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown parameter: </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Fit DML</span>
+            <span class="c1"># FIXED (Issue C2): discrete_treatment=True for binary treatment</span>
+            <span class="n">dml</span> <span class="o">=</span> <span class="n">LinearDML</span><span class="p">(</span>
+                <span class="n">model_y</span><span class="o">=</span><span class="n">model_y</span><span class="p">,</span>
+                <span class="n">model_t</span><span class="o">=</span><span class="n">model_t</span><span class="p">,</span>
+                <span class="n">discrete_treatment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
+                <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+
+            <span class="c1"># Extract ATE and SE</span>
+            <span class="n">ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dml</span><span class="o">.</span><span class="n">effect</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+            <span class="n">ci_lower</span><span class="p">,</span> <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">dml</span><span class="o">.</span><span class="n">effect_interval</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+            <span class="n">se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">ci_upper</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">ci_lower</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="mf">1.96</span><span class="p">))</span>
+
+            <span class="n">ate_estimates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ate</span>
+            <span class="n">std_errors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">se</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    ATE: $</span><span class="si">{</span><span class="n">ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2"> (SE: $</span><span class="si">{</span><span class="n">se</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Sensitivity analysis</span>
+        <span class="n">mean_ate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">)</span>
+        <span class="n">std_ate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sensitivity_score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">std_ate</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mean_ate</span><span class="p">))</span> <span class="k">if</span> <span class="n">mean_ate</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">is_sensitive</span> <span class="o">=</span> <span class="n">sensitivity_score</span> <span class="o">&gt;</span> <span class="mf">0.1</span>
+
+        <span class="c1"># Recommend value with minimum variance</span>
+        <span class="n">recommended_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">std_errors</span><span class="p">)</span>
+        <span class="n">recommended_value</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">recommended_idx</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Sensitivity: </span><span class="si">{</span><span class="n">sensitivity_score</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="s1">&#39;HIGH&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">is_sensitive</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;LOW&#39;</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Recommended </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">recommended_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">HyperparameterSensitivityResult</span><span class="p">(</span>
+            <span class="n">parameter_name</span><span class="o">=</span><span class="n">parameter</span><span class="p">,</span>
+            <span class="n">parameter_values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">),</span>
+            <span class="n">ate_estimates</span><span class="o">=</span><span class="n">ate_estimates</span><span class="p">,</span>
+            <span class="n">std_errors</span><span class="o">=</span><span class="n">std_errors</span><span class="p">,</span>
+            <span class="n">sensitivity_score</span><span class="o">=</span><span class="n">sensitivity_score</span><span class="p">,</span>
+            <span class="n">is_sensitive</span><span class="o">=</span><span class="n">is_sensitive</span><span class="p">,</span>
+            <span class="n">recommended_value</span><span class="o">=</span><span class="n">recommended_value</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;mean_ate&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">mean_ate</span><span class="p">),</span>
+                <span class="s2">&quot;std_ate&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">std_ate</span><span class="p">),</span>
+                <span class="s2">&quot;min_ate&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">)),</span>
+                <span class="s2">&quot;max_ate&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">)),</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LassoDiagnostic.analyze_seed_sensitivity">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.LassoDiagnostic.analyze_seed_sensitivity">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">analyze_seed_sensitivity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_seeds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeedSensitivityResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Analyze ATE sensitivity to cross-fitting random seed.</span>
+
+<span class="sd">        Tests how ATE varies across different random_state values for cross-fitting.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_seeds: Number of random seeds to test</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SeedSensitivityResult with seed sensitivity analysis</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic()</span>
+<span class="sd">            &gt;&gt;&gt; result = diagnostic.analyze_seed_sensitivity(n_seeds=20)</span>
+<span class="sd">            &gt;&gt;&gt; result.is_stable</span>
+<span class="sd">            False</span>
+<span class="sd">            &gt;&gt;&gt; result.cv_ate</span>
+<span class="sd">            0.35</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoCV</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Analyzing seed sensitivity (</span><span class="si">{</span><span class="n">n_seeds</span><span class="si">}</span><span class="s2"> seeds)...&quot;</span><span class="p">)</span>
+
+        <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_data</span><span class="p">()</span>
+
+        <span class="c1"># Test range of seeds</span>
+        <span class="n">random_states</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_seeds</span><span class="p">)</span>
+        <span class="n">ate_estimates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_seeds</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seed</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">random_states</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Testing random_state=</span><span class="si">{</span><span class="n">seed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">model_y</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+            <span class="c1"># FIXED (Issue C2): Use logistic regression for binary treatment</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegressionCV</span>
+
+            <span class="n">model_t</span> <span class="o">=</span> <span class="n">LogisticRegressionCV</span><span class="p">(</span>
+                <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;saga&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span>
+            <span class="p">)</span>
+
+            <span class="c1"># FIXED (Issue C2): discrete_treatment=True for binary treatment</span>
+            <span class="n">dml</span> <span class="o">=</span> <span class="n">LinearDML</span><span class="p">(</span>
+                <span class="n">model_y</span><span class="o">=</span><span class="n">model_y</span><span class="p">,</span>
+                <span class="n">model_t</span><span class="o">=</span><span class="n">model_t</span><span class="p">,</span>
+                <span class="n">discrete_treatment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">ate_estimates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dml</span><span class="o">.</span><span class="n">effect</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    ATE: $</span><span class="si">{</span><span class="n">ate_estimates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Stability analysis</span>
+        <span class="n">mean_ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">))</span>
+        <span class="n">std_ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">min_ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">))</span>
+        <span class="n">max_ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">ate_estimates</span><span class="p">))</span>
+        <span class="n">range_ate</span> <span class="o">=</span> <span class="n">max_ate</span> <span class="o">-</span> <span class="n">min_ate</span>
+        <span class="n">cv_ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">std_ate</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mean_ate</span><span class="p">))</span> <span class="k">if</span> <span class="n">mean_ate</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">is_stable</span> <span class="o">=</span> <span class="n">cv_ate</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Mean ATE: $</span><span class="si">{</span><span class="n">mean_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2"> ± $</span><span class="si">{</span><span class="n">std_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Range: $</span><span class="si">{</span><span class="n">min_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2"> to $</span><span class="si">{</span><span class="n">max_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2"> (span: $</span><span class="si">{</span><span class="n">range_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  CV: </span><span class="si">{</span><span class="n">cv_ate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="s1">&#39;STABLE&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">is_stable</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;UNSTABLE&#39;</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SeedSensitivityResult</span><span class="p">(</span>
+            <span class="n">random_states</span><span class="o">=</span><span class="n">random_states</span><span class="p">,</span>
+            <span class="n">ate_estimates</span><span class="o">=</span><span class="n">ate_estimates</span><span class="p">,</span>
+            <span class="n">mean_ate</span><span class="o">=</span><span class="n">mean_ate</span><span class="p">,</span>
+            <span class="n">std_ate</span><span class="o">=</span><span class="n">std_ate</span><span class="p">,</span>
+            <span class="n">min_ate</span><span class="o">=</span><span class="n">min_ate</span><span class="p">,</span>
+            <span class="n">max_ate</span><span class="o">=</span><span class="n">max_ate</span><span class="p">,</span>
+            <span class="n">range_ate</span><span class="o">=</span><span class="n">range_ate</span><span class="p">,</span>
+            <span class="n">cv_ate</span><span class="o">=</span><span class="n">cv_ate</span><span class="p">,</span>
+            <span class="n">is_stable</span><span class="o">=</span><span class="n">is_stable</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;n_seeds&quot;</span><span class="p">:</span> <span class="n">n_seeds</span><span class="p">,</span>
+                <span class="s2">&quot;stability_threshold&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LassoDiagnostic.run_comprehensive_diagnostic">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.LassoDiagnostic.run_comprehensive_diagnostic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_comprehensive_diagnostic</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">n_seeds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComprehensiveDiagnosticResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run complete diagnostic analysis for 401(k) Lasso mismatch.</span>
+
+<span class="sd">        Performs:</span>
+<span class="sd">        1. Bootstrap distribution analysis</span>
+<span class="sd">        2. Hyperparameter sensitivity (cv_folds, max_iter)</span>
+<span class="sd">        3. Cross-fitting seed analysis</span>
+<span class="sd">        4. Root cause identification</span>
+<span class="sd">        5. Recommendations</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_bootstrap: Number of bootstrap samples</span>
+<span class="sd">            n_seeds: Number of seeds to test</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ComprehensiveDiagnosticResult with all analyses</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42, verbose=True)</span>
+<span class="sd">            &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()</span>
+<span class="sd">            &gt;&gt;&gt; print(results.root_cause_analysis)</span>
+<span class="sd">            &gt;&gt;&gt; for rec in results.recommendations:</span>
+<span class="sd">            ...     print(f&quot;- {rec}&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;COMPREHENSIVE LASSO DIAGNOSTIC ANALYSIS&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 1. Bootstrap distribution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;PHASE 1: Bootstrap Distribution Analysis&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="n">bootstrap_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_bootstrap_distribution</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="o">=</span><span class="n">n_bootstrap</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 2. Hyperparameter sensitivity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;PHASE 2: Hyperparameter Sensitivity Analysis&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="n">hyperparameter_results</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;cv_folds&quot;</span><span class="p">,</span> <span class="s2">&quot;max_iter&quot;</span><span class="p">]:</span>
+            <span class="n">hyperparameter_results</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_hyperparameter_sensitivity</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 3. Seed sensitivity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;PHASE 3: Cross-Fitting Seed Sensitivity&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="n">seed_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">analyze_seed_sensitivity</span><span class="p">(</span><span class="n">n_seeds</span><span class="o">=</span><span class="n">n_seeds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># 4. Root cause analysis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;PHASE 4: Root Cause Analysis&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="n">root_cause</span><span class="p">,</span> <span class="n">recommendations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_analyze_root_cause</span><span class="p">(</span>
+            <span class="n">bootstrap_result</span><span class="p">,</span> <span class="n">hyperparameter_results</span><span class="p">,</span> <span class="n">seed_result</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Root Cause: </span><span class="si">{</span><span class="n">root_cause</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Recommendations:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">recommendations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - </span><span class="si">{</span><span class="n">rec</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ComprehensiveDiagnosticResult</span><span class="p">(</span>
+            <span class="n">bootstrap_diagnostic</span><span class="o">=</span><span class="n">bootstrap_result</span><span class="p">,</span>
+            <span class="n">hyperparameter_sensitivity</span><span class="o">=</span><span class="n">hyperparameter_results</span><span class="p">,</span>
+            <span class="n">seed_sensitivity</span><span class="o">=</span><span class="n">seed_result</span><span class="p">,</span>
+            <span class="n">root_cause_analysis</span><span class="o">=</span><span class="n">root_cause</span><span class="p">,</span>
+            <span class="n">recommendations</span><span class="o">=</span><span class="n">recommendations</span><span class="p">,</span>
+            <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_analyze_root_cause</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bootstrap</span><span class="p">:</span> <span class="n">BootstrapDiagnosticResult</span><span class="p">,</span>
+        <span class="n">hyperparameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HyperparameterSensitivityResult</span><span class="p">],</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="n">SeedSensitivityResult</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Identify root cause of mismatch from diagnostic results.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bootstrap: Bootstrap distribution analysis</span>
+<span class="sd">            hyperparameters: Hyperparameter sensitivity results</span>
+<span class="sd">            seed: Seed sensitivity results</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of (root_cause_description, recommendations_list)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">causes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">recommendations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Check bootstrap convergence</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bootstrap</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
+            <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Bootstrap distribution not converged&quot;</span><span class="p">)</span>
+            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Increase bootstrap samples (current: </span><span class="si">{</span><span class="n">bootstrap</span><span class="o">.</span><span class="n">n_bootstrap</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check normality</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bootstrap</span><span class="o">.</span><span class="n">is_normal</span><span class="p">:</span>
+            <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Bootstrap distribution non-normal (heavy tails or skewness)&quot;</span><span class="p">)</span>
+            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Consider robust standard errors or percentile bootstrap CIs&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check outliers</span>
+        <span class="k">if</span> <span class="n">bootstrap</span><span class="o">.</span><span class="n">has_outliers</span><span class="p">:</span>
+            <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Bootstrap distribution has </span><span class="si">{</span><span class="n">bootstrap</span><span class="o">.</span><span class="n">n_outliers</span><span class="si">}</span><span class="s2"> outliers &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bootstrap</span><span class="o">.</span><span class="n">n_outliers</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">bootstrap</span><span class="o">.</span><span class="n">n_bootstrap</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span>
+            <span class="p">)</span>
+            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Investigate and potentially remove outlier samples&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check hyperparameter sensitivity</span>
+        <span class="n">sensitive_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">hyperparameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">is_sensitive</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sensitive_params</span><span class="p">:</span>
+            <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;High sensitivity to hyperparameters: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sensitive_params</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">sensitive_params</span><span class="p">:</span>
+                <span class="n">rec_value</span> <span class="o">=</span> <span class="n">hyperparameters</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">.</span><span class="n">recommended_value</span>
+                <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Use </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">rec_value</span><span class="si">}</span><span class="s2"> for stability&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check seed stability</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">seed</span><span class="o">.</span><span class="n">is_stable</span><span class="p">:</span>
+            <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;High cross-fitting seed variability (CV=</span><span class="si">{</span><span class="n">seed</span><span class="o">.</span><span class="n">cv_ate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;range=$</span><span class="si">{</span><span class="n">seed</span><span class="o">.</span><span class="n">range_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Average results over multiple random_state values (ensemble)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Synthesize root cause</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">causes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">root_cause</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;No obvious diagnostic issues found. Mismatch likely due to &quot;</span>
+                <span class="s2">&quot;implementation differences between published paper and EconML &quot;</span>
+                <span class="s2">&quot;(e.g., Lasso solver, convergence criteria, cross-fitting procedure).&quot;</span>
+            <span class="p">)</span>
+            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Document mismatch as acceptable implementation variation&quot;</span><span class="p">)</span>
+            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Focus on Random Forest replication (MATCH status)&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">causes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">root_cause</span> <span class="o">=</span> <span class="n">causes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">root_cause</span> <span class="o">=</span> <span class="s2">&quot;Multiple issues: &quot;</span> <span class="o">+</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">causes</span><span class="p">)</span>
+
+        <span class="c1"># Additional recommendations</span>
+        <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="s2">&quot;Compare Lasso solver and convergence settings with published implementation&quot;</span>
+        <span class="p">)</span>
+        <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Consider flagging Lasso as limitation and relying on RF validation&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">root_cause</span><span class="p">,</span> <span class="n">recommendations</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

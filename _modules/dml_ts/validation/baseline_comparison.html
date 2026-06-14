@@ -1,0 +1,655 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dml_ts.validation.baseline_comparison &#8212; Double ML Time Series</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=c8176860"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/validation/baseline_comparison';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Double ML Time Series</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/quickstart.html">Quickstart</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/fwl_to_dml.html">From FWL to Double Machine Learning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/time_series_dml.html">Temporal PLR DML</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/production_pipeline.html">Research Pipeline Utilities</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dml.html">DML Estimators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data Loaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/validation.html">Validation Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/production.html">Research Pipeline Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/sensitivity.html">Sensitivity Analysis</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/brandon-behring/double_ml_time_series" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/brandon-behring/double_ml_time_series/issues/new?title=Issue%20on%20page%20%2F_modules/dml_ts/validation/baseline_comparison.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for dml_ts.validation.baseline_comparison</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Unified comparison framework for baseline estimation methods.</span>
+
+<span class="sd">Provides side-by-side comparison of multiple causal inference estimators:</span>
+<span class="sd">- NaiveOLS (baseline: shows confounding bias)</span>
+<span class="sd">- OLSWithControls (standard econometrics)</span>
+<span class="sd">- IPWEstimator (inverse propensity weighting)</span>
+<span class="sd">- AugmentedIPW (doubly robust)</span>
+<span class="sd">- RandomForestEstimator (non-parametric ML baseline)</span>
+<span class="sd">- XGBoostEstimator (gradient boosting ML baseline)</span>
+<span class="sd">- BiasValidation (Double Machine Learning - DML)</span>
+
+<span class="sd">Enables systematic evaluation of method performance across different DGP configurations.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bias_validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">BiasValidation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.dgp_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">DGPGenerator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.ipw_baseline</span><span class="w"> </span><span class="kn">import</span> <span class="n">AugmentedIPW</span><span class="p">,</span> <span class="n">IPWEstimator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.ml_baseline</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestEstimator</span><span class="p">,</span> <span class="n">XGBoostEstimator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.ols_baseline</span><span class="w"> </span><span class="kn">import</span> <span class="n">NaiveOLS</span><span class="p">,</span> <span class="n">OLSWithControls</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.validation_result</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationResult</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Validatable</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for objects that support validate(dgp) -&gt; ValidationResult.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ValidationResult</span><span class="p">:</span> <span class="o">...</span>
+
+
+<div class="viewcode-block" id="BaselineComparison">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaselineComparison</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run all baseline methods on same DGP and compare results.</span>
+
+<span class="sd">    Provides unified framework for comparing:</span>
+<span class="sd">    - Bias and MSE across methods</span>
+<span class="sd">    - Statistical properties (coverage, CI validity)</span>
+<span class="sd">    - Computational efficiency</span>
+<span class="sd">    - Robustness to confounding and model misspecification</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n_simulations: Number of Monte Carlo simulations per method</span>
+<span class="sd">        random_state: Random seed for reproducibility</span>
+<span class="sd">        include_dml: Whether to include DML method (default: True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BaselineComparison.__init__">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_simulations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_dml</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">include_ml</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize comparison framework.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_simulations: Number of Monte Carlo simulations per method</span>
+<span class="sd">            random_state: Random seed for reproducibility</span>
+<span class="sd">            include_dml: Whether to include DML method (default: True)</span>
+<span class="sd">            include_ml: Whether to include ML baseline methods (RF, XGBoost) (default: False)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span> <span class="o">=</span> <span class="n">n_simulations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_dml</span> <span class="o">=</span> <span class="n">include_dml</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_ml</span> <span class="o">=</span> <span class="n">include_ml</span>
+
+        <span class="c1"># Initialize all baseline methods</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Validatable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;NaiveOLS&quot;</span><span class="p">:</span> <span class="n">NaiveOLS</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">),</span>
+            <span class="s2">&quot;OLSWithControls&quot;</span><span class="p">:</span> <span class="n">OLSWithControls</span><span class="p">(</span>
+                <span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;IPWEstimator&quot;</span><span class="p">:</span> <span class="n">IPWEstimator</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">),</span>
+            <span class="s2">&quot;AugmentedIPW&quot;</span><span class="p">:</span> <span class="n">AugmentedIPW</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Optionally include ML baselines</span>
+        <span class="k">if</span> <span class="n">include_ml</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">&quot;RandomForest&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RandomForestEstimator</span><span class="p">(</span>
+                <span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">&quot;XGBoost&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">XGBoostEstimator</span><span class="p">(</span>
+                <span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Optionally include DML</span>
+        <span class="k">if</span> <span class="n">include_dml</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">&quot;DML&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">BiasValidation</span><span class="p">(</span>
+                <span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineComparison.compare">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.compare">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ValidationResult</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run all methods on same DGP with deterministic comparability.</span>
+
+<span class="sd">        FIXED (Issue C3): Reset DGP random state before each method to ensure</span>
+<span class="sd">        all methods see identical random draws. This prevents ranking instability</span>
+<span class="sd">        where methods could vary by up to 4 positions due to different data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dgp: Data generating process to validate against</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary mapping method names to ValidationResults</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">method</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># FIXED (Issue C3): Reset DGP random state for deterministic comparisons</span>
+            <span class="c1"># Each method now sees the SAME random draws for fair comparison</span>
+            <span class="n">dgp</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">dgp</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="BaselineComparison.create_comparison_table">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.create_comparison_table">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_comparison_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create summary table comparing all methods.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dgp: Data generating process to validate against</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame with one row per method, columns for key metrics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
+
+        <span class="c1"># Build comparison table</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                    <span class="s2">&quot;Bias&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;MSE&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;RMSE&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;Coverage&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">coverage</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;Status&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+                    <span class="s2">&quot;Bias 95% CI&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;P-value&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">bias_p_value</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineComparison.create_detailed_comparison_table">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.create_detailed_comparison_table">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_detailed_comparison_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create detailed comparison table with additional statistics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dgp: Data generating process to validate against</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame with extended metrics for in-depth analysis</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
+
+        <span class="c1"># Build detailed table</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                    <span class="s2">&quot;Bias&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+                    <span class="s2">&quot;Abs_Bias&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">),</span>
+                    <span class="s2">&quot;MSE&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="p">,</span>
+                    <span class="s2">&quot;RMSE&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="p">),</span>
+                    <span class="s2">&quot;Coverage&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">coverage</span><span class="p">,</span>
+                    <span class="s2">&quot;CI_Lower&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="p">,</span>
+                    <span class="s2">&quot;CI_Upper&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span><span class="p">,</span>
+                    <span class="s2">&quot;CI_Width&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span> <span class="o">-</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="p">,</span>
+                    <span class="s2">&quot;Status&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+                    <span class="s2">&quot;P_Value&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">bias_p_value</span><span class="p">,</span>
+                    <span class="s2">&quot;N_Simulations&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">,</span>
+                    <span class="s2">&quot;Timestamp&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineComparison.compare_across_dgps">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.compare_across_dgps">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare_across_dgps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp_configs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compare methods across multiple DGP configurations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dgp_configs: List of DGPGenerator configuration dicts</span>
+<span class="sd">                        (passed as ``**kwargs`` to DGPGenerator)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary mapping config string → comparison table</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_results</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">dgp_configs</span><span class="p">:</span>
+            <span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">config_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_to_string</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">all_results</span><span class="p">[</span><span class="n">config_str</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_comparison_table</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">all_results</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_config_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert DGP config dict to readable string.&quot;&quot;&quot;</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="s2">&quot;true_effect&quot;</span><span class="p">,</span> <span class="s2">&quot;confounding_strength&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaselineComparison.generate_summary_statistics">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.generate_summary_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_summary_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate summary statistics across all methods.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dgp: Data generating process to validate against</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary with summary metrics (best, worst, average performance)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
+
+        <span class="c1"># Extract biases</span>
+        <span class="n">biases</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">mses</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">mse</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">coverages</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">coverage</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="c1"># Find best/worst</span>
+        <span class="n">best_bias_method</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">biases</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">biases</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+        <span class="n">worst_bias_method</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">biases</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">biases</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+        <span class="n">best_mse_method</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">mses</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">mses</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+        <span class="n">best_coverage_method</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">coverages</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">coverages</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;dgp_config&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+                <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+                <span class="s2">&quot;true_effect&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
+                <span class="s2">&quot;confounding_strength&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">confounding_strength</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;best_bias_method&quot;</span><span class="p">:</span> <span class="n">best_bias_method</span><span class="p">,</span>
+            <span class="s2">&quot;worst_bias_method&quot;</span><span class="p">:</span> <span class="n">worst_bias_method</span><span class="p">,</span>
+            <span class="s2">&quot;best_mse_method&quot;</span><span class="p">:</span> <span class="n">best_mse_method</span><span class="p">,</span>
+            <span class="s2">&quot;best_coverage_method&quot;</span><span class="p">:</span> <span class="n">best_coverage_method</span><span class="p">,</span>
+            <span class="s2">&quot;all_biases&quot;</span><span class="p">:</span> <span class="n">biases</span><span class="p">,</span>
+            <span class="s2">&quot;all_mses&quot;</span><span class="p">:</span> <span class="n">mses</span><span class="p">,</span>
+            <span class="s2">&quot;all_coverages&quot;</span><span class="p">:</span> <span class="n">coverages</span><span class="p">,</span>
+            <span class="s2">&quot;mean_absolute_bias&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">biases</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
+            <span class="s2">&quot;mean_mse&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">mses</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
+            <span class="s2">&quot;mean_coverage&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">coverages</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
+        <span class="p">}</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Brandon Behring
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Brandon Behring.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
