@@ -343,6 +343,8 @@ class TemporalPLRDML:
             raise ValueError(
                 f"hac_bandwidth must be None or a non-negative int, got {hac_bandwidth!r}"
             )
+        if isinstance(n_lags, bool) or not isinstance(n_lags, (int, np.integer)) or n_lags < 0:
+            raise ValueError(f"n_lags must be a non-negative integer, got {n_lags!r}")
         self.n_lags = n_lags
         self.model_y = model_y
         self.model_t = model_t
@@ -767,6 +769,15 @@ class RollingWindowDML:
         # Compute window centers
         half_window = self.window_size // 2
         centers = list(range(half_window, n_samples - half_window, self.step_size))
+        if not centers:
+            # window_size too large for the series produces an empty center list,
+            # which would otherwise bypass the skip-warning loop and silently
+            # return empty estimate arrays from get_effects().
+            raise ValueError(
+                f"window_size={self.window_size} is too large for n={n_samples}: "
+                "no valid rolling-window centers. Reduce window_size or use a "
+                "longer series."
+            )
 
         theta_list: list[float] = []
         se_list: list[float] = []

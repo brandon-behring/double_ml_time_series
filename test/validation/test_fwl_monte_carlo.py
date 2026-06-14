@@ -222,9 +222,9 @@ class TestEdgeCases:
         T = np.random.randn(n)
         Y = np.random.randn(n)
 
-        # With more covariates than observations, either collinearity or
+        # With more covariates than observations, either collinearity/rank or
         # insufficient df error is acceptable
-        with pytest.raises(ValueError, match="(degrees of freedom|no variation)"):
+        with pytest.raises(ValueError, match="(degrees of freedom|no variation|[Rr]ank-deficient)"):
             fwl_estimate(Y, T, X)
 
     def test_mismatched_lengths_raises(self):

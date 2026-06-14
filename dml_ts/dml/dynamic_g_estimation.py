@@ -37,6 +37,7 @@ Lewis & Syrgkanis): a stationary distributed-lag g-estimation
 from __future__ import annotations
 
 import os
+import warnings
 from dataclasses import dataclass
 from typing import Literal, TypeAlias
 
@@ -63,6 +64,26 @@ ModelSpec: TypeAlias = str | BaseEstimator
 Mode = Literal["panel", "series"]
 
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
+
+
+def _warn_if_ill_conditioned(matrix: NDArray[np.float64], name: str, *, tol: float = 1e12) -> None:
+    """Warn loudly when a moment Jacobian to be inverted is near-singular.
+
+    An ill-conditioned (but not exactly singular) Jacobian produces a
+    finite-but-meaningless inverse and an enormous standard error that otherwise
+    passes every downstream validator silently. Per the repo's no-silent-failure
+    rule, surface weak identification rather than report garbage with a straight
+    face.
+    """
+    cond = float(np.linalg.cond(matrix))
+    if not np.isfinite(cond) or cond > tol:
+        warnings.warn(
+            f"{name} is ill-conditioned (cond={cond:.3e}): treatment residual "
+            "variation is too weak to identify the period blip — the reported "
+            "standard errors are unreliable.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -452,6 +473,7 @@ class DynamicGEstimationDML:
             for s in range(tau, m):
                 G[tau, s] = -float(np.mean(t_tau * Ttil[tau][:, s]))
         meat = (g.T @ g) / n
+        _warn_if_ill_conditioned(G, "panel moment Jacobian G")
         G_inv = np.linalg.inv(G)
         cov = (G_inv @ meat @ G_inv.T) / n
 
@@ -492,6 +514,7 @@ class DynamicGEstimationDML:
         scores = Ttil * resid_full[:, None]  # (Lk, m)
         bw = optimal_bandwidth(resid_full, method="newey_west")
         s_hac = _bartlett_long_run_cov(scores, bw)
+        _warn_if_ill_conditioned(gram, "series treatment Gram")
         bread = np.linalg.inv(gram / lk)
         cov = (bread @ s_hac @ bread.T) / lk
 

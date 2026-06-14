@@ -45,6 +45,13 @@ def hac_inference(
             f"se_hac must be a positive finite number, got {se_hac!r} — "
             "degenerate standard errors must not silently produce p-values."
         )
+    if not np.isfinite(theta):
+        raise ValueError(
+            f"theta must be finite, got {theta!r} — a non-finite estimate must not "
+            "silently produce NaN t-statistics, p-values, and confidence intervals."
+        )
+    if not 0.0 < alpha < 1.0:
+        raise ValueError(f"alpha must be in (0, 1), got {alpha!r}.")
 
     z_crit = stats.norm.ppf(1 - alpha / 2)
     t_stat = theta / se_hac
