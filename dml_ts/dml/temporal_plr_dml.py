@@ -343,7 +343,7 @@ class TemporalPLRDML:
             raise ValueError(
                 f"hac_bandwidth must be None or a non-negative int, got {hac_bandwidth!r}"
             )
-        if isinstance(n_lags, bool) or not isinstance(n_lags, int) or n_lags < 0:
+        if isinstance(n_lags, bool) or not isinstance(n_lags, (int, np.integer)) or n_lags < 0:
             raise ValueError(f"n_lags must be a non-negative integer, got {n_lags!r}")
         self.n_lags = n_lags
         self.model_y = model_y

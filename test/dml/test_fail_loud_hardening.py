@@ -30,6 +30,12 @@ def test_fwl_residualize_qr_raises_on_rank_deficient_controls() -> None:
     # the rank-safe "ols" path still returns finite residuals
     resid, _ = fwl_residualize(Y, X, method="ols")
     assert np.isfinite(resid).all()
+    # a full-rank but SCALE-DISPARATE design must NOT raise (scale != rank deficiency)
+    X_scaled = np.column_stack(
+        [np.ones(200), 1e-4 * rng.standard_normal(200), 1e8 * rng.standard_normal(200)]
+    )
+    resid_qr, _ = fwl_residualize(Y, X_scaled, method="qr")
+    assert np.isfinite(resid_qr).all()
 
 
 def test_hac_inference_rejects_nonfinite_theta_and_bad_alpha() -> None:

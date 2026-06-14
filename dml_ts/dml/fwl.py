@@ -165,17 +165,16 @@ def fwl_residualize(
         # np.linalg.qr returns a full-width Q even when X is rank-deficient, so
         # Q @ Q.T then over-projects onto spurious directions and silently
         # returns the WRONG residuals (a different theta) instead of failing.
-        # Detect rank deficiency from the R diagonal and raise loudly rather than
-        # fabricate a plausible-but-wrong fit (method="ols" is rank-safe).
-        Q, R = np.linalg.qr(X)
-        diag_r = np.abs(np.diag(R))
-        ref = float(diag_r.max()) if diag_r.size else 0.0
-        if ref == 0.0 or float(diag_r.min()) <= 1e-10 * ref:
+        # Use a SCALE-INVARIANT rank check (matrix_rank's relative tolerance) so
+        # genuinely collinear controls raise loudly while a merely scale-disparate
+        # but full-rank design is accepted (method="ols" is rank-safe regardless).
+        if np.linalg.matrix_rank(X) < X.shape[1]:
             raise ValueError(
                 "Rank-deficient control matrix X (collinear columns) in QR "
                 "residualization: the FWL residuals are undefined. De-collinearize "
                 'X, or call with method="ols" (rank-safe least squares).'
             )
+        Q = np.linalg.qr(X)[0]
         Y_hat = Q @ (Q.T @ Y)
         residuals = Y - Y_hat
     else:
