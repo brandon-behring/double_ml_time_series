@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=c8176860"></script>
+    <script src="../_static/documentation_options.js?v=62df3ba8"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -311,6 +311,8 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fwl-to-dml-progression">FWL to DML Progression</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-series-dml">Time Series DML</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamic-g-estimation">Dynamic G-Estimation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rolling-window-dml">Rolling-Window DML</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#panel-dml">Panel DML</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#insurance-dgp">Insurance DGP</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitivity-analysis">Sensitivity Analysis</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#research-pipeline-utilities">Research Pipeline Utilities</a></li>
@@ -332,17 +334,19 @@ Each script is self-contained and can be executed directly.</p>
 <nav class="contents local" id="example-index">
 <p class="topic-title">Example Index</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#fwl-to-dml-progression" id="id7">FWL to DML Progression</a></p></li>
-<li><p><a class="reference internal" href="#time-series-dml" id="id8">Time Series DML</a></p></li>
-<li><p><a class="reference internal" href="#dynamic-g-estimation" id="id9">Dynamic G-Estimation</a></p></li>
-<li><p><a class="reference internal" href="#insurance-dgp" id="id10">Insurance DGP</a></p></li>
-<li><p><a class="reference internal" href="#sensitivity-analysis" id="id11">Sensitivity Analysis</a></p></li>
-<li><p><a class="reference internal" href="#research-pipeline-utilities" id="id12">Research Pipeline Utilities</a></p></li>
+<li><p><a class="reference internal" href="#fwl-to-dml-progression" id="id9">FWL to DML Progression</a></p></li>
+<li><p><a class="reference internal" href="#time-series-dml" id="id10">Time Series DML</a></p></li>
+<li><p><a class="reference internal" href="#dynamic-g-estimation" id="id11">Dynamic G-Estimation</a></p></li>
+<li><p><a class="reference internal" href="#rolling-window-dml" id="id12">Rolling-Window DML</a></p></li>
+<li><p><a class="reference internal" href="#panel-dml" id="id13">Panel DML</a></p></li>
+<li><p><a class="reference internal" href="#insurance-dgp" id="id14">Insurance DGP</a></p></li>
+<li><p><a class="reference internal" href="#sensitivity-analysis" id="id15">Sensitivity Analysis</a></p></li>
+<li><p><a class="reference internal" href="#research-pipeline-utilities" id="id16">Research Pipeline Utilities</a></p></li>
 </ul>
 </nav>
 <hr class="docutils" />
 <section id="fwl-to-dml-progression">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">FWL to DML Progression</a><a class="headerlink" href="#fwl-to-dml-progression" title="Link to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">FWL to DML Progression</a><a class="headerlink" href="#fwl-to-dml-progression" title="Link to this heading">#</a></h2>
 <p>Demonstrates the pedagogical progression: FWL fails on nonlinear confounding,
 Robinson overfits without cross-fitting, DML recovers the true effect.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
@@ -452,7 +456,7 @@ Robinson overfits without cross-fitting, DML recovers the true effect.</p>
 </section>
 <hr class="docutils" />
 <section id="time-series-dml">
-<h2><a class="toc-backref" href="#id8" role="doc-backlink">Time Series DML</a><a class="headerlink" href="#time-series-dml" title="Link to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">Time Series DML</a><a class="headerlink" href="#time-series-dml" title="Link to this heading">#</a></h2>
 <p>TemporalPLRDML with temporal cross-validation and HAC standard errors
 on autocorrelated data.</p>
 <div class="literal-block-wrapper docutils container" id="id2">
@@ -562,7 +566,7 @@ on autocorrelated data.</p>
 </section>
 <hr class="docutils" />
 <section id="dynamic-g-estimation">
-<h2><a class="toc-backref" href="#id9" role="doc-backlink">Dynamic G-Estimation</a><a class="headerlink" href="#dynamic-g-estimation" title="Link to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id11" role="doc-backlink">Dynamic G-Estimation</a><a class="headerlink" href="#dynamic-g-estimation" title="Link to this heading">#</a></h2>
 <p>Recursive dynamic g-estimation (<code class="docutils literal notranslate"><span class="pre">DynamicGEstimationDML</span></code>) recovering
 period-specific blips <code class="docutils literal notranslate"><span class="pre">theta_1..theta_m</span></code> for a linear SNMM, with a gated
 EconML <code class="docutils literal notranslate"><span class="pre">DynamicDML</span></code> cross-check.</p>
@@ -670,12 +674,154 @@ EconML <code class="docutils literal notranslate"><span class="pre">DynamicDML</
 </div>
 </section>
 <hr class="docutils" />
+<section id="rolling-window-dml">
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">Rolling-Window DML</a><a class="headerlink" href="#rolling-window-dml" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">RollingWindowDML</span></code> refits a partially-linear DML estimate on a sliding
+window of the series to trace a time-varying treatment effect.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">examples/example_rolling_window_dml.py</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Rolling-window DML: tracing a treatment effect over time.</span>
+
+<span class="sd">Demonstrates ``RollingWindowDML``, which refits a partially-linear DML estimate</span>
+<span class="sd">on a sliding window of the series to show how the scalar treatment effect moves</span>
+<span class="sd">across the sample.</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    venv/bin/python examples/example_rolling_window_dml.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">RollingWindowDML</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the rolling-window DML pipeline on synthetic data.&quot;&quot;&quot;</span>
+    <span class="n">TRUE_THETA</span> <span class="o">=</span> <span class="mf">1.5</span>
+
+    <span class="c1"># ── Synthetic series with a known constant effect ────────────────────</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Rolling-Window DML&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="mf">0.6</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">TRUE_THETA</span> <span class="o">*</span> <span class="n">T</span> <span class="o">+</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  n_periods:   </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  n_features:  </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  True effect: </span><span class="si">{</span><span class="n">TRUE_THETA</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="c1"># ── Fit a sliding-window DML ─────────────────────────────────────────</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">RollingWindowDML</span><span class="p">(</span>
+        <span class="n">window_size</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+        <span class="n">step_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+        <span class="n">model_y</span><span class="o">=</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span>
+        <span class="n">model_t</span><span class="o">=</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span>
+        <span class="n">n_folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">centers</span><span class="p">,</span> <span class="n">thetas</span><span class="p">,</span> <span class="n">ses</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_effects</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Windows fit: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Mean theta:  </span><span class="si">{</span><span class="n">thetas</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (true: </span><span class="si">{</span><span class="n">TRUE_THETA</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Per-window estimates:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">center</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">se</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">thetas</span><span class="p">,</span> <span class="n">ses</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    center=</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">center</span><span class="p">)</span><span class="si">:</span><span class="s2">4d</span><span class="si">}</span><span class="s2">  theta=</span><span class="si">{</span><span class="n">theta</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">  se=</span><span class="si">{</span><span class="n">se</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="panel-dml">
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">Panel DML</a><a class="headerlink" href="#panel-dml" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">PanelDML</span></code> with an individual fixed-effects (within) transformation and
+cluster-robust standard errors on a synthetic panel.</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">examples/example_panel_dml.py</span><a class="headerlink" href="#id5" title="Link to this code">#</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Panel DML with fixed effects and cluster-robust inference.</span>
+
+<span class="sd">Demonstrates ``PanelDML`` on a synthetic panel: a within (individual</span>
+<span class="sd">fixed-effects) transformation removes unit-level confounding, DML residualizes</span>
+<span class="sd">the remaining controls, and the treatment effect is reported with a</span>
+<span class="sd">cluster-robust standard error.</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    venv/bin/python examples/example_panel_dml.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">PanelDML</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the panel DML pipeline on synthetic panel data.&quot;&quot;&quot;</span>
+    <span class="n">TRUE_THETA</span> <span class="o">=</span> <span class="mf">2.0</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Panel DML (individual fixed effects)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+    <span class="n">n_units</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">6</span>
+    <span class="n">n_obs</span> <span class="o">=</span> <span class="n">n_units</span> <span class="o">*</span> <span class="n">m</span>
+    <span class="n">individual_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_units</span><span class="p">),</span> <span class="n">m</span><span class="p">)</span>
+    <span class="n">time_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="n">n_units</span><span class="p">)</span>
+
+    <span class="c1"># Unit-level confounder (the fixed effect) plus idiosyncratic controls.</span>
+    <span class="n">unit_effect</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n_units</span><span class="p">),</span> <span class="n">m</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">n_obs</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">unit_effect</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n_obs</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">TRUE_THETA</span> <span class="o">*</span> <span class="n">T</span> <span class="o">+</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">unit_effect</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n_obs</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  units:        </span><span class="si">{</span><span class="n">n_units</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  periods:      </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  observations: </span><span class="si">{</span><span class="n">n_obs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  True effect:  </span><span class="si">{</span><span class="n">TRUE_THETA</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">PanelDML</span><span class="p">(</span>
+        <span class="n">fixed_effects</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
+        <span class="n">cluster_se</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">model_y</span><span class="o">=</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span>
+        <span class="n">model_t</span><span class="o">=</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span>
+        <span class="n">n_folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Short per-unit panels leave a few early temporal-CV rows uncovered.</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">individual_id</span><span class="p">,</span> <span class="n">time_id</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Panel DML estimate: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (true: </span><span class="si">{</span><span class="n">TRUE_THETA</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Cluster-robust SE:  </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  95% CI:             [</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<hr class="docutils" />
 <section id="insurance-dgp">
-<h2><a class="toc-backref" href="#id10" role="doc-backlink">Insurance DGP</a><a class="headerlink" href="#insurance-dgp" title="Link to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Insurance DGP</a><a class="headerlink" href="#insurance-dgp" title="Link to this heading">#</a></h2>
 <p>Insurance pricing DGP at multiple realism levels — from simple linear
 to fully nonlinear with temporal dynamics.</p>
-<div class="literal-block-wrapper docutils container" id="id4">
-<div class="code-block-caption"><span class="caption-text">examples/example_insurance_dgp.py</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">examples/example_insurance_dgp.py</span><a class="headerlink" href="#id6" title="Link to this code">#</a></div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Insurance Pricing DGP at Multiple Realism Levels.</span>
 
 <span class="sd">Demonstrates the parameterized insurance DGP for competitor pricing</span>
@@ -749,10 +895,10 @@ to fully nonlinear with temporal dynamics.</p>
 </section>
 <hr class="docutils" />
 <section id="sensitivity-analysis">
-<h2><a class="toc-backref" href="#id11" role="doc-backlink">Sensitivity Analysis</a><a class="headerlink" href="#sensitivity-analysis" title="Link to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id15" role="doc-backlink">Sensitivity Analysis</a><a class="headerlink" href="#sensitivity-analysis" title="Link to this heading">#</a></h2>
 <p>Rosenbaum bounds sensitivity analysis applied to DML results.</p>
-<div class="literal-block-wrapper docutils container" id="id5">
-<div class="code-block-caption"><span class="caption-text">examples/example_sensitivity.py</span><a class="headerlink" href="#id5" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">examples/example_sensitivity.py</span><a class="headerlink" href="#id7" title="Link to this code">#</a></div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Rosenbaum Bounds Sensitivity Analysis.</span>
 
 <span class="sd">Demonstrates sensitivity analysis for DML treatment effect estimates.</span>
@@ -850,11 +996,11 @@ to fully nonlinear with temporal dynamics.</p>
 </section>
 <hr class="docutils" />
 <section id="research-pipeline-utilities">
-<h2><a class="toc-backref" href="#id12" role="doc-backlink">Research Pipeline Utilities</a><a class="headerlink" href="#research-pipeline-utilities" title="Link to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id16" role="doc-backlink">Research Pipeline Utilities</a><a class="headerlink" href="#research-pipeline-utilities" title="Link to this heading">#</a></h2>
 <p>Registry and causal-monitoring utilities used as reproducible research/demo
 code. This example is not a production deployment claim.</p>
-<div class="literal-block-wrapper docutils container" id="id6">
-<div class="code-block-caption"><span class="caption-text">examples/example_production_pipeline.py</span><a class="headerlink" href="#id6" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">examples/example_production_pipeline.py</span><a class="headerlink" href="#id8" title="Link to this code">#</a></div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Research Pipeline Utilities: Model Registry + Causal Monitoring.</span>
 
 <span class="sd">Demonstrates the companion-code registry and monitoring utilities:</span>
@@ -1047,6 +1193,8 @@ code. This example is not a production deployment claim.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fwl-to-dml-progression">FWL to DML Progression</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-series-dml">Time Series DML</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dynamic-g-estimation">Dynamic G-Estimation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rolling-window-dml">Rolling-Window DML</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#panel-dml">Panel DML</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#insurance-dgp">Insurance DGP</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sensitivity-analysis">Sensitivity Analysis</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#research-pipeline-utilities">Research Pipeline Utilities</a></li>
