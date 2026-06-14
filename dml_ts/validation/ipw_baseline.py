@@ -32,10 +32,19 @@ class IPWEstimator:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> ipw = IPWEstimator(n_simulations=100, random_state=42)
-        >>> dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)
+        >>> from dml_ts.validation.bootstrap_config import BootstrapConfig
+        >>> ipw = IPWEstimator(
+        ...     n_simulations=5,
+        ...     bootstrap_config=BootstrapConfig.tier2(),
+        ...     random_state=42,
+        ... )
+        >>> dgp = DGPGenerator(n=200, p=5, true_effect=2.0,
+        ...                    confounding_strength=1.0, random_state=42)
         >>> result = ipw.validate(dgp)
-        >>> result.status  # Status depends on confounding and overlap
+        >>> result.method
+        'IPWEstimator'
+        >>> result.status in {"PASS", "WARNING", "FAIL"}
+        True
     """
 
     def __init__(
@@ -223,10 +232,19 @@ class AugmentedIPW:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> aipw = AugmentedIPW(n_simulations=100, random_state=42)
-        >>> dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)
+        >>> from dml_ts.validation.bootstrap_config import BootstrapConfig
+        >>> aipw = AugmentedIPW(
+        ...     n_simulations=5,
+        ...     bootstrap_config=BootstrapConfig.tier2(),
+        ...     random_state=42,
+        ... )
+        >>> dgp = DGPGenerator(n=200, p=5, true_effect=2.0,
+        ...                    confounding_strength=1.0, random_state=42)
         >>> result = aipw.validate(dgp)
-        >>> result.status  # Usually PASS due to double robustness
+        >>> result.method
+        'AugmentedIPW'
+        >>> bool(result.metadata["doubly_robust"])
+        True
     """
 
     def __init__(

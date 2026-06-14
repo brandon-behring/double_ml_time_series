@@ -17,11 +17,16 @@ Diagnostic Goals:
     4. Implementation configuration comparison with published paper
 
 Usage:
-    >>> from dml_ts.validation.lasso_diagnostic import LassoDiagnostic
-    >>> diagnostic = LassoDiagnostic(random_state=42)
-    >>> results = diagnostic.run_comprehensive_diagnostic()
-    >>> print(f"Bootstrap convergence: {results.bootstrap_converged}")
-    >>> print(f"Seed sensitivity: {results.seed_std_dev:.2f}")
+    Requires the real 401(k) dataset (downloaded via ``doubleml.fetch_401K``)
+    and many econml DML fits, so the example is skipped under doctest.
+
+    >>> from dml_ts.validation.lasso_diagnostic import LassoDiagnostic  # doctest: +SKIP
+    >>> diagnostic = LassoDiagnostic(random_state=42)  # doctest: +SKIP
+    >>> results = diagnostic.run_comprehensive_diagnostic()  # doctest: +SKIP
+    >>> bool(results.bootstrap_diagnostic.converged)  # doctest: +SKIP
+    True
+    >>> float(round(results.seed_sensitivity.cv_ate, 2))  # doctest: +SKIP
+    0.35
 """
 
 from dataclasses import dataclass
@@ -71,7 +76,7 @@ class HyperparameterSensitivityResult:
     """Results from hyperparameter sensitivity analysis.
 
     Attributes:
-        parameter_name: Name of varied parameter (alpha, cv_folds, max_iter)
+        parameter_name: Name of varied parameter (cv_folds, max_iter)
         parameter_values: Array of tested parameter values
         ate_estimates: Array of ATE estimates for each parameter value
         std_errors: Array of standard errors for each parameter value
@@ -153,9 +158,11 @@ class LassoDiagnostic:
         verbose: Whether to print diagnostic progress
 
     Examples:
-        >>> diagnostic = LassoDiagnostic(random_state=42, verbose=True)
-        >>> results = diagnostic.run_comprehensive_diagnostic()
-        >>> if not results.bootstrap_diagnostic.converged:
+        Requires the real 401(k) dataset and many econml DML fits:
+
+        >>> diagnostic = LassoDiagnostic(random_state=42, verbose=True)  # doctest: +SKIP
+        >>> results = diagnostic.run_comprehensive_diagnostic()  # doctest: +SKIP
+        >>> if not results.bootstrap_diagnostic.converged:  # doctest: +SKIP
         ...     print("Bootstrap distribution not converged - increase n_bootstrap")
     """
 
@@ -248,11 +255,15 @@ class LassoDiagnostic:
             BootstrapDiagnosticResult with distribution analysis
 
         Examples:
-            >>> diagnostic = LassoDiagnostic(random_state=42)
-            >>> result = diagnostic.analyze_bootstrap_distribution(n_bootstrap=1000)
-            >>> result.is_normal
+            Requires the real 401(k) dataset and an econml DML fit per sample:
+
+            >>> diagnostic = LassoDiagnostic(random_state=42)  # doctest: +SKIP
+            >>> result = diagnostic.analyze_bootstrap_distribution(  # doctest: +SKIP
+            ...     n_bootstrap=1000
+            ... )
+            >>> result.is_normal  # doctest: +SKIP
             False
-            >>> result.n_outliers
+            >>> result.n_outliers  # doctest: +SKIP
             23
         """
         from econml.dml import LinearDML
@@ -351,20 +362,23 @@ class LassoDiagnostic:
         Tests how ATE estimate varies with different hyperparameter values.
 
         Args:
-            parameter: Parameter to vary (alpha, cv_folds, max_iter)
+            parameter: Parameter to vary (cv_folds, max_iter)
             values: List of values to test (uses defaults if None)
 
         Returns:
             HyperparameterSensitivityResult with sensitivity analysis
 
         Examples:
-            >>> diagnostic = LassoDiagnostic(random_state=42)
-            >>> result = diagnostic.analyze_hyperparameter_sensitivity(
-            ...     parameter="alpha", values=[0.001, 0.01, 0.1, 1.0]
+            Requires the real 401(k) dataset and an econml DML fit per value.
+            Note ``parameter`` must be one of "cv_folds" or "max_iter":
+
+            >>> diagnostic = LassoDiagnostic(random_state=42)  # doctest: +SKIP
+            >>> result = diagnostic.analyze_hyperparameter_sensitivity(  # doctest: +SKIP
+            ...     parameter="max_iter", values=[500, 1000, 2000]
             ... )
-            >>> result.is_sensitive
+            >>> result.is_sensitive  # doctest: +SKIP
             True
-            >>> result.sensitivity_score
+            >>> result.sensitivity_score  # doctest: +SKIP
             0.25
         """
         # Default values for each parameter
@@ -486,11 +500,13 @@ class LassoDiagnostic:
             SeedSensitivityResult with seed sensitivity analysis
 
         Examples:
-            >>> diagnostic = LassoDiagnostic()
-            >>> result = diagnostic.analyze_seed_sensitivity(n_seeds=20)
-            >>> result.is_stable
+            Requires the real 401(k) dataset and an econml DML fit per seed:
+
+            >>> diagnostic = LassoDiagnostic()  # doctest: +SKIP
+            >>> result = diagnostic.analyze_seed_sensitivity(n_seeds=20)  # doctest: +SKIP
+            >>> result.is_stable  # doctest: +SKIP
             False
-            >>> result.cv_ate
+            >>> result.cv_ate  # doctest: +SKIP
             0.35
         """
         from econml.dml import LinearDML
@@ -578,10 +594,12 @@ class LassoDiagnostic:
             ComprehensiveDiagnosticResult with all analyses
 
         Examples:
-            >>> diagnostic = LassoDiagnostic(random_state=42, verbose=True)
-            >>> results = diagnostic.run_comprehensive_diagnostic()
-            >>> print(results.root_cause_analysis)
-            >>> for rec in results.recommendations:
+            Requires the real 401(k) dataset and many econml DML fits:
+
+            >>> diagnostic = LassoDiagnostic(random_state=42, verbose=True)  # doctest: +SKIP
+            >>> results = diagnostic.run_comprehensive_diagnostic()  # doctest: +SKIP
+            >>> print(results.root_cause_analysis)  # doctest: +SKIP
+            >>> for rec in results.recommendations:  # doctest: +SKIP
             ...     print(f"- {rec}")
         """
         self._log("=" * 80)

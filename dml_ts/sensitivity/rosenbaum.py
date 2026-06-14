@@ -81,11 +81,13 @@ class SensitivityResult:
 
     Examples
     --------
+    >>> from dml_ts.sensitivity import RosenbaumBounds
+    >>> bounds = RosenbaumBounds()
     >>> result = bounds.analyze(theta=2.5, se=0.5, n_treated=500, n_control=500)
-    >>> print(result.gamma_critical)
-    1.85
-    >>> print(result.interpretation)
-    'Moderately Robust'
+    >>> float(result.gamma_critical)
+    3.0
+    >>> result.interpretation
+    'Robust'
     """
 
     gamma_critical: float
@@ -153,20 +155,18 @@ class RosenbaumBounds:
     Examples
     --------
     >>> from dml_ts.sensitivity import RosenbaumBounds
-    >>> from dml_ts.dml import double_ml
-    >>>
-    >>> # Run DML
-    >>> result = double_ml(Y, T, X)
-    >>>
-    >>> # Sensitivity analysis
+    >>> # Given a DML estimate (theta, se) and approximate group sizes:
     >>> bounds = RosenbaumBounds()
     >>> sensitivity = bounds.analyze(
-    ...     theta=result.theta,
-    ...     se=result.se,
-    ...     n_treated=len(Y) // 2,  # Approximate
-    ...     n_control=len(Y) // 2,
+    ...     theta=2.5,
+    ...     se=0.5,
+    ...     n_treated=500,  # Approximate
+    ...     n_control=500,
     ... )
-    >>> print(sensitivity.summary())
+    >>> sensitivity.interpretation
+    'Robust'
+    >>> isinstance(sensitivity.summary(), str)
+    True
     """
 
     def __init__(
@@ -485,17 +485,16 @@ def compute_sensitivity_for_dml(
 
     Examples
     --------
-    >>> from dml_ts.dml import double_ml
     >>> from dml_ts.sensitivity import compute_sensitivity_for_dml
-    >>>
-    >>> result = double_ml(Y, T, X)
+    >>> # Given a DML estimate (theta, se, treatment R^2) on n_samples rows:
     >>> sensitivity = compute_sensitivity_for_dml(
-    ...     theta=result.theta,
-    ...     se=result.se,
-    ...     n_samples=len(Y),
-    ...     treatment_r2=result.treatment_r2_cv,
+    ...     theta=1.2,
+    ...     se=0.3,
+    ...     n_samples=1000,
+    ...     treatment_r2=0.2,
     ... )
-    >>> print(sensitivity.gamma_critical)
+    >>> float(sensitivity.gamma_critical)
+    3.0
     """
     # For continuous treatments, we split sample approximately in half
     # adjusted for treatment model R²

@@ -30,7 +30,10 @@ Usage:
     ...     n_products=10,
     ...     seed=42
     ... )
-    >>> Y, T, X, time_idx, product_idx, true_params = dgp
+    >>> Y, T, X = dgp.Y, dgp.T, dgp.X
+    >>> time_idx, product_idx, true_params = dgp.time_index, dgp.product_index, dgp.true_params
+    >>> Y.shape
+    (1200,)
 """
 
 from __future__ import annotations
@@ -522,7 +525,9 @@ def create_insurance_dgp(
     Example:
         >>> dgp = create_insurance_dgp(realism="moderate", n_periods=120, seed=42)
         >>> print(f"True effect: {dgp.true_params.tau}")
+        True effect: -0.8
         >>> print(f"Observations: {len(dgp.Y)}")
+        Observations: 1200
     """
     if realism not in ("simple", "moderate", "full"):
         raise ValueError(f"realism must be 'simple', 'moderate', or 'full', got '{realism}'")

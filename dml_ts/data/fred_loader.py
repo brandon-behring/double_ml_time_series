@@ -21,8 +21,9 @@ References:
 
 Usage:
     >>> from dml_ts.data import FREDLoader
-    >>> loader = FREDLoader(api_key="your_api_key")  # or from env
-    >>> macro_data = loader.get_macro_controls(
+    >>> # Requires live FRED API key + network; skipped in the doctest gate
+    >>> loader = FREDLoader(api_key="your_api_key")  # doctest: +SKIP
+    >>> macro_data = loader.get_macro_controls(  # doctest: +SKIP
     ...     start_date="2010-01-01",
     ...     end_date="2020-12-31",
     ...     frequency="M"
@@ -217,9 +218,10 @@ class FREDLoader:
         cache_dir: Directory for caching data (None to disable)
 
     Example:
-        >>> loader = FREDLoader()
-        >>> data = loader.get_macro_controls("2015-01-01", "2023-12-31")
-        >>> print(data.data.columns)
+        >>> # Requires live FRED API key + network; skipped in the doctest gate
+        >>> loader = FREDLoader()  # doctest: +SKIP
+        >>> data = loader.get_macro_controls("2015-01-01", "2023-12-31")  # doctest: +SKIP
+        >>> print(data.data.columns)  # doctest: +SKIP
     """
 
     def __init__(
@@ -490,13 +492,14 @@ class FREDLoader:
             MacroControlsResult with aligned DataFrame and metadata
 
         Example:
-            >>> loader = FREDLoader()
-            >>> result = loader.get_macro_controls(
+            >>> # Requires live FRED API key + network; skipped in the doctest gate
+            >>> loader = FREDLoader()  # doctest: +SKIP
+            >>> result = loader.get_macro_controls(  # doctest: +SKIP
             ...     "2015-01-01", "2023-12-31",
             ...     series_set="comprehensive",
             ...     frequency="Q"
             ... )
-            >>> X_macro = result.data.values
+            >>> X_macro = result.data.values  # doctest: +SKIP
         """
         # Determine series to fetch
         series_ids = MACRO_CONTROL_SETS.get(series_set, MACRO_CONTROL_SETS["basic"]).copy()
@@ -619,6 +622,10 @@ def create_synthetic_fred_data(
     Example:
         >>> data = create_synthetic_fred_data(seed=42)
         >>> X_macro = data.data.values  # Use as controls in DML
+        >>> list(data.data.columns)
+        ['GDPC1', 'CPIAUCSL', 'UNRATE', 'FEDFUNDS']
+        >>> bool(X_macro.shape[1] == 4)
+        True
     """
     rng = np.random.default_rng(seed)
 

@@ -33,9 +33,12 @@ def hac_inference(
         ValueError: If se_hac is not a positive finite number.
 
     Example:
+        >>> from dml_ts.dml.inference import hac_inference
         >>> result = hac_inference(theta=2.5, se_hac=0.5, alpha=0.05)
-        >>> result['ci_lower'], result['ci_upper']
-        (1.52..., 3.47...)
+        >>> (round(float(result['ci_lower']), 2), round(float(result['ci_upper']), 2))
+        (1.52, 3.48)
+        >>> bool(result['p_value'] < 0.001)
+        True
     """
     if not np.isfinite(se_hac) or se_hac <= 0:
         raise ValueError(

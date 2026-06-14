@@ -11,18 +11,24 @@ Usage:
     >>> from dml_ts.validation.bootstrap_diagnostics import BootstrapDiagnostics
     >>> from dml_ts.validation.dgp_generator import DGPGenerator
     >>>
-    >>> dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)
+    >>> dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
     >>> data = dgp.generate()
     >>>
-    >>> # Diagnose bootstrap convergence for bias estimation
-    >>> diagnostics = BootstrapDiagnostics(data=data, estimator_type="LinearDML")
+    >>> # Diagnose bootstrap convergence for bias estimation.
+    >>> # "OLS" keeps the example fast; "LinearDML" uses econml nuisance models.
+    >>> diagnostics = BootstrapDiagnostics(
+    ...     data=data, estimator_type="OLS", random_state=42
+    ... )
     >>> result = diagnostics.diagnose_convergence(
     ...     target="bias",
-    ...     n_bootstrap_range=[100, 500, 1000, 2000, 5000],
-    ...     true_value=2.0
+    ...     n_bootstrap_range=[20, 40],
+    ...     true_value=2.0,
+    ...     n_replications=2,
     ... )
-    >>> print(f"Recommended n_bootstrap: {result['recommended_n']}")
-    >>> print(f"Converged: {result['converged']}")
+    >>> bool(result.recommended_n in {20, 40})
+    True
+    >>> isinstance(result.converged, bool)
+    True
 """
 
 from dataclasses import dataclass
@@ -95,17 +101,24 @@ class BootstrapDiagnostics:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> dgp = DGPGenerator(n=1000, p=5, true_effect=2.0, random_state=42)
+        >>> from dml_ts.validation.dgp_generator import DGPGenerator
+        >>> dgp = DGPGenerator(n=200, p=3, true_effect=2.0, random_state=42)
         >>> data = dgp.generate()
-        >>> diag = BootstrapDiagnostics(data, "LinearDML")
+        >>> diag = BootstrapDiagnostics(data, "OLS", random_state=42)
         >>>
-        >>> # Check convergence
-        >>> conv = diag.diagnose_convergence("bias", [100, 500, 1000], true_value=2.0)
-        >>> print(f"Converged: {conv.converged}, Recommended: {conv.recommended_n}")
+        >>> # Check convergence (OLS keeps the example fast)
+        >>> conv = diag.diagnose_convergence(
+        ...     "bias", [20, 40], true_value=2.0, n_replications=2
+        ... )
+        >>> isinstance(conv.converged, bool)
+        True
         >>>
         >>> # Check distribution quality
-        >>> dist = diag.diagnose_distribution(n_bootstrap=1000)
-        >>> print(f"Normal: {dist.is_normal}, Skewness: {dist.skewness:.3f}")
+        >>> dist = diag.diagnose_distribution(n_bootstrap=40)
+        >>> isinstance(dist.is_normal, bool)
+        True
+        >>> bool(np.isfinite(dist.skewness))
+        True
     """
 
     def __init__(
@@ -150,7 +163,11 @@ class BootstrapDiagnostics:
             ConvergenceDiagnostic with convergence assessment and recommendations
 
         Examples:
-            >>> diag.diagnose_convergence("bias", [100, 500, 1000, 2000], true_value=2.0)
+            Illustrative (see the class docstring for a runnable example):
+
+            >>> diag.diagnose_convergence(  # doctest: +SKIP
+            ...     "bias", [100, 500, 1000, 2000], true_value=2.0
+            ... )
             ConvergenceDiagnostic(converged=True, recommended_n=1000, ...)
         """
         if target in ["bias", "coverage"] and true_value is None:
@@ -250,7 +267,9 @@ class BootstrapDiagnostics:
             DistributionDiagnostic with distribution properties
 
         Examples:
-            >>> diag.diagnose_distribution(n_bootstrap=1000)
+            Illustrative (see the class docstring for a runnable example):
+
+            >>> diag.diagnose_distribution(n_bootstrap=1000)  # doctest: +SKIP
             DistributionDiagnostic(is_normal=True, skewness=0.12, ...)
         """
         # Generate bootstrap distribution
@@ -309,7 +328,9 @@ class BootstrapDiagnostics:
             Dict with recommended n_bootstrap for each task
 
         Examples:
-            >>> diag.recommend_n_bootstrap(["bias", "ci"], "default")
+            Illustrative; runs the configured estimator many times and is slow:
+
+            >>> diag.recommend_n_bootstrap(["bias", "ci"], "default")  # doctest: +SKIP
             {'bias': 1000, 'ci': 500, 'both': 1000}
         """
         if target_tasks is None:

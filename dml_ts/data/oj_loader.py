@@ -72,12 +72,13 @@ class OJDataset:
 
     Examples
     --------
-    >>> loader = OJDataLoader()
-    >>> data = loader.load()
-    >>> print(f"Samples: {data.n_samples}, Features: {data.n_features}")
+    >>> # Requires network download of the OJ dataset; skipped in the doctest gate
+    >>> loader = OJDataLoader()  # doctest: +SKIP
+    >>> data = loader.load()  # doctest: +SKIP
+    >>> print(f"Samples: {data.n_samples}, Features: {data.n_features}")  # doctest: +SKIP
     Samples: 28947, Features: 3
-    >>> from dml_ts.dml import double_ml
-    >>> result = double_ml(data.Y, data.T, data.X)
+    >>> from dml_ts.dml import double_ml  # doctest: +SKIP
+    >>> result = double_ml(data.Y, data.T, data.X)  # doctest: +SKIP
     """
 
     Y: NDArray[np.float64]
@@ -141,14 +142,15 @@ class OJDataLoader:
 
     Examples
     --------
-    >>> loader = OJDataLoader()
-    >>> data = loader.load()
-    >>> print(data)
+    >>> # Requires network download of the OJ dataset; skipped in the doctest gate
+    >>> loader = OJDataLoader()  # doctest: +SKIP
+    >>> data = loader.load()  # doctest: +SKIP
+    >>> print(data)  # doctest: +SKIP
     OJDataset(n_samples=28947, n_features=3, features=['feat', 'INCOME', 'AGE60'])
 
     >>> # Custom features
-    >>> loader = OJDataLoader(features=["feat", "INCOME", "AGE60", "EDUC"])
-    >>> data = loader.load()
+    >>> loader = OJDataLoader(features=["feat", "INCOME", "AGE60", "EDUC"])  # doctest: +SKIP
+    >>> data = loader.load()  # doctest: +SKIP
     """
 
     DEFAULT_FEATURES = ["feat", "INCOME", "AGE60"]

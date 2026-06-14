@@ -113,16 +113,18 @@ class RetrainScheduler:
     monitoring integration.
 
     Example:
+        >>> import numpy as np
         >>> scheduler = RetrainScheduler()
         >>> monitor = CausalMonitor()
         >>>
-        >>> # Check if retraining needed
-        >>> results = monitor.run_all_checks(...)
+        >>> # Check if retraining needed (no previous retrain -> scheduled trigger)
+        >>> results = monitor.run_all_checks(r2_propensity=0.65, r2_outcome=0.72)
         >>> trigger = scheduler.evaluate_monitoring_results(results)
-        >>> if trigger is not None:
-        ...     print(f"Retrain triggered: {trigger.reason}")
-        ...     # Execute retraining pipeline
-        ...     scheduler.record_retrain(trigger, new_version_id)
+        >>> trigger is not None  # initial scheduled retrain is due
+        True
+        >>> scheduler.record_retrain(trigger, "v1")
+        >>> scheduler.get_status()["current_model_version"]
+        'v1'
     """
 
     def __init__(

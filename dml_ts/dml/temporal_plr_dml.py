@@ -20,15 +20,24 @@ Key components:
 3. PanelDML - Fixed effects + DML for panel data structures
 
 Usage:
+    >>> import numpy as np
     >>> from dml_ts.dml import TemporalPLRDML
+    >>> rng = np.random.default_rng(0)
+    >>> n = 200
+    >>> time = np.arange(n)
+    >>> X = rng.standard_normal((n, 2))
+    >>> T = 0.5 * X[:, 0] + rng.standard_normal(n)
+    >>> Y = 2.0 * T + X[:, 1] + rng.standard_normal(n)
     >>> model = TemporalPLRDML(
-    ...     n_lags=5,
-    ...     model_y="random_forest",
-    ...     model_t="random_forest",
+    ...     n_lags=1,
+    ...     model_y="ridge",
+    ...     model_t="ridge",
     ...     cv_strategy="time_series_split",
+    ...     n_splits=3,
     ... )
-    >>> model.fit(Y=Y, T=T, X=X, time_index=time)
-    >>> result = model.effect(X=X_test)
+    >>> result = model.fit(Y=Y, T=T, X=X, time_index=time)
+    >>> isinstance(result.theta, float)
+    True
 """
 
 from __future__ import annotations
@@ -85,6 +94,21 @@ class TemporalPLRDMLResult(ResultBase):
         dropped_initial_rows: Rows excluded because temporal CV cannot produce
             out-of-fold predictions without training on future observations
         lagged_rows_dropped: Rows excluded by lag-feature construction
+
+    Examples:
+        >>> import numpy as np
+        >>> from dml_ts.dml import TemporalPLRDML
+        >>> np.random.seed(0)
+        >>> n = 200
+        >>> X = np.random.randn(n, 2)
+        >>> T = 0.5 * X[:, 0] + np.random.randn(n)
+        >>> Y = 2.0 * T + X[:, 1] + np.random.randn(n)
+        >>> result = TemporalPLRDML(n_lags=1, model_y="ridge", model_t="ridge",
+        ...                         n_splits=3).fit(Y, T, X)
+        >>> isinstance(result.theta, float)
+        True
+        >>> bool(result.ci_lower < result.ci_upper)
+        True
     """
 
     theta: float
@@ -268,15 +292,18 @@ class TemporalPLRDML:
         random_state: Random seed for reproducibility
 
     Examples:
+        >>> import numpy as np
+        >>> from dml_ts.dml import TemporalPLRDML
         >>> np.random.seed(42)
-        >>> n = 500
+        >>> n = 300
         >>> time = np.arange(n)
         >>> X = np.random.randn(n, 3)
         >>> T = 0.5 * X[:, 0] + 0.3 * np.sin(time / 50) + np.random.randn(n)
         >>> Y = 2.0 * T + np.exp(X[:, 1] / 2) + np.random.randn(n)
-        >>> model = TemporalPLRDML(n_lags=3)
+        >>> model = TemporalPLRDML(n_lags=3, model_y="ridge", model_t="ridge", n_splits=3)
         >>> result = model.fit(Y, T, X, time_index=time)
-        >>> print(result.theta)  # Should be close to 2.0
+        >>> bool(abs(result.theta - 2.0) < 0.3)  # Should be close to 2.0
+        True
     """
 
     def __init__(
@@ -669,6 +696,21 @@ class RollingWindowDML:
         n_folds: Number of CV folds within each window
         hac_bandwidth: HAC bandwidth (None = auto)
         random_state: Random seed
+
+    Examples:
+        >>> import numpy as np
+        >>> from dml_ts.dml import RollingWindowDML
+        >>> np.random.seed(0)
+        >>> n = 200
+        >>> X = np.random.randn(n, 2)
+        >>> T = 0.5 * X[:, 0] + np.random.randn(n)
+        >>> Y = 1.5 * T + X[:, 1] + np.random.randn(n)
+        >>> model = RollingWindowDML(window_size=80, step_size=40, model_y="ridge",
+        ...                          model_t="ridge", n_folds=3)
+        >>> _ = model.fit(Y, T, X)
+        >>> centers, thetas, ses = model.get_effects()
+        >>> bool(len(centers) == len(thetas) == len(ses))
+        True
     """
 
     def __init__(
@@ -823,6 +865,26 @@ class PanelDML:
         model_t: ML model for treatment nuisance function
         n_folds: Number of CV folds
         random_state: Random seed
+
+    Examples:
+        >>> import numpy as np
+        >>> from dml_ts.dml import PanelDML
+        >>> np.random.seed(0)
+        >>> n_units, m = 40, 5
+        >>> individual_id = np.repeat(np.arange(n_units), m)
+        >>> time_id = np.tile(np.arange(m), n_units)
+        >>> N = n_units * m
+        >>> X = np.random.randn(N, 2)
+        >>> T = 0.5 * X[:, 0] + np.random.randn(N)
+        >>> Y = 2.0 * T + X[:, 1] + np.random.randn(N)
+        >>> import warnings
+        >>> model = PanelDML(fixed_effects="individual", model_y="ridge",
+        ...                  model_t="ridge", n_folds=3)
+        >>> with warnings.catch_warnings():  # early temporal-CV rows are uncovered
+        ...     warnings.simplefilter("ignore", RuntimeWarning)
+        ...     result = model.fit(Y, T, X, individual_id, time_id)
+        >>> isinstance(result.theta, float)
+        True
     """
 
     def __init__(

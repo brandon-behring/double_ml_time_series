@@ -31,11 +31,21 @@ class NaiveOLS:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> naive = NaiveOLS(n_simulations=100, random_state=42)
-        >>> dgp = DGPGenerator(n=1000, p=5, confounding_strength=1.0)
+        >>> from dml_ts.validation.bootstrap_config import BootstrapConfig
+        >>> naive = NaiveOLS(
+        ...     n_simulations=5,
+        ...     bootstrap_config=BootstrapConfig.tier2(),
+        ...     random_state=42,
+        ... )
+        >>> dgp = DGPGenerator(n=200, p=5, true_effect=2.0,
+        ...                    confounding_strength=1.0, random_state=42)
         >>> result = naive.validate(dgp)
-        >>> result.status  # Likely 'FAIL' due to confounding bias
-        'FAIL'
+        >>> result.method
+        'NaiveOLS'
+        >>> result.status in {"PASS", "WARNING", "FAIL"}
+        True
+        >>> bool(result.metadata["controls_used"] is False)
+        True
     """
 
     def __init__(
@@ -187,10 +197,21 @@ class OLSWithControls:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> ols_controls = OLSWithControls(n_simulations=100, random_state=42)
-        >>> dgp = DGPGenerator(n=1000, p=5, confounding_strength=1.0)
+        >>> from dml_ts.validation.bootstrap_config import BootstrapConfig
+        >>> ols_controls = OLSWithControls(
+        ...     n_simulations=5,
+        ...     bootstrap_config=BootstrapConfig.tier2(),
+        ...     random_state=42,
+        ... )
+        >>> dgp = DGPGenerator(n=200, p=5, true_effect=2.0,
+        ...                    confounding_strength=1.0, random_state=42)
         >>> result = ols_controls.validate(dgp)
-        >>> result.bias  # Much smaller than NaiveOLS
+        >>> result.method
+        'OLSWithControls'
+        >>> bool(result.metadata["controls_used"] is True)
+        True
+        >>> bool(np.isfinite(result.bias))
+        True
     """
 
     def __init__(

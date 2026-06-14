@@ -76,6 +76,21 @@ class FWLResult(ResultBase):
         R² from regressing Y on X (outcome model fit).
     r2_T : float
         R² from regressing T on X (propensity model fit).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from dml_ts.dml.fwl import fwl_estimate
+    >>> np.random.seed(0)
+    >>> n = 200
+    >>> X = np.random.randn(n, 2)
+    >>> T = 0.5 * X[:, 0] + np.random.randn(n)
+    >>> Y = 2.0 * T + X @ [1.0, -0.5] + np.random.randn(n)
+    >>> result = fwl_estimate(Y, T, X)
+    >>> isinstance(result.theta, float)
+    True
+    >>> bool(result.se > 0)
+    True
     """
 
     theta: float
@@ -134,10 +149,12 @@ def fwl_residualize(
 
     Examples
     --------
+    >>> import numpy as np
+    >>> from dml_ts.dml.fwl import fwl_residualize
     >>> Y = np.array([1, 2, 3, 4, 5.0])
     >>> X = np.column_stack([np.ones(5), np.arange(5)])
     >>> residuals, r2 = fwl_residualize(Y, X)
-    >>> np.allclose(residuals.sum(), 0)  # Residuals sum to ~0
+    >>> bool(np.allclose(residuals.sum(), 0))  # Residuals sum to ~0
     True
     """
     if X.ndim == 1:
@@ -207,13 +224,15 @@ def fwl_estimate(
 
     Examples
     --------
+    >>> import numpy as np
+    >>> from dml_ts.dml.fwl import fwl_estimate
     >>> np.random.seed(42)
     >>> n = 1000
     >>> X = np.random.randn(n, 3)  # 3 confounders
     >>> T = 0.5 * X[:, 0] + np.random.randn(n)  # Treatment depends on X₀
     >>> Y = 2.0 * T + X @ [1, 0.5, -0.3] + np.random.randn(n)  # True effect = 2.0
     >>> result = fwl_estimate(Y, T, X)
-    >>> abs(result.theta - 2.0) < 0.1  # Should recover ~2.0
+    >>> bool(abs(result.theta - 2.0) < 0.1)  # Should recover ~2.0
     True
     """
     n = len(Y)
@@ -324,13 +343,15 @@ def fwl_vs_ols_comparison(
 
     Examples
     --------
+    >>> import numpy as np
+    >>> from dml_ts.dml.fwl import fwl_vs_ols_comparison
     >>> np.random.seed(42)
     >>> n = 500
     >>> X = np.random.randn(n, 2)
     >>> T = np.random.randn(n)
     >>> Y = 1.5 * T + X @ [0.5, -0.3] + np.random.randn(n)
     >>> result = fwl_vs_ols_comparison(Y, T, X)
-    >>> result["match"]
+    >>> bool(result["match"])
     True
     """
     n = len(Y)

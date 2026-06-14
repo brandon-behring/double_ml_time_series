@@ -97,6 +97,21 @@ class DMLResult(ResultBase):
         Cross-validated R² of treatment model.
     n_folds : int
         Number of cross-fitting folds used.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from dml_ts.dml.double_ml import double_ml
+    >>> np.random.seed(0)
+    >>> n = 200
+    >>> X = np.random.randn(n, 3)
+    >>> T = 0.5 * X[:, 0] + np.random.randn(n)
+    >>> Y = 2.0 * T + X[:, 1] + np.random.randn(n)
+    >>> result = double_ml(Y, T, X, model="ridge", n_folds=3)
+    >>> isinstance(result.theta, float)
+    True
+    >>> result.n_folds
+    3
     """
 
     theta: float
@@ -257,13 +272,18 @@ def double_ml(
 
     Examples
     --------
+    >>> import numpy as np
+    >>> from dml_ts.dml.double_ml import double_ml
     >>> np.random.seed(42)
-    >>> n = 1000
-    >>> X = np.random.randn(n, 5)
+    >>> n = 200
+    >>> X = np.random.randn(n, 3)
     >>> T = np.sin(X[:, 0]) + np.random.randn(n)
     >>> Y = 2.0 * T + np.exp(X[:, 1]) + np.random.randn(n)
-    >>> result = double_ml(Y, T, X, model="random_forest")
-    >>> print(result.summary())
+    >>> result = double_ml(Y, T, X, model="ridge", n_folds=3)
+    >>> isinstance(result.theta, float)
+    True
+    >>> bool(result.ci_lower < result.theta < result.ci_upper)
+    True
     """
     # Validate inputs
     validate_lengths(Y, T, X)
