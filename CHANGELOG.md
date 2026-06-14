@@ -8,6 +8,10 @@ are the compatibility contract).
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [1.1.3] - 2026-06-13
+
 ### Changed
 
 - Bumped the locked `temporalcv` to **2.2.0** (the `>=2.0.0,<3` pin already admitted it).

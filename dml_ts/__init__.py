@@ -16,7 +16,7 @@ from .dml import (
     double_ml,
 )
 
-__version__ = "1.1.2"
+__version__ = "1.1.3"
 
 __all__ = [
     "dml",
