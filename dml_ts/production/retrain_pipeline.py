@@ -285,7 +285,10 @@ class RetrainScheduler:
         baseline_effect: float | None = None,
         X_current: np.ndarray | None = None,
         X_baseline: np.ndarray | None = None,
-        **kwargs: Any,
+        r2_propensity_baseline: float | None = None,
+        r2_outcome_baseline: float | None = None,
+        current_se: float | None = None,
+        baseline_se: float | None = None,
     ) -> tuple[list[MonitoringResult], RetrainTrigger | None]:
         """
         Run monitoring and evaluate for retraining in one call.
@@ -303,7 +306,10 @@ class RetrainScheduler:
             baseline_effect: Baseline ATE estimate
             X_current: Current covariates
             X_baseline: Baseline covariates
-            **kwargs: Additional args for monitor
+            r2_propensity_baseline: Optional baseline propensity R² (nuisance check)
+            r2_outcome_baseline: Optional baseline outcome R² (nuisance check)
+            current_se: Optional SE for the current effect (stability check)
+            baseline_se: Optional SE for the baseline effect (stability check)
 
         Returns:
             Tuple of (monitoring_results, retrain_trigger)
@@ -327,7 +333,10 @@ class RetrainScheduler:
             baseline_effect=baseline_effect,
             X_current=X_current,
             X_baseline=X_baseline,
-            **kwargs,
+            r2_propensity_baseline=r2_propensity_baseline,
+            r2_outcome_baseline=r2_outcome_baseline,
+            current_se=current_se,
+            baseline_se=baseline_se,
         )
 
         # Evaluate for retraining

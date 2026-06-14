@@ -460,6 +460,27 @@ class TestRunAllChecks:
         assert "treatment_shift" in check_names
         assert "nuisance_degradation" in check_names
 
+    def test_misspelled_kwarg_raises_typeerror(self):
+        """A misspelled check input fails fast instead of being silently dropped (#37)."""
+        monitor = CausalMonitor()
+        treatment = np.random.binomial(1, 0.5, size=100)
+        # `treatment` is not a parameter; the real name is `treatment_current`.
+        with pytest.raises(TypeError):
+            monitor.run_all_checks(treatment=treatment, treatment_baseline=treatment)
+
+    def test_promoted_optional_kwargs_flow_through(self):
+        """The promoted current_se/baseline_se reach the effect-stability check (#37)."""
+        monitor = CausalMonitor()
+        results = monitor.run_all_checks(
+            current_effect=1.0,
+            baseline_effect=1.2,
+            current_se=0.05,
+            baseline_se=0.05,
+        )
+        # The SE values populate the effect-stability detail fields, proving the
+        # promoted keyword args are wired through (not silently ignored).
+        assert any("current_se" in r.details for r in results)
+
     def test_skips_checks_without_data(self):
         """Test that checks are skipped when data not provided."""
         monitor = CausalMonitor()
