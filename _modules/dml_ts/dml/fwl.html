@@ -479,8 +479,20 @@
         <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;qr&quot;</span><span class="p">:</span>
-        <span class="c1"># Numerically stable: Y_resid = Y - Q @ (Q.T @ Y)</span>
-        <span class="n">Q</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="c1"># Numerically stable: Y_resid = Y - Q @ (Q.T @ Y).</span>
+        <span class="c1"># np.linalg.qr returns a full-width Q even when X is rank-deficient, so</span>
+        <span class="c1"># Q @ Q.T then over-projects onto spurious directions and silently</span>
+        <span class="c1"># returns the WRONG residuals (a different theta) instead of failing.</span>
+        <span class="c1"># Use a SCALE-INVARIANT rank check (matrix_rank&#39;s relative tolerance) so</span>
+        <span class="c1"># genuinely collinear controls raise loudly while a merely scale-disparate</span>
+        <span class="c1"># but full-rank design is accepted (method=&quot;ols&quot; is rank-safe regardless).</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Rank-deficient control matrix X (collinear columns) in QR &quot;</span>
+                <span class="s2">&quot;residualization: the FWL residuals are undefined. De-collinearize &quot;</span>
+                <span class="s1">&#39;X, or call with method=&quot;ols&quot; (rank-safe least squares).&#39;</span>
+            <span class="p">)</span>
+        <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">Y_hat</span> <span class="o">=</span> <span class="n">Q</span> <span class="o">@</span> <span class="p">(</span><span class="n">Q</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Y</span><span class="p">)</span>
         <span class="n">residuals</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="n">Y_hat</span>
     <span class="k">else</span><span class="p">:</span>

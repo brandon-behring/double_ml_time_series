@@ -360,6 +360,13 @@
             <span class="sa">f</span><span class="s2">&quot;se_hac must be a positive finite number, got </span><span class="si">{</span><span class="n">se_hac</span><span class="si">!r}</span><span class="s2"> — &quot;</span>
             <span class="s2">&quot;degenerate standard errors must not silently produce p-values.&quot;</span>
         <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;theta must be finite, got </span><span class="si">{</span><span class="n">theta</span><span class="si">!r}</span><span class="s2"> — a non-finite estimate must not &quot;</span>
+            <span class="s2">&quot;silently produce NaN t-statistics, p-values, and confidence intervals.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mf">0.0</span> <span class="o">&lt;</span> <span class="n">alpha</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;alpha must be in (0, 1), got </span><span class="si">{</span><span class="n">alpha</span><span class="si">!r}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
     <span class="n">z_crit</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">t_stat</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">/</span> <span class="n">se_hac</span>

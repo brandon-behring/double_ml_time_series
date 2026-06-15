@@ -350,6 +350,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">TypeAlias</span>
 
@@ -376,6 +377,26 @@
 <span class="n">Mode</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span> <span class="s2">&quot;series&quot;</span><span class="p">]</span>
 
 <span class="n">_DEFAULT_N_JOBS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DML_N_JOBS&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_if_ill_conditioned</span><span class="p">(</span><span class="n">matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e12</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Warn loudly when a moment Jacobian to be inverted is near-singular.</span>
+
+<span class="sd">    An ill-conditioned (but not exactly singular) Jacobian produces a</span>
+<span class="sd">    finite-but-meaningless inverse and an enormous standard error that otherwise</span>
+<span class="sd">    passes every downstream validator silently. Per the repo&#39;s no-silent-failure</span>
+<span class="sd">    rule, surface weak identification rather than report garbage with a straight</span>
+<span class="sd">    face.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cond</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">matrix</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span> <span class="ow">or</span> <span class="n">cond</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is ill-conditioned (cond=</span><span class="si">{</span><span class="n">cond</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">): treatment residual &quot;</span>
+            <span class="s2">&quot;variation is too weak to identify the period blip — the reported &quot;</span>
+            <span class="s2">&quot;standard errors are unreliable.&quot;</span><span class="p">,</span>
+            <span class="ne">RuntimeWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
 
 
 <div class="viewcode-block" id="DynamicGEstimationResult">
@@ -785,6 +806,7 @@
             <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
                 <span class="n">G</span><span class="p">[</span><span class="n">tau</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">t_tau</span> <span class="o">*</span> <span class="n">Ttil</span><span class="p">[</span><span class="n">tau</span><span class="p">][:,</span> <span class="n">s</span><span class="p">]))</span>
         <span class="n">meat</span> <span class="o">=</span> <span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">_warn_if_ill_conditioned</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;panel moment Jacobian G&quot;</span><span class="p">)</span>
         <span class="n">G_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
         <span class="n">cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">G_inv</span> <span class="o">@</span> <span class="n">meat</span> <span class="o">@</span> <span class="n">G_inv</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
 
@@ -825,6 +847,7 @@
         <span class="n">scores</span> <span class="o">=</span> <span class="n">Ttil</span> <span class="o">*</span> <span class="n">resid_full</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># (Lk, m)</span>
         <span class="n">bw</span> <span class="o">=</span> <span class="n">optimal_bandwidth</span><span class="p">(</span><span class="n">resid_full</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;newey_west&quot;</span><span class="p">)</span>
         <span class="n">s_hac</span> <span class="o">=</span> <span class="n">_bartlett_long_run_cov</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">bw</span><span class="p">)</span>
+        <span class="n">_warn_if_ill_conditioned</span><span class="p">(</span><span class="n">gram</span><span class="p">,</span> <span class="s2">&quot;series treatment Gram&quot;</span><span class="p">)</span>
         <span class="n">bread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">gram</span> <span class="o">/</span> <span class="n">lk</span><span class="p">)</span>
         <span class="n">cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">bread</span> <span class="o">@</span> <span class="n">s_hac</span> <span class="o">@</span> <span class="n">bread</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">lk</span>
 

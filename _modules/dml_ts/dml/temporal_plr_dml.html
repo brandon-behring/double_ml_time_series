@@ -666,6 +666,8 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;hac_bandwidth must be None or a non-negative int, got </span><span class="si">{</span><span class="n">hac_bandwidth</span><span class="si">!r}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_lags</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_lags</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="n">n_lags</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_lags must be a non-negative integer, got </span><span class="si">{</span><span class="n">n_lags</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="o">=</span> <span class="n">n_lags</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_y</span> <span class="o">=</span> <span class="n">model_y</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_t</span> <span class="o">=</span> <span class="n">model_t</span>
@@ -1108,6 +1110,15 @@
         <span class="c1"># Compute window centers</span>
         <span class="n">half_window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="o">//</span> <span class="mi">2</span>
         <span class="n">centers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">half_window</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="n">half_window</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">centers</span><span class="p">:</span>
+            <span class="c1"># window_size too large for the series produces an empty center list,</span>
+            <span class="c1"># which would otherwise bypass the skip-warning loop and silently</span>
+            <span class="c1"># return empty estimate arrays from get_effects().</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;window_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">window_size</span><span class="si">}</span><span class="s2"> is too large for n=</span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s2">: &quot;</span>
+                <span class="s2">&quot;no valid rolling-window centers. Reduce window_size or use a &quot;</span>
+                <span class="s2">&quot;longer series.&quot;</span>
+            <span class="p">)</span>
 
         <span class="n">theta_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">se_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
