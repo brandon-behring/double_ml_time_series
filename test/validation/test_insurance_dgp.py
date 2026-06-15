@@ -359,8 +359,9 @@ class TestValidateDGPRecovery:
     def test_recovery_too_many_failures_raises(self) -> None:
         """RuntimeError when >50% of simulations fail."""
         with patch("dml_ts.dml.PanelDML") as mock_panel:
-            # Force all fits to raise
-            mock_panel.return_value.fit.side_effect = RuntimeError("forced failure")
+            # Force all fits to raise a degenerate-simulation error (the kind the loop
+            # is meant to tolerate and count; a non-(LinAlgError/ValueError) now surfaces).
+            mock_panel.return_value.fit.side_effect = ValueError("forced degenerate failure")
 
             with pytest.raises(RuntimeError, match="Too many simulation failures"):
                 validate_dgp_recovery(

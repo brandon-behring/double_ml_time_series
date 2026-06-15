@@ -12,6 +12,7 @@ Key features:
 - Known dynamic and cumulative treatment effects
 """
 
+import warnings
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -52,6 +53,30 @@ class TimeSeriesDGPResult:
     ar_coefs: NDArray[np.float64] = field(default_factory=lambda: np.array([]))
     var_coefs: NDArray[np.float64] | None = None
     error_ar_coef: float = 0.0
+
+
+def _require_stationary_ar(coefs: NDArray[np.float64]) -> None:
+    """Raise if AR(p) coefficients ``[phi_1, ..., phi_p]`` are non-stationary.
+
+    Stationarity holds iff every root of ``1 - phi_1 z - ... - phi_p z^p`` lies
+    outside the unit circle, equivalently iff every eigenvalue of the companion
+    matrix lies strictly inside it. Catches explosive specs (e.g. ``[0.6, 0.6]``)
+    that a length check would accept.
+    """
+    order = len(coefs)
+    if order == 0:
+        return
+    companion = np.zeros((order, order))
+    companion[0, :] = coefs
+    if order > 1:
+        companion[1:, :-1] = np.eye(order - 1)
+    max_modulus = float(np.max(np.abs(np.linalg.eigvals(companion))))
+    if max_modulus >= 1.0:
+        raise ValueError(
+            f"treatment_ar_coefs {coefs.tolist()} are non-stationary: the largest "
+            f"companion-matrix eigenvalue modulus is {max_modulus:.4f} >= 1 "
+            "(explosive/unit-root). Supply stationary coefficients."
+        )
 
 
 class TimeSeriesDGPGenerator:
@@ -164,10 +189,30 @@ class TimeSeriesDGPGenerator:
                     f"treatment_ar_coefs length ({len(treatment_ar_coefs)}) "
                     f"must match treatment_ar_order ({treatment_ar_order})"
                 )
-            self.treatment_ar_coefs = np.asarray(treatment_ar_coefs)
+            coefs = np.asarray(treatment_ar_coefs, dtype=float)
+            # User-supplied coefficients were length-checked only; an explosive/unit-root
+            # AR (e.g. [0.6, 0.6]) would generate a non-stationary treatment that the
+            # length check accepts. Reject it via the companion-matrix eigenvalues:
+            # stationary iff every eigenvalue lies strictly inside the unit circle.
+            _require_stationary_ar(coefs)
+            self.treatment_ar_coefs = coefs
         else:
             # Generate stable AR coefficients (sum < 1 for stationarity)
             self.treatment_ar_coefs = self._generate_stable_ar_coefs(treatment_ar_order)
+
+        # The confounder VAR(1) innovation variance is 1 - rho**2, floored to 0.01 in
+        # _generate_var_confounders. Near a unit root the floor binds, so the generated
+        # persistence no longer matches the requested coefficient -- warn rather than
+        # silently fabricate a different process.
+        if 1.0 - confounder_var_coef**2 < 0.01:
+            warnings.warn(
+                f"confounder_var_coef={confounder_var_coef} is near unit-root: the "
+                f"VAR(1) innovation variance ({1.0 - confounder_var_coef**2:.4g}) is "
+                "floored to 0.01, so the generated confounder persistence will not match "
+                "the requested coefficient.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
         # Set up lagged effect coefficients
         if lagged_effect_coefs is not None:

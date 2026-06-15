@@ -372,12 +372,13 @@ class BiasValidation:
             (status, bias_p_value, coverage_p_value)
 
         Examples:
-            >>> # After C2 fix: tiny bias (-0.004) is statistically significant but practically negligible
+            >>> # Tiny bias (-0.004) is statistically significant but practically negligible.
+            >>> # (Samples must carry variance: a zero-variance bootstrap now raises.)
             >>> import numpy as np
             >>> validator = BiasValidation(n_simulations=1000, random_state=42)
             >>> ci_bounds = np.tile([1.9, 2.1], (1000, 1))
             >>> status, p_bias, p_cov = validator._determine_statistical_status(
-            ...     bias_samples=np.array([-0.004] * 1000),
+            ...     bias_samples=-0.004 + np.linspace(-0.05, 0.05, 1000),
             ...     coverage=1.0,
             ...     n_simulations=1000,
             ...     ci_bounds=ci_bounds,
@@ -392,14 +393,19 @@ class BiasValidation:
         mean_bias = np.mean(bias_samples)
         se_bias = np.std(bias_samples) / np.sqrt(len(bias_samples))
 
-        # Handle case where SE is zero (all estimates identical)
-        if se_bias > 0:
-            t_stat = mean_bias / se_bias
-            df = len(bias_samples) - 1
-            bias_p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df=df))
-        else:
-            # If SE is zero, can't do t-test; use 0-pvalue if bias != 0
-            bias_p_value = 0.0 if mean_bias != 0 else 1.0
+        # Zero bootstrap SE means every simulation produced an identical bias, so the
+        # bias t-test is undefined. Fabricating p=0 (or p=1) here would silently drive
+        # the PASS/WARNING/FAIL verdict from a degenerate input (the #7/#9 bug class).
+        if se_bias <= 0:
+            raise ValueError(
+                f"Degenerate bias bootstrap: zero variance across {len(bias_samples)} "
+                "resamples (every simulation returned an identical bias). The bias "
+                "t-test is undefined; refusing to fabricate a p-value. Check the "
+                "DGP/estimator for missing sampling variability."
+            )
+        t_stat = mean_bias / se_bias
+        df = len(bias_samples) - 1
+        bias_p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df=df))
 
         # Test 2: Binomial test for H₀: coverage = 0.95
         n_cover = np.sum((ci_bounds[:, 0] <= true_effect) & (true_effect <= ci_bounds[:, 1]))
