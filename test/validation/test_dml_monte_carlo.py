@@ -73,6 +73,15 @@ class TestDMLBasic:
         assert result.T_residual.shape == (n,)
         assert result.influence_scores.shape == (n,)
 
+        # Not just types: the inference fields must be internally consistent with (theta, se)
+        # (a formula-contract guard; exact-value SE pins live in test_dml/test_formula_contracts.py).
+        from scipy import stats
+
+        z_crit = stats.norm.ppf(0.975)
+        np.testing.assert_allclose(result.t_stat, result.theta / result.se, rtol=1e-12)
+        np.testing.assert_allclose(result.ci_lower, result.theta - z_crit * result.se, rtol=1e-12)
+        np.testing.assert_allclose(result.ci_upper, result.theta + z_crit * result.se, rtol=1e-12)
+
     def test_dml_summary_method(self):
         """Check summary() method returns string."""
         np.random.seed(42)
