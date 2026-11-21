@@ -1,0 +1,11 @@
+Randomized arm membership, invited price group and control: 255 257
+Availability by arm (0 control, 1 price)
+  offer pre_peak first last available
+1     0      257   257  257       257
+2     1      255   255  255       255
+Raw pre-experiment peak difference: -0.08148569
+Available-case peak difference on final ten event days: -0.1440739 kWh/hour
+Peak, hours 8-20 interacted baseline OLS -0.05510993 HC2 se 0.04297616 95% interval -0.1393432 0.02912334
+Peak, hours 8-20 n control / price 257 255 control mean 2.892389 raw -0.1440739 adjusted -0.04219673 se 0.04923448 95% interval -0.1386963 0.05430286
+Late, hours 22-24 interacted baseline OLS -0.1051616 HC2 se 0.05421296 95% interval -0.211419 0.001095842
+Late, hours 22-24 n control / price 257 255 control mean 2.885794 raw -0.1806624 adjusted -0.09668044 se 0.0567088 95% interval -0.2078297 0.0144688

@@ -1,0 +1,30 @@
+{
+  "csv_sha256": "cc3d92c60f4dd5a5e4c19b04aa0c5cff398022c1fa372d51b9640f2a646b3bf1",
+  "tested_quarters": 2304,
+  "repetitions": 2000,
+  "sustained_contrast": 100.0,
+  "carryover_half_life_quarters": 4,
+  "seed_base_plus_block_quarters": 20261120,
+  "designs": [
+    {
+      "block_quarters": 4,
+      "assignments_per_repetition": 576,
+      "analytic_current_block_effect": 33.93483115145944,
+      "raw_mean": 34.59598461046496,
+      "adjusted_mean": 34.026590686853886,
+      "raw_randomization_sd": 126.61064506390821,
+      "adjusted_randomization_sd": 36.72418202634962,
+      "adjusted_monte_carlo_se": 0.8211776742899372
+    },
+    {
+      "block_quarters": 24,
+      "assignments_per_repetition": 96,
+      "analytic_current_block_effect": 78.32236647157265,
+      "raw_mean": 76.93781201549103,
+      "adjusted_mean": 78.1298183522966,
+      "raw_randomization_sd": 303.03787501916025,
+      "adjusted_randomization_sd": 86.47906745249676,
+      "adjusted_monte_carlo_se": 1.9337307345457233
+    }
+  ]
+}

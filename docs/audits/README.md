@@ -26,6 +26,10 @@ the pending redesign of `PanelDML` are held and are listed in
 without a licence that grants redistribution are held and are listed, with the licences and
 attributions of the files that are here, in [`DATA_SOURCES.md`](DATA_SOURCES.md).
 
+## Empirical and simulation checks
+
+The [public-data experiments](2026-11-21_public_data_extensions/README.md) use bicycle demand, household electricity offers, ride counts and a repeated cooperation game to test recovery of known effects, treatment timing and inference under shared assignment. The collection includes the analysis scripts, reference estimates and input checksums.
+
 ## Superseded Audits
 
 - [2026-05-30 Repo Quality And Methodology Audit](2026-05-30_repo_quality_methodology_audit.md)

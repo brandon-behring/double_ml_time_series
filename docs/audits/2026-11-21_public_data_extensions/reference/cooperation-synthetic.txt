@@ -1,0 +1,6 @@
+lag=0 score=raw target=0.14060606 mean=0.14060606 sd=0.48017741
+lag=0 score=trained target=0.14060606 mean=0.14060606 sd=0.03935907
+lag=0 score=uses_lagged_treatment target=0.14060606 mean=0.14060606 sd=0.44496128
+lag=1 score=raw target=0.22000000 mean=0.22000000 sd=0.68304354
+lag=1 score=trained target=0.22000000 mean=0.22000000 sd=0.10106279
+lag=1 score=uses_lagged_treatment target=0.22000000 mean=0.10000000 sd=0.61493718
