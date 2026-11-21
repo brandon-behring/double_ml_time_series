@@ -20,13 +20,15 @@ cache=output/time-series-dml
 audit=docs/audits/2026-11-21_public_data_extensions
 mkdir -p "$cache"
 curl -fsSL 'https://archive.ics.uci.edu/static/public/275/bike+sharing+dataset.zip' -o "$cache/bike.zip"
-curl -fsSL 'https://zenodo.org/records/8248802/files/iFlex%20dataset.RData?download=1' -o "$cache/iflex.RData"
+curl -fsSL 'https://zenodo.org/api/records/8248802/files/iFlex%20dataset.RData/content' -o "$cache/iflex.RData"
 curl -fsSL 'https://raw.githubusercontent.com/wenqian-xing/conservative-inference-switchback-experiments/e29f6f09716e0df2a4edb8012c09a31c627338f5/lyft_ride_counts_15min.csv' -o "$cache/lyft_ride_counts_15min.csv"
 curl -fsSL 'https://www.econometricsociety.org/publications/quantitative-economics/2021/11/01/Panel-experiments-and-dynamic-causal-effects-A-finite-population-perspective/supp/1598-7412-1-SP.zip' -o "$cache/QE1744.zip"
 (cd "$cache" && sha256sum -c -) < "$audit/reference/inputs.sha256"
 ```
 
 For a short bike run, use `--repetitions 2`. The reported bike results use 200 histories per configuration and the ride calculation uses 2,000 per block length. The seeds are fixed. The two panel calculations enumerate every assignment in their respective designs. The cooperation R command accepts `--check-null` to recalculate the Python rejection probabilities using the published estimator. [Bike, ride and Oslo commands](time_series_dml.md) · [Panel commands](cooperation_panel.md) · [Archived numerical outputs](reference/)
+
+On the November 21 replay all 48 bike rows across the four runs exactly matched the historical numerical results. The current script adds a `last_block_only` flag to the three full-period outputs. The archived ride results, exact panel probabilities, six synthetic R point-estimator summaries and Oslo estimates also reproduced. The two panel implementations agreed on rejection probabilities to within $5 \times 10^{-13}$ at the R output’s printed precision. The reference text for Oslo trims trailing spaces from R output.
 
 The local cache also contains the original 40-draw bike pilot (`bike-mc.json`) and its historical input/output manifest (`evidence.json`). That pilot used two propensity models. The three-model, 200-draw results provide the comparison reported here. The two script entries in the historical manifest identify the files in `checks/` by basename and SHA-256.
 

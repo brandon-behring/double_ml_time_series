@@ -4,6 +4,7 @@
   "utc_hours": 17377,
   "gap_hours": 168,
   "hac_lag_hours": 48,
+  "last_block_only": false,
   "effects": [
     {
       "method": "known propensity",
