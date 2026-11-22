@@ -1,6 +1,6 @@
 # Public-data checks for time-series double machine learning
 
-These calculations test how well an estimator recovers a known dynamic effect, how the assignment unit changes inference, and how much baseline adjustment changes an observed experimental contrast. Each script runs independently of the package and can serve as a numerical reference when testing its implementation. [Temporal partially linear estimator](../../../dml_ts/dml/temporal_plr_dml.py)
+These calculations test how well an estimator recovers a known dynamic effect, how the assignment unit changes inference, and how much baseline adjustment changes an observed experimental contrast. The original checks run independently of the package. The [bike estimator comparison](time_series_dml.md#the-repository-estimator-on-the-same-bike-offers) also exercises the public temporal PLR implementation. [Temporal partially linear estimator](../../../dml_ts/dml/temporal_plr_dml.py)
 
 | Experiment | What the data identify or calibrate | Result |
 |---|---|---|
@@ -34,7 +34,7 @@ The local cache also contains the original 40-draw bike pilot (`bike-mc.json`) a
 
 ## Research that can build on these checks
 
-1. Fit the project's temporal partially linear estimator to the same bike draws. Start at horizon zero, match the scored timestamps, then repeat at horizons 1, 2 and 6. At each horizon, purge by the latest training outcome time and compute HAC lags in elapsed hours. Differences in the training support and in the treatment nuisance model were large enough to affect coverage. [Bike design and results](time_series_dml.md#what-actually-happened-in-the-bike-benchmark)
+1. The public temporal PLR has now been checked at horizons 0, 1, 2 and 6 on the same timestamps for four bike offer histories. A larger paired experiment could estimate coverage and separate the fold effect from propensity-model misspecification. [Estimator comparison and remaining question](time_series_dml.md#the-repository-estimator-on-the-same-bike-offers)
 2. Compare coverage for the switchback estimand under alternative carryover half-lives. Resample at the randomized block level and report the current-block contrast alongside the sustained contrast for each design. [Ride experiment](time_series_dml.md#when-randomization-happens-in-time-blocks)
 3. For an empirical microeconomics application, seek the original assignment denominators for each Oslo arm. For the cooperation data, resolve permission, the treatment cutoff, the stage and the direction of the action coding before using participant outcomes. These are separate identification questions. [Oslo selection](time_series_dml.md#observed-microeconomic-intervention-with-hourly-outcomes) · [Panel definitions](cooperation_panel.md#three-definitions-to-settle-before-using-participant-outcomes)
 4. Match EIA demand and as-issued weather forecasts to a common clock for one balancing authority. Reserve entire summers for evaluation. The current audit identifies the sources and defines two possible exposures. Joining the series and validating the forecast vintages remain open. [Observational extension](time_series_dml.md#observational-extension-with-aggregate-electricity-demand)

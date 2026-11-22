@@ -56,6 +56,34 @@ for train, test, solve in folds[:2]:
 PYTHON
 ```
 
+## The repository estimator on the same bike offers
+
+On the first four offer histories from the original seed, the project's `TemporalPLRDML` gives mean effects of **7.65, 3.73, −0.01 and −1.89 rentals** at hours 0, 1, 2 and 6 after an offer. These estimates use exactly the original evaluation timestamps at each horizon. The outcome is the observed count with the simulated offers added. Each target is the effect of one randomized hour's offer on a later count while other offers keep their independently assigned values. A separate scalar PLR was fit for each horizon. Four draws check the implementation and permit paired comparisons. The original 200-draw study supplies the coverage evidence for its own estimators. [Executable comparison](checks/bike_temporal_plr.py) · [Per-draw results, software versions and timestamp hashes](reference/bike-temporal-plr.json)
+
+| Elapsed hours | Known effect | Matched hours | Public ridge on matched hours | Same ridge on historical folds | Historical known propensity | Historical hour/workday | Historical expanded calendar |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 10 | 13,127 | 7.65 | 13.01 | 10.12 | 11.17 | 28.15 |
+| 1 | 5 | 13,101 | 3.73 | 8.60 | 6.01 | 7.05 | 23.92 |
+| 2 | 2 | 13,096 | −0.01 | 4.63 | 2.01 | 2.95 | 20.71 |
+| 6 | 0 | 13,084 | −1.89 | 2.41 | −0.81 | −0.44 | 18.91 |
+
+**Changing the training dates moved the estimates even with the learners fixed.** On the common hours, using the historical calendar folds raised the mean contemporaneous estimate from 7.65 to 13.01. The public configuration uses five expanding purged folds, no lagged treatment controls and scikit-learn `Ridge(alpha=1)` with an unpenalized intercept in both nuisance regressions. Its treatment predictions can fall outside [0, 1], which occurred on up to 89 scored hours in one draw/horizon. The historical expanded model uses ridge without an intercept and clips its treatment predictions to [0.05, 0.95]. The other historical columns use that same historical outcome regression with their stated treatment models. Independent centered normal equations reconstructed every public out-of-fold treatment and outcome residual within 3.5 × 10⁻¹¹. [Public fit](../../../dml_ts/dml/temporal_plr_dml.py) · [Nuisance models](../../../dml_ts/dml/_utils.py) · [Original estimators](checks/bike_dml.py)
+
+**The native and calendar scores use different supports.** The public splitter starts scoring earlier, adding 1,353, 1,314, 1,309 and 1,301 hours before the historical evaluation starts. Its full-sample, returned estimates averaged 7.36, 3.28, −0.25 and −1.95. The matched public column recalculates the slope from its returned residuals on the historical timestamps. The calendar-fold ridge column refits those same learners on the earlier data prescribed by each historical fold. Horizon-specific samples require that the exact endpoint exist. All offers and their contributions were generated on the full original hour series before filtering.
+
+**Audit the gap and the standard error on physical time.** The public API takes a positional gap and length-checks the time index. Passing `168 + h` eligible rows produced at least 169 elapsed hours from the latest training outcome to the first test offer in every fold. With the unadjusted 168-row gap, that separation would have been only 163–166 hours at horizon six. On that horizon, 1,205 of 13,036 pairs at row lag 48 span more than 48 real hours. Across these 16 fits the largest change in a matched standard error between the row-based and elapsed-hour Bartlett clocks was 0.009 rental. An independent replay of the original four-draw benchmark also matched the 12 method-by-horizon means, biases, root mean square errors, Monte Carlo standard errors and coverage fractions to within 3.6 × 10⁻¹⁵. The comparison records both clocks and verifies the package's returned full-sample estimate and positional standard error against a direct sandwich calculation. [Fold gaps and standard errors](reference/bike-temporal-plr.json)
+
+To replay, use the original bike ZIP and locked environment from the [setup instructions](README.md#reproduce-the-calculations). The first command runs one real draw at horizon zero. The second runs all four fixed histories and saves the numerical comparison in the ignored cache. The byte comparison applies to the recorded software environment; another numerical library can round the last digits differently.
+
+```bash
+audit=docs/audits/2026-11-21_public_data_extensions
+cache=output/time-series-dml
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 DML_N_JOBS=1
+.venv/bin/python -B "$audit/checks/bike_temporal_plr.py" "$cache/bike.zip" --draws 1 --horizons 0
+.venv/bin/python -B "$audit/checks/bike_temporal_plr.py" "$cache/bike.zip" > "$cache/bike-temporal-four.json"
+cmp "$cache/bike-temporal-four.json" "$audit/reference/bike-temporal-plr.json"
+```
+
 ## Observed microeconomic intervention with hourly outcomes
 
 The Norwegian iFlex experiment supplies actual household assignment, prices and electricity use. Its Phase 2 Oslo group `Os_1` experienced 20 dates with the same price profile and four peak-price levels. We compared its 255 households with the 257 in `Os_Control`. All 512 had complete published peak-hour observations on the 20 chosen dates. The source RData file contains 13,515,600 household-hour rows overall. The price message was sent the day before, test dates targeted forecast cold days, and the project sometimes altered the signal sequence to balance exposures. The household contrast measures assignment to the whole offer, including information and rewards, in the released Oslo sample. Interpreting it causally requires that selection into that sample preserve the arm comparison. A causal one-hour price elasticity would require additional design assumptions. [Original data release, version 8248802](https://zenodo.org/records/8248802) · [Authors’ experimental design and data dictionary](https://pmc.ncbi.nlm.nih.gov/articles/PMC10539631/)

@@ -1,0 +1,579 @@
+{
+  "archive_sha256": "b70182d0d0508e9abbb79306ce5c0cec34869000f8220175ac83d11dbe845401",
+  "seed": 20261120,
+  "draws": 4,
+  "offer_sha256": [
+    "6b9582d32d2b4c17054864b4271991f26ebffad3e1aac5bb343a2b4bb9fdb8fd",
+    "deb5701584e7fe28cac898789c74ef0a87cedf869f7e07991af5ea9ae851a767",
+    "b5ca143d00b884518ce1aa65fa7bfc514347d8feaf8d64fd4b4cbc7228477098",
+    "4dcea738f2ad08331d2cccb8dde676c807b947e374f19abad6d4a3eef93f0773"
+  ],
+  "gap_hours": 168,
+  "hac_bandwidth": 48,
+  "python": "3.13.17",
+  "packages": {
+    "dml_ts": "1.1.4",
+    "temporalcv": "2.2.0",
+    "scikit-learn": "1.6.1",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1"
+  },
+  "horizons": [
+    {
+      "h": 0,
+      "target": 10.0,
+      "eligible_pairs": 17377,
+      "native_scored": 14480,
+      "matched_scored": 13127,
+      "matched_hour_sha256": "fb4aa24784c40b868f000472cd98ccf3d526f20acd59a9b15d71aa02f88fcc19",
+      "native_train_outcome_to_test_hours": [
+        169,
+        182,
+        171,
+        169,
+        169
+      ],
+      "unadjusted_168_row_outcome_to_test_hours": [
+        169,
+        182,
+        171,
+        169,
+        169
+      ],
+      "matched_row_lag_48_pairs_spanning_more_than_48_hours": 1122,
+      "native_train_sizes": [
+        2729,
+        5625,
+        8521,
+        11417,
+        14313
+      ],
+      "calendar_train_sizes": [
+        4082,
+        7017,
+        9910,
+        12834,
+        14322
+      ],
+      "draws": [
+        {
+          "native_all_oof_theta": 8.390964984891625,
+          "native_all_oof_se_rows": 2.059117775835468,
+          "native_matched_theta": 10.086575854075436,
+          "native_matched_se_hours": 2.161687427328183,
+          "native_matched_se_rows": 2.164437019768078,
+          "calendar_matched_ridge_theta": 28.209872047318424,
+          "calendar_matched_ridge_se_hours": 2.680673602685856,
+          "historical": {
+            "known propensity": {
+              "theta": 10.687158756373968,
+              "se_hours": 2.2671972817251653
+            },
+            "hour and workday": {
+              "theta": 14.22706168653922,
+              "se_hours": 2.28299803831781
+            },
+            "expanded calendar fit": {
+              "theta": 44.059123410912036,
+              "se_hours": 3.5815896630844004
+            }
+          },
+          "max_abs_ridge_residual_difference": 2.2794210963184014e-11,
+          "native_matched_propensity_outside_unit": 0
+        },
+        {
+          "native_all_oof_theta": 5.360881118812369,
+          "native_all_oof_se_rows": 1.9123140336038307,
+          "native_matched_theta": 7.418998562902192,
+          "native_matched_se_hours": 2.0214813049674243,
+          "native_matched_se_rows": 2.012539345087342,
+          "calendar_matched_ridge_theta": 5.267238167588105,
+          "calendar_matched_ridge_se_hours": 2.1262820076914077,
+          "historical": {
+            "known propensity": {
+              "theta": 10.416061903124184,
+              "se_hours": 1.9858556101081815
+            },
+            "hour and workday": {
+              "theta": 10.885681092596933,
+              "se_hours": 1.996269800478467
+            },
+            "expanded calendar fit": {
+              "theta": 21.503391639792465,
+              "se_hours": 2.4315133041525927
+            }
+          },
+          "max_abs_ridge_residual_difference": 2.7007729386241408e-11,
+          "native_matched_propensity_outside_unit": 62
+        },
+        {
+          "native_all_oof_theta": 9.170340980527774,
+          "native_all_oof_se_rows": 1.8976989804922244,
+          "native_matched_theta": 9.65557165999212,
+          "native_matched_se_hours": 2.0015666985895693,
+          "native_matched_se_rows": 2.0017807886072534,
+          "calendar_matched_ridge_theta": 25.77343704311753,
+          "calendar_matched_ridge_se_hours": 2.7663856616919538,
+          "historical": {
+            "known propensity": {
+              "theta": 11.386422999401573,
+              "se_hours": 1.949427966082709
+            },
+            "hour and workday": {
+              "theta": 13.214550146326571,
+              "se_hours": 1.9613118847710036
+            },
+            "expanded calendar fit": {
+              "theta": 42.823945644635465,
+              "se_hours": 3.663453919434432
+            }
+          },
+          "max_abs_ridge_residual_difference": 9.947598300641403e-12,
+          "native_matched_propensity_outside_unit": 0
+        },
+        {
+          "native_all_oof_theta": 6.53215206609807,
+          "native_all_oof_se_rows": 2.108911748884059,
+          "native_matched_theta": 3.4352439753051214,
+          "native_matched_se_hours": 2.178585473147735,
+          "native_matched_se_rows": 2.1785107564892643,
+          "calendar_matched_ridge_theta": -7.212027974775983,
+          "calendar_matched_ridge_se_hours": 2.203254194452333,
+          "historical": {
+            "known propensity": {
+              "theta": 8.005358514972729,
+              "se_hours": 2.05454559059901
+            },
+            "hour and workday": {
+              "theta": 6.359916950662202,
+              "se_hours": 2.0260825249122085
+            },
+            "expanded calendar fit": {
+              "theta": 4.216089172613132,
+              "se_hours": 2.002428214033342
+            }
+          },
+          "max_abs_ridge_residual_difference": 3.078071131312754e-11,
+          "native_matched_propensity_outside_unit": 15
+        }
+      ]
+    },
+    {
+      "h": 1,
+      "target": 5.0,
+      "eligible_pairs": 17301,
+      "native_scored": 14415,
+      "matched_scored": 13101,
+      "matched_hour_sha256": "e13094fef159b8ee1248e9a92c72f18732364c7a0ecd50e0b46925d78b4da7e9",
+      "native_train_outcome_to_test_hours": [
+        169,
+        169,
+        173,
+        169,
+        169
+      ],
+      "unadjusted_168_row_outcome_to_test_hours": [
+        168,
+        168,
+        172,
+        168,
+        168
+      ],
+      "matched_row_lag_48_pairs_spanning_more_than_48_hours": 1117,
+      "native_train_sizes": [
+        2717,
+        5600,
+        8483,
+        11366,
+        14249
+      ],
+      "calendar_train_sizes": [
+        4031,
+        6961,
+        9843,
+        12764,
+        14252
+      ],
+      "draws": [
+        {
+          "native_all_oof_theta": 4.451257955763273,
+          "native_all_oof_se_rows": 2.0932278226256122,
+          "native_matched_theta": 6.423895125102997,
+          "native_matched_se_hours": 2.1978884805156835,
+          "native_matched_se_rows": 2.2020597288014336,
+          "calendar_matched_ridge_theta": 25.245711415707355,
+          "calendar_matched_ridge_se_hours": 2.647868007671908,
+          "historical": {
+            "known propensity": {
+              "theta": 7.8168368149345095,
+              "se_hours": 2.2374129243082908
+            },
+            "hour and workday": {
+              "theta": 11.242698202860975,
+              "se_hours": 2.249691618890326
+            },
+            "expanded calendar fit": {
+              "theta": 41.64241129885556,
+              "se_hours": 3.5739931138990046
+            }
+          },
+          "max_abs_ridge_residual_difference": 1.3002932064409833e-11,
+          "native_matched_propensity_outside_unit": 9
+        },
+        {
+          "native_all_oof_theta": 3.3987885394855617,
+          "native_all_oof_se_rows": 2.0781772564051586,
+          "native_matched_theta": 4.472904958810777,
+          "native_matched_se_hours": 2.2350274460662356,
+          "native_matched_se_rows": 2.230120461424374,
+          "calendar_matched_ridge_theta": -3.6709203171999705,
+          "calendar_matched_ridge_se_hours": 2.2746063957958866,
+          "historical": {
+            "known propensity": {
+              "theta": 5.527118098255748,
+              "se_hours": 2.032915142792361
+            },
+            "hour and workday": {
+              "theta": 6.258031605981312,
+              "se_hours": 2.0479413897817547
+            },
+            "expanded calendar fit": {
+              "theta": 12.21403165255626,
+              "se_hours": 2.344137720614221
+            }
+          },
+          "max_abs_ridge_residual_difference": 1.2377654456940945e-11,
+          "native_matched_propensity_outside_unit": 86
+        },
+        {
+          "native_all_oof_theta": 4.1758697702123415,
+          "native_all_oof_se_rows": 1.9483193922974404,
+          "native_matched_theta": 5.232813230183757,
+          "native_matched_se_hours": 2.0499629505000576,
+          "native_matched_se_rows": 2.052686986881834,
+          "calendar_matched_ridge_theta": 23.911864749792276,
+          "calendar_matched_ridge_se_hours": 2.8590847333095435,
+          "historical": {
+            "known propensity": {
+              "theta": 7.26795795782642,
+              "se_hours": 1.9837020622642123
+            },
+            "hour and workday": {
+              "theta": 9.006683303724047,
+              "se_hours": 1.9957859242312368
+            },
+            "expanded calendar fit": {
+              "theta": 40.93876550740252,
+              "se_hours": 3.777630988932508
+            }
+          },
+          "max_abs_ridge_residual_difference": 2.6261659513693303e-11,
+          "native_matched_propensity_outside_unit": 0
+        },
+        {
+          "native_all_oof_theta": 1.0838052058742065,
+          "native_all_oof_se_rows": 2.095519285054159,
+          "native_matched_theta": -1.215732720230263,
+          "native_matched_se_hours": 2.2142013675856433,
+          "native_matched_se_rows": 2.2199671560669825,
+          "calendar_matched_ridge_theta": -11.091312507588206,
+          "calendar_matched_ridge_se_hours": 2.230100710782524,
+          "historical": {
+            "known propensity": {
+              "theta": 3.424305381860599,
+              "se_hours": 2.0018967707813355
+            },
+            "hour and workday": {
+              "theta": 1.6904302808161196,
+              "se_hours": 1.9827307725424923
+            },
+            "expanded calendar fit": {
+              "theta": 0.8951433247174186,
+              "se_hours": 1.9788776113478956
+            }
+          },
+          "max_abs_ridge_residual_difference": 1.1795009413617663e-11,
+          "native_matched_propensity_outside_unit": 41
+        }
+      ]
+    },
+    {
+      "h": 2,
+      "target": 2.0,
+      "eligible_pairs": 17288,
+      "native_scored": 14405,
+      "matched_scored": 13096,
+      "matched_hour_sha256": "8408c0d529fb3945d48b4eb59a7ab13fcfb233b13d520c963e5ab41c68a142d1",
+      "native_train_outcome_to_test_hours": [
+        169,
+        169,
+        173,
+        169,
+        169
+      ],
+      "unadjusted_168_row_outcome_to_test_hours": [
+        167,
+        167,
+        171,
+        167,
+        167
+      ],
+      "matched_row_lag_48_pairs_spanning_more_than_48_hours": 1133,
+      "native_train_sizes": [
+        2713,
+        5594,
+        8475,
+        11356,
+        14237
+      ],
+      "calendar_train_sizes": [
+        4022,
+        6951,
+        9832,
+        12753,
+        14241
+      ],
+      "draws": [
+        {
+          "native_all_oof_theta": -0.29627116747342774,
+          "native_all_oof_se_rows": 1.9857468543786505,
+          "native_matched_theta": 1.1214569358874222,
+          "native_matched_se_hours": 2.10599882003193,
+          "native_matched_se_rows": 2.1088368697749544,
+          "calendar_matched_ridge_theta": 18.44121981641652,
+          "calendar_matched_ridge_se_hours": 2.531776438083112,
+          "historical": {
+            "known propensity": {
+              "theta": 3.3899993482845945,
+              "se_hours": 2.3090969237154404
+            },
+            "hour and workday": {
+              "theta": 6.396272722847261,
+              "se_hours": 2.309635619104657
+            },
+            "expanded calendar fit": {
+              "theta": 35.93909265643688,
+              "se_hours": 3.4636238599489575
+            }
+          },
+          "max_abs_ridge_residual_difference": 2.944489096989855e-11,
+          "native_matched_propensity_outside_unit": 0
+        },
+        {
+          "native_all_oof_theta": 2.22449265991352,
+          "native_all_oof_se_rows": 1.9861842433067671,
+          "native_matched_theta": 3.583000343013035,
+          "native_matched_se_hours": 2.1019765740996994,
+          "native_matched_se_rows": 2.093823828171769,
+          "calendar_matched_ridge_theta": -2.564109554378721,
+          "calendar_matched_ridge_se_hours": 2.1803198236675643,
+          "historical": {
+            "known propensity": {
+              "theta": 2.226109162697121,
+              "se_hours": 2.0681884120894303
+            },
+            "hour and workday": {
+              "theta": 3.1461921130073693,
+              "se_hours": 2.077359794170485
+            },
+            "expanded calendar fit": {
+              "theta": 14.23542312215515,
+              "se_hours": 2.547475536864407
+            }
+          },
+          "max_abs_ridge_residual_difference": 1.1937117960769683e-11,
+          "native_matched_propensity_outside_unit": 61
+        },
+        {
+          "native_all_oof_theta": -0.4020446237084787,
+          "native_all_oof_se_rows": 1.9690385477500705,
+          "native_matched_theta": 0.17459927086417798,
+          "native_matched_se_hours": 2.0893138751585205,
+          "native_matched_se_rows": 2.0922862310801214,
+          "calendar_matched_ridge_theta": 17.787986829750334,
+          "calendar_matched_ridge_se_hours": 2.847979207284244,
+          "historical": {
+            "known propensity": {
+              "theta": 2.28624075806624,
+              "se_hours": 2.083740552020182
+            },
+            "hour and workday": {
+              "theta": 3.9963172811005876,
+              "se_hours": 2.096118773030866
+            },
+            "expanded calendar fit": {
+              "theta": 35.576418000143796,
+              "se_hours": 3.800042607819351
+            }
+          },
+          "max_abs_ridge_residual_difference": 2.3248958314070478e-11,
+          "native_matched_propensity_outside_unit": 0
+        },
+        {
+          "native_all_oof_theta": -2.5137323404465564,
+          "native_all_oof_se_rows": 2.29468458495408,
+          "native_matched_theta": -4.93305580192758,
+          "native_matched_se_hours": 2.4297507324095626,
+          "native_matched_se_rows": 2.4385610159861004,
+          "calendar_matched_ridge_theta": -15.14487707970595,
+          "calendar_matched_ridge_se_hours": 2.244790774064578,
+          "historical": {
+            "known propensity": {
+              "theta": 0.1434162914938705,
+              "se_hours": 1.9840189303661016
+            },
+            "hour and workday": {
+              "theta": -1.7514970840679087,
+              "se_hours": 1.9837002393420042
+            },
+            "expanded calendar fit": {
+              "theta": -2.9001288266326286,
+              "se_hours": 1.9704883236221336
+            }
+          },
+          "max_abs_ridge_residual_difference": 1.4594547792512458e-11,
+          "native_matched_propensity_outside_unit": 49
+        }
+      ]
+    },
+    {
+      "h": 6,
+      "target": 0,
+      "eligible_pairs": 17263,
+      "native_scored": 14385,
+      "matched_scored": 13084,
+      "matched_hour_sha256": "bce2599725206d07f97da4a2e36a033603a92dce5d4c75d4e7126dd893788522",
+      "native_train_outcome_to_test_hours": [
+        169,
+        169,
+        173,
+        169,
+        169
+      ],
+      "unadjusted_168_row_outcome_to_test_hours": [
+        163,
+        163,
+        166,
+        163,
+        163
+      ],
+      "matched_row_lag_48_pairs_spanning_more_than_48_hours": 1205,
+      "native_train_sizes": [
+        2704,
+        5581,
+        8458,
+        11335,
+        14212
+      ],
+      "calendar_train_sizes": [
+        4005,
+        6930,
+        9811,
+        12732,
+        14220
+      ],
+      "draws": [
+        {
+          "native_all_oof_theta": -2.9442751683146753,
+          "native_all_oof_se_rows": 2.0029518313636023,
+          "native_matched_theta": -2.4107608207884166,
+          "native_matched_se_hours": 2.1570141808863244,
+          "native_matched_se_rows": 2.1541213105699204,
+          "calendar_matched_ridge_theta": 14.970813883149363,
+          "calendar_matched_ridge_se_hours": 2.6704760606021436,
+          "historical": {
+            "known propensity": {
+              "theta": -1.182668940142856,
+              "se_hours": 2.2424651641697055
+            },
+            "hour and workday": {
+              "theta": 1.0271347535920727,
+              "se_hours": 2.234132820453525
+            },
+            "expanded calendar fit": {
+              "theta": 32.72207481840224,
+              "se_hours": 3.6636237925870496
+            }
+          },
+          "max_abs_ridge_residual_difference": 3.411315674384241e-11,
+          "native_matched_propensity_outside_unit": 0
+        },
+        {
+          "native_all_oof_theta": 0.29103002350180673,
+          "native_all_oof_se_rows": 1.7736031300335422,
+          "native_matched_theta": 1.901286198015268,
+          "native_matched_se_hours": 1.876496506311902,
+          "native_matched_se_rows": 1.8724115023168313,
+          "calendar_matched_ridge_theta": -1.7838600359320342,
+          "calendar_matched_ridge_se_hours": 2.0195808715996666,
+          "historical": {
+            "known propensity": {
+              "theta": 1.548776481364296,
+              "se_hours": 1.8804027675520614
+            },
+            "hour and workday": {
+              "theta": 1.7653582793181368,
+              "se_hours": 1.8884357922776507
+            },
+            "expanded calendar fit": {
+              "theta": 15.775655864369666,
+              "se_hours": 2.5580660322990587
+            }
+          },
+          "max_abs_ridge_residual_difference": 1.1951328815484885e-11,
+          "native_matched_propensity_outside_unit": 66
+        },
+        {
+          "native_all_oof_theta": -2.5933264368160747,
+          "native_all_oof_se_rows": 2.037264901015925,
+          "native_matched_theta": -1.49660112228285,
+          "native_matched_se_hours": 2.159598767943544,
+          "native_matched_se_rows": 2.162424540020671,
+          "calendar_matched_ridge_theta": 13.061381256809502,
+          "calendar_matched_ridge_se_hours": 2.890201435533695,
+          "historical": {
+            "known propensity": {
+              "theta": -1.5650058370176054,
+              "se_hours": 2.2302700946006513
+            },
+            "hour and workday": {
+              "theta": -0.2666384349214937,
+              "se_hours": 2.2262314774738146
+            },
+            "expanded calendar fit": {
+              "theta": 31.49122572214832,
+              "se_hours": 3.824542537958361
+            }
+          },
+          "max_abs_ridge_residual_difference": 2.6190605240117293e-11,
+          "native_matched_propensity_outside_unit": 0
+        },
+        {
+          "native_all_oof_theta": -2.5335414337711035,
+          "native_all_oof_se_rows": 2.024698337854811,
+          "native_matched_theta": -5.539617785814903,
+          "native_matched_se_hours": 2.0850906052264935,
+          "native_matched_se_rows": 2.0813312317218133,
+          "calendar_matched_ridge_theta": -16.617699652786634,
+          "calendar_matched_ridge_se_hours": 2.299172524663655,
+          "historical": {
+            "known propensity": {
+              "theta": -2.0521367797971806,
+              "se_hours": 2.0407114644390982
+            },
+            "hour and workday": {
+              "theta": -4.275284677553004,
+              "se_hours": 2.052559365644595
+            },
+            "expanded calendar fit": {
+              "theta": -4.358179630885642,
+              "se_hours": 2.0993579656704267
+            }
+          },
+          "max_abs_ridge_residual_difference": 1.6086687537608668e-11,
+          "native_matched_propensity_outside_unit": 89
+        }
+      ]
+    }
+  ]
+}
