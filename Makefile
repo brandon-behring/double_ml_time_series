@@ -17,7 +17,7 @@ PYTHON = venv/bin/python
 all: $(PDF)
 
 # Build complete book (all chapters)
-$(PDF): $(MAIN).tex chapters/chapter_01.tex chapters/chapter_02.tex chapters/bibliography.bib
+$(PDF): $(MAIN).tex bibliography.bib $(wildcard chapters/chapter_[0-9][0-9].tex chapters/appendix_*.tex shared/*.sty)
 	@echo "=========================================="
 	@echo "Building complete book..."
 	@echo "=========================================="
