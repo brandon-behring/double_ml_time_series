@@ -22,7 +22,7 @@ from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
-from sklearn.base import BaseEstimator, clone
+from sklearn.base import BaseEstimator, clone, is_classifier
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Lasso, Ridge
 
@@ -80,13 +80,14 @@ def compute_r2(y_true: NDArray[np.float64], y_pred: NDArray[np.float64]) -> floa
     """Compute R² (coefficient of determination)."""
     ss_res = np.sum((y_true - y_pred) ** 2)
     ss_tot = np.sum((y_true - y_true.mean()) ** 2)
-    return float(1 - ss_res / ss_tot) if ss_tot > 1e-10 else 0.0
+    return float(1 - ss_res / ss_tot) if ss_tot > 0 else 0.0
 
 
 def theta_via_fwl(
     Y_tilde: NDArray[np.float64],
     T_tilde: NDArray[np.float64],
     *,
+    treatment: NDArray[np.float64] | None = None,
     no_variation_msg: str,
 ) -> tuple[float, float]:
     """FWL closed form ``theta = sum(Y_tilde*T_tilde) / sum(T_tilde**2)``.
@@ -94,6 +95,9 @@ def theta_via_fwl(
     Args:
         Y_tilde: Outcome residuals.
         T_tilde: Treatment residuals.
+        treatment: Treatment values before residualization on the same rows.
+            These supply the units for distinguishing a numerically exact fit
+            from residuals measured on a small scale.
         no_variation_msg: Estimator-specific ValueError message raised when
             the treatment residuals carry (numerically) no variation.
 
@@ -108,7 +112,10 @@ def theta_via_fwl(
             f"{T_tilde_sq_sum}); check for NaN/inf in inputs or uncovered "
             "cross-fit rows."
         )
-    if T_tilde_sq_sum < 1e-10:
+    tolerance = 0.0
+    if treatment is not None:
+        tolerance = np.linalg.norm(treatment) * len(treatment) * np.finfo(float).eps
+    if np.sqrt(T_tilde_sq_sum) <= tolerance:
         raise ValueError(no_variation_msg)
     numerator = float(np.sum(Y_tilde * T_tilde))
     if not np.isfinite(numerator):
@@ -120,6 +127,27 @@ def theta_via_fwl(
         )
     theta = numerator / T_tilde_sq_sum
     return theta, T_tilde_sq_sum
+
+
+def predict_conditional_mean(model: BaseEstimator, X: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Predict a numeric mean, including probability-weighted numeric class labels."""
+    if not is_classifier(model):
+        return np.asarray(model.predict(X), dtype=float)
+    if not hasattr(model, "predict_proba"):
+        raise ValueError(
+            "A classifier nuisance must implement predict_proba to estimate a conditional mean."
+        )
+    probabilities = model.predict_proba(X)
+    # sklearn multioutput classifiers return one probability matrix and class
+    # array per target; labels can differ across treatment periods.
+    if isinstance(probabilities, list):
+        return np.column_stack(
+            [
+                np.asarray(p) @ np.asarray(labels, dtype=float)
+                for p, labels in zip(probabilities, model.classes_, strict=True)
+            ]
+        )
+    return np.asarray(probabilities @ np.asarray(model.classes_, dtype=float), dtype=float)
 
 
 def cross_fit_predictions(
@@ -152,11 +180,11 @@ def cross_fit_predictions(
 
         outcome_mod = clone(outcome_model)
         outcome_mod.fit(X_train, Y[train_idx])
-        Y_hat[test_idx] = outcome_mod.predict(X_test)
+        Y_hat[test_idx] = predict_conditional_mean(outcome_mod, X_test)
 
         treatment_mod = clone(treatment_model)
         treatment_mod.fit(X_train, T[train_idx])
-        T_hat[test_idx] = treatment_mod.predict(X_test)
+        T_hat[test_idx] = predict_conditional_mean(treatment_mod, X_test)
 
     return Y_hat, T_hat
 

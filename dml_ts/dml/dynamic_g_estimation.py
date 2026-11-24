@@ -38,16 +38,18 @@ from __future__ import annotations
 
 import os
 import warnings
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
 from scipy import stats
-from sklearn.base import BaseEstimator, clone
+from sklearn.base import BaseEstimator, clone, is_classifier
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.model_selection import KFold
+from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
 from temporalcv import (
     TimeSeriesCrossValidator,
     ci_ordered,
@@ -58,6 +60,7 @@ from temporalcv import (
 )
 
 from ._results import ResultBase
+from ._utils import predict_conditional_mean, theta_via_fwl
 
 ArrayLike: TypeAlias = np.ndarray | list[float]
 ModelSpec: TypeAlias = str | BaseEstimator
@@ -209,54 +212,34 @@ def _resolve_model(spec: ModelSpec, random_state: int | None) -> BaseEstimator:
     )
 
 
-def _crossfit_residualize_kfold(
+def _crossfit_residualize(
     H: NDArray[np.float64],
     targets: NDArray[np.float64],
     model: BaseEstimator,
-    n_folds: int,
-    random_state: int | None,
+    splits: Sequence[tuple[NDArray[np.int64], NDArray[np.int64]]],
 ) -> NDArray[np.float64]:
-    """Out-of-fold residuals of each column of ``targets`` on ``H`` (KFold over rows).
+    """Fit on the supplied folds and return residuals, with NaN on unscored rows."""
+    if hasattr(model, "__sklearn_tags__"):
+        target_tags = model.__sklearn_tags__().target_tags
+        multi_output, single_output = target_tags.multi_output, target_tags.single_output
+    else:  # scikit-learn 1.3–1.5
+        tags = model._get_tags()
+        multi_output, single_output = tags["multioutput"], not tags["multioutput_only"]
+    if targets.shape[1] > 1 and not multi_output:
+        wrapper = MultiOutputClassifier if is_classifier(model) else MultiOutputRegressor
+        model = wrapper(model, n_jobs=1)
+    fit_targets = targets.ravel() if targets.shape[1] == 1 and single_output else targets
 
-    Units are i.i.d. in the panel, so plain (shuffled) K-fold cross-fitting is
-    the correct dimension. Returns ``targets - hat`` with the same shape.
-    """
-    n = H.shape[0]
-    preds = np.zeros_like(targets, dtype=float)
-    kf = KFold(n_splits=min(n_folds, n), shuffle=True, random_state=random_state)
-    for train_idx, test_idx in kf.split(H):
-        mod = clone(model)
-        _yt = targets[train_idx]
-        mod.fit(H[train_idx], _yt.ravel() if _yt.shape[1] == 1 else _yt)
-        preds[test_idx] = np.asarray(mod.predict(H[test_idx])).reshape(len(test_idx), -1)
-    return np.asarray(targets - preds, dtype=np.float64)
-
-
-def _crossfit_residualize_timeseries(
-    H: NDArray[np.float64],
-    targets: NDArray[np.float64],
-    model: BaseEstimator,
-    n_splits: int,
-    gap: int,
-) -> NDArray[np.float64]:
-    """Out-of-fold residuals using temporal CV (single-series mode).
-
-    Rows uncovered by the expanding-window splits are returned as NaN so the
-    caller can drop them (mirrors ``TemporalPLRDML``).
-    """
     preds = np.full_like(targets, np.nan, dtype=float)
-    cv = TimeSeriesCrossValidator(n_splits=n_splits, gap=gap)
-    for train_idx, test_idx in cv.split(H):
-        mod = clone(model)
-        _yt = targets[train_idx]
-        mod.fit(H[train_idx], _yt.ravel() if _yt.shape[1] == 1 else _yt)
-        preds[test_idx] = np.asarray(mod.predict(H[test_idx])).reshape(len(test_idx), -1)
+    for train, test in splits:
+        fitted = clone(model).fit(H[train], fit_targets[train])
+        preds[test] = predict_conditional_mean(fitted, H[test]).reshape(len(test), targets.shape[1])
     return np.asarray(targets - preds, dtype=np.float64)
 
 
 def _r2(y: NDArray[np.float64], resid: NDArray[np.float64]) -> float:
     ss_tot = float(np.sum((y - y.mean()) ** 2))
-    return float(1.0 - np.sum(resid**2) / ss_tot) if ss_tot > 1e-12 else 0.0
+    return float(1.0 - np.sum(resid**2) / ss_tot) if ss_tot > 0 else 0.0
 
 
 class DynamicGEstimationDML:
@@ -269,7 +252,8 @@ class DynamicGEstimationDML:
         model_y: Outcome nuisance ``E[Y|H]`` -- sklearn estimator or alias
             (``"random_forest"`` default, ``"linear"``, ``"ridge"``,
             ``"gradient_boosting"``).
-        model_t: Treatment nuisance ``E[T|H]`` (same options).
+        model_t: Treatment nuisance ``E[T|H]`` (same options). With the native
+            backend, classifiers must provide probabilities for numeric classes.
         n_folds: Cross-fitting folds (panel KFold over units / series temporal CV).
         gap: Temporal-CV gap (series mode only).
         random_state: Seed for cross-fitting and nuisance models.
@@ -430,6 +414,9 @@ class DynamicGEstimationDML:
         model_y = _resolve_model(self.model_y, self.random_state)
         model_t = _resolve_model(self.model_t, self.random_state)
 
+        splitter = KFold(min(self.n_folds, n), shuffle=True, random_state=self.random_state)
+        splits = list(splitter.split(Xp))
+
         # Per stage tau: residualize [Y_final, T_0..T_{m-1}] on history H_tau.
         R: list[NDArray] = [np.empty(0)] * m
         Ttil: list[NDArray] = [np.empty(0)] * m  # Ttil[tau] is (n, m): col s = M_tau T_s
@@ -439,12 +426,8 @@ class DynamicGEstimationDML:
             if tau > 0:
                 cols.append(Tp[:, :tau])  # past treatments
             H = np.hstack(cols)
-            y_resid = _crossfit_residualize_kfold(
-                H, Y_final.reshape(-1, 1), model_y, self.n_folds, self.random_state
-            ).ravel()
-            t_resid = _crossfit_residualize_kfold(
-                H, Tp, model_t, self.n_folds, self.random_state
-            )  # (n, m)
+            y_resid = _crossfit_residualize(H, Y_final.reshape(-1, 1), model_y, splits).ravel()
+            t_resid = _crossfit_residualize(H, Tp, model_t, splits)
             R[tau] = y_resid
             Ttil[tau] = t_resid
             nuis_r2[tau] = _r2(Y_final, y_resid)
@@ -456,12 +439,14 @@ class DynamicGEstimationDML:
             for s in range(tau + 1, m):
                 y_peeled -= theta[s] * Ttil[tau][:, s]
             t_tau = Ttil[tau][:, tau]
-            denom = float(t_tau @ t_tau)
-            if denom < 1e-12:
-                raise ValueError(
+            theta[tau], _ = theta_via_fwl(
+                y_peeled,
+                t_tau,
+                treatment=Tp[:, tau],
+                no_variation_msg=(
                     f"No residual treatment variation at period {tau} (weak/colinear treatment)."
-                )
-            theta[tau] = float(t_tau @ y_peeled) / denom
+                ),
+            )
 
         # Joint sandwich variance over the stacked moments (upper-triangular Jacobian).
         g = np.zeros((n, m))
@@ -496,14 +481,19 @@ class DynamicGEstimationDML:
         )  # (Lv, m), col k = T_{t-k}
         Yv = Y[m - 1 :]
         Xv = X[m - 1 :]
-        targets = np.column_stack([Yv, Tlag])
-        resid = _crossfit_residualize_timeseries(
-            Xv, targets, _resolve_model(self.model_y, self.random_state), self.n_folds, self.gap
+        splits = list(TimeSeriesCrossValidator(n_splits=self.n_folds, gap=self.gap).split(Xv))
+        Ytil = _crossfit_residualize(
+            Xv, Yv[:, None], _resolve_model(self.model_y, self.random_state), splits
+        ).ravel()
+        Ttil = _crossfit_residualize(
+            Xv, Tlag, _resolve_model(self.model_t, self.random_state), splits
         )
-        keep = ~np.isnan(resid).any(axis=1)
-        resid = resid[keep]
-        Ytil = resid[:, 0]
-        Ttil = resid[:, 1:]  # (Lk, m)
+        keep = np.zeros(len(Yv), dtype=bool)
+        for _, test in splits:
+            keep[test] = True
+        Ytil, Ttil = Ytil[keep], Ttil[keep]
+        if not (np.isfinite(Ytil).all() and np.isfinite(Ttil).all()):
+            raise ValueError("Non-finite nuisance residuals on scored series rows.")
         lk = Ttil.shape[0]
 
         gram = Ttil.T @ Ttil

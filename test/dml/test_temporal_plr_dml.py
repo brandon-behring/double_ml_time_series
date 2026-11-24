@@ -616,9 +616,8 @@ class TestRollingWindowDML:
         model.fit(Y, T, X, time_index=time)
         _, _, se_series = model.get_effects()
 
-        # n=300, window 100, step 20 -> centers range(50, 250, 20) = 10
-        # windows. A silent window skip would misalign every later center.
-        assert len(se_series) == 10
+        # The last complete window starts at 200 and includes row 299.
+        assert len(se_series) == 11
         assert np.all(se_series > 0)
 
         # First window covers [0, 100); replicate its exact internal fit.

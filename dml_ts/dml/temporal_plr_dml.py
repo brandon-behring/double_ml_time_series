@@ -226,9 +226,8 @@ def _cross_fit_nuisance_time_series(
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Generate cross-fitted predictions for nuisance models using time series CV.
 
-    For each fold, trains models on out-of-fold data (respecting temporal order)
-    and predicts on in-fold data. This eliminates in-sample bias while
-    maintaining temporal structure.
+    Each fold trains its nuisance models on earlier observations and predicts
+    the outcomes and treatments for its held-out rows.
 
     Args:
         X: Covariates (n, p)
@@ -281,7 +280,8 @@ class TemporalPLRDML:
     5. Compute HAC standard errors (Newey-West) for autocorrelation
 
     Args:
-        n_lags: Number of lags to include for treatment and confounders
+        n_lags: Past treatment values to append to the supplied controls. Supply
+            any lagged outcomes or lagged confounders as columns of X.
         model_y: ML model for outcome nuisance function
         model_t: ML model for treatment nuisance function
         cv_strategy: Cross-validation strategy for time series
@@ -321,7 +321,7 @@ class TemporalPLRDML:
         """Initialize TemporalPLRDML.
 
         Args:
-            n_lags: Number of lags for treatment and confounders
+            n_lags: Number of past treatments to append to X
             model_y: Model type for outcome regression
             model_t: Model type for treatment propensity
             cv_strategy: Time series CV strategy
@@ -410,7 +410,7 @@ class TemporalPLRDML:
     ) -> TemporalPLRDMLResult:
         """Fit the TemporalPLRDML model.
 
-        Estimates the Average Treatment Effect (ATE) in the partially linear model:
+        Estimates the common slope θ in the partially linear model:
             Y_t = θ·T_t + g(X_t, T_{t-1}, ..., T_{t-L}) + ε_t
 
         using Neyman-orthogonal moment conditions, time series cross-fitting,
@@ -442,6 +442,8 @@ class TemporalPLRDML:
 
         # Validate inputs
         validate_lengths(Y, T, X)
+        if not 0 < alpha < 1:
+            raise ValueError(f"alpha must be in (0, 1), got {alpha!r}")
 
         # Create time index if not provided
         if time_index is not None and len(np.asarray(time_index)) != n_samples:
@@ -520,9 +522,10 @@ class TemporalPLRDML:
         self._X_augmented = X_used
 
         # Estimate theta via FWL
-        theta, T_tilde_sq_sum = theta_via_fwl(
+        theta, _ = theta_via_fwl(
             Y_tilde,
             T_tilde,
+            treatment=T_used,
             no_variation_msg=(
                 "Treatment has no variation after controlling for X and lags. "
                 "This may indicate perfect prediction of T by X."
@@ -530,7 +533,7 @@ class TemporalPLRDML:
         )
         T_tilde_sq_mean = np.mean(T_tilde**2)
 
-        if T_tilde_sq_mean < 1e-6:
+        if T_tilde_sq_mean < 1e-6 * np.var(T_used):
             warnings.warn(
                 "Treatment residual variation is very low after controlling for "
                 "X and lags. Overlap may be weak and inference may be unstable.",
@@ -663,11 +666,12 @@ class TemporalPLRDML:
                 "Model must be fitted before calling effect_interval(). Call fit() first."
             )
 
-        z_crit = stats.norm.ppf(1 - alpha / 2)
+        if not 0 < alpha < 1:
+            raise ValueError(f"alpha must be in (0, 1), got {alpha!r}")
         scale = T1 - T0
-
-        lower = (self._result.theta - z_crit * self._result.se) * scale
-        upper = (self._result.theta + z_crit * self._result.se) * scale
+        estimate = self._result.theta * scale
+        margin = stats.norm.ppf(1 - alpha / 2) * self._result.se * abs(scale)
+        lower, upper = estimate - margin, estimate + margin
 
         if X is not None:
             n = len(np.asarray(X))
@@ -685,10 +689,10 @@ class RollingWindowDML:
     Estimates local treatment effects using a moving window approach,
     useful when treatment effects vary over time.
 
-    The algorithm works as follows: for each window position t,
-    select observations in [t - window_size/2, t + window_size/2],
-    run DML on window data, and store the local treatment effect estimate.
-    Returns a time series of local effects with HAC standard errors.
+    Each complete window contains exactly `window_size` consecutive rows.
+    Window starts advance by `step_size` from zero. The center is the row at
+    `start + window_size // 2`, the later middle row for an even-sized window.
+    Returns local effects and HAC standard errors at those row positions.
 
     Args:
         window_size: Size of rolling window
@@ -726,6 +730,9 @@ class RollingWindowDML:
         random_state: int | None = None,
     ):
         """Initialize RollingWindowDML."""
+        for name, value in (("window_size", window_size), ("step_size", step_size)):
+            if isinstance(value, bool) or not isinstance(value, (int, np.integer)) or value < 1:
+                raise ValueError(f"{name} must be a positive integer, got {value!r}")
         self.window_size = window_size
         self.step_size = step_size
         self.model_y = model_y
@@ -752,7 +759,8 @@ class RollingWindowDML:
             Y: Outcome variable (n_samples,)
             T: Treatment variable (n_samples,)
             X: Confounders (n_samples, n_features)
-            time_index: Time index for each observation
+            time_index: Optional row labels, length-validated. Returned centers
+                are positions in the input, including when labels are supplied.
 
         Returns:
             self: Fitted model
@@ -765,11 +773,11 @@ class RollingWindowDML:
             X = X.reshape(-1, 1)
 
         n_samples = len(Y)
-
-        # Compute window centers
-        half_window = self.window_size // 2
-        centers = list(range(half_window, n_samples - half_window, self.step_size))
-        if not centers:
+        validate_lengths(Y, T, X)
+        if time_index is not None and len(time_index) != n_samples:
+            raise ValueError("time_index length must match Y length")
+        starts = range(0, n_samples - self.window_size + 1, self.step_size)
+        if not starts:
             # window_size too large for the series produces an empty center list,
             # which would otherwise bypass the skip-warning loop and silently
             # return empty estimate arrays from get_effects().
@@ -784,9 +792,9 @@ class RollingWindowDML:
         kept_centers: list[int] = []
         skipped: list[tuple[int, str]] = []
 
-        for center in centers:
-            start_idx = max(0, center - half_window)
-            end_idx = min(n_samples, center + half_window)
+        for start_idx in starts:
+            center = start_idx + self.window_size // 2
+            end_idx = start_idx + self.window_size
 
             Y_window = Y[start_idx:end_idx]
             T_window = T[start_idx:end_idx]
@@ -822,7 +830,7 @@ class RollingWindowDML:
             details = "; ".join(f"center {c}: {msg}" for c, msg in skipped[:5])
             more = f" (+{len(skipped) - 5} more)" if len(skipped) > 5 else ""
             warnings.warn(
-                f"RollingWindowDML skipped {len(skipped)} of {len(centers)} "
+                f"RollingWindowDML skipped {len(skipped)} of {len(starts)} "
                 f"windows — {details}{more}. Reported estimates cover only "
                 "the successful windows at their correct centers.",
                 RuntimeWarning,
@@ -831,7 +839,7 @@ class RollingWindowDML:
 
         self._theta_series = np.array(theta_list)
         self._se_series = np.array(se_list)
-        self._time_centers = np.array(kept_centers)
+        self._time_centers = np.asarray(kept_centers, dtype=np.int64)
         self._is_fitted = True
 
         return self

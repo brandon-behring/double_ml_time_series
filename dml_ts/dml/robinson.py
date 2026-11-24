@@ -55,7 +55,7 @@ from temporalcv import finite_se
 
 from ._results import ResultBase
 from ._utils import compute_r2 as _compute_r2
-from ._utils import get_nuisance_model, theta_via_fwl, validate_lengths
+from ._utils import get_nuisance_model, predict_conditional_mean, theta_via_fwl, validate_lengths
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -135,10 +135,10 @@ def robinson_estimator(
     X : array, shape (n, p)
         Control variables / confounders.
     model : sklearn estimator or str, optional
-        Model for nuisance estimation. Can be:
-        - An sklearn estimator with fit() and predict()
-        - A string: "ridge", "lasso", "random_forest", "gradient_boosting"
-        - None: defaults to "random_forest"
+        A regressor with ``predict`` or a classifier with ``predict_proba`` for
+        numeric outcome and treatment classes. Supported string values are
+        "ridge", "lasso", "random_forest" and "gradient_boosting".
+        The default is "random_forest".
 
     Returns
     -------
@@ -194,12 +194,12 @@ def robinson_estimator(
 
     # Step 1: Estimate E[Y|X]
     outcome_model.fit(X, Y)
-    Y_hat = outcome_model.predict(X)
+    Y_hat = predict_conditional_mean(outcome_model, X)
     outcome_r2 = _compute_r2(Y, Y_hat)
 
     # Step 2: Estimate E[T|X]
     treatment_model.fit(X, T)
-    T_hat = treatment_model.predict(X)
+    T_hat = predict_conditional_mean(treatment_model, X)
     treatment_r2 = _compute_r2(T, T_hat)
 
     # Step 3: Compute residuals
@@ -210,6 +210,7 @@ def robinson_estimator(
     theta, T_tilde_sq_sum = theta_via_fwl(
         Y_tilde,
         T_tilde,
+        treatment=T,
         no_variation_msg=(
             "Treatment has no variation after controlling for X. "
             "The nuisance model may have overfit or T is deterministic given X."

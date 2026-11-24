@@ -1,8 +1,7 @@
 """Double Machine Learning (DML) with Cross-Fitting.
 
-This module implements the Chernozhukov et al. (2018) Double ML estimator,
-which achieves √n-consistency for treatment effects even with slow-rate
-ML nuisance estimators.
+This module implements the Chernozhukov et al. (2018) estimator of a
+partially linear regression slope from independent observations.
 
 Mathematical Foundation
 -----------------------
@@ -12,11 +11,13 @@ The problem with naive ML in causal inference:
     2. Overfitting bias: In-sample predictions overfit, creating spurious correlations
     3. Standard errors: Don't account for nuisance estimation error
 
-DML solves all three via:
+The estimator combines three steps:
 
-    1. Neyman orthogonality: Moment condition is insensitive to small nuisance errors
-    2. Cross-fitting: Out-of-sample predictions eliminate overfitting bias
-    3. Influence functions: Valid inference without nuisance rate requirements
+    1. Neyman orthogonality makes the population score locally insensitive to
+       first-order errors in the conditional means.
+    2. Cross-fitting evaluates each observation using models trained on other folds.
+    3. The sample variability of the estimated influence scores gives the
+       standard error for independent observations under the DML assumptions.
 
 The Algorithm
 -------------
@@ -31,9 +32,11 @@ For the partially linear model Y = θ·T + g(X) + ε:
 4. Estimate θ̂ = Σ(Ỹᵢ·T̃ᵢ) / Σ(T̃ᵢ²)
 5. Compute SE via influence function: ψᵢ = (Ỹᵢ - θ̂·T̃ᵢ)·T̃ᵢ / E[T̃²]
 
-The critical insight: By using out-of-fold predictions, E[nuisance_error × score] = 0
-even when nuisance models are imperfect. This yields √n-consistency without
-requiring nuisance models to converge at √n rate.
+For nuisance errors a = m̂ - E[Y|X] and b = ℓ̂ - E[T|X], the change in the
+population moment at the true slope is E[a b - θ b²], conditional on the
+training sample. The first derivatives vanish at a = b = 0. For root-n
+inference the remaining term must be small relative to 1/√n, and residual
+treatment variation must be positive.
 
 References
 ----------
@@ -74,9 +77,9 @@ class DMLResult(ResultBase):
     Attributes
     ----------
     theta : float
-        Treatment effect estimate (ATE).
+        Fitted partially linear slope.
     se : float
-        Standard error via influence function (valid inference).
+        Standard error from independent-observation influence scores.
     t_stat : float
         t-statistic = theta / se.
     p_value : float
@@ -177,8 +180,8 @@ def _influence_function_se(
     The variance is:
         Var(θ̂) = Var(ψ) / n
 
-    This gives valid inference without requiring the nuisance models
-    to converge at √n rate.
+    This estimates sampling uncertainty under independent observations and
+    the orthogonal-score regularity conditions described by ``double_ml``.
 
     Parameters
     ----------
@@ -224,11 +227,14 @@ def double_ml(
 ) -> DMLResult:
     """Double Machine Learning estimator with cross-fitting.
 
-    Estimates the Average Treatment Effect (ATE) in the partially linear model:
+    Estimates the common slope θ in the partially linear model:
         Y = θ·T + g(X) + ε
 
-    using Neyman-orthogonal moment conditions and cross-fitting for
-    √n-consistent, asymptotically normal inference.
+    With an exogenous treatment and constant causal slope, θ gives the causal
+    effect per unit of treatment. For conditionally unconfounded binary treatment
+    with heterogeneous effects τ(X), the slope equals
+    E[Var(T|X) τ(X)] / E[Var(T|X)]. The population ATE averages τ(X) with the
+    population distribution of X, which can give a different value.
 
     Parameters
     ----------
@@ -248,6 +254,9 @@ def double_ml(
         Model for E[Y|X]. Overrides `model` for outcome.
     treatment_model : sklearn estimator, optional
         Model for E[T|X]. Overrides `model` for treatment.
+        For either nuisance, a sklearn classifier must provide `predict_proba`.
+        Its probability-weighted numeric class values estimate the conditional
+        mean. For a 0/1 target this gives the probability of class 1.
     alpha : float
         Significance level for confidence intervals. Default: 0.05.
     random_state : int
@@ -260,15 +269,12 @@ def double_ml(
 
     Notes
     -----
-    The key innovation of DML over Robinson (1988) is cross-fitting:
-    - Robinson: In-sample nuisance predictions → overfitting bias
-    - DML: Out-of-sample nuisance predictions → no overfitting bias
-
-    Cross-fitting ensures E[nuisance_error × score] = 0 even when
-    nuisance models are imperfect, yielding valid inference.
-
-    The influence function-based SE accounts for nuisance estimation error,
-    unlike naive SEs which assume known nuisance functions.
+    The score uses held-out residuals for both conditional means. Its population
+    derivative with respect to those means vanishes at their true values.
+    Second-order nuisance errors can still bias the slope. The influence-function
+    interval assumes independent observations, positive residual treatment
+    variation, suitable moments, and nuisance convergence fast enough for the
+    second-order errors to be negligible at the root-n scale.
 
     Examples
     --------
@@ -324,6 +330,7 @@ def double_ml(
     theta, _ = theta_via_fwl(
         Y_tilde,
         T_tilde,
+        treatment=T,
         no_variation_msg=(
             "Treatment has no variation after controlling for X. "
             "This may indicate perfect prediction of T by X."
@@ -367,7 +374,7 @@ def compare_robinson_vs_dml(
 ) -> dict:
     """Compare Robinson (no cross-fitting) vs DML (with cross-fitting).
 
-    This demonstrates the overfitting bias that cross-fitting eliminates.
+    Compare estimates obtained with in-sample and held-out nuisance predictions.
 
     Parameters
     ----------
@@ -472,13 +479,8 @@ def demonstrate_cross_fitting_benefit(seed: int = 42, n_sims: int = 100) -> None
     )
     print(f"  95% CI Coverage:  N/A*           {np.mean(dml_coverages):.1%}")
     print()
-    print("  *Robinson's naive SE doesn't account for nuisance estimation,")
-    print("   so its coverage is typically too low (not computed here).")
-    print()
-    print("★ Key Insight:")
-    print("  Cross-fitting eliminates the overfitting bias from in-sample")
-    print("  nuisance predictions. DML achieves correct coverage because")
-    print("  the influence function SE accounts for nuisance estimation error.")
+    print("  *The coverage column summarizes DML's independent-observation")
+    print("   influence-score intervals across these simulated datasets.")
     print("=" * 70)
 
 
