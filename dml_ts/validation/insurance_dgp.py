@@ -239,7 +239,7 @@ def _generate_competitor_treatment(
 
                 # Strategic lag: competitors react to each other (average lag)
                 if t > 1 and p > 0:
-                    competitor_lag = 0.1 * T_base[t - 1, :p].mean()
+                    competitor_lag = float(0.1 * T_base[t - 1, :p].mean())
                 else:
                     competitor_lag = 0.0
 
