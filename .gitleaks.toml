@@ -4,6 +4,9 @@
 # (e.g. "chernozhukov2018double", "frisch1933partial") inside
 # <Cite key="..." /> MDX components and at `@article{key,` in
 # bibliography.bib as generic-api-key matches due to their entropy.
+# The same rule fires on every `bibkey:` line of the research ledgers
+# under docs/research/ (130 matches in the November 2026 backlog, all of
+# them `bibkey: <author><year><word>`; checked on 2026-11-24).
 # These are not secrets — they are standard author-year citation
 # keys. Allowlist by path.
 #
@@ -17,9 +20,11 @@ title = "double_ml_time_series"
 useDefault = true
 
 [allowlist]
-description = "Human-authored chapter MDX and the BibTeX bibliography; not paths that carry real secrets."
+description = "Human-authored chapter MDX, the BibTeX bibliography and the research ledgers that list citation keys; not paths that carry real secrets."
 paths = [
   '''web/src/content/.*\.mdx$''',
   '''^bibliography\.bib$''',
   '''^web/.*\.bib$''',
+  '''^docs/research/(bib|dataset)_ledger\.yml$''',
+  '''^docs/research/existing_content_urls\.txt$''',
 ]
