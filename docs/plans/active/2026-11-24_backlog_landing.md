@@ -423,6 +423,35 @@ in the snapshot.
   because the shim on this machine looks for `.venv/bin/pre-commit` and the worktrees use `venv/`.
   No file changes for this.
 
+- PR-1, after the adversarial review: three edits that are not in the snapshot, in one commit
+  with their tests (`test/dml/test_numerical_guards.py`, a new file).
+  1. **The "no treatment variation" bound.** The snapshot raises when
+     `norm(T_tilde) <= norm(T) * n * eps`. That bound accepts exact collinearity whenever the
+     controls have a non-zero mean, because the rounding error of the fit grows with the level
+     of the controls: with controls at level 1000, `fwl_estimate`, `double_ml` and
+     `robinson_estimator` returned a slope of order 1e10 to 1e12 in 455 of 500 runs, where
+     `main` raises. The bound is now the larger of `1e-6 * norm(T - mean(T))` and
+     `sqrt(eps) * norm(T)`. It was chosen by measuring four candidate rules on residuals the
+     library produces (script `rule_grid.py`, kept with the review files): it catches every
+     degenerate case that any candidate catches, and it refuses healthy data only when the
+     residual spread is below 1.5e-8 of the treatment's level. The signature of
+     `theta_via_fwl` is unchanged, so later slices are not affected.
+  2. **A guard in `PanelDML.fit` (9 lines).** `main`'s PanelDML passes the demeaned treatment
+     to the shared check, so a treatment that the fixed effects absorb leaves rounding residue
+     with no level to compare it with: the snapshot's bound returned a fit in 40 of 40 runs
+     (10% with p < 0.05), where `main` raises in 40 of 40. The guard compares the demeaned
+     treatment with the bound of the treatment before demeaning. This touches PanelDML before
+     its redesign; without it PR-1 would change PanelDML's behavior, which the plan forbids.
+     Part II's protocol must include an absorbed treatment as a case that raises.
+  3. **R² of a constant target.** The snapshot returns 0.0 only when the computed variance is
+     exactly zero. The mean of `np.full(n, 0.1)` is not 0.1, so R² became rounding noise
+     (1.0, 0.0, -1295 or -1.3e31 for the same target). The three helpers now return 0.0 when
+     the centered norm is at most `norm(y) * n * eps`.
+
+  Consequence for the conservation check: `_utils.py`, `fwl.py`, `dynamic_g_estimation.py`,
+  `temporal_plr_dml.py` and `CHANGELOG.md` differ from the snapshot by these edits, and
+  `test/dml/test_numerical_guards.py` is not in the snapshot.
+
 ## Addendum, 2026-11-25: obstacles of the first day and their repairs
 
 The plan above stands. This section records what stopped the work on 2026-11-24 and how it
@@ -513,6 +542,31 @@ and its environment were removed.
   #109 and #125. No new issue was filed; this repository's evidence was added to each as a
   comment.
 - #68 was closed and reopened after PR-0 merged; all six checks pass at `0cca908`.
+
+### Adversarial review of PR-1 (#69), 2026-11-25
+
+Reviewers: a fresh Claude agent, which ran 12 experiments and a 12-row mutation table, and
+Gemini in three scoped calls. Each was given the diff, the tree at the reviewed commit and the
+text of #42, and no conclusion of the author. Every finding was re-run before it was accepted.
+
+| Finding | Source | Verdict | Outcome |
+|---|---|---|---|
+| The bound `norm(T) * n * eps` misses exact collinearity when the controls have a level | Claude | Confirmed: 455 of 500 runs at level 1000 | Fixed (deviation above) |
+| PanelDML accepts a treatment absorbed by its fixed effects | Claude | Confirmed: 40 of 40 runs | Fixed |
+| R² of a constant target is rounding noise | Claude, Gemini | Confirmed | Fixed |
+| Eleven changed behaviors are pinned by no test | Claude, Gemini | Confirmed by mutation | Tests added; 15 of 15 mutations of the guarded behaviors are caught |
+| The check refuses a treatment whose variation is tiny beside its level | Claude, Gemini | Confirmed; by design | Documented in the changelog and pinned by a test |
+| An all-zero or constant treatment bypasses the check | Gemini | Refuted: raises for every learner tried | none |
+| `TemporalPLRDML` ignores a classifier nuisance | Gemini | Refuted: it accepts only the four named regressors | none |
+| A classifier cannot be fitted on a float treatment | Gemini | Refuted: 0.0/1.0 targets fit | Pinned by a test |
+| A wrapped classifier without `predict_proba` raises `AttributeError` | Gemini | Refuted: it raises the documented `ValueError` | Pinned by a test |
+| Changelog: the classifier claim is too wide for `robinson_estimator`; the series-mode entry omits that default results change | Claude | Confirmed (`main` [2.031, 0.031], now [1.998, 0.060]) | Changelog corrected |
+| A column-vector treatment or outcome broadcasts silently to a wrong slope | Claude | Confirmed on `main` (slope -2.6e-16 for 2.03) | Not in this plan; tracked issue |
+| Estimates change with the units of the treatment when it enters as a feature (ridge with lags; the `"linear"` alias under scikit-learn 1.9) | Claude | Confirmed on `main` (2.05 against 3.08) | Not in this plan; tracked issue |
+| `RollingWindowDML` returns empty results with only a warning (`window_size < 30`; invalid inner arguments) | Claude, Gemini | Confirmed: 0 windows fitted, one warning | Not in this plan; tracked issue |
+
+The review files (diff, reviewer scripts, mutation runner, Gemini's answers) are under
+`~/Claude/.backups/double_ml_time_series/review-pr1/`.
 
 ### Working rules added
 
