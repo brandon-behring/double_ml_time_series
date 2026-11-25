@@ -5,11 +5,13 @@ status ignored the intervals: ``OLSWithControls.validate()`` returned PASS with 
 intervals covering the truth, and ``NaiveOLS`` returned PASS with 34%.
 """
 
+import sys
+
 import numpy as np
 import pytest
 from scipy import stats
 
-from dml_ts.validation.bias_validation import assess_simulation_draws
+from dml_ts.validation.bias_validation import SimulationVerdicts, assess_simulation_draws
 from dml_ts.validation.bootstrap_config import BootstrapConfig
 from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.ipw_baseline import AugmentedIPW, IPWEstimator
@@ -131,6 +133,31 @@ def test_every_baseline_reports_both_verdicts_and_the_worse_one_as_its_status(ba
     assert result.status == max(result.bias_status, result.coverage_status, key=lambda v: RANK[v])
     covered = round(result.coverage * 12)
     assert result.coverage_p_value == stats.binomtest(covered, 12, 0.95).pvalue
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("baseline", BASELINES)
+def test_every_baseline_passes_its_level_in_and_the_two_verdicts_out(baseline, monkeypatch):
+    """Each baseline hands its own nominal level to the assessment and reports what comes back.
+
+    The verdicts are forced apart (bias PASS, coverage FAIL), so a baseline that reported the
+    bias verdict as its status, or dropped a field, is seen.
+    """
+    seen = {}
+
+    def forced(errors, bounds, true_effect, nominal):
+        seen.update(rows=len(errors), bounds=np.shape(bounds), truth=true_effect, nominal=nominal)
+        return SimulationVerdicts("PASS", "FAIL"), 0.7, 0.001
+
+    monkeypatch.setattr(sys.modules[baseline.__module__], "assess_simulation_draws", forced)
+    dgp = DGPGenerator(n=150, p=2, true_effect=2.0, random_state=7)
+    config = BootstrapConfig(n_bootstrap_bias=20, n_bootstrap_ci=20)
+    result = baseline(n_simulations=6, alpha=0.1, bootstrap_config=config, random_state=7).validate(
+        dgp
+    )
+    assert seen == {"rows": 6, "bounds": (6, 2), "truth": 2.0, "nominal": pytest.approx(0.9)}
+    assert (result.status, result.bias_status, result.coverage_status) == ("FAIL", "PASS", "FAIL")
+    assert (result.bias_p_value, result.coverage_p_value) == (0.7, 0.001)
 
 
 @pytest.mark.tier2
