@@ -73,6 +73,12 @@ Mode = Literal["panel", "series"]
 
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
 
+# Series lags whose residuals have a direction below sqrt(eps) of their largest one are
+# linearly dependent to working precision. The normal equations square the condition
+# number, so no digit of their solution is reliable beyond this point. The level term of
+# ``no_variation_tolerance`` uses the same constant.
+_DEPENDENT_LAGS_RATIO = float(np.sqrt(np.finfo(float).eps))
+
 
 def _warn_if_ill_conditioned(matrix: NDArray[np.float64], name: str, *, tol: float = 1e12) -> None:
     """Warn loudly when a moment Jacobian to be inverted is near-singular.
@@ -519,17 +525,24 @@ class DynamicGEstimationDML:
                     f"<= bound {tolerance:.3g})"
                 )
 
+        # Lags that each vary can still be linearly dependent: lag 1 of an alternating
+        # treatment is minus lag 0. The test is made on the residuals, scaled to unit norm,
+        # and not on the Gram matrix. The computed condition number of the Gram matrix
+        # saturates near 1/eps, so whether the solver meets a zero pivot there, returns
+        # numbers, or fails later in the inversion depends on the machine.
+        spectrum = np.linalg.svd(Ttil / np.linalg.norm(Ttil, axis=0), compute_uv=False)
+        if spectrum[-1] <= _DEPENDENT_LAGS_RATIO * spectrum[0]:
+            raise ValueError(
+                "The series treatment Gram matrix is singular to working precision: the "
+                f"residualized treatment lags are linearly dependent, so the {m} lag effects "
+                "are not separately identified (smallest over largest singular value of the "
+                f"scaled lag residuals {spectrum[-1] / spectrum[0]:.3g} "
+                f"<= {_DEPENDENT_LAGS_RATIO:.3g})."
+            )
+
         gram = Ttil.T @ Ttil
         _warn_if_ill_conditioned(gram, "series treatment Gram")
-        try:
-            theta = np.linalg.solve(gram, Ttil.T @ Ytil)
-        except np.linalg.LinAlgError as exc:
-            # Each lag varies, but the lags are linearly dependent among themselves.
-            raise ValueError(
-                "The series treatment Gram matrix is singular: the residualized treatment "
-                f"lags are linearly dependent, so the {m} lag effects are not separately "
-                "identified."
-            ) from exc
+        theta = np.linalg.solve(gram, Ttil.T @ Ytil)
 
         # HAC sandwich: scores s_t = Ttil_t (Ytil_t - Ttil_t . theta); bread = (gram/Lk)^{-1}.
         resid_full = Ytil - Ttil @ theta

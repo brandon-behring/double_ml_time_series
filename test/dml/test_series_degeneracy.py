@@ -67,14 +67,63 @@ def test_series_lagged_treatment_among_the_controls_names_the_lag():
 
 @pytest.mark.tier2
 @pytest.mark.parametrize("learner", ["linear", "ridge"])
-def test_series_linearly_dependent_lags_warn_then_raise_naming_the_gram(learner):
+def test_series_linearly_dependent_lags_raise_naming_the_gram(learner):
     """Each lag of an alternating treatment varies, but lag 1 is minus lag 0."""
     y, t, x = series_draw("alternating")
-    with (
-        pytest.warns(RuntimeWarning, match="series treatment Gram is ill-conditioned"),
-        pytest.raises(ValueError, match="series treatment Gram matrix is singular"),
-    ):
+    message = "treatment Gram matrix is singular.*lags are linearly dependent"
+    with pytest.raises(ValueError, match=message):
         series_fit(y, t, x, learner)
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("jitter", [1e-13, 1e-10])
+@pytest.mark.parametrize("learner", ["linear", "ridge"])
+def test_series_lags_dependent_up_to_rounding_raise(learner, jitter):
+    """Dependence need not be exact in floating point to make the solution meaningless.
+
+    With lags equal up to 1e-13 the solver meets no zero pivot. It returned lag effects of
+    -5.4 and -5.8 with standard errors of 1.9e6 on one machine and failed in the later
+    inversion on another, so the refusal cannot rest on an exception from the solver.
+    """
+    y, t, x = series_draw("alternating")
+    nudged = t + jitter * np.random.default_rng(1).standard_normal(len(t))
+    with pytest.raises(ValueError, match="lags are linearly dependent"):
+        series_fit(y, nudged, x, learner)
+
+
+@pytest.mark.tier2
+def test_series_nearly_dependent_lags_warn_about_the_gram():
+    """Above the refusal bound and below a well-conditioned design, the fit warns.
+
+    The scaled singular-value ratio is 2e-7 here: more than sqrt(eps), so the design is not
+    refused, and the Gram matrix has a condition number near 2e13, above the warning bound
+    of 1e12. The result validator may still reject the covariance afterwards, which is not
+    this test's subject.
+    """
+    y, t, x = series_draw("alternating")
+    nudged = t + 3e-7 * np.random.default_rng(1).standard_normal(len(t))
+    with pytest.warns(RuntimeWarning, match="series treatment Gram is ill-conditioned"):
+        try:
+            series_fit(y, nudged, x)
+        except ValueError as error:
+            assert "linearly dependent" not in str(error)
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("learner", ["linear", "ridge"])
+def test_series_persistent_treatment_is_not_refused(learner):
+    """An AR(1) treatment with coefficient 0.99 has correlated lags, not dependent ones."""
+    rng = np.random.default_rng(3)
+    length = 400
+    x = rng.standard_normal((length, 2))
+    shocks = rng.standard_normal(length)
+    t = np.zeros(length)
+    for i in range(1, length):
+        t[i] = 0.99 * t[i - 1] + shocks[i]
+    y = np.zeros(length)
+    y[1:] = 1.0 * t[1:] + 0.5 * t[:-1] + x[1:, 0] + rng.standard_normal(length - 1)
+    result = series_fit(y, t, x, learner)
+    assert_allclose(result.theta_t, [1.0, 0.5], atol=0.25)
 
 
 @pytest.mark.tier2
