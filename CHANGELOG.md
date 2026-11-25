@@ -34,6 +34,31 @@ are the compatibility contract).
 
 ### Fixed
 
+- The DML bias validator and six baselines now test mean error across independent
+  Monte Carlo draws. Bootstrap resamples supply the bias interval. Validation
+  intervals and the DML coverage null use the configured confidence level.
+  [Effect on archived validation verdicts](docs/audits/2026-11-19_time_series_dml/08-bias-test-correction.md)
+- The six validation baselines (`NaiveOLS`, `OLSWithControls`, `IPWEstimator`, `AugmentedIPW`,
+  `RandomForestEstimator`, `XGBoostEstimator`) judge interval coverage with the exact binomial
+  test the DML validator uses, and their status is the worse of the bias and coverage verdicts.
+  They classified the bias p-value alone, so `OLSWithControls.validate()` returned PASS with 76%
+  of its 95% intervals covering the truth, and `NaiveOLS` with 34%. Their bias verdict follows
+  the DML validator's rule as well: FAIL needs a bias above 0.15, or of at least 0.1 with a
+  rejection at the 1% level, and a significant smaller bias is a WARNING. (#41)
+- The 401(k) comparison uses the fivefold Table 2B eligibility benchmarks and
+  reports uncertainty for the mean fitted effect. Its status records whether a
+  descriptive gap meets the caller's tolerance. Direct participation fits have
+  no Table 3 comparator, and the comparison p-value is unavailable.
+  [Published and refitted results](docs/audits/2026-11-19_time_series_dml/07-401k-replication.md)
+- `BootstrapDiagnostics` and `LassoDiagnostic` cut their cross-fitting folds on the original
+  observations and map them onto each bootstrap draw, so the copies of one observation stay on
+  one side of every split. Folds cut after the draw scored a nuisance model on rows it was
+  trained on.
+- `TimeSeriesDGPGenerator` draws its first treatment lags from the joint stationary
+  distribution of the treatment and the confounder signal, and warns when the error
+  innovation variance is floored. `EnhancedDGPGenerator` applies `omitted_var_strength` and
+  `polynomial_degree` as documented and draws measurement noise last, so runs that differ only
+  in `measurement_error_std` share their latent draws.
 - The "no treatment variation" check is relative to the size of the treatment. `fwl_estimate`,
   `robinson_estimator`, `double_ml`, `TemporalPLRDML` and panel-mode `DynamicGEstimationDML`
   raise when the norm of the treatment residuals is at most the larger of two bounds:
