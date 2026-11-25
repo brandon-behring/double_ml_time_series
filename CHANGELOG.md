@@ -61,14 +61,20 @@ are the compatibility contract).
   product, and the result was wrong with no error: for a true slope of 2, `fwl_estimate` returned
   a slope of order 1e-16 and `double_ml` returned 0.0005, `robinson_estimator` returned -0.002
   with a standard error of 0.004, and `RollingWindowDML` returned no window. The input is
-  refused, not flattened; pass `T.ravel()`. (#72)
-- Series-mode `DynamicGEstimationDML` checks every treatment lag for residual variation before
-  it solves for the lag effects, with the bound the other estimators use, and reports linearly
-  dependent lags as a `ValueError` that names the treatment Gram matrix. Before, a treatment
-  that the controls reproduce exactly gave a lag-0 effect of order 1e13 to 1e15 under the linear
-  learner, and a constant treatment ended in `LinAlgError: Singular matrix`. Not covered: a
-  ridge learner reproduces such a treatment only up to its shrinkage, which is far above the
-  bound, so that fit still returns an estimate. (#42)
+  refused, not flattened; pass `np.asarray(T).ravel()`. `fwl_estimate` with both arguments as
+  columns returned the right slope and is refused as well. (#72)
+- Series-mode `DynamicGEstimationDML` refuses lag effects that are not identified on the scored
+  rows, before it solves for them: a lag that is constant there; a lag whose residuals are
+  within the bound the other estimators use; lags, or lag residuals, that are linearly
+  dependent; and a fit with no more scored rows than lags. Before, a treatment that the
+  controls reproduce exactly gave a lag-0 effect of order 1e13 to 1e15 under the linear
+  learner, a constant treatment ended in `LinAlgError: Singular matrix`, and an on/off
+  treatment (lag 1 is a constant minus lag 0) returned two lag effects, significant at the 5%
+  level under gradient boosting. As in the other estimators, a treatment whose variation is
+  below `1.5e-8` of its level is refused; subtract the level first. Not covered: a learner
+  that only approximates a treatment the controls determine leaves residuals far above the
+  bound, so for `T = 0.5 * x0` the ridge learner, the default random forest and gradient
+  boosting still return an estimate. (#42)
 
 ## [1.1.4] - 2026-06-14
 

@@ -61,7 +61,7 @@ def test_column_vector_outcome_or_treatment_is_refused(name, case):
     y_is_column, t_is_column, first_refused = COLUMN_CASES[case]
     y_in = y[:, None] if y_is_column else y
     t_in = t[:, None] if t_is_column else t
-    message = rf"{first_refused} must be one-dimensional, got shape \(300, 1\).*\.ravel\(\)"
+    message = rf"{first_refused} must be one-dimensional, got shape \(300, 1\).*\.ravel\(\)\."
     with pytest.raises(ValueError, match=message):
         SLOPES[name](y_in, t_in, x)
 
@@ -144,3 +144,22 @@ def test_theta_via_fwl_of_flat_residuals_is_the_ratio_of_sums():
     theta, t_sq = theta_via_fwl(y_tilde, t_tilde, no_variation_msg="unused")
     assert theta == pytest.approx(4.5 / 6.0)
     assert t_sq == pytest.approx(6.0)
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("name", sorted(SLOPES))
+def test_a_zero_dimensional_outcome_is_refused_by_the_shape_check(name):
+    """The shape check runs before anything calls len() on the outcome."""
+    _, t, x = plr_draw()
+    with pytest.raises(ValueError, match=r"Y must be one-dimensional, got shape \(\)"):
+        SLOPES[name](np.float64(1.0), t, x)
+
+
+@pytest.mark.tier2
+def test_the_hint_in_the_message_works_on_a_dataframe_column():
+    """A DataFrame has no ``ravel``; ``np.asarray(T).ravel()`` is what the message names."""
+    y, t, x = plr_draw()
+    column = pd.DataFrame({"t": t})[["t"]]
+    with pytest.raises(ValueError, match=r"np\.asarray\(T\)\.ravel\(\)"):
+        fwl_estimate(y, column, x)
+    assert fwl_estimate(y, np.asarray(column).ravel(), x).theta == fwl_estimate(y, t, x).theta

@@ -170,8 +170,8 @@ def theta_via_fwl(
     """
     y_shape, t_shape = np.shape(Y_tilde), np.shape(T_tilde)
     if len(y_shape) != 1 or y_shape != t_shape:
-        # Shapes (n, 1) and (n,) broadcast to an (n, n) product, whose sum is a
-        # slope near zero with no error (#72).
+        # Shapes (n, 1) and (n,) broadcast to an (n, n) product, and the slope
+        # computed from it is wrong with no error (#72).
         raise ValueError(
             "Outcome and treatment residuals must be one-dimensional and of equal shape, "
             f"got {y_shape} and {t_shape}."
@@ -288,7 +288,7 @@ def validate_lengths(
         if len(shape) != 1:
             raise ValueError(
                 f"{name} must be one-dimensional, got shape {shape}. "
-                f"Pass a single column as a flat array, for example {name}.ravel()."
+                f"Pass a single column as a flat array, for example np.asarray({name}).ravel()."
             )
     n = len(Y)
     if len(T) != n:

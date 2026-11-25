@@ -42,7 +42,8 @@ def series_fit(y, t, x, learner="linear"):
 def test_series_constant_treatment_raises_for_both_learners(learner, constant):
     """A constant treatment ended in ``LinAlgError: Singular matrix``."""
     y, _, x = series_draw("healthy")
-    with pytest.raises(ValueError, match="No residual treatment variation at period 0"):
+    message = r"No treatment variation at period 0: the treatment is constant \(.*\) on the"
+    with pytest.raises(ValueError, match=message):
         series_fit(y, np.full(len(y), constant), x, learner)
 
 
@@ -147,3 +148,120 @@ def test_series_estimate_scales_with_the_units_of_the_treatment(scale):
 def test_series_estimate_ignores_a_shift_of_the_treatment():
     y, t, x = series_draw("healthy")
     assert_allclose(series_fit(y, t + 1e3, x).theta_t, series_fit(y, t, x).theta_t, rtol=1e-6)
+
+
+# ------------------------------------------------- checks that hold for every learner
+
+LEARNERS = ["linear", "ridge", "random_forest", "gradient_boosting"]
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("learner", LEARNERS)
+def test_series_treatment_constant_on_the_scored_rows_raises(learner):
+    """A step at row 60 varies in the series and is constant on every scored row.
+
+    The first block of a time-series split is only trained on. With the step inside it, the
+    "residual" on the scored rows is the error of the nuisance prediction and nothing else,
+    and the fit returned two lag effects with no error and no warning.
+    """
+    y, _, x = series_draw("healthy")
+    step = (np.arange(len(y)) >= 60).astype(float)
+    with pytest.raises(ValueError, match=r"period 0: the treatment is constant \(1\) on the"):
+        series_fit(y, step, x, learner)
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("learner", LEARNERS)
+@pytest.mark.parametrize("levels", [(1.0, -1.0), (1.0, 0.0), (5.0, 3.0)])
+def test_series_two_level_alternation_raises_under_every_learner(learner, levels):
+    """Lag 1 of an on/off treatment is a constant minus lag 0, whatever the two levels.
+
+    A learner that only approximates the treatment leaves residuals that are not exactly
+    dependent: for a 0/1 treatment gradient boosting returned two lag effects near 5.5 with
+    p = 0.03 where the truth is 1.0 and 0.5. The dependence is a property of the lags and
+    is tested on them.
+    """
+    y, _, x = series_draw("healthy")
+    high, low = levels
+    treatment = np.where(np.arange(len(y)) % 2 == 0, high, low)
+    with pytest.raises(ValueError, match="Gram matrix is singular.*linearly dependent"):
+        series_fit(y, treatment, x, learner)
+
+
+@pytest.mark.tier2
+def test_series_period_four_treatment_with_three_lags_raises():
+    """sin(pi t / 2) is 0, 1, 0, -1: lag 2 is minus lag 0, while lag 1 is free."""
+    y, _, x = series_draw("healthy")
+    treatment = np.round(np.sin(np.pi * np.arange(len(y)) / 2))
+    estimator = DynamicGEstimationDML(
+        n_periods=3, model_y="linear", model_t="linear", n_folds=3, random_state=0
+    )
+    with pytest.raises(ValueError, match="treatment lags are linearly dependent"):
+        estimator.fit(y, treatment, x, mode="series")
+
+
+@pytest.mark.tier2
+def test_series_with_no_more_scored_rows_than_lags_raises():
+    """55 rows and 25 lags pass the length check and leave about 21 scored rows."""
+    rng = np.random.default_rng(0)
+    estimator = DynamicGEstimationDML(
+        n_periods=25, model_y="linear", model_t="linear", n_folds=2, random_state=0
+    )
+    with pytest.raises(ValueError, match=r"scored \d+ rows for 25 lags"):
+        estimator.fit(
+            rng.standard_normal(55),
+            rng.standard_normal(55),
+            rng.standard_normal((55, 1)),
+            mode="series",
+        )
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("learner", LEARNERS)
+def test_series_binary_treatment_with_both_values_scored_is_fitted(learner):
+    """The raw checks refuse nothing that varies: a binary treatment is fitted."""
+    y, t, x = series_draw("healthy")
+    result = series_fit(y, (t > 0).astype(float), x, learner)
+    assert np.isfinite(result.theta_t).all()
+    assert np.isfinite(result.se_t).all()
+
+
+# ------------------------------------------------- the size of the per-lag bound
+
+
+def nearly_reproduced(relative):
+    """A treatment the controls reproduce up to noise of the given relative size."""
+    y, _, x = series_draw("healthy")
+    rng = np.random.default_rng(7)
+    return y, 0.5 * x[:, 0] + relative * rng.standard_normal(len(y)), x
+
+
+@pytest.mark.tier2
+def test_series_bound_refuses_an_unexplained_share_below_one_part_in_a_million():
+    """The first term of the bound is 1e-6 of the centered norm of the lag.
+
+    Noise of relative size 2e-7 leaves residuals of about 4e-7 of that norm: refused. A bound
+    of a few ulps of norm(T), or of sqrt(eps) * norm(T) alone, would accept it.
+    """
+    y, t, x = nearly_reproduced(2e-7)
+    with pytest.raises(ValueError, match="No residual treatment variation at period 0"):
+        series_fit(y, t, x)
+
+
+@pytest.mark.tier2
+def test_series_bound_accepts_an_unexplained_share_above_one_part_in_a_million():
+    """Noise of relative size 1e-4 leaves residuals of 2e-4 of the centered norm: fitted."""
+    y, t, x = nearly_reproduced(1e-4)
+    assert np.isfinite(series_fit(y, t, x).theta_t).all()
+
+
+@pytest.mark.tier2
+def test_series_treatment_with_spread_below_sqrt_eps_of_its_level_is_refused():
+    """The second term of the bound: variation below 1.5e-8 of the level is refused.
+
+    This is the documented limit of the shared check, so a shift of 1e8 is refused where a
+    shift of 1e3 changes nothing. Subtract the level before fitting.
+    """
+    y, t, x = series_draw("healthy")
+    with pytest.raises(ValueError, match="No residual treatment variation at period 0.*<= bound"):
+        series_fit(y, t + 1e8, x)

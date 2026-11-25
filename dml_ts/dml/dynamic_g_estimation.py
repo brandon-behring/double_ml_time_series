@@ -248,6 +248,92 @@ def _crossfit_residualize(
     return np.asarray(targets - preds, dtype=np.float64)
 
 
+def _are_dependent(columns: NDArray[np.float64]) -> tuple[bool, float]:
+    """Whether columns of non-zero norm are linearly dependent to working precision.
+
+    The columns are scaled to unit norm, so the test measures directions and not sizes.
+    Returns the verdict and the ratio of the smallest to the largest singular value.
+
+    Examples:
+        >>> import numpy as np
+        >>> a = np.array([1.0, -1.0, 1.0, -1.0])
+        >>> _are_dependent(np.column_stack([a, -a]))[0]
+        True
+        >>> _are_dependent(np.column_stack([a, np.array([1.0, 2.0, 3.0, 5.0])]))[0]
+        False
+    """
+    spectrum = np.linalg.svd(columns / np.linalg.norm(columns, axis=0), compute_uv=False)
+    ratio = float(spectrum[-1] / spectrum[0])
+    return ratio <= _DEPENDENT_LAGS_RATIO, ratio
+
+
+def _refuse_unidentified_lags(lags: NDArray[np.float64], residuals: NDArray[np.float64]) -> None:
+    """Raise when the lag effects of the series fit are not identified on the scored rows.
+
+    The checks on the lags themselves hold for every nuisance learner. Those on the
+    residuals depend on how well the learner reproduces the treatment: a learner that
+    fits a lag exactly leaves rounding residue, one that only approximates it does not.
+
+    Args:
+        lags: Treatment lags on the scored rows, ``(rows, m)``; column ``k`` is ``T_{t-k}``.
+        residuals: The same lags after cross-fitted residualization on the controls.
+
+    Raises:
+        ValueError: If there are no more scored rows than lags; if a lag is constant on
+            the scored rows; if a lag's residuals are within ``no_variation_tolerance``;
+            or if the lags, or their residuals, are linearly dependent.
+
+    Examples:
+        >>> import numpy as np
+        >>> t = np.tile([1.0, -1.0], 20)
+        >>> lags = np.column_stack([t[1:], t[:-1]])  # lag 1 is minus lag 0
+        >>> _refuse_unidentified_lags(lags, lags)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: The series treatment Gram matrix is singular to working precision: ...
+    """
+    rows, m = residuals.shape
+    if rows <= m:
+        raise ValueError(
+            f"Series mode scored {rows} rows for {m} lags: the lag effects are not identified "
+            "without more scored rows than lags. Use a longer series or fewer lags."
+        )
+    for k in range(m):
+        if is_numerically_constant(lags[:, k]):
+            # Its "residual" is then only the error of the nuisance prediction.
+            raise ValueError(
+                f"No treatment variation at period {k}: the treatment is constant "
+                f"({lags[0, k]:.6g}) on the {rows} scored rows."
+            )
+        # A lag whose residuals are rounding residue leaves the Gram system solvable
+        # with a slope of order 1/eps.
+        residual_norm = float(np.linalg.norm(residuals[:, k]))
+        tolerance = no_variation_tolerance(lags[:, k])
+        if residual_norm <= tolerance:
+            raise ValueError(
+                f"No residual treatment variation at period {k} (weak/colinear treatment). "
+                f"(norm of the treatment residuals {residual_norm:.3g} "
+                f"<= bound {tolerance:.3g})"
+            )
+    # Lags that each vary can still be linearly dependent: lag 1 of an alternating
+    # treatment is minus lag 0. The tests are made on the lags and their residuals and
+    # not on the Gram matrix. The computed condition number of the Gram matrix saturates
+    # near 1/eps, so whether the solver meets a zero pivot there, returns numbers, or
+    # fails later in the inversion depends on the machine.
+    for columns, what, scaled in (
+        (lags - lags.mean(axis=0), "treatment lags", "centered, scaled lags"),
+        (residuals, "residualized treatment lags", "scaled lag residuals"),
+    ):
+        dependent, ratio = _are_dependent(columns)
+        if dependent:
+            raise ValueError(
+                "The series treatment Gram matrix is singular to working precision: the "
+                f"{what} are linearly dependent on the scored rows, so the {m} lag effects "
+                "are not separately identified (smallest over largest singular value of the "
+                f"{scaled} {ratio:.3g} <= {_DEPENDENT_LAGS_RATIO:.3g})."
+            )
+
+
 def _r2(y: NDArray[np.float64], resid: NDArray[np.float64]) -> float:
     if is_numerically_constant(y):
         return 0.0
@@ -511,34 +597,7 @@ class DynamicGEstimationDML:
             raise ValueError("Non-finite nuisance residuals on scored series rows.")
         lk = Ttil.shape[0]
 
-        # A lag whose residuals are rounding residue leaves the Gram system solvable
-        # with a slope of order 1/eps, so each lag is checked against the bound the
-        # other estimators use before anything is solved.
-        Tlag_scored = Tlag[keep]
-        for k in range(m):
-            residual_norm = float(np.linalg.norm(Ttil[:, k]))
-            tolerance = no_variation_tolerance(Tlag_scored[:, k])
-            if residual_norm <= tolerance:
-                raise ValueError(
-                    f"No residual treatment variation at period {k} (weak/colinear treatment). "
-                    f"(norm of the treatment residuals {residual_norm:.3g} "
-                    f"<= bound {tolerance:.3g})"
-                )
-
-        # Lags that each vary can still be linearly dependent: lag 1 of an alternating
-        # treatment is minus lag 0. The test is made on the residuals, scaled to unit norm,
-        # and not on the Gram matrix. The computed condition number of the Gram matrix
-        # saturates near 1/eps, so whether the solver meets a zero pivot there, returns
-        # numbers, or fails later in the inversion depends on the machine.
-        spectrum = np.linalg.svd(Ttil / np.linalg.norm(Ttil, axis=0), compute_uv=False)
-        if spectrum[-1] <= _DEPENDENT_LAGS_RATIO * spectrum[0]:
-            raise ValueError(
-                "The series treatment Gram matrix is singular to working precision: the "
-                f"residualized treatment lags are linearly dependent, so the {m} lag effects "
-                "are not separately identified (smallest over largest singular value of the "
-                f"scaled lag residuals {spectrum[-1] / spectrum[0]:.3g} "
-                f"<= {_DEPENDENT_LAGS_RATIO:.3g})."
-            )
+        _refuse_unidentified_lags(Tlag[keep], Ttil)
 
         gram = Ttil.T @ Ttil
         _warn_if_ill_conditioned(gram, "series treatment Gram")
