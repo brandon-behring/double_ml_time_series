@@ -601,14 +601,20 @@
 <span class="sd">            &gt;&gt;&gt; diag.diagnose_distribution(n_bootstrap=1000)  # doctest: +SKIP</span>
 <span class="sd">            DistributionDiagnostic(is_normal=True, skewness=0.12, ...)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Shapiro-Wilk needs &gt;= 3 observations to test normality. Fabricating</span>
+        <span class="c1"># normality_pvalue=0.0 (-&gt; is_normal=False) from fewer would assert</span>
+        <span class="c1"># non-normality out of insufficient data, so fail loudly up front.</span>
+        <span class="k">if</span> <span class="n">n_bootstrap</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;diagnose_distribution needs n_bootstrap &gt;= 3 for the Shapiro-Wilk &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;normality test, got </span><span class="si">{</span><span class="n">n_bootstrap</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
         <span class="c1"># Generate bootstrap distribution</span>
         <span class="n">boot_estimates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
 
         <span class="c1"># Normality test (Shapiro-Wilk)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">stat</span><span class="p">,</span> <span class="n">normality_pvalue</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">shapiro</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">normality_pvalue</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">stat</span><span class="p">,</span> <span class="n">normality_pvalue</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">shapiro</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)</span>
         <span class="n">is_normal</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">normality_pvalue</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">alpha</span><span class="p">)</span>
 
         <span class="c1"># Skewness and kurtosis</span>

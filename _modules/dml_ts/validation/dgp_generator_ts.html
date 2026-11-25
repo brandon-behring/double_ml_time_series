@@ -325,6 +325,7 @@
 <span class="sd">- Known dynamic and cumulative treatment effects</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
 
@@ -368,6 +369,30 @@
     <span class="n">var_coefs</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">error_ar_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_require_stationary_ar</span><span class="p">(</span><span class="n">coefs</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise if AR(p) coefficients ``[phi_1, ..., phi_p]`` are non-stationary.</span>
+
+<span class="sd">    Stationarity holds iff every root of ``1 - phi_1 z - ... - phi_p z^p`` lies</span>
+<span class="sd">    outside the unit circle, equivalently iff every eigenvalue of the companion</span>
+<span class="sd">    matrix lies strictly inside it. Catches explosive specs (e.g. ``[0.6, 0.6]``)</span>
+<span class="sd">    that a length check would accept.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coefs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">companion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">order</span><span class="p">,</span> <span class="n">order</span><span class="p">))</span>
+    <span class="n">companion</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">coefs</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">companion</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">order</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">max_modulus</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">companion</span><span class="p">))))</span>
+    <span class="k">if</span> <span class="n">max_modulus</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;treatment_ar_coefs </span><span class="si">{</span><span class="n">coefs</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2"> are non-stationary: the largest &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;companion-matrix eigenvalue modulus is </span><span class="si">{</span><span class="n">max_modulus</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> &gt;= 1 &quot;</span>
+            <span class="s2">&quot;(explosive/unit-root). Supply stationary coefficients.&quot;</span>
+        <span class="p">)</span>
 
 
 <div class="viewcode-block" id="TimeSeriesDGPGenerator">
@@ -484,10 +509,30 @@
                     <span class="sa">f</span><span class="s2">&quot;treatment_ar_coefs length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">treatment_ar_coefs</span><span class="p">)</span><span class="si">}</span><span class="s2">) &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;must match treatment_ar_order (</span><span class="si">{</span><span class="n">treatment_ar_order</span><span class="si">}</span><span class="s2">)&quot;</span>
                 <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">treatment_ar_coefs</span><span class="p">)</span>
+            <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">treatment_ar_coefs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="c1"># User-supplied coefficients were length-checked only; an explosive/unit-root</span>
+            <span class="c1"># AR (e.g. [0.6, 0.6]) would generate a non-stationary treatment that the</span>
+            <span class="c1"># length check accepts. Reject it via the companion-matrix eigenvalues:</span>
+            <span class="c1"># stationary iff every eigenvalue lies strictly inside the unit circle.</span>
+            <span class="n">_require_stationary_ar</span><span class="p">(</span><span class="n">coefs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span> <span class="o">=</span> <span class="n">coefs</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Generate stable AR coefficients (sum &lt; 1 for stationarity)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_stable_ar_coefs</span><span class="p">(</span><span class="n">treatment_ar_order</span><span class="p">)</span>
+
+        <span class="c1"># The confounder VAR(1) innovation variance is 1 - rho**2, floored to 0.01 in</span>
+        <span class="c1"># _generate_var_confounders. Near a unit root the floor binds, so the generated</span>
+        <span class="c1"># persistence no longer matches the requested coefficient -- warn rather than</span>
+        <span class="c1"># silently fabricate a different process.</span>
+        <span class="k">if</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">confounder_var_coef</span><span class="o">**</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;confounder_var_coef=</span><span class="si">{</span><span class="n">confounder_var_coef</span><span class="si">}</span><span class="s2"> is near unit-root: the &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;VAR(1) innovation variance (</span><span class="si">{</span><span class="mf">1.0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">confounder_var_coef</span><span class="o">**</span><span class="mi">2</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">) is &quot;</span>
+                <span class="s2">&quot;floored to 0.01, so the generated confounder persistence will not match &quot;</span>
+                <span class="s2">&quot;the requested coefficient.&quot;</span><span class="p">,</span>
+                <span class="ne">RuntimeWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="c1"># Set up lagged effect coefficients</span>
         <span class="k">if</span> <span class="n">lagged_effect_coefs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
