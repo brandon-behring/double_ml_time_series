@@ -19,9 +19,15 @@ are the compatibility contract).
 - A classifier passed as a nuisance model supplies its conditional mean through `predict_proba`
   (numeric class values weighted by their probabilities) in `double_ml`, `robinson_estimator`
   and native `DynamicGEstimationDML`. Before, `predict` returned the most likely class. A
-  classifier without `predict_proba` raises `ValueError`.
-- The R² helpers return 0.0 only when the outcome variance is exactly zero. The cutoffs were
-  `1e-10` and `1e-12`.
+  classifier without `predict_proba` raises `ValueError`. `robinson_estimator` fits one `model`
+  to both the outcome and the treatment, so a classifier works there only when both are
+  categorical.
+- The R² helpers return 0.0 only when the outcome is constant up to rounding: the norm of the
+  centered outcome is at most `norm(y) * n * eps`. The cutoffs were absolute (`1e-10` and
+  `1e-12` on the sum of squares) and returned 0.0 for a varying outcome in small units.
+- `PanelDML` reports a treatment that its fixed effects absorb before it fits a nuisance model,
+  with the message "no variation after removing ... fixed effects". The same input raised
+  before, from the residual check of the inner estimator.
 - Docstrings of `double_ml` and `TemporalPLRDML` describe the estimate as the slope of the
   partially linear model. They called it the ATE; with a binary treatment and effects that vary
   with X the slope weights each effect by `Var(T|X)` and can differ from the ATE.
@@ -30,14 +36,20 @@ are the compatibility contract).
 
 - The "no treatment variation" check is relative to the size of the treatment. `fwl_estimate`,
   `robinson_estimator`, `double_ml`, `TemporalPLRDML` and panel-mode `DynamicGEstimationDML`
-  raise when the norm of the treatment residuals is at most `norm(T) * n * eps`. The absolute
-  cutoff `sum(T̃²) < 1e-10` refused healthy data in small units and accepted an exact fit in
-  large ones. The weak-overlap warning of `TemporalPLRDML` compares `mean(T̃²)` with
+  raise when the norm of the treatment residuals is at most the larger of two bounds:
+  `1e-6 * norm(T - mean(T))` (the controls explain all but `1e-12` of the treatment's variance)
+  and `sqrt(eps) * norm(T)` (the residuals are below `1.5e-8` of the treatment's level, as for a
+  constant treatment). The absolute cutoff `sum(T̃²) < 1e-10` refused healthy data in small
+  units and accepted an exact fit in large ones. The error message reports the residual norm and
+  the bound. A treatment whose variation is below `1.5e-8` of its level is refused; subtract a
+  constant from it first. The weak-overlap warning of `TemporalPLRDML` compares `mean(T̃²)` with
   `1e-6 * var(T)` for the same reason. (#42)
 - `fwl_estimate(method="ols")` takes its degrees of freedom from the rank of the controls, so a
   redundant control column no longer changes the standard error. (#42)
 - Series-mode `DynamicGEstimationDML` residualizes the treatments with `model_t`. It used
-  `model_y` for both the outcome and the treatments and ignored `model_t`. (#42)
+  `model_y` for both the outcome and the treatments and ignored `model_t`. The outcome and the
+  treatments are now fitted separately, so series-mode estimates change with the default
+  learners too; with ridge for both they are unchanged. (#42)
 - Panel-mode `DynamicGEstimationDML` draws one set of folds per fit and uses it for the outcome
   and treatment residuals at every stage. With `random_state=None` each residualization was
   shuffled separately.
