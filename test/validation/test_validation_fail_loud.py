@@ -18,13 +18,14 @@ from dml_ts.validation.dgp_generator_ts import TimeSeriesDGPGenerator
 
 # ------------------------------------------------------------------- bias_validation t=0/p=1
 @pytest.mark.tier1
-def test_bias_validation_raises_on_degenerate_bootstrap() -> None:
-    """Zero-variance bias bootstrap must raise, not fabricate p=0/p=1 driving the verdict."""
+@pytest.mark.parametrize("error", [0.0, 0.1])
+def test_bias_validation_raises_on_constant_simulation_errors(error: float) -> None:
+    """A constant error across simulations makes the bias t-test undefined."""
     validator = BiasValidation(n_simulations=100, random_state=42)
     ci_bounds = np.tile([1.9, 2.1], (100, 1))
     with pytest.raises(ValueError, match="[Dd]egenerate"):
         validator._determine_statistical_status(
-            bias_samples=np.full(100, 0.5),  # identical samples -> se_bias == 0
+            simulation_errors=np.full(100, error),
             coverage=1.0,
             n_simulations=100,
             ci_bounds=ci_bounds,
@@ -33,12 +34,25 @@ def test_bias_validation_raises_on_degenerate_bootstrap() -> None:
 
 
 @pytest.mark.tier1
-def test_bias_validation_accepts_varied_bootstrap() -> None:
+def test_bias_validation_requires_two_simulation_errors() -> None:
+    validator = BiasValidation(n_simulations=2)
+    with pytest.raises(ValueError, match="[Dd]egenerate|at least two"):
+        validator._determine_statistical_status(
+            simulation_errors=np.array([0.1]),
+            coverage=1.0,
+            n_simulations=1,
+            ci_bounds=np.array([[1.9, 2.1]]),
+            true_effect=2.0,
+        )
+
+
+@pytest.mark.tier1
+def test_bias_validation_accepts_varied_simulation_errors() -> None:
     """Sanity: with genuine sampling variance the t-test runs and returns a finite p."""
     validator = BiasValidation(n_simulations=100, random_state=42)
     ci_bounds = np.tile([1.9, 2.1], (100, 1))
     status, p_bias, _p_cov = validator._determine_statistical_status(
-        bias_samples=-0.004 + np.linspace(-0.05, 0.05, 100),
+        simulation_errors=-0.004 + np.linspace(-0.05, 0.05, 100),
         coverage=1.0,
         n_simulations=100,
         ci_bounds=ci_bounds,
@@ -143,3 +157,36 @@ def test_timeseries_dgp_warns_on_near_unit_root_confounder() -> None:
     """A near-unit-root confounder triggers the variance floor → must warn, not silently fabricate."""
     with pytest.warns(RuntimeWarning, match="near unit-root"):
         TimeSeriesDGPGenerator(n_periods=50, p=2, true_effect=1.0, confounder_var_coef=0.999)
+
+
+@pytest.mark.tier1
+def test_timeseries_dgp_warns_on_floored_error_variance() -> None:
+    """The AR(1) error innovation-variance floor is the same bug class → must also warn."""
+    with pytest.warns(RuntimeWarning, match="error AR"):
+        TimeSeriesDGPGenerator(n_periods=50, p=2, true_effect=1.0, error_ar_coef=0.999)
+
+
+# --------------------------------------------------- review-driven extensions (adversarial pass)
+@pytest.mark.tier1
+def test_bias_validation_raises_on_nonfinite_se() -> None:
+    """A non-finite simulation error makes the bias t-test undefined."""
+    validator = BiasValidation(n_simulations=100, random_state=42)
+    ci_bounds = np.tile([1.9, 2.1], (100, 1))
+    with pytest.raises(ValueError, match="[Dd]egenerate"):
+        validator._determine_statistical_status(
+            simulation_errors=np.full(100, np.inf),
+            coverage=1.0,
+            n_simulations=100,
+            ci_bounds=ci_bounds,
+            true_effect=2.0,
+        )
+
+
+@pytest.mark.tier1
+def test_bootstrap_diagnose_distribution_raises_on_point_mass(monkeypatch) -> None:
+    """An all-identical (point-mass) bootstrap distribution must raise, not fabricate normality."""
+    data = DGPGenerator(n=80, p=2, true_effect=1.0, random_state=0).generate()
+    diag = BootstrapDiagnostics(data, estimator_type="OLS", random_state=0)
+    monkeypatch.setattr(diag, "_bootstrap_estimates", lambda n_bootstrap: np.ones(n_bootstrap))
+    with pytest.raises(ValueError, match="[Dd]egenerate|point mass"):
+        diag.diagnose_distribution(n_bootstrap=10)

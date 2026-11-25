@@ -1,24 +1,23 @@
-"""
-Comprehensive coverage stress testing across challenging scenarios.
+"""Test nominal ATE-interval coverage across 15 frozen IID simulation scenarios.
 
-Tests coverage rate across 15 scenarios varying in:
-- Sample size (n=100 to 5000)
-- Dimensionality (p=5 to 50)
-- Confounding strength (0.5 to 3.0)
-
-Expected: Coverage should be 92-98%, NOT 100%.
-If coverage is 100% in hard scenarios, CIs are too wide (overconservative).
-If coverage is <90%, CIs are too narrow (under-coverage).
+Sample sizes span 50–5,000, covariate counts 5–50 and confounding strengths
+0.5–4. Historical scenario ranges are descriptive annotations. The suite
+tests the nominal level with two-sided exact binomial tests and controls the
+familywise error rate across its coverage hypotheses with Holm's procedure.
 """
+
+import os
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
-from datetime import datetime
-from pathlib import Path
+from scipy.stats import binomtest
+from statsmodels.stats.multitest import multipletests
 
-from typing import Any
-from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.bias_validation import BiasValidation
+from dml_ts.validation.dgp_generator import DGPGenerator
 
 
 def create_test_scenarios() -> list[dict[str, Any]]:
@@ -127,7 +126,7 @@ def create_test_scenarios() -> list[dict[str, Any]]:
 
     scenarios.append(
         {
-            "name": "Extreme: Very small n, High dim (p>n), Medium confounding",
+            "name": "Extreme: Very small n, 20 covariates for 100 observations, Medium confounding",
             "n": 100,
             "p": 20,
             "confounding_strength": 1.0,
@@ -138,7 +137,7 @@ def create_test_scenarios() -> list[dict[str, Any]]:
     # Edge cases
     scenarios.append(
         {
-            "name": "Edge: Tiny n, High dim (p>>n), Strong confounding",
+            "name": "Edge: Tiny n, 30 covariates for 50 observations, Strong confounding",
             "n": 50,
             "p": 30,
             "confounding_strength": 2.0,
@@ -190,198 +189,124 @@ def create_test_scenarios() -> list[dict[str, Any]]:
     return scenarios
 
 
+def coverage_exit_code(results: pd.DataFrame) -> int:
+    """Return 1 for incomplete, 3 for undercoverage, 2 for excess, or 0 otherwise."""
+    if results.empty or results["suite_coverage_status"].eq("INCOMPLETE").any():
+        return 1
+    if results["suite_coverage_status"].eq("UNDERCOVERAGE").any():
+        return 3
+    if results["suite_coverage_status"].eq("OVERCOVERAGE").any():
+        return 2
+    return 0
+
+
 def run_coverage_stress_test(
-    output_dir: str = "results/coverage_stress", n_simulations: int = 50
+    output_dir: str = "results/coverage_stress", n_simulations: int = 50, n_jobs: int = 1
 ) -> pd.DataFrame:
-    """
-    Run comprehensive coverage stress test across all scenarios.
-
-    Args:
-        output_dir: Where to save results
-        n_simulations: Number of MC runs per scenario (default: 50)
-
-    Returns:
-        DataFrame with results
-    """
+    """Save one row per planned scenario, including errors and Monte Carlo uncertainty."""
+    if n_simulations < 1:
+        raise ValueError("n_simulations must be positive")
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-
-    print("=" * 100)
-    print("COMPREHENSIVE COVERAGE STRESS TEST")
-    print("=" * 100)
-    print(f"\nDate: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"Simulations per scenario: {n_simulations}")
-    print(f"Total scenarios: 15")
-    print(f"Total DML fits: 15 × {n_simulations} = {15 * n_simulations}")
-    print("\n" + "=" * 100)
-
     scenarios = create_test_scenarios()
+    print(f"Testing {len(scenarios)} scenarios with {n_simulations} simulations each")
     results = []
 
     for i, scenario in enumerate(scenarios, 1):
-        print(f"\n[{i}/15] Testing: {scenario['name']}")
-        print(
-            f"  Config: n={scenario['n']}, p={scenario['p']}, confounding={scenario['confounding_strength']}"
-        )
-        print(f"  Expected coverage: {scenario['expected_coverage']}")
-
-        # Create DGP
-        dgp = DGPGenerator(
-            n=scenario["n"],
-            p=scenario["p"],
-            true_effect=2.0,
-            confounding_strength=scenario["confounding_strength"],
-            random_state=42,
-        )
-
-        # Run validation
-        validator = BiasValidation(n_simulations=n_simulations, random_state=42)
-
+        print(f"[{i}/{len(scenarios)}] {scenario['name']}", flush=True)
+        validator = BiasValidation(n_simulations=n_simulations, random_state=42, n_jobs=n_jobs)
+        row = {
+            "scenario_num": i,
+            "scenario_name": scenario["name"],
+            "n": scenario["n"],
+            "p": scenario["p"],
+            "confounding": scenario["confounding_strength"],
+            "expected_coverage": scenario["expected_coverage"],  # Historical annotation
+            "nominal_coverage": 1 - validator.alpha,
+            "n_simulations": n_simulations,
+            "n_covered": np.nan,
+            "actual_coverage": np.nan,
+            "coverage_pct": "ERROR",
+            "coverage_mc_ci_lower": np.nan,
+            "coverage_mc_ci_upper": np.nan,
+            "bias": np.nan,
+            "mse": np.nan,
+            "status": "ERROR",
+            "bias_status": "ERROR",
+            "coverage_status": "ERROR",
+            "bias_p_value": np.nan,
+            "coverage_p_value": np.nan,
+            "error": "",
+        }
         try:
+            dgp = DGPGenerator(
+                n=scenario["n"],
+                p=scenario["p"],
+                true_effect=2.0,
+                confounding_strength=scenario["confounding_strength"],
+                random_state=42,
+            )
             result = validator.validate(dgp)
-
-            # Record results
-            results.append(
-                {
-                    "scenario_num": i,
-                    "scenario_name": scenario["name"],
-                    "n": scenario["n"],
-                    "p": scenario["p"],
-                    "confounding": scenario["confounding_strength"],
-                    "expected_coverage": scenario["expected_coverage"],
-                    "actual_coverage": result.coverage,
-                    "coverage_pct": f"{result.coverage:.1%}",
-                    "bias": result.bias,
-                    "mse": result.mse,
-                    "status": result.status,
-                    "p_value": result.bias_p_value,
-                    "n_simulations": n_simulations,
-                }
+            if result.n_simulations != n_simulations:
+                raise ValueError("Incomplete simulation count")
+            count = round(result.coverage * n_simulations)
+            interval = binomtest(count, n_simulations).proportion_ci(0.95, method="exact")
+            row.update(
+                n_covered=count,
+                actual_coverage=result.coverage,
+                coverage_pct=f"{result.coverage:.1%}",
+                coverage_mc_ci_lower=interval.low,
+                coverage_mc_ci_upper=interval.high,
+                bias=result.bias,
+                mse=result.mse,
+                status=result.status,
+                bias_status=result.bias_status,
+                coverage_status=result.coverage_status,
+                bias_p_value=result.bias_p_value,
+                coverage_p_value=result.coverage_p_value,
             )
+        except Exception as err:
+            row["error"] = str(err)
+            print(f"  Fit error: {err}")
+        results.append(row)
 
-            # Interpret coverage
-            coverage_pct = result.coverage * 100
-            if coverage_pct > 98:
-                interpretation = "⚠️  OVERCONSERVATIVE (CIs too wide)"
-            elif coverage_pct < 90:
-                interpretation = "❌ UNDERCOVERAGE (CIs too narrow)"
-            else:
-                interpretation = "✅ GOOD"
-
-            print(f"  Actual coverage: {result.coverage:.1%} {interpretation}")
-            print(f"  Bias: {result.bias:.4f}, MSE: {result.mse:.4f}, Status: {result.status}")
-
-        except Exception as e:
-            print(f"  ❌ ERROR: {str(e)}")
-            results.append(
-                {
-                    "scenario_num": i,
-                    "scenario_name": scenario["name"],
-                    "n": scenario["n"],
-                    "p": scenario["p"],
-                    "confounding": scenario["confounding_strength"],
-                    "expected_coverage": scenario["expected_coverage"],
-                    "actual_coverage": np.nan,
-                    "coverage_pct": "ERROR",
-                    "bias": np.nan,
-                    "mse": np.nan,
-                    "status": "ERROR",
-                    "p_value": np.nan,
-                    "n_simulations": n_simulations,
-                    "error": str(e),
-                }
-            )
-
-    # Create results DataFrame
     df = pd.DataFrame(results)
-
-    # Save results
+    valid = df["coverage_p_value"].notna() & df["status"].ne("ERROR")
+    # A missing fit still occupies its place in the planned family.
+    adjusted = multipletests(df["coverage_p_value"].fillna(1.0), method="holm")[1]
+    df["coverage_p_value_holm"] = np.where(valid, adjusted, np.nan)
+    reject = valid & (df["coverage_p_value_holm"] <= 0.05)
+    df["suite_coverage_status"] = "NO_REJECTION"
+    df.loc[~valid, "suite_coverage_status"] = "INCOMPLETE"
+    df.loc[reject & (df["actual_coverage"] < df["nominal_coverage"]), "suite_coverage_status"] = (
+        "UNDERCOVERAGE"
+    )
+    df.loc[reject & (df["actual_coverage"] > df["nominal_coverage"]), "suite_coverage_status"] = (
+        "OVERCOVERAGE"
+    )
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_path = output_path / f"coverage_stress_test_{timestamp}.csv"
     df.to_csv(csv_path, index=False)
-
-    # Generate summary report
-    print("\n" + "=" * 100)
-    print("SUMMARY REPORT")
-    print("=" * 100)
-
-    valid_results = df[df["actual_coverage"].notna()]
-
-    if len(valid_results) > 0:
-        print(f"\nCoverage Statistics:")
-        print(f"  Mean coverage: {valid_results['actual_coverage'].mean():.1%}")
-        print(f"  Median coverage: {valid_results['actual_coverage'].median():.1%}")
-        print(f"  Min coverage: {valid_results['actual_coverage'].min():.1%}")
-        print(f"  Max coverage: {valid_results['actual_coverage'].max():.1%}")
-        print(f"  Std coverage: {valid_results['actual_coverage'].std():.1%}")
-
-        # Categorize scenarios
-        good = (valid_results["actual_coverage"] >= 0.90) & (
-            valid_results["actual_coverage"] <= 0.98
-        )
-        overconservative = valid_results["actual_coverage"] > 0.98
-        undercoverage = valid_results["actual_coverage"] < 0.90
-
-        print(f"\nCoverage Quality:")
-        print(f"  ✅ Good (90-98%): {good.sum()}/{len(valid_results)} scenarios")
-        print(
-            f"  ⚠️  Overconservative (>98%): {overconservative.sum()}/{len(valid_results)} scenarios"
-        )
-        print(f"  ❌ Undercoverage (<90%): {undercoverage.sum()}/{len(valid_results)} scenarios")
-
-        if overconservative.any():
-            print(f"\nOverconservative scenarios:")
-            for _, row in valid_results[overconservative].iterrows():
-                print(f"  - {row['scenario_name']}: {row['coverage_pct']}")
-
-        if undercoverage.any():
-            print(f"\nUndercoverage scenarios:")
-            for _, row in valid_results[undercoverage].iterrows():
-                print(f"  - {row['scenario_name']}: {row['coverage_pct']}")
-
-        # Overall assessment
-        print(f"\n" + "=" * 100)
-        print("OVERALL ASSESSMENT")
-        print("=" * 100)
-
-        if all(good):
-            print("✅ EXCELLENT: All scenarios have appropriate coverage (90-98%)")
-        elif overconservative.sum() > len(valid_results) / 2:
-            print("⚠️  WARNING: More than half of scenarios show overconservative coverage")
-            print("   This suggests CIs are too wide. Investigate CI calculation.")
-        elif undercoverage.sum() > len(valid_results) / 3:
-            print("❌ CRITICAL: More than 1/3 of scenarios show undercoverage")
-            print("   This suggests CIs are too narrow. DML assumptions may be violated.")
-        else:
-            print("✅ ACCEPTABLE: Most scenarios have reasonable coverage")
-            print("   Some deviations expected in extreme scenarios")
-
-    print(f"\n✅ Results saved to: {csv_path}")
-    print("=" * 100)
-
+    print(
+        df[
+            [
+                "scenario_name",
+                "coverage_pct",
+                "bias_p_value",
+                "coverage_p_value",
+                "coverage_p_value_holm",
+                "suite_coverage_status",
+            ]
+        ].to_string(index=False)
+    )
+    print(f"Completed {valid.sum()}/{len(df)} scenarios. Results in {csv_path}")
     return df
 
 
 if __name__ == "__main__":
     import sys
 
-    # Allow command-line arguments
     n_sims = int(sys.argv[1]) if len(sys.argv) > 1 else 50
     output = sys.argv[2] if len(sys.argv) > 2 else "results/coverage_stress"
-
-    results = run_coverage_stress_test(output_dir=output, n_simulations=n_sims)
-
-    # Exit with code based on results
-    valid = results[results["actual_coverage"].notna()]
-    if len(valid) == 0:
-        sys.exit(1)  # All scenarios failed
-
-    overconservative = (valid["actual_coverage"] > 0.98).sum()
-    undercoverage = (valid["actual_coverage"] < 0.90).sum()
-
-    if overconservative > len(valid) / 2:
-        sys.exit(2)  # Too many overconservative
-    elif undercoverage > len(valid) / 3:
-        sys.exit(3)  # Too many undercoverage
-    else:
-        sys.exit(0)  # Acceptable
+    workers = int(os.environ.get("DML_VALIDATION_DRAW_JOBS", "1"))
+    sys.exit(coverage_exit_code(run_coverage_stress_test(output, n_sims, n_jobs=workers)))

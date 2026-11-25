@@ -13,6 +13,7 @@ Provides side-by-side comparison of multiple causal inference estimators:
 Enables systematic evaluation of method performance across different DGP configurations.
 """
 
+from copy import copy
 from typing import Protocol
 
 import numpy as np
@@ -98,9 +99,8 @@ class BaselineComparison:
         """
         Run all methods on same DGP with deterministic comparability.
 
-        FIXED (Issue C3): Reset DGP random state before each method to ensure
-        all methods see identical random draws. This prevents ranking instability
-        where methods could vary by up to 4 positions due to different data.
+        The DGP seed takes precedence over the comparison seed. If both are absent,
+        draw a run seed once and record it in each method's metadata for replay.
 
         Args:
             dgp: Data generating process to validate against
@@ -108,12 +108,17 @@ class BaselineComparison:
         Returns:
             Dictionary mapping method names to ValidationResults
         """
+        seed = dgp.random_state if dgp.random_state is not None else self.random_state
+        if seed is None:
+            seed = int(np.random.SeedSequence().generate_state(1)[0])
         results = {}
         for name, method in self.methods.items():
-            # FIXED (Issue C3): Reset DGP random state for deterministic comparisons
-            # Each method now sees the SAME random draws for fair comparison
-            dgp._rng = np.random.RandomState(dgp.random_state)
-            results[name] = method.validate(dgp)
+            method_dgp = copy(dgp)
+            method_dgp.random_state = seed
+            method_dgp._rng = np.random.RandomState(seed)
+            result = method.validate(method_dgp)
+            result.metadata["comparison_data_seed"] = seed
+            results[name] = result
         return results
 
     def create_comparison_table(self, dgp: DGPGenerator) -> pd.DataFrame:
@@ -139,7 +144,11 @@ class BaselineComparison:
                     "RMSE": f"{np.sqrt(result.mse):.4f}",
                     "Coverage": f"{result.coverage:.1%}",
                     "Status": result.status,
-                    "Bias 95% CI": f"[{result.ci_lower:.4f}, {result.ci_upper:.4f}]",
+                    "Bias_Status": result.bias_status or result.status,
+                    "Coverage_Status": result.coverage_status,
+                    f"Bias {100 * result.bias_ci_level:g}% CI": (
+                        f"[{result.ci_lower:.4f}, {result.ci_upper:.4f}]"
+                    ),
                     "P-value": f"{result.bias_p_value:.4e}",
                 }
             )
@@ -173,6 +182,8 @@ class BaselineComparison:
                     "CI_Upper": result.ci_upper,
                     "CI_Width": result.ci_upper - result.ci_lower,
                     "Status": result.status,
+                    "Bias_Status": result.bias_status or result.status,
+                    "Coverage_Status": result.coverage_status,
                     "P_Value": result.bias_p_value,
                     "N_Simulations": result.n_simulations,
                     "Timestamp": result.timestamp,
@@ -203,23 +214,26 @@ class BaselineComparison:
 
     def _config_to_string(self, config: dict) -> str:
         """Convert DGP config dict to readable string."""
-        parts = []
-        for key in ["n", "p", "true_effect", "confounding_strength"]:
-            if key in config:
-                parts.append(f"{key}={config[key]}")
-        return ", ".join(parts)
+        main_keys = ("n", "p", "true_effect", "confounding_strength")
+        keys = [key for key in main_keys if key in config]
+        keys.extend(sorted(config.keys() - set(main_keys)))
+        return ", ".join(f"{key}={config[key]}" for key in keys)
 
-    def generate_summary_statistics(self, dgp: DGPGenerator) -> dict:
+    def generate_summary_statistics(
+        self, dgp: DGPGenerator, *, results: dict[str, ValidationResult] | None = None
+    ) -> dict:
         """
         Generate summary statistics across all methods.
 
         Args:
             dgp: Data generating process to validate against
+            results: Existing comparison on this DGP, when already fitted.
 
         Returns:
             Dictionary with summary metrics (best, worst, average performance)
         """
-        results = self.compare(dgp)
+        if results is None:
+            results = self.compare(dgp)
 
         # Extract biases
         biases = {name: abs(result.bias) for name, result in results.items()}
@@ -230,7 +244,10 @@ class BaselineComparison:
         best_bias_method = min(biases, key=biases.get)
         worst_bias_method = max(biases, key=biases.get)
         best_mse_method = min(mses, key=mses.get)
-        best_coverage_method = max(coverages, key=coverages.get)
+        best_coverage_method = min(
+            coverages,
+            key=lambda name: abs(coverages[name] - (1 - results[name].metadata.get("alpha", 0.05))),
+        )
 
         return {
             "dgp_config": {

@@ -7,7 +7,7 @@ true effects, and confounding strengths. Uses BiasValidation class directly.
 Usage:
     python scripts/bias_validation_simulation.py
 
-Results saved to: results/simulations/BIAS_VALIDATION_summary_*.csv
+Results saved to: results/simulations/BIAS_VALIDATION_results_*.csv
 """
 
 from typing import Dict, List, Any
@@ -91,8 +91,18 @@ def run_parameter_combination(
         "mse": result.mse,
         "rmse": np.sqrt(result.mse),
         "coverage": result.coverage,
+        # Historical columns ci_lower/ci_upper are intervals for mean simulation bias.
         "ci_lower": result.ci_lower,
         "ci_upper": result.ci_upper,
+        "bias_ci_lower": result.ci_lower,
+        "bias_ci_upper": result.ci_upper,
+        "bias_ci_level": result.metadata["bias_ci_level"],
+        "nominal_coverage": result.metadata["nominal_coverage"],
+        "n_covered": round(result.coverage * result.n_simulations),
+        "bias_p_value": result.bias_p_value,
+        "coverage_p_value": result.coverage_p_value,
+        "bias_status": result.bias_status,
+        "coverage_status": result.coverage_status,
         "status": result.status,
         "n_simulations": result.n_simulations,
     }
@@ -250,6 +260,9 @@ def main() -> None:
         "confounding_strengths": CONFOUNDING_STRENGTHS,
         "n_jobs": N_JOBS if USE_PARALLEL else 1,
         "random_state": RANDOM_STATE,
+        "interval_definition": "ci_lower/upper and bias_ci_lower/upper are bootstrap limits for mean simulation bias",
+        "coverage_definition": "Fraction of per-fit marginal ATE intervals containing the known effect",
+        "status_definition": "Worst of bias_status and coverage_status within a configuration",
         "start_time": start_time.isoformat(),
         "end_time": datetime.now().isoformat(),
         "duration_seconds": (datetime.now() - start_time).total_seconds(),

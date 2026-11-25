@@ -13,6 +13,7 @@ Usage:
 
 import numpy as np
 import pytest
+from scipy import stats
 
 from dml_ts.dml import econml_available
 from dml_ts.validation.bias_validation import BiasValidation, _corrected_rejections
@@ -461,12 +462,12 @@ class TestBiasValidationMultipleTestingCorrection:
 
         # Get simulation results
         estimates, ci_bounds = validator._run_simulations(dgp)
-        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        simulation_errors = estimates - dgp.true_effect
         coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
 
         # Get status with Bonferroni correction (default)
         status_bonf, p_bias_bonf, p_cov_bonf = validator._determine_statistical_status(
-            bias_samples,
+            simulation_errors,
             coverage,
             len(estimates),
             ci_bounds,
@@ -477,7 +478,7 @@ class TestBiasValidationMultipleTestingCorrection:
 
         # Get status without correction
         status_none, p_bias_none, p_cov_none = validator._determine_statistical_status(
-            bias_samples,
+            simulation_errors,
             coverage,
             len(estimates),
             ci_bounds,
@@ -507,12 +508,12 @@ class TestBiasValidationMultipleTestingCorrection:
 
         # Run simulation to get data
         estimates, ci_bounds = validator._run_simulations(dgp)
-        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        simulation_errors = estimates - dgp.true_effect
         coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
 
         # Test with no correction
         status_none, _, _ = validator._determine_statistical_status(
-            bias_samples,
+            simulation_errors,
             coverage,
             len(estimates),
             ci_bounds,
@@ -523,7 +524,7 @@ class TestBiasValidationMultipleTestingCorrection:
 
         # Test with Bonferroni correction
         status_bonf, _, _ = validator._determine_statistical_status(
-            bias_samples,
+            simulation_errors,
             coverage,
             len(estimates),
             ci_bounds,
@@ -543,13 +544,13 @@ class TestBiasValidationMultipleTestingCorrection:
 
         # Run simulation to get data
         estimates, ci_bounds = validator._run_simulations(dgp)
-        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        simulation_errors = estimates - dgp.true_effect
         coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
 
         # Test with invalid correction method
         with pytest.raises(ValueError, match="Unknown correction_method"):
             validator._determine_statistical_status(
-                bias_samples,
+                simulation_errors,
                 coverage,
                 len(estimates),
                 ci_bounds,
@@ -565,12 +566,12 @@ class TestBiasValidationMultipleTestingCorrection:
 
         # Run simulation to get data
         estimates, ci_bounds = validator._run_simulations(dgp)
-        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        simulation_errors = estimates - dgp.true_effect
         coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
 
         # Test with Holm correction
         status_holm, p_bias, p_cov = validator._determine_statistical_status(
-            bias_samples,
+            simulation_errors,
             coverage,
             len(estimates),
             ci_bounds,
@@ -594,12 +595,12 @@ class TestBiasValidationMultipleTestingCorrection:
 
         # Run simulation once
         estimates, ci_bounds = validator._run_simulations(dgp)
-        bias_samples = validator._calculate_bias_samples(estimates, dgp.true_effect)
+        simulation_errors = estimates - dgp.true_effect
         coverage = validator._calculate_coverage(ci_bounds, dgp.true_effect)
 
         # Get status with different corrections
         status_bonf, p_bias_bonf, p_cov_bonf = validator._determine_statistical_status(
-            bias_samples,
+            simulation_errors,
             coverage,
             len(estimates),
             ci_bounds,
@@ -609,7 +610,7 @@ class TestBiasValidationMultipleTestingCorrection:
         )
 
         status_none, p_bias_none, p_cov_none = validator._determine_statistical_status(
-            bias_samples,
+            simulation_errors,
             coverage,
             len(estimates),
             ci_bounds,
@@ -713,10 +714,33 @@ class TestStatusCorrectionWiring:
 
     TRUE_EFFECT = 2.0
 
-    def _status(self, bias_samples: np.ndarray, method: str) -> tuple:
+    @pytest.mark.parametrize("n_resamples", [11, 101])
+    def test_bias_test_uses_simulations_and_bootstrap_sets_ci(self, monkeypatch, n_resamples):
+        errors = np.array([-0.4, 0.1, 0.3, -0.2, 0.25])
+        estimates = self.TRUE_EFFECT + errors
+        ci_bounds = np.tile([1.5, 2.5], (len(errors), 1))
+        ci_bounds[0] = [1.0, 1.5]
+        validator = BiasValidation(n_simulations=len(errors), alpha=0.2)
+        dgp = DGPGenerator(n=100, p=1, true_effect=self.TRUE_EFFECT)
+        monkeypatch.setattr(validator, "_run_simulations", lambda dgp: (estimates, ci_bounds))
+        bootstrap_means = np.linspace(0.1, 0.25, n_resamples)
+        monkeypatch.setattr(validator, "_calculate_bias_samples", lambda *args: bootstrap_means)
+
+        result = validator.validate(dgp)
+
+        assert result.bias_p_value == pytest.approx(stats.ttest_1samp(errors, 0.0).pvalue)
+        assert result.status == "PASS"
+        assert result.coverage == pytest.approx(0.8)
+        assert result.coverage_p_value == pytest.approx(stats.binomtest(4, 5, 0.8).pvalue)
+        assert (result.ci_lower, result.ci_upper) == pytest.approx(
+            np.quantile(bootstrap_means, [0.1, 0.9])
+        )
+        assert "80% CI" in result.summary()
+
+    def _status(self, simulation_errors: np.ndarray, method: str) -> tuple:
         validator = BiasValidation(n_simulations=100, random_state=42)
         return validator._determine_statistical_status(
-            bias_samples,
+            simulation_errors,
             coverage=0.95,
             n_simulations=100,
             ci_bounds=_status_fixture_ci_bounds(self.TRUE_EFFECT),
@@ -735,9 +759,9 @@ class TestStatusCorrectionWiring:
         |bias| < 0.1 -> WARNING).
         """
         # mean 0.0021, std 0.01 -> t ~= 2.1, two-sided p ~= 0.038
-        bias_samples = 0.0021 + 0.01 * np.tile([1.0, -1.0], 50)
+        simulation_errors = 0.0021 + 0.01 * np.tile([1.0, -1.0], 50)
 
-        results = {m: self._status(bias_samples, m) for m in ("holm", "bonferroni", "none")}
+        results = {m: self._status(simulation_errors, m) for m in ("holm", "bonferroni", "none")}
 
         assert results["holm"] == results["bonferroni"]
         assert results["holm"][0] == "PASS"
@@ -750,9 +774,9 @@ class TestStatusCorrectionWiring:
         splits Rule 3 FAIL from WARNING.
         """
         # mean 0.12 (in [0.1, 0.15]), std 0.01 -> t ~= 120, p ~= 0
-        bias_samples = 0.12 + 0.01 * np.tile([1.0, -1.0], 50)
+        simulation_errors = 0.12 + 0.01 * np.tile([1.0, -1.0], 50)
 
-        status, _, _ = self._status(bias_samples, "bonferroni")
+        status, _, _ = self._status(simulation_errors, "bonferroni")
 
         assert status == "FAIL"
 
@@ -760,9 +784,9 @@ class TestStatusCorrectionWiring:
         """Moderate bias, significant at 0.025 but not at 0.005 -> WARNING."""
         # mean 0.12, std 0.4848 -> t ~= 2.475, two-sided p ~= 0.015:
         # 0.005 < p <= 0.025 -> significant but not highly_significant
-        bias_samples = 0.12 + 0.4848 * np.tile([1.0, -1.0], 50)
+        simulation_errors = 0.12 + 0.4848 * np.tile([1.0, -1.0], 50)
 
-        status, p_bias, _ = self._status(bias_samples, "bonferroni")
+        status, p_bias, _ = self._status(simulation_errors, "bonferroni")
 
         assert 0.005 < p_bias <= 0.025
         assert status == "WARNING"
@@ -798,3 +822,38 @@ def confounded_dgp():
 
 
 # TODO: Add more fixtures as needed
+
+
+@pytest.mark.tier1
+@pytest.mark.parametrize(("covered", "expected"), [(0, "FAIL"), (190, "PASS"), (200, "WARNING")])
+def test_coverage_verdict_survives_unbiased_point_estimates(monkeypatch, covered, expected):
+    errors = np.tile([-0.1, 0.1], 100)
+    estimates = 2 + errors
+    intervals = np.column_stack([estimates, estimates])
+    intervals[:covered] = [-np.inf, np.inf]
+    validator = BiasValidation(n_simulations=len(errors), random_state=19)
+    monkeypatch.setattr(validator, "_run_simulations", lambda dgp: (estimates, intervals))
+    result = validator.validate(DGPGenerator(n=20, p=2, true_effect=2))
+    assert result.bias_status == "PASS"
+    assert result.coverage_status == result.status == expected
+    assert result.coverage_p_value == pytest.approx(
+        stats.binomtest(covered, len(errors), 0.95).pvalue
+    )
+
+
+@pytest.mark.tier2
+def test_parallel_draws_preserve_serial_rng_order():
+    from dml_ts.validation.dgp_generator import DGPGenerator
+
+    class Probe(BiasValidation):
+        def _estimate_effect(self, data):
+            return float(data.Y.mean()), float(data.X[0, 0]), float(data.T.mean())
+
+    def draw(jobs):
+        return Probe(n_simulations=6, random_state=37, n_jobs=jobs)._run_simulations(
+            DGPGenerator(n=80, p=5, true_effect=2.0, random_state=161)
+        )
+
+    serial, parallel = draw(1), draw(2)
+    np.testing.assert_array_equal(serial[0], parallel[0])
+    np.testing.assert_array_equal(serial[1], parallel[1])

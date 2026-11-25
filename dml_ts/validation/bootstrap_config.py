@@ -13,8 +13,8 @@ class BootstrapConfig:
     """Configuration for bootstrap resampling.
 
     Attributes:
-        n_bootstrap_bias: Number of bootstrap samples for bias estimation
-                         (used in hypothesis testing for E[bias]=0)
+        n_bootstrap_bias: Number of resamples for the percentile confidence
+                         interval on mean simulation bias
         n_bootstrap_ci: Number of bootstrap samples for confidence intervals
                        (used for CI construction in baseline methods)
         seed: Random seed for reproducibility (None = use parent estimator's seed)

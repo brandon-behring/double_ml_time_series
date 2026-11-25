@@ -18,6 +18,29 @@ from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.baseline_comparison import BaselineComparison
 
 
+def rank_methods(table, nominal_coverage=0.95):
+    """Give each simulated configuration equal weight in the method ranking."""
+    values = table.assign(Coverage_Error=(table["Coverage"] - nominal_coverage).abs())
+    means = values.groupby("Method")[["Abs_Bias", "MSE", "Coverage", "Coverage_Error"]].mean()
+    criteria = {
+        "lowest_mean_bias": means["Abs_Bias"].idxmin(),
+        "lowest_mse": means["MSE"].idxmin(),
+        "highest_coverage": means["Coverage"].idxmax(),
+        "closest_to_nominal_coverage": means["Coverage_Error"].idxmin(),
+    }
+    return {name: {"Method": method, **means.loc[method].to_dict()} for name, method in criteria.items()}
+
+
+def best_baseline_comparison(stats):
+    candidates = [method for method in stats if method != "DML"]
+    if "DML" not in stats or not candidates:
+        return None
+    best = min(candidates, key=lambda m: stats[m]["mean_abs_bias"])
+    bias = stats[best]["mean_abs_bias"]
+    change = 100 * (bias - stats["DML"]["mean_abs_bias"]) / bias if bias > 0 else None
+    return best, change
+
+
 def run_comprehensive_comparison(
     output_dir: str = "results/method_comparison",
     n_simulations: int = 20,
@@ -120,7 +143,7 @@ def run_comprehensive_comparison(
         all_results[config_str] = results
 
         # Get summary statistics
-        summary = comp.generate_summary_statistics(dgp)
+        summary = comp.generate_summary_statistics(dgp, results=results)
         all_summaries[config_str] = summary
 
         # Print quick summary
@@ -209,15 +232,7 @@ def run_comprehensive_comparison(
         "configurations": len(configs),
         "methods_compared": list(comp.methods.keys()),
         "simulations_per_method": n_simulations,
-        "best_methods_by_metric": {
-            "lowest_mean_bias": comparison_table.loc[
-                comparison_table["Abs_Bias"].idxmin()
-            ].to_dict(),
-            "lowest_mse": comparison_table.loc[comparison_table["MSE"].idxmin()].to_dict(),
-            "highest_coverage": comparison_table.loc[
-                comparison_table["Coverage"].idxmax()
-            ].to_dict(),
-        },
+        "best_methods_by_metric": rank_methods(comparison_table),
         "method_statistics": {
             method: {
                 "mean_abs_bias": comparison_table[comparison_table["Method"] == method][
@@ -251,7 +266,8 @@ def run_comprehensive_comparison(
     print(f"  - Lowest bias: {findings['best_methods_by_metric']['lowest_mean_bias']['Method']}")
     print(f"  - Lowest MSE: {findings['best_methods_by_metric']['lowest_mse']['Method']}")
     print(
-        f"  - Highest coverage: {findings['best_methods_by_metric']['highest_coverage']['Method']}"
+        "  - Smallest mean absolute coverage error from 95%: "
+        f"{findings['best_methods_by_metric']['closest_to_nominal_coverage']['Method']}"
     )
 
     print(f"\n📈 Method Performance Summary:")
@@ -295,22 +311,11 @@ def run_comprehensive_comparison(
         print(f"   - Pass rate: {dml_stats['pass_rate']:.1f}%")
 
         # Compare DML vs best baseline
-        baseline_methods = [
-            m for m in findings["methods_compared"] if m not in ["DML", "RandomForest", "XGBoost"]
-        ]
-        if baseline_methods:
-            best_baseline = max(
-                baseline_methods,
-                key=lambda m: findings["method_statistics"][m]["mean_abs_bias"],
-            )
-            best_baseline_bias = findings["method_statistics"][best_baseline]["mean_abs_bias"]
-            dml_advantage = (
-                (best_baseline_bias - dml_stats["mean_abs_bias"]) / best_baseline_bias * 100
-            )
-            print(
-                f"\n   - vs Best Baseline ({best_baseline}): "
-                f"{dml_advantage:+.1f}% bias reduction"
-            )
+        comparison = best_baseline_comparison(findings["method_statistics"])
+        if comparison:
+            best_baseline, reduction = comparison
+            message = "zero baseline bias" if reduction is None else f"{reduction:+.1f}% bias reduction"
+            print(f"\n   - vs Best Baseline ({best_baseline}): {message}")
 
     print("\n✅ Results saved to:", output_path)
     print("=" * 80)
