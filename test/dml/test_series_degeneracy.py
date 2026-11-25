@@ -189,6 +189,20 @@ def test_series_two_level_alternation_raises_under_every_learner(learner, levels
 
 
 @pytest.mark.tier2
+def test_series_lags_dependent_only_given_the_controls_raise():
+    """With the two-period total T_t + T_{t-1} as a control, the lags stay distinct.
+
+    Their residuals are not: what is left of T_t is minus what is left of T_{t-1}. No
+    check on the lags sees this, and each lag still has residual variation, so the test is
+    the one on the residuals.
+    """
+    y, t, x = series_draw("healthy")
+    total = t + np.concatenate([[0.0], t[:-1]])
+    with pytest.raises(ValueError, match="residualized treatment lags are linearly dependent"):
+        series_fit(y, t, np.column_stack([x, total]))
+
+
+@pytest.mark.tier2
 def test_series_period_four_treatment_with_three_lags_raises():
     """sin(pi t / 2) is 0, 1, 0, -1: lag 2 is minus lag 0, while lag 1 is free."""
     y, _, x = series_draw("healthy")
