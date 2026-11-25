@@ -772,3 +772,38 @@ Branch `fix/silent-wrong-slopes-72` from `origin/main` after #69 merges.
   `double_ml` returned 1.93 where the flat inputs give 2.04, and `robinson_estimator` 1.93 with a
   standard error of 0.003; `RollingWindowDML` returned zero windows for any column vector.
   `TemporalPLRDML` and `PanelDML` already raised, late, from the HAC routine.
+- **PR-1b opened as #74; CI found what the local gate did not.** The first version turned a
+  `LinAlgError` from the solver into the promised error. For an alternating treatment the Gram
+  matrix is singular only up to rounding: locally the solver met a zero pivot, on CI's machine it
+  did not and the later inversion raised a raw `LinAlgError`. The dependence of the lags is now
+  tested on their residuals (scaled singular values), not through a solver exception. Rule for
+  later slices: a guard must not rest on whether LAPACK meets an exact zero.
+- **Adversarial review of #74** (a fresh Claude agent and Gemini; Gemini's first, wide call
+  timed out with no text, two narrow calls answered; every claim re-run). Accepted and repaired:
+  the series guard looked only at residuals, so a lag constant on every scored row and lags that
+  a nonlinear learner does not reproduce exactly passed it; no more scored rows than lags ended
+  in an unrelated error; no test pinned the size of the bound; a 0-d outcome raised `TypeError`;
+  the message's hint failed on a DataFrame; three changelog sentences were incomplete. Rejected
+  after re-running: two of Gemini's claims. The series guard is now one helper,
+  `_refuse_unidentified_lags`. Final head `7089c0f`: local gate 882 passed, coverage 76.02%;
+  six CI checks green; 29 of 29 mutations caught; the reviewer's scan of dependent lags gives
+  200 of 200 refusals where it had found 36.
+- **Three issues filed from that review, for defects that predate #74:** #75 (a pandas `Series`
+  with a non-default index is read by label in `double_ml`, `fwl_estimate` and
+  `robinson_estimator`; P1), #76 (`TemporalPLRDML` returns a significant estimate when the
+  treatment is constant on every scored row; P1), #77 (flattened matrices in
+  `DynamicGEstimationDML`, truncated panel identifiers, masked arrays; P2). The evidence on the
+  approximating-learner case is a comment on #42. None of the three is in this plan; whether #75
+  and #76 are fixed before PR-3 is the owner's decision at the stop.
+- **PR-2 opened as #78.** The 41 files of the slice were taken whole (for each, `main` equals
+  the content the snapshot was built on) and passed the gate at the first attempt; the five
+  commits of snapshot work reproduce the gated tree `d7e992c`. One test of the snapshot is held
+  with the insurance hunks (`test_validate_dgp_recovery_rejects_nonpositive_nsims`).
+- **Deviation 1 had a consequence the plan did not list.** With the baselines judging coverage,
+  Chapter 3's Experiment 3.1 no longer prints what its table shows (PASS and WARNING become FAIL
+  and FAIL), and its text said the OLS labels use the bias test alone. The listing, the table
+  and two paragraphs were changed in both editions, in the same pull request. The baselines'
+  bias verdict also changes, because they now share the DML validator's rule. Rule for later
+  slices: before a deviation, search the chapters for what the changed function prints.
+- **A commit message with a wrong reason** (`d296a91`, the 401(k) p-value) was corrected in the
+  message of `d59f35b`, since commits are not amended here without the owner's word.
