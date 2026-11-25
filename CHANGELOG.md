@@ -55,6 +55,13 @@ are the compatibility contract).
   shuffled separately.
 - `TemporalPLRDML.fit` and `effect_interval` raise on `alpha` outside (0, 1), and
   `effect_interval` returns ordered bounds when `T1 < T0`.
+- `fwl_estimate`, `double_ml`, `robinson_estimator`, `TemporalPLRDML` and `RollingWindowDML`
+  raise `ValueError` when the outcome or the treatment is not one-dimensional. An array of shape
+  `(n, 1)`, as from `df[["t"]].to_numpy()`, broadcast against `(n,)` residuals to an `(n, n)`
+  product, and the result was wrong with no error: for a true slope of 2, `fwl_estimate` returned
+  a slope of order 1e-16 and `double_ml` returned 0.0005, `robinson_estimator` returned -0.002
+  with a standard error of 0.004, and `RollingWindowDML` returned no window. The input is
+  refused, not flattened; pass `T.ravel()`. (#72)
 
 ## [1.1.4] - 2026-06-14
 

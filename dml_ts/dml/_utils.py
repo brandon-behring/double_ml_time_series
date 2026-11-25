@@ -162,7 +162,20 @@ def theta_via_fwl(
     Returns:
         Tuple of ``(theta, T_tilde_sq_sum)`` — the sum is returned because
         callers reuse it for their variance constructions.
+
+    Raises:
+        ValueError: If the two residual arrays are not one-dimensional and of
+            equal shape; if either holds a NaN or an infinity; or if the
+            treatment residuals carry no variation.
     """
+    y_shape, t_shape = np.shape(Y_tilde), np.shape(T_tilde)
+    if len(y_shape) != 1 or y_shape != t_shape:
+        # Shapes (n, 1) and (n,) broadcast to an (n, n) product, whose sum is a
+        # slope near zero with no error (#72).
+        raise ValueError(
+            "Outcome and treatment residuals must be one-dimensional and of equal shape, "
+            f"got {y_shape} and {t_shape}."
+        )
     T_tilde_sq_sum = float(np.sum(T_tilde**2))
     if not np.isfinite(T_tilde_sq_sum):
         raise ValueError(
@@ -252,7 +265,31 @@ def cross_fit_predictions(
 def validate_lengths(
     Y: NDArray[np.float64], T: NDArray[np.float64], X: NDArray[np.float64]
 ) -> None:
-    """Y/T/X first-dimension agreement; messages are test-pinned."""
+    """Check that Y and T are one-dimensional and that Y, T and X agree in length.
+
+    A column vector of shape ``(n, 1)`` is refused, not flattened. Its residuals
+    broadcast against ``(n,)`` predictions to an ``(n, n)`` matrix, and the slope
+    computed from that matrix is wrong with no error (#72). The two length
+    messages are test-pinned.
+
+    Raises:
+        ValueError: If Y or T is not one-dimensional, or the lengths disagree.
+
+    Examples:
+        >>> import numpy as np
+        >>> validate_lengths(np.ones(4), np.ones(4), np.ones((4, 2)))
+        >>> validate_lengths(np.ones(4), np.ones((4, 1)), np.ones((4, 2)))  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: T must be one-dimensional, got shape (4, 1). ...
+    """
+    for name, values in (("Y", Y), ("T", T)):
+        shape = np.shape(values)
+        if len(shape) != 1:
+            raise ValueError(
+                f"{name} must be one-dimensional, got shape {shape}. "
+                f"Pass a single column as a flat array, for example {name}.ravel()."
+            )
     n = len(Y)
     if len(T) != n:
         raise ValueError(f"T length ({len(T)}) must match Y length ({n})")
