@@ -6,18 +6,25 @@ current status source.
 
 ## Development setup
 
-The repo venv is uv-managed:
+The repo venv is uv-managed and installed from `uv.lock`:
 
 ```bash
 uv venv venv --python 3.13
-VIRTUAL_ENV=venv uv pip install -e ".[dev,docs]"
+VIRTUAL_ENV=$PWD/venv uv sync --locked --active --all-extras
 venv/bin/pre-commit install --hook-type pre-commit --hook-type pre-push
 ```
 
-`uv.lock` records the locked resolution (refresh with `uv lock` after dependency
-changes); the install commands above and CI resolve fresh from `pyproject.toml`,
-which is why the gate tools are pinned exactly there (`ruff==0.15.16`,
-`mypy==2.1.0`). The `temporalcv` dependency resolves from PyPI
+CI installs from `uv.lock` too (`uv sync --locked --extra …` in `tests.yml`,
+`docs.yml` and `nightly.yml`), so a test that pins an exact number runs against
+the versions the number was generated with. `--locked` fails when `uv.lock` is
+stale against `pyproject.toml`, so a dependency or version change in
+`pyproject.toml` needs `uv lock` in the same commit. To bump a dependency: run
+`uv lock --upgrade-package <name>`, re-sync, regenerate whatever pinned numbers
+move, and commit the lock with those changes in one commit. A weekly job
+(`drift.yml`) installs the newest allowed versions without the lock and runs
+mypy and the tier1 + tier2 tests; it is informational and is not a pull-request
+check. The gate tools are also pinned exactly in `pyproject.toml`
+(`ruff==0.15.16`, `mypy==2.1.0`). The `temporalcv` dependency resolves from PyPI
 (`temporalcv>=2.0.0,<3`); `uv.lock` records the exact version, and the
 golden-parity suite gates behavioral drift on any upgrade.
 

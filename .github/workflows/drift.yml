@@ -1,0 +1,44 @@
+name: Dependency drift
+
+# Informational. The other workflows install from uv.lock, so a new release of a dependency
+# cannot fail a pull request. This job installs the newest versions that pyproject.toml
+# allows, without the lock, and runs the fast gates, so that drift is seen before the lock
+# is bumped. It is not a pull-request check and blocks nothing: a failure here means "read
+# the versions printed below before the next `uv lock --upgrade-package`".
+#
+# GitHub disables a scheduled workflow after 60 days without repository activity.
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'  # 7am UTC Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unpinned:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install the newest allowed versions (no lock)
+        run: |
+          pip install -e ".[dev,full]"
+
+      - name: Print resolved versions
+        run: pip freeze --exclude-editable
+
+      - name: Type check (mypy)
+        run: python -m mypy dml_ts/ --ignore-missing-imports --no-strict-optional --explicit-package-bases
+
+      - name: Run tier1 + tier2 tests
+        # Runs when mypy fails too, so that one run reports both results.
+        if: ${{ !cancelled() }}
+        run: python -m pytest -m "tier1 or tier2" --timeout=60 --no-cov -q

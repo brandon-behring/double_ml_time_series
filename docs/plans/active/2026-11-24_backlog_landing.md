@@ -477,3 +477,172 @@ choice between locking CI to `uv.lock` and regenerating the numbers.
   not survive a reboot.
 - Commits are made with `git -c core.fsync=all`, and each slice branch is pushed as soon as its
   commits pass the hooks, so that no finished commit exists only on one disk.
+
+## Addendum 2, 2026-11-25: decisions at the first stop, and the order from here
+
+The plan above stands, with the amendments listed here. The first addendum's steps are done.
+
+### State when this addendum was approved (checked 2026-11-25)
+
+| Item | State |
+|---|---|
+| Part 0 | Intact. Snapshot `024708c` (818 files, tree `c560e48`); the dirty tree equals it |
+| PR-0, #67 | Merged as `04b96db` |
+| PR-A, #68 | Open at `0cca908`; six checks green |
+| PR-1, #69 | Open at `87cd7c3`; six checks green; local gate 775 passed, coverage 75.33%; adversarial review done, three repairs and 76 test cases added |
+| Dependency probe | 1,169 passed, 5 failed: 2 export artifacts, 3 pinned numbers that move with scikit-learn 1.9.1 (all PR-4 material); tracked as #70 |
+| Issues | Filed #70, #71, #72; evidence added to #42 and #51 |
+| The stop of 2026-11-24 | Explained: the kernel log of the next boot records a reset-pin assertion (`BP_SYS_RST_L`) |
+| Copies | The bundle, the tools and a tar of the git-ignored `results/`, `output/`, `logs/` on a second disk. No off-machine copy yet |
+
+### Decisions taken on 2026-11-25 (the owner's)
+
+| Decision | Choice |
+|---|---|
+| Bound of the "no treatment variation" check in #69 | Keep the two-term bound: `max(1e-6·norm(T − mean T), sqrt(eps)·norm(T))` |
+| The 9-line guard in `PanelDML.fit` (#69) | Keep it. Part II's protocol gets "an absorbed treatment must raise" as a required case |
+| CI versions (#70) | Lock CI to `uv.lock`, plus one scheduled unpinned drift job that blocks nothing |
+| Merging #68 and #69 | Both, once they are green under the lock |
+| The lock pull request (PR-L) | Merged without a further stop when every check is green; the work stops if any test fails under the locked versions |
+| Off-machine copy | The three local-only refs are pushed to the private mirror, by its URL alone, after its visibility reads "private" |
+| The two silent wrong-number defects on `main` (#72, series-mode degeneracy) | Fixed now, in one small pull request after #69 (PR-1b) |
+| Extra precautions against a repeat of the stop | None |
+
+### Amendments to the plan above
+
+- **Environment.** Each slice worktree's `venv/` is installed from the lock:
+  `uv venv venv --python 3.13`, then `VIRTUAL_ENV=$PWD/venv uv sync --locked --active --all-extras`.
+  The lock is what CI installs from PR-L on.
+- **Part 0, step 4.** The snapshot ref is still never pushed to the public repository (no `--all`,
+  no `--mirror`, never through `origin`). It is pushed to the private mirror alone, as a backup
+  branch.
+- **Decisions.** No PanelDML change lands before the redesign, with one exception: the guard in
+  #69 that keeps PanelDML's behavior as on `main`. The go-ahead to merge was given in advance for
+  #67, PR-L, #68 and #69; every later pull request stops for its own.
+- **Part I, two new pull requests.** PR-L `ci/lock-dependencies` (refs #70, CI only, before #68)
+  and PR-1b `fix/silent-wrong-slopes-72` (#72 and #42, adversarial review, after #69). PR-4 also
+  refers to #70, which stays open until PR-4's three pinned tests pass in CI.
+- **Deviations from the snapshot, added.** (4) From the review of PR-1, in #69: the two-term bound,
+  the guard in `PanelDML.fit`, the R² rule for a constant target. (5) PR-L and PR-1b are not in
+  the snapshot at all.
+- **A held hunk can change a landed caller's behavior** (found in PR-1: the shared check changed
+  while PanelDML's own hunk was held, and PanelDML lost its degeneracy check). Every slice that
+  changes a shared helper is checked against the callers whose hunks are held.
+- **Exit from Part I.** The manifest of the conservation check also lists the PR-L files
+  (workflows, `uv.lock`, `CONTRIBUTING.md`) and the files touched by the deviations. The Part III
+  residual is built per held file and hunk, applied with `git apply --3way`, and never as one
+  `git diff origin/main <snapshot>`: that diff would revert every deviation (the bound, the
+  guards, the locked workflow steps). Re-enabling `Nightly Tests` is also the first run of its
+  locked install step.
+- **PR-3** adds `filelock` to `pyproject.toml`; its lock change is made with `uv lock` there, not
+  taken from the snapshot's `uv.lock`.
+- **Hazards, added.** A push from the dirty tree runs the pre-push hook there, as a commit runs
+  the pre-commit hook; both are done from a clean slice worktree only. From PR-L on, PR CI
+  installs the `dev` extra from the lock, so EconML tests still skip there and tier3 runs
+  nightly; the local gate installs every extra. The drift job is a scheduled workflow and is
+  disabled by GitHub after 60 days without repository activity, as `Nightly Tests` was.
+
+### Order from here
+
+1. **Mirror backup.** First, because it is the cheapest reduction of risk.
+2. **PR-L.** Local gate in a locked environment, CI green, then merge (merge commit).
+3. **#68.** Closed and reopened so that CI builds a merge commit with the locked workflow; green;
+   merge. #41 stays open ("refs").
+4. **#69.** Its worktree environment is rebuilt from the lock and the full gate is run; closed and
+   reopened; green; merge. #42 stays open (its state is in a comment there).
+5. **PR-1b**, with adversarial review.
+6. **PR-2 `fix/validation-inference`**, sliced while PR-1b waits (it needs PR-A only and touches
+   none of PR-1b's files).
+7. **Stop and report** PR-1b and PR-2. Neither merges without a go-ahead.
+8. PR-3, PR-4, PR-5 and the exit from Part I as planned above.
+
+### Mirror backup
+
+- The mirror's visibility is read first through the GitHub API; the push happens only if it
+  reads `private: true`.
+- The push is made from a clean slice worktree, to the mirror's URL and not to `origin`. It
+  creates three branches there: `backup/backlog-2026-11-24-snapshot` (the snapshot `024708c`),
+  `backup/e2e-review-66aef23` and `backup/public-data-extensions-3dbfa63`.
+- Verification: `git ls-remote <mirror> 'refs/heads/backup/*'` shows the three commits, and the
+  same query against the public repository shows nothing.
+- Not covered: the git-ignored `results/`, `output/`, `logs/` (on the two local disks only).
+- The three mirror branches are deleted at the plan's final conservation check.
+
+### PR-L: lock CI to `uv.lock`
+
+Branch `ci/lock-dependencies` from `origin/main`. It changes no package code.
+
+| File | Change |
+|---|---|
+| `uv.lock` | The project's own version line, `1.1.2 → 1.1.4`, and nothing else |
+| `.github/workflows/tests.yml` (5 jobs), `docs.yml`, `nightly.yml` (2 jobs) | The `pip install -e ".[…]"` step becomes `astral-sh/setup-uv` and `uv sync --locked --extra …`, and `.venv/bin` goes on `GITHUB_PATH`, so every later command stays as it is |
+| `.github/workflows/drift.yml` (new) | Weekly schedule and `workflow_dispatch`; unpinned `pip install -e ".[dev,full]"`; prints the resolved versions; runs mypy and tier1 + tier2. It is not a pull-request check |
+| `CONTRIBUTING.md` | CI installs from the lock; the local equivalent; how to bump a version |
+
+Not verified until the exit from Part I: the edited `nightly.yml`, because that workflow is
+disabled and is re-enabled there. `drift.yml` can be dispatched only once it is on `main`.
+
+### PR-1b: two silent wrong numbers on `main`
+
+Branch `fix/silent-wrong-slopes-72` from `origin/main` after #69 merges.
+
+1. **Column vectors (#72).** `fwl_estimate(y, t[:, None], x)` returns −2.6e-16 for a slope of
+   2.03, because `np.sum(Y_tilde * T_tilde)` broadcasts to an `(n, n)` matrix.
+   `_utils.validate_lengths` (shared by `double_ml`, `robinson_estimator`, `TemporalPLRDML`,
+   `RollingWindowDML`) also requires `Y` and `T` to be one-dimensional; `fwl_estimate` calls it
+   in place of its inline copy; `theta_via_fwl` raises unless both residual arrays are
+   one-dimensional and of equal shape. A column vector is rejected with a message that names the
+   shape and suggests `.ravel()`. It is not flattened: `TemporalPLRDML` already rejects it, and a
+   silent reshape is what this repository avoids.
+2. **Series-mode g-estimation.** `DynamicGEstimationDML._fit_series` solves the treatment Gram
+   system with no degeneracy check: `T = 0.5·x0` returns `theta_t = [4.4e13, 0.21]`, and a
+   constant treatment ends in `LinAlgError`. Each lag column is checked with the bound #69
+   introduced (`_utils.no_variation_tolerance`), with the message panel mode uses; the
+   conditioning warning moves before the solve; a `LinAlgError` becomes a `ValueError` that names
+   the treatment Gram.
+3. **Tests.** `(n, 1)` outcome and treatment raise in each of the five estimators and `(n,)`
+   gives unchanged numbers; in series mode a constant treatment and `T = 0.5·x0` raise for the
+   ridge and linear learners, and the golden-parity numbers do not move. A mutation check as in
+   #69.
+4. `Closes #72` only if the script in #72 raises on the merged `main`.
+
+### Working rules added by the first two days
+
+- Tools and logs live in `~/Claude/.backups/double_ml_time_series/` (`landing-tools/`,
+  `gate-logs/`, `review-pr1/`); the session's temporary directory is lost at every restart.
+- Nothing is written into the dirty tree, and no command run from it uses a relative redirect.
+  Parallel jobs are separate background commands. After any work near it, the status hash is
+  compared.
+- Reviewers get the diff and an export of the commit, never a live worktree. Every review finding
+  is re-run before it is accepted (four claims of one reviewer on #69 were false). Scratch
+  scripts do not catch exceptions broadly.
+- `journalctl -k -b <n> | grep "reset reason"` names the cause of an earlier stop.
+
+### Record of 2026-11-25, after the approval
+
+- **Mirror backup: done.** The mirror read `private: true`; the three branches were pushed from
+  the clean `fix/core-numerics-42` worktree; `ls-remote` shows `024708c`, `66aef23` and `3dbfa63`
+  on the mirror and no `backup/*` or `refs/snapshots/*` ref on the public repository. The dirty
+  tree's status hash was unchanged afterwards.
+- **A second unclean stop,** at 11:17:56, between the mirror push and PR-L. The kernel log of the
+  next boot gives the same cause as on 2026-11-24 (`system reset pin BP_SYS_RST_L was tripped`).
+  Nothing was lost: no commit was in flight, the dirty tree's status hash was unchanged, and the
+  tools directory was intact.
+- **The lock.** `uv lock` (uv 0.13.7, no `--upgrade`) reports one change, `dml-ts 1.1.2 → 1.1.4`,
+  as the dry run did, but the file it writes differs in 46 lines: it also raises the lock format
+  from `revision = 3` to `5`, reorders `resolution-markers`, and drops redundant markers in the
+  four forked Sphinx entries. A comparison by content (`landing-tools/lockdiff.py`) finds the
+  same 112 packages, sources, hashes and dependency edges. Because the plan allowed the version
+  line only, the lock in PR-L is `main`'s lock with that one line changed; `uv lock --check`
+  accepts it and leaves it untouched. The format rewrite will appear with the next plain
+  `uv lock` (PR-3's `filelock`) and is to be a commit of its own there.
+- **`setup-uv` is pinned by commit.** Its repository has no floating `v10` tag, only full
+  versions; `v10.4.0` is commit `1db35dd8eee11c5894872e0b383ae6c406cf738d`, and its README pins
+  the same way. The uv version is pinned too (`0.13.7`, the version that checked the lock).
+- **Three edits beyond the table above,** each a consequence of replacing pip:
+  `cache: 'pip'` is removed from `actions/setup-python` in all three workflows (with no pip
+  install the cache directory does not exist, and `setup-python@v6` then prints a warning on
+  every job); `uv.lock` joins the path filter of `docs.yml`, since the lock now decides the
+  documentation's environment; and the comment on the `doctest` job no longer gives a numpy
+  downgrade as its reason, since under the lock an extra cannot move a version. In `nightly.yml`
+  the held Part III hunk still applies with `git apply --3way --check`.

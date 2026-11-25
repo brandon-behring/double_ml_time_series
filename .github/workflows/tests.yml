@@ -1,5 +1,10 @@
 name: Tests
 
+# Every job installs from uv.lock (`uv sync --locked`), so the tests run against the
+# versions their pinned numbers were generated with. `--locked` fails the job when uv.lock
+# is stale against pyproject.toml. The environment is `.venv`, put on PATH, so the later
+# `python -m ...` commands use it. The unpinned install is checked weekly by drift.yml.
+
 on:
   push:
     branches: [main]
@@ -17,11 +22,17 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-          cache: 'pip'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: '0.13.7'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev]"
+          uv sync --locked --extra dev
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Lint and check formatting (ruff)
         run: |
@@ -47,11 +58,17 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-          cache: 'pip'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: '0.13.7'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev]"
+          uv sync --locked --extra dev
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run tier1 tests
         run: python -m pytest -m tier1 --timeout=10 --no-cov -v
@@ -67,11 +84,17 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-          cache: 'pip'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: '0.13.7'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev]"
+          uv sync --locked --extra dev
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run tier1 + tier2 tests with coverage
         run: python -m pytest -m "tier1 or tier2" --timeout=60 --cov=dml_ts --cov-report=xml --cov-fail-under=70 -v
@@ -94,11 +117,17 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-          cache: 'pip'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: '0.13.7'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev]"
+          uv sync --locked --extra dev
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run examples
         run: |
@@ -116,19 +145,26 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-          cache: 'pip'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: '0.13.7'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev,full]"
+          uv sync --locked --extra dev --extra full
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Run doctests (global)
         # Every docstring example across dml_ts/ is runnable; a global
         # --doctest-modules gate keeps them honest. MPLBACKEND=Agg runs the
-        # plotting examples headless; [full] installs econml so the validation
-        # modules that import it collect cleanly. Genuinely network / real-data /
-        # multi-thousand-bootstrap examples carry inline `# doctest: +SKIP`.
-        # Dedicated job so the econml/numpy install can't pollute lint or mypy.
+        # plotting examples headless; the `full` extra installs econml so the
+        # validation modules that import it collect cleanly. Genuinely network /
+        # real-data / multi-thousand-bootstrap examples carry inline `# doctest: +SKIP`.
+        # Dedicated job, so that lint and mypy run without econml installed. (Under
+        # the lock an extra adds packages; it cannot move numpy's version.)
         # Clear addopts (--override-ini) so the project's default pytest
         # options (-v) don't interfere with the doctest run.
         env:
