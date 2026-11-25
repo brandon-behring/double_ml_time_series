@@ -266,11 +266,13 @@ Part 0
 Part I (a box is ticked when the pull request is merged and its issues are checked)
 
 - [x] PR-0 `chore/landing-tooling` (#67, merged 2026-11-25 as `04b96db`)
-- [ ] PR-A `fix/validation-fail-loud-41a` (#41)
-- [ ] PR-1 `fix/core-numerics-42` (#42)
+- [x] PR-L `ci/lock-dependencies` (#73, merged 2026-11-25 as `f56fa08`; #70 stays open)
+- [x] PR-A `fix/validation-fail-loud-41a` (#68, merged 2026-11-25 as `87d9191`; #41 stays open)
+- [x] PR-1 `fix/core-numerics-42` (#69, merged 2026-11-25 as `257022d`; #42 stays open)
+- [ ] PR-1b `fix/silent-wrong-slopes-72` (#72, #42)
 - [ ] PR-2 `fix/validation-inference` (#41, #61, #63)
 - [ ] PR-3 `fix/applications-pipeline` (#44, #60, #62, #64)
-- [ ] PR-4 `docs/november-audits` (#65)
+- [ ] PR-4 `docs/november-audits` (#65, #70)
 - [ ] PR-5 `audit/public-data-extensions-2026-11-21`
 - [ ] Conservation check against the manifest
 - [ ] Part III residual patch saved
@@ -745,3 +747,28 @@ Branch `fix/silent-wrong-slopes-72` from `origin/main` after #69 merges.
   documentation's environment; and the comment on the `doctest` job no longer gives a numpy
   downgrade as its reason, since under the lock an extra cannot move a version. In `nightly.yml`
   the held Part III hunk still applies with `git apply --3way --check`.
+- **PR-L merged (#73, `f56fa08`).** Local gate in the locked environment: 683 passed, coverage
+  74.86%, examples, doctests and Sphinx pass. CI: six checks green; the job logs show uv 0.13.7,
+  the `setup-python` interpreter (CPython 3.13.18) and the lock's versions (scikit-learn 1.6.1,
+  numpy 2.4.6, statsmodels 0.14.6, temporalcv 2.2.0). On `main`'s own lock, `uv sync --locked`
+  failed as intended before the change ("The lockfile at `uv.lock` needs to be updated").
+- **First drift run** (dispatched by hand on `main` after the merge): scikit-learn 1.9.1, numpy
+  2.5.5, statsmodels 0.15.0, temporalcv 2.3.0, econml 0.17.1; mypy clean; 683 passed. So `main`
+  itself does not depend on the lock yet; the three numbers that move are in PR-4's tests (#70).
+- **#68 and #69 merged under the lock** (`87d9191`, `257022d`), each closed and reopened first so
+  that CI built a new merge commit: 691 and 783 passed, coverage 75.91% on the second. #69's
+  branch also passed the full local gate in an environment rebuilt from the lock (775 passed,
+  75.28%); its earlier gate had run under the unpinned versions. #41, #42, #70 and #72 were
+  checked open after the merges.
+- **PR-1b, one expectation of the plan corrected by measurement.** The plan expected series mode
+  to raise for `T = 0.5·x0` under the ridge learner too. It cannot under the two-term bound: a
+  ridge fit leaves shrinkage residue of norm 0.06 where the bound is 8.7e-6. In 300 simulated
+  series (truth 1.0) that fit reported a lag-0 effect with median absolute value 15.3, median
+  standard error 16.6, and p < 0.05 in 17.7% of the runs. `double_ml` and `robinson_estimator`
+  with a ridge learner accept the same treatment, but their standard errors (median 31.7 and
+  39.9) never gave p < 0.05. PR-1b therefore covers the exact cases (linear learner, constant
+  treatment, linearly dependent lags), and the ridge case is put to the owner at the stop.
+- **PR-1b, what #72 also covers.** With both the outcome and the treatment as `(n, 1)`,
+  `double_ml` returned 1.93 where the flat inputs give 2.04, and `robinson_estimator` 1.93 with a
+  standard error of 0.003; `RollingWindowDML` returned zero windows for any column vector.
+  `TemporalPLRDML` and `PanelDML` already raised, late, from the HAC routine.
