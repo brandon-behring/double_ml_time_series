@@ -60,7 +60,7 @@ from temporalcv import (
 )
 
 from ._results import ResultBase
-from ._utils import predict_conditional_mean, theta_via_fwl
+from ._utils import is_numerically_constant, predict_conditional_mean, theta_via_fwl
 
 ArrayLike: TypeAlias = np.ndarray | list[float]
 ModelSpec: TypeAlias = str | BaseEstimator
@@ -238,8 +238,10 @@ def _crossfit_residualize(
 
 
 def _r2(y: NDArray[np.float64], resid: NDArray[np.float64]) -> float:
+    if is_numerically_constant(y):
+        return 0.0
     ss_tot = float(np.sum((y - y.mean()) ** 2))
-    return float(1.0 - np.sum(resid**2) / ss_tot) if ss_tot > 0 else 0.0
+    return float(1.0 - np.sum(resid**2) / ss_tot)
 
 
 class DynamicGEstimationDML:

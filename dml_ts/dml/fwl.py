@@ -52,7 +52,7 @@ from numpy.typing import NDArray
 from temporalcv import coverage_in_unit, finite_se
 
 from ._results import ResultBase
-from ._utils import theta_via_fwl
+from ._utils import is_numerically_constant, theta_via_fwl
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -187,7 +187,7 @@ def fwl_residualize(
     # Compute R²
     ss_tot = np.sum((Y - Y.mean()) ** 2)
     ss_res = np.sum(residuals**2)
-    r_squared = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
+    r_squared = 0.0 if is_numerically_constant(Y) else 1 - ss_res / ss_tot
 
     return residuals, r_squared
 

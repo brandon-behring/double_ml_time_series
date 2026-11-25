@@ -61,7 +61,13 @@ from temporalcv import (
 )
 
 from ._results import ResultBase
-from ._utils import ModelType, cross_fit_predictions, theta_via_fwl, validate_lengths
+from ._utils import (
+    ModelType,
+    cross_fit_predictions,
+    no_variation_tolerance,
+    theta_via_fwl,
+    validate_lengths,
+)
 from ._utils import compute_r2 as _compute_r2
 from ._utils import get_nuisance_model as _get_nuisance_model
 
@@ -992,6 +998,15 @@ class PanelDML:
             X_fe = self._demean_by_group(X_fe, time_id)
         else:
             raise ValueError(f"Unknown fixed_effects: {self.fixed_effects}")
+
+        # A treatment that the fixed effects absorb leaves only rounding
+        # residue. Its size can be judged against the treatment before
+        # demeaning only: after demeaning there is no level left to compare with.
+        if np.linalg.norm(T_fe) <= no_variation_tolerance(T):
+            raise ValueError(
+                f"Treatment has no variation after removing {self.fixed_effects} "
+                "fixed effects: it is constant within the demeaned groups."
+            )
 
         # Run TemporalPLRDML on transformed data
         dml = TemporalPLRDML(

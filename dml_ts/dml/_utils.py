@@ -76,11 +76,66 @@ def get_nuisance_model(
         )
 
 
+_EPS = float(np.finfo(float).eps)
+
+# X explains all but 1e-12 of the treatment's variance: (1e-6)**2.
+_UNEXPLAINED_NORM_RATIO = 1e-6
+
+# Residuals smaller than sqrt(eps) of the treatment's level cannot be told from
+# the rounding of an ill-conditioned fit. R's lm() uses 1e-7 for the same test.
+_LEVEL_NORM_RATIO = float(np.sqrt(_EPS))
+
+
+def is_numerically_constant(values: NDArray[np.float64]) -> bool:
+    """Whether the spread of ``values`` is rounding residue of subtracting their mean.
+
+    The mean of a constant array need not equal the constant (``np.full(100, 0.1)``
+    has a mean one ulp away), so the centered values are compared with the level
+    of the array and never with exact zero.
+    """
+    values = np.asarray(values, dtype=float)
+    spread = np.linalg.norm(values - values.mean())
+    return bool(spread <= np.linalg.norm(values) * values.size * _EPS)
+
+
+def no_variation_tolerance(treatment: NDArray[np.float64]) -> float:
+    """Largest norm of treatment residuals that counts as no residual variation.
+
+    The bound is the larger of two terms, both in the units of the treatment:
+
+    - ``1e-6 * norm(T - mean(T))``: the controls explain all but ``1e-12`` of
+      the treatment's variance. This term does not change when a constant is
+      added to the treatment.
+    - ``sqrt(eps) * norm(T)``: the residuals are below ``1.5e-8`` of the
+      treatment's level. A constant treatment leaves residuals of this kind,
+      and so does a treatment whose variation is that small beside its level.
+
+    The rounding error of a fit grows with the level and the conditioning of the
+    controls, not with ``norm(T)`` alone, so a bound of a few ulps of ``norm(T)``
+    accepts exact collinearity whenever the controls have a non-zero mean.
+
+    Raises:
+        ValueError: If the treatment holds a NaN or an infinity.
+    """
+    treatment = np.asarray(treatment, dtype=float)
+    explained = _UNEXPLAINED_NORM_RATIO * np.linalg.norm(treatment - treatment.mean())
+    level = _LEVEL_NORM_RATIO * np.linalg.norm(treatment)
+    tolerance = float(max(explained, level))
+    if not np.isfinite(tolerance):
+        raise ValueError("Non-finite treatment values; check for NaN/inf in the treatment.")
+    return tolerance
+
+
 def compute_r2(y_true: NDArray[np.float64], y_pred: NDArray[np.float64]) -> float:
-    """Compute R² (coefficient of determination)."""
+    """Compute R² (coefficient of determination).
+
+    Returns 0.0 when ``y_true`` is numerically constant, where R² is undefined.
+    """
+    if is_numerically_constant(y_true):
+        return 0.0
     ss_res = np.sum((y_true - y_pred) ** 2)
     ss_tot = np.sum((y_true - y_true.mean()) ** 2)
-    return float(1 - ss_res / ss_tot) if ss_tot > 0 else 0.0
+    return float(1 - ss_res / ss_tot)
 
 
 def theta_via_fwl(
@@ -97,9 +152,12 @@ def theta_via_fwl(
         T_tilde: Treatment residuals.
         treatment: Treatment values before residualization on the same rows.
             These supply the units for distinguishing a numerically exact fit
-            from residuals measured on a small scale.
+            from residuals measured on a small scale; see
+            :func:`no_variation_tolerance`. Without them only residuals that
+            are exactly zero raise.
         no_variation_msg: Estimator-specific ValueError message raised when
-            the treatment residuals carry (numerically) no variation.
+            the treatment residuals carry (numerically) no variation. The
+            residual norm and the bound are appended to it.
 
     Returns:
         Tuple of ``(theta, T_tilde_sq_sum)`` — the sum is returned because
@@ -112,11 +170,13 @@ def theta_via_fwl(
             f"{T_tilde_sq_sum}); check for NaN/inf in inputs or uncovered "
             "cross-fit rows."
         )
-    tolerance = 0.0
-    if treatment is not None:
-        tolerance = np.linalg.norm(treatment) * len(treatment) * np.finfo(float).eps
-    if np.sqrt(T_tilde_sq_sum) <= tolerance:
-        raise ValueError(no_variation_msg)
+    residual_norm = float(np.sqrt(T_tilde_sq_sum))
+    tolerance = 0.0 if treatment is None else no_variation_tolerance(treatment)
+    if residual_norm <= tolerance:
+        raise ValueError(
+            f"{no_variation_msg} (norm of the treatment residuals {residual_norm:.3g} "
+            f"<= bound {tolerance:.3g})"
+        )
     numerator = float(np.sum(Y_tilde * T_tilde))
     if not np.isfinite(numerator):
         # Symmetric to the treatment-side guard above: a NaN/inf on the OUTCOME
