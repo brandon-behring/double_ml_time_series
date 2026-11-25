@@ -412,3 +412,68 @@ in the snapshot.
   fails on every pull request. The generator's output is bit-identical before and after (checked
   for the three realism levels and three seeds). It is its own commit. The check is mypy itself;
   no unit test was added, because the edit changes a static type and no value.
+- PR-0: `book.yml` gains two steps that are not in the snapshot: `actions/setup-python` 3.13 and
+  `pip install "latexminted==0.6.0"`. The reason is obstacle 5 of the addendum below. It is its
+  own commit, and the check is the `book` job itself.
+- PR-1: first built on the PR-0 branch, not on `origin/main`, because the commit hook runs mypy
+  whenever a Python file is staged and mypy fails on `origin/main` (see the baseline above).
+  Nothing was pushed in that stacked form. PR-1 is rebased onto `origin/main` after PR-0 merges,
+  and every later slice is built from `origin/main` as planned.
+- Hooks: `pre-commit` is found through `PATH="$PWD/venv/bin:$PATH"` in each slice worktree,
+  because the shim on this machine looks for `.venv/bin/pre-commit` and the worktrees use `venv/`.
+  No file changes for this.
+
+## Addendum, 2026-11-25: obstacles of the first day and their repairs
+
+The plan above stands. This section records what stopped the work on 2026-11-24 and how it
+resumed.
+
+### State on the morning of 2026-11-25 (checked read-only)
+
+- Part 0 was intact: the snapshot ref had no missing object, the bundle verified with the SHA-256
+  recorded above, and the dirty tree equalled the snapshot by content hash.
+- #67 (PR-0) was open with 4 commits; every check passed except `book`.
+- #68 (PR-A) was open at `0cca908`; every check passed except `lint` (mypy).
+- PR-1 existed locally only. Its code commit `54ceae8` was intact; its changelog commit was lost.
+
+### Obstacles and repairs
+
+| # | Obstacle | Cause | Repair |
+|---|---|---|---|
+| 1 | The last local commit (`effa80f`, PR-1's changelog) was gone, `fix/core-numerics-42` pointed at a missing object, and the session's scratch files (gate script, hunk filter, gate logs) were empty | The machine stopped uncleanly at 15:52:40 on 2026-11-24: the journal ends with no shutdown sequence, and seven object files written in the last seconds were zero bytes. The journal does not show why it stopped. | The seven empty files were deleted and nothing else; the branch was set back to `54ceae8` (its previous reflog value); the index of that worktree was reset, which left the changelog edit as a working-tree change. `git fsck --full` then reported no error and the bundle verified. |
+| 2 | mypy fails on `main` and on the snapshot | CI installs unpinned dependencies; numpy 2.5.5 stubs type `0.1 * ndarray.mean()` as `float64` | The `float(...)` cast in PR-0 (see the deviations above) |
+| 3 | No Python commit is possible on `origin/main` | The commit hook runs mypy | Slices wait for PR-0; PR-1 is rebased after PR-0 merges |
+| 4 | `pre-commit` is not found in a slice worktree | The shim looks for `.venv/bin/pre-commit`; the worktrees use `venv/` | `PATH="$PWD/venv/bin:$PATH"` for commits and pushes |
+| 5 | `book` fails on #67 | `ubuntu-latest` is Ubuntu 26.04, whose Python is 3.14. TeX Live 2025's bundled `latexminted-0.6.0` wheel defines `ArgParser.__init__(self, *, prog)`; `argparse.add_parser` in Python 3.14 passes `color=`, so `latexminted` raises `TypeError` and minted cannot highlight. The PyPI build of `latexminted 0.6.0` takes `**kwargs` and runs under Python 3.14. The job had last run in June. | In `book.yml`: `actions/setup-python` 3.13 and `pip install "latexminted==0.6.0"`, staying on `ubuntu-latest`. The fallback, if that run fails, is `runs-on: ubuntu-24.04`. |
+| 6 | `lint` fails on #68 | Obstacle 2; #68 does not contain the cast | After PR-0 merges, #68 is closed and reopened, so that CI tests a new merge commit. A re-run would reuse the old one. The branch stays at `0cca908`. |
+| 7 | The backlog was never tested with the versions CI installs | `uv.lock` pins numpy 2.4.6, scikit-learn 1.6.1, statsmodels 0.14.6, temporalcv 2.2.0 and econml 0.16.0; a fresh install gives 2.5.5, 1.9.1, 0.15.0, 2.3.0 and 0.17.1. No workflow uses the lock. `main` and PR-1 pass under the new versions. | A probe, described below, before any further slicing |
+| 8 | The pre-push hook runs no tests | It calls `pre-commit run --hook-stage pre-push` with no ref range, so every hook reports "no files to check" | Not repaired in this plan. The local gate and CI are the checks. |
+
+### Decisions taken on 2026-11-25 (the owner's)
+
+| Decision | Choice |
+|---|---|
+| Merging PR-0 | Merged without a further stop once every check is green. PR-A, PR-1 and all later pull requests still stop for a go-ahead. |
+| Book workflow | PyPI `latexminted` on `ubuntu-latest`; an `ubuntu-24.04` pin as the fallback |
+| Dependency drift | Probe the full snapshot under today's versions; decide only if it fails |
+
+### Dependency probe
+
+The snapshot is exported with `git archive` to a directory under `~/Claude/.worktrees/`, a fresh
+environment is built there (`.[dev,docs,full]`), `dml_ts` is asserted to be imported from that
+directory, and tier1 + tier2, the examples and the doctests are run. The reference is 1,173 passed
+in the tree's locked environment.
+
+The rule was fixed before the run. If everything passes, the work continues unchanged. If anything
+fails, each failure is classified (a pinned number that moved, an API change, a timeout) and
+re-run in the locked environment to confirm that drift is the cause; the work then stops for a
+choice between locking CI to `uv.lock` and regenerating the numbers.
+
+### Working rules added
+
+- The gate script and the hunk filter live under
+  `~/Claude/.backups/double_ml_time_series/landing-tools/`, and gate logs under
+  `~/Claude/.backups/double_ml_time_series/gate-logs/`. The session's temporary directory does
+  not survive a reboot.
+- Commits are made with `git -c core.fsync=all`, and each slice branch is pushed as soon as its
+  commits pass the hooks, so that no finished commit exists only on one disk.
