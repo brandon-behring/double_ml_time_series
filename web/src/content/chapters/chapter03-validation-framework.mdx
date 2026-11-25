@@ -9,7 +9,7 @@ description: "A seven-method validation battery on synthetic DGPs with known gro
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_03.tex
-source_sha256: f83c5243262fc8d3f60752d39d343a15c86e042ea3d5cdc059751fc4e3bf17b9
+source_sha256: 1ef2dbd101fd7f273c0e46e7bae5b3d075914366a873a36bffee928a8871747d
 provenance:
   ai_tools:
     - Claude Code
@@ -206,17 +206,18 @@ def ols_results(n=1000):
 
 for name, result in ols_results():
     print(name, f"{result.bias:+.4f}", f"{result.mse**0.5:.4f}",
-          f"{result.coverage:.0%}", f"{result.bias_p_value:.5f}", result.status)
+          f"{result.coverage:.0%}", f"{result.bias_p_value:.5f}",
+          result.bias_status, result.coverage_status, result.status)
 ```
 
 OLS results on 100 datasets at $\gamma=1$
 
-| Method | Bias | RMSE | Coverage | $p$ (bias) | Status |
-| --- | --- | --- | --- | --- | --- |
-| NaiveOLS | +0.1327 | 1.2538 | 15% | 0.29231 | PASS |
-| OLSWithControls | +0.0180 | 0.0917 | 69% | 0.04948 | WARNING |
+| Method | Bias | RMSE | Coverage | $p$ (bias) | Verdict (bias) | Verdict (cov.) | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| NaiveOLS | +0.1327 | 1.2538 | 15% | 0.29231 | PASS | FAIL | FAIL |
+| OLSWithControls | +0.0180 | 0.0917 | 69% | 0.04948 | PASS | FAIL | FAIL |
 
-The unadjusted estimate passed the mean-bias test even though its nominal 95% interval covered the true effect in only 15 of 100 datasets. The controlled estimate had much smaller RMSE. Its mean error was 0.0180 with a Monte Carlo standard error of 0.0090, giving a two-sided bias $p$-value of 0.04948 and a WARNING. These OLS labels use the bias test alone.
+The unadjusted estimate passed the mean-bias test even though its nominal 95% interval covered the true effect in only 15 of 100 datasets. Its coverage verdict is FAIL, and so is its status. The controlled estimate had much smaller RMSE. Its mean error was 0.0180 with a Monte Carlo standard error of 0.0090, giving a two-sided bias $p$-value of 0.04948. The bias and coverage tests are corrected together, so each is held to 0.025 and this is not a rejection. The status is the more severe of the two verdicts: a method whose estimates are unbiased and whose intervals are too short fails.
 
 The controlled OLS interval covered the true effect in 69 of 100 datasets. Its slope standard error uses a design matrix that omits the fitted intercept. A reference interval including the intercept in the covariance calculation and using a Student $t$ critical value covered in 91 of the same 100 datasets.
 
@@ -459,7 +460,7 @@ $$
 
 Under the null, the $t_{R-1}$ reference distribution is exact for independent, identically distributed normal errors with positive variance. With independent, identically distributed errors of finite positive variance, the test is a large-sample approximation. For a time-series estimator, each dataset can be an entire independently generated series. Bootstrap resampling of the $R$ errors can provide a percentile interval for mean bias. The original $R$ datasets determine the degrees of freedom in the test.
 
-The OLS, weighting and ML baselines label the two-sided bias test FAIL for $p<0.01$, WARNING for $0.01\leq p<0.05$, and PASS for $p\geq 0.05$ at the default cutoffs. Report $\bar b$ and its Monte Carlo standard error alongside the label so readers can judge which biases the experiment could detect. The DML validator also considers coverage, applies a Bonferroni correction by default across the two tests, and uses practical thresholds on absolute bias. The DML validator reports separate bias and coverage verdicts. After the multiple-testing correction, significant undercoverage gives FAIL and significant overcoverage gives WARNING. The overall verdict takes the more severe of the two, so small mean bias can coexist with a failed interval.
+The OLS, weighting and ML baselines and the DML validator share one rule. The two-sided bias test and an exact binomial test of coverage are corrected together, by Bonferroni by default, and each validator reports separate bias and coverage verdicts. The bias verdict is FAIL when the absolute bias exceeds 0.15, or is at least 0.1 with a rejection at the 1% level, and WARNING for a rejection at the 5% level without that size. Report $\bar b$ and its Monte Carlo standard error alongside the label so readers can judge which biases the experiment could detect. Significant undercoverage gives FAIL and significant overcoverage gives WARNING. The overall verdict takes the more severe of the two, so small mean bias can coexist with a failed interval.
 
 ### Coverage validation
 

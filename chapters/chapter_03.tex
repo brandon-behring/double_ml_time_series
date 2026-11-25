@@ -254,7 +254,8 @@ def ols_results(n=1000):
 
 for name, result in ols_results():
     print(name, f"{result.bias:+.4f}", f"{result.mse**0.5:.4f}",
-          f"{result.coverage:.0%}", f"{result.bias_p_value:.5f}", result.status)
+          f"{result.coverage:.0%}", f"{result.bias_p_value:.5f}",
+          result.bias_status, result.coverage_status, result.status)
 \end{minted}
 
 \begin{table}[htbp]
@@ -262,17 +263,17 @@ for name, result in ols_results():
 \caption{OLS results on 100 datasets at $\gamma=1$}
 \label{tab:exp31_results}
 \setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lrrrrc}
+\begin{tabular}{lrrrrccc}
 \hline
-Method & Bias & RMSE & Coverage & $p$ (bias) & Status \\
+Method & Bias & RMSE & Coverage & $p$ (bias) & Verdict (bias) & Verdict (cov.) & Status \\
 \hline
-NaiveOLS & +0.1327 & 1.2538 & 15\% & 0.29231 & PASS \\
-OLSWithControls & +0.0180 & 0.0917 & 69\% & 0.04948 & WARNING \\
+NaiveOLS & +0.1327 & 1.2538 & 15\% & 0.29231 & PASS & FAIL & FAIL \\
+OLSWithControls & +0.0180 & 0.0917 & 69\% & 0.04948 & PASS & FAIL & FAIL \\
 \hline
 \end{tabular}
 \end{table}
 
-The unadjusted estimate passed the mean-bias test even though its nominal 95\% interval covered the true effect in only 15 of 100 datasets. The controlled estimate had much smaller RMSE. Its mean error was 0.0180 with a Monte Carlo standard error of 0.0090, giving a two-sided bias $p$-value of 0.04948 and a WARNING. These OLS labels use the bias test alone.
+The unadjusted estimate passed the mean-bias test even though its nominal 95\% interval covered the true effect in only 15 of 100 datasets. Its coverage verdict is FAIL, and so is its status. The controlled estimate had much smaller RMSE. Its mean error was 0.0180 with a Monte Carlo standard error of 0.0090, giving a two-sided bias $p$-value of 0.04948. The bias and coverage tests are corrected together, so each is held to 0.025 and this is not a rejection. The status is the more severe of the two verdicts: a method whose estimates are unbiased and whose intervals are too short fails.
 
 The controlled OLS interval covered the true effect in 69 of 100 datasets. Its slope standard error uses a design matrix that omits the fitted intercept. A reference interval including the intercept in the covariance calculation and using a Student $t$ critical value covered in 91 of the same 100 datasets.
 
@@ -562,12 +563,15 @@ an entire independently generated series. Bootstrap resampling of the $R$
 errors can provide a percentile interval for mean bias. The original $R$
 datasets determine the degrees of freedom in the test.
 
-The OLS, weighting and ML baselines label the two-sided bias test FAIL for
-$p<0.01$, WARNING for $0.01\leq p<0.05$, and PASS for $p\geq 0.05$ at the
-default cutoffs. Report $\bar b$ and its Monte Carlo standard error alongside
-the label so readers can judge which biases the experiment could detect.
-The DML validator also considers coverage, applies a Bonferroni correction
-by default across the two tests, and uses practical thresholds on absolute bias. The DML validator reports separate bias and coverage verdicts. After the multiple-testing correction, significant undercoverage gives FAIL and significant overcoverage gives WARNING. The overall verdict takes the more severe of the two, so small mean bias can coexist with a failed interval.
+The OLS, weighting and ML baselines and the DML validator share one rule.
+The two-sided bias test and an exact binomial test of coverage are corrected
+together, by Bonferroni by default, and each validator reports separate bias
+and coverage verdicts. The bias verdict is FAIL when the absolute bias exceeds
+0.15, or is at least 0.1 with a rejection at the 1\% level, and WARNING for a
+rejection at the 5\% level without that size. Report $\bar b$ and its Monte
+Carlo standard error alongside the label so readers can judge which biases the
+experiment could detect. Significant undercoverage gives FAIL and significant
+overcoverage gives WARNING. The overall verdict takes the more severe of the two, so small mean bias can coexist with a failed interval.
 
 \subsection{Coverage Validation}
 
