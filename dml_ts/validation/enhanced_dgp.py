@@ -14,6 +14,7 @@ Used to test DML performance under assumption violations.
 from dataclasses import dataclass
 
 import numpy as np
+from scipy.special import expit
 
 
 @dataclass
@@ -27,7 +28,7 @@ class EnhancedDGPResult:
         X_true: True confounders including omitted variables (n, p + p_omitted)
         true_effect: Individual treatment effects (n,) - varies by individual for HTE
         true_ate: Average treatment effect (scalar)
-        propensity_score: True propensity scores P(T=1|X) (n,)
+        propensity_score: Assignment probabilities conditional on all latent covariates (n,)
         n: Sample size
         p: Number of observed confounders
         p_omitted: Number of omitted confounders
@@ -124,7 +125,7 @@ class EnhancedDGPGenerator:
             hte_strength: Strength of heterogeneity (0 = constant effect)
             hte_nonlinear: Use non-linear HTE function
             p_omitted: Number of omitted confounders
-            omitted_var_strength: Strength of omitted variable confounding
+            omitted_var_strength: Multiplier of omitted covariates in assignment and baseline outcome
             polynomial_degree: Degree of polynomial terms (1 = linear, 2 = quadratic, etc.)
             propensity_extremeness: Multiplier for propensity logit (>1 = more extreme)
             measurement_error_std: Std dev of measurement error in X
@@ -132,6 +133,10 @@ class EnhancedDGPGenerator:
             noise_level: Noise in outcome equation
             random_state: Random seed
         """
+        if not isinstance(polynomial_degree, (int, np.integer)) or polynomial_degree < 1:
+            raise ValueError("polynomial_degree must be a positive integer")
+        if p_omitted < 0 or not np.isfinite(omitted_var_strength) or omitted_var_strength < 0:
+            raise ValueError("p_omitted and omitted_var_strength must be nonnegative")
         self.n = n
         self.p = p
         self.base_effect = base_effect
@@ -157,15 +162,9 @@ class EnhancedDGPGenerator:
         p_total = self.p + self.p_omitted
         X_true = self._rng.randn(self.n, p_total)
 
-        # Step 2: Add measurement error to observed confounders
-        X_observed = X_true[:, : self.p].copy()
-        if self.measurement_error_std > 0:
-            measurement_error = self._rng.randn(self.n, self.p) * self.measurement_error_std
-            X_observed += measurement_error
-
         # Step 3: Generate treatment with confounding from ALL confounders
         propensity_logit = self._calculate_propensity_logit(X_true)
-        propensity_score = 1 / (1 + np.exp(-propensity_logit))
+        propensity_score = expit(propensity_logit)
         T = (self._rng.rand(self.n) < propensity_score).astype(float)
 
         # Step 4: Calculate individual treatment effects (HTE)
@@ -174,6 +173,12 @@ class EnhancedDGPGenerator:
 
         # Step 5: Generate outcome with confounding
         Y = self._generate_outcome(X_true, T, true_effect)
+
+        # Draw measurement noise last, even at zero scale. Matched runs then share the
+        # entire latent process across measurement-error levels on every replication.
+        X_observed = X_true[:, : self.p] + self.measurement_error_std * self._rng.randn(
+            self.n, self.p
+        )
 
         return EnhancedDGPResult(
             Y=Y,
@@ -198,21 +203,17 @@ class EnhancedDGPGenerator:
         Returns:
             Propensity logit values (n,)
         """
-        # Linear term: β^T X
-        beta = self._rng.randn(X.shape[1]) * self.confounding_strength
-        logit = X @ beta
+        return self.propensity_extremeness * self._confounder_signal(X)
 
-        # Add polynomial terms if requested
-        if self.polynomial_degree >= 2:
-            # Add X^2 terms for first few variables
-            n_poly = min(3, X.shape[1])
-            for i in range(n_poly):
-                logit += 0.5 * self.confounding_strength * (X[:, i] ** 2)
-
-        # Apply extremeness multiplier
-        logit *= self.propensity_extremeness
-
-        return logit
+    def _confounder_signal(self, X: np.ndarray) -> np.ndarray:
+        """Draw linear coefficients and add powers through the requested degree."""
+        scale = np.full(X.shape[1], self.confounding_strength, dtype=float)
+        scale[self.p :] *= self.omitted_var_strength
+        signal: np.ndarray = X @ (self._rng.randn(X.shape[1]) * scale)
+        width = min(3, X.shape[1])
+        for power in range(2, self.polynomial_degree + 1):
+            signal += 0.5 * (X[:, :width] ** power) @ scale[:width]
+        return signal
 
     def _calculate_treatment_effects(self, X: np.ndarray) -> np.ndarray:
         """Calculate individual treatment effects (HTE).
@@ -226,7 +227,7 @@ class EnhancedDGPGenerator:
         n = X.shape[0]
 
         # Start with base effect
-        effects = np.full(n, self.base_effect)
+        effects = np.full(n, self.base_effect, dtype=float)
 
         if self.hte_strength > 0:
             if self.hte_nonlinear:
@@ -258,15 +259,7 @@ class EnhancedDGPGenerator:
         """
         n = X.shape[0]
 
-        # Confounding: Y depends on X
-        gamma = self._rng.randn(X.shape[1]) * self.confounding_strength
-        Y = X @ gamma
-
-        # Add polynomial confounding if requested
-        if self.polynomial_degree >= 2:
-            n_poly = min(3, X.shape[1])
-            for i in range(n_poly):
-                Y += 0.5 * self.confounding_strength * (X[:, i] ** 2)
+        Y = self._confounder_signal(X)
 
         # Add treatment effect: Y += τ(X) * T
         Y += true_effect * T

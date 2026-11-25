@@ -172,31 +172,53 @@ class TestOmittedVariableBias:
         assert result.X.shape == (100, 5)  # Only observed
         assert result.X_true.shape == (100, 8)  # Observed + omitted
 
-    def test_omitted_variables_affect_treatment(self):
-        """Test that omitted variables create confounding."""
-        dgp_no_omit = EnhancedDGPGenerator(
-            n=1000,
-            p=5,
-            p_omitted=0,
-            base_effect=2.0,
-            confounding_strength=1.0,
-            random_state=42,
-        )
-        dgp_with_omit = EnhancedDGPGenerator(
-            n=1000,
-            p=5,
-            p_omitted=3,
-            omitted_var_strength=2.0,
-            base_effect=2.0,
-            confounding_strength=1.0,
-            random_state=42,
-        )
+    def test_omitted_strength_changes_only_omitted_signal(self):
+        from scipy.special import logit
 
-        result_no_omit = dgp_no_omit.generate()
-        result_with_omit = dgp_with_omit.generate()
+        args = {"n": 200, "p": 2, "p_omitted": 1, "base_effect": 2.0, "random_state": 23}
+        zero, one, two = [
+            EnhancedDGPGenerator(**args, omitted_var_strength=k).generate() for k in (0, 1, 2)
+        ]
+        for draw in (one, two):
+            np.testing.assert_array_equal(draw.X_true, zero.X_true)
+        # With a linear signal the change per unit strength is proportional to the
+        # *omitted* covariate in both equations. Strip off the realized treatment.
+        u = zero.X_true[:, -1]
+        for values in (
+            [logit(d.propensity_score) for d in (zero, one, two)],
+            [d.Y - d.true_effect * d.T for d in (zero, one, two)],
+        ):
+            slope = (values[1] - values[0]) @ u / (u @ u)
+            assert abs(slope) > 0.05
+            np.testing.assert_allclose(values[1] - values[0], slope * u, atol=1e-12)
+            np.testing.assert_allclose(values[2] - values[0], 2 * slope * u, atol=1e-12)
 
-        # Outcomes should differ due to omitted variable confounding
-        assert not np.array_equal(result_no_omit.Y, result_with_omit.Y)
+    def test_cubic_increment_matches_generating_equations(self):
+        from scipy.special import logit
+
+        args = {
+            "n": 100,
+            "p": 2,
+            "p_omitted": 1,
+            "omitted_var_strength": 0,
+            "base_effect": 2.0,
+            "random_state": 23,
+        }
+        quad, cubic = [EnhancedDGPGenerator(**args, polynomial_degree=k).generate() for k in (2, 3)]
+        extra = 0.5 * (quad.X**3).sum(axis=1)
+        np.testing.assert_allclose(
+            logit(cubic.propensity_score) - logit(quad.propensity_score), extra, atol=1e-8
+        )
+        np.testing.assert_allclose((cubic.Y - 2 * cubic.T) - (quad.Y - 2 * quad.T), extra)
+
+    def test_measurement_error_preserves_latent_draws_across_repetitions(self):
+        args = {"n": 100, "p": 2, "p_omitted": 1, "base_effect": 2.0, "random_state": 23}
+        clean, noisy = [EnhancedDGPGenerator(**args, measurement_error_std=sd) for sd in (0, 0.5)]
+        for _ in range(2):
+            a, b = clean.generate(), noisy.generate()
+            for key in ("X_true", "T", "Y", "propensity_score"):
+                np.testing.assert_array_equal(getattr(a, key), getattr(b, key))
+            assert not np.array_equal(a.X, b.X)
 
 
 class TestMeasurementError:

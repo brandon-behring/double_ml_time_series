@@ -18,6 +18,8 @@ from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.linalg import solve_discrete_lyapunov
+from scipy.special import expit
 
 
 @dataclass
@@ -201,15 +203,26 @@ class TimeSeriesDGPGenerator:
             self.treatment_ar_coefs = self._generate_stable_ar_coefs(treatment_ar_order)
 
         # The confounder VAR(1) innovation variance is 1 - rho**2, floored to 0.01 in
-        # _generate_var_confounders. Near a unit root the floor binds, so the generated
-        # persistence no longer matches the requested coefficient -- warn rather than
-        # silently fabricate a different process.
+        # _generate_var_confounders. The floor changes marginal variance near a unit root.
         if 1.0 - confounder_var_coef**2 < 0.01:
             warnings.warn(
                 f"confounder_var_coef={confounder_var_coef} is near unit-root: the "
                 f"VAR(1) innovation variance ({1.0 - confounder_var_coef**2:.4g}) is "
-                "floored to 0.01, so the generated confounder persistence will not match "
-                "the requested coefficient.",
+                "floored to 0.01, so the stationary marginal variance exceeds one.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+
+        # The AR(1) error innovation variance is noise_level**2 * (1 - error_ar_coef**2),
+        # floored to 0.01 in _generate_ar1_errors. Because it is scaled by noise_level**2
+        # the floor binds for *moderate* error_ar_coef when noise_level is small (not only
+        # near a unit root), silently inflating the error scale -- warn when it binds.
+        error_innovation_var = noise_level**2 * (1.0 - error_ar_coef**2)
+        if error_innovation_var < 0.01:
+            warnings.warn(
+                f"error AR(1) innovation variance ({error_innovation_var:.4g}) is floored "
+                f"to 0.01 (noise_level={noise_level}, error_ar_coef={error_ar_coef}): the "
+                "generated error scale/persistence will not match the requested parameters.",
                 RuntimeWarning,
                 stacklevel=2,
             )
@@ -359,12 +372,10 @@ class TimeSeriesDGPGenerator:
         """
         X = np.zeros((n, self.p))
 
-        # Initialize
-        X[0] = self._rng.standard_normal(self.p)
-
         # Generate VAR(1) process (diagonal coefficient matrix)
         innovation_var = 1 - self.confounder_var_coef**2
         innovation_std = np.sqrt(max(innovation_var, 0.01))
+        X[0] = self._rng.standard_normal(self.p) * innovation_std / np.sqrt(innovation_var)
 
         for t in range(1, n):
             innovation = self._rng.standard_normal(self.p) * innovation_std
@@ -394,44 +405,42 @@ class TimeSeriesDGPGenerator:
         # Confounding effect
         beta = self._rng.standard_normal(self.p) * self.confounding_strength * 0.3
 
-        # Generate AR process for treatment
-        T = np.zeros(n)
-
-        # Burn-in period
-        burn_in = max(ar_order + 10, 50)
-        T_extended = np.zeros(n + burn_in)
-
-        # Innovation variance (adjusted for stationarity)
-        innovation_var = 0.5
-        innovation_std = np.sqrt(innovation_var)
-
-        for t in range(burn_in, n + burn_in):
-            # AR component
-            ar_component = 0.0
-            for j in range(ar_order):
-                if t - j - 1 >= 0:
-                    ar_component += self.treatment_ar_coefs[j] * T_extended[t - j - 1]
-
-            # Confounder component (use X at corresponding time)
-            t_actual = t - burn_in
-            if 0 <= t_actual < n:
-                conf_component = X[t_actual] @ beta
-            else:
-                conf_component = 0.0
-
-            # Innovation
-            innovation = self._rng.standard_normal() * innovation_std
-
-            # Combine
-            T_extended[t] = ar_component + conf_component + unit_effect + innovation
-
-        # Extract non-burn-in portion
-        T = T_extended[burn_in:]
-
-        # Convert to binary if needed
+        signal = X @ beta
+        innovations = self._rng.standard_normal(n) * np.sqrt(0.5)
+        if ar_order:
+            # Joint stationary state (T_t, ..., T_{t-p+1}, X_t @ beta). The final
+            # coordinate is AR(1) because all X coordinates share the same rho.
+            rho = self.confounder_var_coef
+            transition = np.zeros((ar_order + 1, ar_order + 1))
+            transition[0, :ar_order] = self.treatment_ar_coefs
+            transition[1:ar_order, : ar_order - 1] = np.eye(ar_order - 1)
+            transition[0, -1] = transition[-1, -1] = rho
+            cov_noise = np.zeros_like(transition)
+            signal_noise = max(1 - rho**2, 0.01) * float(beta @ beta)
+            cov_noise[0, 0] = 0.5 + signal_noise
+            cov_noise[0, -1] = cov_noise[-1, 0] = cov_noise[-1, -1] = signal_noise
+            cov = solve_discrete_lyapunov(transition, cov_noise)
+            # Condition the initial treatment lags on the first generated covariate.
+            mean = np.full(ar_order, unit_effect / (1 - self.treatment_ar_coefs.sum()))
+            lag_cov = cov[:-1, :-1]
+            if signal_noise > 0:
+                loading = cov[:-1, -1] / cov[-1, -1]
+                mean += loading * signal[0]
+                lag_cov = lag_cov - np.outer(loading, cov[-1, :-1])
+            initial = self._rng.multivariate_normal(mean, (lag_cov + lag_cov.T) / 2)
+            history = np.empty(n + ar_order - 1)
+            history[:ar_order] = initial[::-1]
+            for t in range(1, n):
+                last = t + ar_order - 1
+                past = history[t - 1 : last][::-1]
+                history[last] = (
+                    self.treatment_ar_coefs @ past + unit_effect + signal[t] + innovations[t]
+                )
+            T = history[ar_order - 1 :]
+        else:
+            T = unit_effect + signal + innovations
         if self.treatment_type == "binary":
-            propensity = 1 / (1 + np.exp(-T))
-            T = (self._rng.random(n) < propensity).astype(float)
+            T = (self._rng.random(n) < expit(T)).astype(float)
 
         return T
 
