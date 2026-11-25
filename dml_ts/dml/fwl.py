@@ -52,6 +52,7 @@ from numpy.typing import NDArray
 from temporalcv import coverage_in_unit, finite_se
 
 from ._results import ResultBase
+from ._utils import is_numerically_constant, theta_via_fwl
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -168,7 +169,7 @@ def fwl_residualize(
         # Use a SCALE-INVARIANT rank check (matrix_rank's relative tolerance) so
         # genuinely collinear controls raise loudly while a merely scale-disparate
         # but full-rank design is accepted (method="ols" is rank-safe regardless).
-        if np.linalg.matrix_rank(X) < X.shape[1]:
+        if X.shape[1] and np.linalg.matrix_rank(X) < X.shape[1]:
             raise ValueError(
                 "Rank-deficient control matrix X (collinear columns) in QR "
                 "residualization: the FWL residuals are undefined. De-collinearize "
@@ -186,7 +187,7 @@ def fwl_residualize(
     # Compute R²
     ss_tot = np.sum((Y - Y.mean()) ** 2)
     ss_res = np.sum(residuals**2)
-    r_squared = 1 - ss_res / ss_tot if ss_tot > 1e-10 else 0.0
+    r_squared = 0.0 if is_numerically_constant(Y) else 1 - ss_res / ss_tot
 
     return residuals, r_squared
 
@@ -230,6 +231,7 @@ def fwl_estimate(
 
     The standard error is computed assuming homoskedasticity:
     SE(θ̂) = σ̂ / √(Σ T̃ᵢ²) where σ̂² = Σ(Ỹᵢ - θ̂T̃ᵢ)² / (n - k - 1).
+    Here k is the rank of the controls, including the intercept if supplied.
 
     For heteroskedasticity-robust SEs, use HC0/HC1/HC3 variants (not implemented
     here; see DML module for HAC inference).
@@ -262,8 +264,6 @@ def fwl_estimate(
     if add_intercept:
         X = np.column_stack([np.ones(n), X])
 
-    p = X.shape[1]  # Number of control variables (including intercept)
-
     # Step 1: Residualize Y on X
     Y_tilde, r2_Y = fwl_residualize(Y, X, method=method)
 
@@ -272,21 +272,22 @@ def fwl_estimate(
 
     # Step 3: Regress Ỹ on T̃
     # θ̂ = (T̃'T̃)⁻¹T̃'Ỹ = Cov(T̃,Ỹ) / Var(T̃) since both have mean 0
-    T_tilde_sq_sum = np.sum(T_tilde**2)
-
-    if T_tilde_sq_sum < 1e-10:
-        raise ValueError(
+    theta, T_tilde_sq_sum = theta_via_fwl(
+        Y_tilde,
+        T_tilde,
+        treatment=T,
+        no_variation_msg=(
             "Treatment has no variation after controlling for X. "
             "This indicates perfect collinearity between T and X."
-        )
-
-    theta = np.sum(T_tilde * Y_tilde) / T_tilde_sq_sum
+        ),
+    )
 
     # Step 4: Compute standard error (homoskedastic)
     # Residuals from final regression
     final_residuals = Y_tilde - theta * T_tilde
 
     # Degrees of freedom: n - (p controls) - 1 (treatment)
+    p = np.linalg.matrix_rank(X) if method == "ols" and X.shape[1] else X.shape[1]
     df = n - p - 1
 
     if df <= 0:
