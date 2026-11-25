@@ -62,6 +62,13 @@ are the compatibility contract).
   a slope of order 1e-16 and `double_ml` returned 0.0005, `robinson_estimator` returned -0.002
   with a standard error of 0.004, and `RollingWindowDML` returned no window. The input is
   refused, not flattened; pass `T.ravel()`. (#72)
+- Series-mode `DynamicGEstimationDML` checks every treatment lag for residual variation before
+  it solves for the lag effects, with the bound the other estimators use, and reports linearly
+  dependent lags as a `ValueError` that names the treatment Gram matrix. Before, a treatment
+  that the controls reproduce exactly gave a lag-0 effect of order 1e13 to 1e15 under the linear
+  learner, and a constant treatment ended in `LinAlgError: Singular matrix`. Not covered: a
+  ridge learner reproduces such a treatment only up to its shrinkage, which is far above the
+  bound, so that fit still returns an estimate. (#42)
 
 ## [1.1.4] - 2026-06-14
 

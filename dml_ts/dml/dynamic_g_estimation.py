@@ -60,7 +60,12 @@ from temporalcv import (
 )
 
 from ._results import ResultBase
-from ._utils import is_numerically_constant, predict_conditional_mean, theta_via_fwl
+from ._utils import (
+    is_numerically_constant,
+    no_variation_tolerance,
+    predict_conditional_mean,
+    theta_via_fwl,
+)
 
 ArrayLike: TypeAlias = np.ndarray | list[float]
 ModelSpec: TypeAlias = str | BaseEstimator
@@ -333,7 +338,9 @@ class DynamicGEstimationDML:
 
         Raises:
             ValueError: On inconsistent shapes, ragged or non-contiguous panels, or
-                missing ``groups`` for the panel mode.
+                missing ``groups`` for the panel mode; when a treatment (a panel
+                period or a series lag) has no residual variation; and in series
+                mode when the residualized lags are linearly dependent.
         """
         Y = np.asarray(Y, dtype=float).ravel()
         T = np.asarray(T, dtype=float).ravel()
@@ -498,15 +505,37 @@ class DynamicGEstimationDML:
             raise ValueError("Non-finite nuisance residuals on scored series rows.")
         lk = Ttil.shape[0]
 
+        # A lag whose residuals are rounding residue leaves the Gram system solvable
+        # with a slope of order 1/eps, so each lag is checked against the bound the
+        # other estimators use before anything is solved.
+        Tlag_scored = Tlag[keep]
+        for k in range(m):
+            residual_norm = float(np.linalg.norm(Ttil[:, k]))
+            tolerance = no_variation_tolerance(Tlag_scored[:, k])
+            if residual_norm <= tolerance:
+                raise ValueError(
+                    f"No residual treatment variation at period {k} (weak/colinear treatment). "
+                    f"(norm of the treatment residuals {residual_norm:.3g} "
+                    f"<= bound {tolerance:.3g})"
+                )
+
         gram = Ttil.T @ Ttil
-        theta = np.linalg.solve(gram, Ttil.T @ Ytil)
+        _warn_if_ill_conditioned(gram, "series treatment Gram")
+        try:
+            theta = np.linalg.solve(gram, Ttil.T @ Ytil)
+        except np.linalg.LinAlgError as exc:
+            # Each lag varies, but the lags are linearly dependent among themselves.
+            raise ValueError(
+                "The series treatment Gram matrix is singular: the residualized treatment "
+                f"lags are linearly dependent, so the {m} lag effects are not separately "
+                "identified."
+            ) from exc
 
         # HAC sandwich: scores s_t = Ttil_t (Ytil_t - Ttil_t . theta); bread = (gram/Lk)^{-1}.
         resid_full = Ytil - Ttil @ theta
         scores = Ttil * resid_full[:, None]  # (Lk, m)
         bw = optimal_bandwidth(resid_full, method="newey_west")
         s_hac = _bartlett_long_run_cov(scores, bw)
-        _warn_if_ill_conditioned(gram, "series treatment Gram")
         bread = np.linalg.inv(gram / lk)
         cov = (bread @ s_hac @ bread.T) / lk
 
