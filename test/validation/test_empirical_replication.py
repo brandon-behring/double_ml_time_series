@@ -51,18 +51,75 @@ class TestFourZeroOneKReplicationBasicFunctionality:
 
     def test_published_ates_constants(self):
         """Test that published ATE constants are defined correctly."""
-        assert FourZeroOneKReplication.PUBLISHED_ATES["PLR_RF"] == 9127.0
-        assert FourZeroOneKReplication.PUBLISHED_ATES["PLR_Lasso"] == 9580.0
+        assert FourZeroOneKReplication.PUBLISHED_ATES["PLR_RF"] == 9247.0
+        assert FourZeroOneKReplication.PUBLISHED_ATES["PLR_Lasso"] == 8187.0
         # IRM_RF removed — IRM replication deferred (see Appendix A)
         assert "IRM_RF" not in FourZeroOneKReplication.PUBLISHED_ATES
+
+
+@pytest.mark.tier1
+@pytest.mark.parametrize("treatment", ["e401", "p401"])
+@pytest.mark.parametrize(
+    "method,target", [("replicate_plr_rf", 9247), ("replicate_plr_lasso", 8187)]
+)
+def test_mean_inference_and_benchmark_scope(monkeypatch, method, target, treatment):
+    import sys
+    from types import SimpleNamespace
+
+    import pandas as pd
+
+    sample = pd.DataFrame(
+        {
+            "net_tfa": [10.0, 20.0, 30.0],
+            "e401": [0, 1, 1],
+            "p401": [0, 0, 1],
+            "age": [45, 51, 47],
+        }
+    )
+    replicator = FourZeroOneKReplication(random_state=42, tolerance=0)
+    monkeypatch.setattr(replicator, "load_data", lambda: sample)
+
+    class FittedModel:
+        def __init__(self, **kwargs):
+            assert kwargs["cv"] == 5
+            assert kwargs["discrete_treatment"] is True
+
+        def fit(self, Y, T, X):
+            np.testing.assert_array_equal(T, sample[treatment].to_numpy())
+            np.testing.assert_array_equal(X, sample[["age"]].to_numpy())
+
+        def ate_inference(self, X):
+            return SimpleNamespace(
+                mean_point=target,
+                stderr_mean=125.0,
+                conf_int_mean=lambda *, alpha: (target - 245.0, target + 245.0),
+            )
+
+    monkeypatch.setitem(sys.modules, "econml.dml", SimpleNamespace(LinearDML=FittedModel))
+    result = getattr(replicator, method)(treatment=treatment)
+    assert result.ate_estimate == target
+    assert result.std_error == 125.0
+    assert (result.ci_lower, result.ci_upper) == (target - 245.0, target + 245.0)
+    assert result.p_value is None
+    assert result.metadata["control_columns"] == ["age"]
+    assert result.metadata["n_partitions"] == 1
+    if treatment == "e401":
+        assert result.published_ate == target
+        assert result.difference == result.rel_difference == 0
+        assert result.status == "WITHIN_TOLERANCE"
+        assert "Panel B" in result.metadata["benchmark"]
+    else:
+        assert result.published_ate is result.difference is result.rel_difference is None
+        assert result.status == "NO_BENCHMARK"
+        assert result.metadata["benchmark"] is None
 
 
 @pytest.mark.tier2
 class TestFourZeroOneKReplicationDataLoading:
     """Test data loading functionality."""
 
-    def test_load_data_from_doubleml(self):
-        """Test loading data from doubleml package."""
+    def test_load_local_sipp_fixture(self):
+        """Load the checked-in SIPP sample."""
         replicator = FourZeroOneKReplication(data_path="test/fixtures/401k_data.csv")
         df = replicator.load_data()
 
@@ -104,7 +161,7 @@ class TestFourZeroOneKReplicationPreprocessing:
         assert Y.shape == (9915,)
         assert T.shape == (9915,)
         assert X.shape[0] == 9915
-        assert X.shape[1] == 11  # 11 control variables (C5 fix: includes all covariates)
+        assert X.shape[1] == 11  # Nine published controls plus nifa and tw.
 
     def test_preprocess_data_with_p401(self):
         """Test preprocessing with p401 (participation) treatment."""
@@ -155,14 +212,14 @@ class TestFourZeroOneKReplicationPLRRandomForest:
 
         assert isinstance(result, ReplicationResult)
         assert result.method == "PLR_RF"
-        assert result.published_ate == 9127.0
+        assert result.published_ate == 9247.0
 
     def test_replicate_plr_rf_ate_in_reasonable_range(self):
         """Test that ATE estimate is in reasonable range."""
         replicator = FourZeroOneKReplication(random_state=42)
         result = replicator.replicate_plr_rf()
 
-        # Published estimate: $9,127
+        # Companion single-split smoke-test range
         # Allow ±50% range (very generous for first test)
         assert 4500 <= result.ate_estimate <= 14000
 
@@ -207,7 +264,7 @@ class TestFourZeroOneKReplicationPLRRandomForest:
 
         assert result.metadata["treatment"] == "e401"
         assert result.metadata["n_obs"] == 9915
-        assert result.metadata["n_controls"] == 11  # 11 controls (C5 fix: includes all covariates)
+        assert result.metadata["n_controls"] == 11
 
 
 @pytest.mark.tier4
@@ -223,14 +280,14 @@ class TestFourZeroOneKReplicationPLRLasso:
 
         assert isinstance(result, ReplicationResult)
         assert result.method == "PLR_Lasso"
-        assert result.published_ate == 9580.0
+        assert result.published_ate == 8187.0
 
     def test_replicate_plr_lasso_ate_in_reasonable_range(self):
         """Test that ATE estimate is in reasonable range."""
         replicator = FourZeroOneKReplication(random_state=42)
         result = replicator.replicate_plr_lasso()
 
-        # Published estimate: $9,580
+        # Companion single-split smoke-test range
         # Allow ±50% range
         assert 4500 <= result.ate_estimate <= 14500
 
@@ -250,23 +307,20 @@ class TestFourZeroOneKReplicationComparison:
     """Test comparison with published results."""
 
     def test_status_match_when_within_tolerance(self):
-        """Test MATCH status when estimate within tolerance."""
+        """The relative gap is within the wider descriptive cutoff."""
         replicator = FourZeroOneKReplication(random_state=42, tolerance=0.50)  # Very generous
         result = replicator.replicate_plr_rf()
 
-        # With 50% tolerance, should almost certainly match
-        assert result.status == "MATCH"
+        assert abs(result.rel_difference) <= 0.50
+        assert result.status == "WITHIN_TOLERANCE"
 
     def test_status_mismatch_when_exceeds_tolerance(self):
-        """Test MISMATCH status when estimate exceeds tolerance."""
+        """Report a relative gap outside the narrower descriptive cutoff."""
         replicator = FourZeroOneKReplication(random_state=42, tolerance=0.01)  # Very strict
         result = replicator.replicate_plr_rf()
 
-        # With 1% tolerance, likely to mismatch (unless very lucky)
-        # This test might occasionally fail due to random variation
-        # If estimate happens to be exactly right, that's actually good!
-        if abs(result.rel_difference) > 0.01:
-            assert result.status == "MISMATCH"
+        assert abs(result.rel_difference) > 0.01
+        assert result.status == "OUTSIDE_TOLERANCE"
 
     def test_difference_calculation(self):
         """Test that difference is calculated correctly."""
@@ -286,12 +340,12 @@ class TestFourZeroOneKReplicationComparison:
         expected_rel_diff = result.difference / result.published_ate
         assert np.isclose(result.rel_difference, expected_rel_diff)
 
-    def test_p_value_is_valid_probability(self):
-        """Test that p-value is between 0 and 1."""
+    def test_same_sample_gap_has_no_p_value(self):
+        """Inference for one estimate cannot test a difference from a same-sample estimate."""
         replicator = FourZeroOneKReplication(random_state=42)
         result = replicator.replicate_plr_rf()
 
-        assert 0 <= result.p_value <= 1
+        assert result.p_value is None
 
 
 @pytest.mark.tier4
@@ -350,6 +404,12 @@ class TestFourZeroOneKReplicationEdgeCases:
         result_p401 = replicator2.replicate_plr_rf(treatment="p401")
         assert isinstance(result_p401, ReplicationResult)
 
+        assert result_p401.status == "NO_BENCHMARK"
+        assert result_p401.published_ate is None
+        assert result_p401.difference is None
+        assert result_p401.rel_difference is None
+        assert result_p401.p_value is None
+
         # Estimates should differ (different treatments)
         assert result_e401.ate_estimate != result_p401.ate_estimate
 
@@ -403,8 +463,8 @@ class TestFourZeroOneKReplicationIntegration:
         assert result_lasso.method == "PLR_Lasso"
 
         # Both should produce valid results
-        assert result_rf.status in ["MATCH", "MISMATCH"]
-        assert result_lasso.status in ["MATCH", "MISMATCH"]
+        assert result_rf.status in ["WITHIN_TOLERANCE", "OUTSIDE_TOLERANCE"]
+        assert result_lasso.status in ["WITHIN_TOLERANCE", "OUTSIDE_TOLERANCE"]
 
     def test_comparison_across_methods(self):
         """Test that different methods produce different estimates."""
@@ -419,5 +479,5 @@ class TestFourZeroOneKReplicationIntegration:
         assert result_rf.published_ate != result_lasso.published_ate
 
         # Both should target published estimates
-        assert result_rf.published_ate == 9127.0
-        assert result_lasso.published_ate == 9580.0
+        assert result_rf.published_ate == 9247.0
+        assert result_lasso.published_ate == 8187.0

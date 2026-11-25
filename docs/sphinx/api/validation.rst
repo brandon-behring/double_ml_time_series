@@ -183,8 +183,11 @@ treatment effects, misspecification scenarios, and propensity extremeness.
 Empirical Replication (``dml_ts.validation.empirical_replication``)
 -------------------------------------------------------------------
 
-Empirical replication of the Chernozhukov et al. (2018) 401(k) DML analysis,
-for real-data validation of the implementation.
+The companion fits a mean effect of 401(k) eligibility on net financial assets
+using one fivefold split. It reports descriptive differences from the published
+fivefold forest and rigorous-lasso estimates in Table 2, Panel B. The paper
+uses a constant slope and the median across 100 sample partitions. Table 3
+uses eligibility as an instrument to estimate a participation effect for compliers.
 
 .. automodule:: dml_ts.validation.empirical_replication
    :members:
@@ -196,9 +199,9 @@ for real-data validation of the implementation.
 Lasso Diagnostic (``dml_ts.validation.lasso_diagnostic``)
 ---------------------------------------------------------
 
-Diagnostic tooling investigating the 401(k) Lasso ATE mismatch against
-published results (bootstrap convergence, seed sensitivity, hyperparameter
-analysis).
+Diagnostics for the companion lasso estimate of the eligibility effect. These
+measure how the estimate varies with observation resampling, the random split
+and nuisance-learner settings.
 
 .. automodule:: dml_ts.validation.lasso_diagnostic
    :members:
