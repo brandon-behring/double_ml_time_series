@@ -1,17 +1,4 @@
-"""
-Execute comprehensive Lasso diagnostic for 401(k) mismatch investigation.
-
-Days 2-4 of comprehensive remediation plan: Diagnose why Lasso ATE
-is -44.4% different from published estimate.
-
-Problem:
-    - Published ATE: $9,580
-    - Our ATE: $5,330 (-44.4% difference)
-    - SE: $6,930 (130% of point estimate!)
-    - CI: $-8,253 to $18,913 (spans $27,167)
-
-This script runs all diagnostic analyses and generates a comprehensive report.
-"""
+"""Inspect bootstrap, tuning and split variability for the repository's 401(k) eligibility fit."""
 
 import sys
 from pathlib import Path
@@ -26,17 +13,14 @@ def main():
     """Run comprehensive Lasso diagnostic and display results."""
     print("=" * 80)
     print("401(k) LASSO DIAGNOSTIC ANALYSIS")
-    print("DAYS 2-4: Investigating -44.4% Mismatch")
+    print("Net financial assets, eligibility, and 11 effect modifiers")
     print("=" * 80)
     print()
-    print("This diagnostic will take approximately 30-45 minutes due to:")
-    print("  - 1000 bootstrap samples (~20 minutes)")
-    print("  - Hyperparameter sensitivity analysis (~15 minutes)")
-    print("  - Cross-fitting seed sensitivity (~10 minutes)")
-    print()
-
-    # Initialize diagnostic
-    diagnostic = LassoDiagnostic(random_state=42, verbose=True)
+    print(
+        "Resampling observations and varying fold assignments measure different sources of variation."
+    )
+    fixture = Path(__file__).resolve().parents[1] / "test/fixtures/401k_data.csv"
+    diagnostic = LassoDiagnostic(data_path=str(fixture), random_state=42, verbose=True)
 
     # Run comprehensive analysis
     results = diagnostic.run_comprehensive_diagnostic(
@@ -51,15 +35,19 @@ def main():
     print()
 
     # Bootstrap results
+    fold_description = "All bootstrap copies of a household inherit its fixed original fold."
     boot = results.bootstrap_diagnostic
     print("BOOTSTRAP DISTRIBUTION:")
-    print(f"  Mean ATE: ${boot.mean_ate:,.2f} ± ${boot.std_ate:,.2f}")
-    print(f"  95% CI: (${boot.ci_lower:,.2f}, ${boot.ci_upper:,.2f})")
-    print(f"  Normality: {'PASS' if boot.is_normal else 'FAIL'} (p={boot.normality_pvalue:.4f})")
+    print(f"  {fold_description}")
+    print(f"  Mean ATE: ${boot.mean_ate:,.2f} (bootstrap SD ${boot.std_ate:,.2f})")
     print(
-        f"  Outliers: {boot.n_outliers}/{boot.n_bootstrap} ({100*boot.n_outliers/boot.n_bootstrap:.1f}%)"
+        f"  95% pairs-bootstrap percentile interval: (${boot.ci_lower:,.2f}, ${boot.ci_upper:,.2f})"
     )
-    print(f"  Converged: {'YES' if boot.converged else 'NO'}")
+    print(f"  Shapiro-Wilk p: {boot.normality_pvalue:.4f}")
+    print(
+        f"  Outliers: {boot.n_outliers}/{boot.n_bootstrap} ({100 * boot.n_outliers / boot.n_bootstrap:.1f}%)"
+    )
+    print(f"  CV of last 100 cumulative bootstrap means: {boot.metadata['cv_running_mean']:.2%}")
     print()
 
     # Hyperparameter sensitivity
@@ -69,7 +57,7 @@ def main():
         print(
             f"    Sensitivity: {param_result.sensitivity_score:.3f} ({'HIGH' if param_result.is_sensitive else 'LOW'})"
         )
-        print(f"    Recommended: {param_result.recommended_value}")
+        print(f"    Value with smallest fitted ATE SE: {param_result.recommended_value}")
         print(
             f"    ATE Range: ${param_result.metadata['min_ate']:,.2f} to ${param_result.metadata['max_ate']:,.2f}"
         )
@@ -78,13 +66,13 @@ def main():
     # Seed sensitivity
     seed = results.seed_sensitivity
     print("CROSS-FITTING SEED SENSITIVITY:")
-    print(f"  Mean ATE: ${seed.mean_ate:,.2f} ± ${seed.std_ate:,.2f}")
+    print(f"  Mean ATE: ${seed.mean_ate:,.2f} (SD across partitions ${seed.std_ate:,.2f})")
     print(f"  Range: ${seed.min_ate:,.2f} to ${seed.max_ate:,.2f} (span: ${seed.range_ate:,.2f})")
     print(f"  CV: {seed.cv_ate:.3f} ({'STABLE' if seed.is_stable else 'UNSTABLE'})")
     print()
 
-    # Root cause
-    print("ROOT CAUSE ANALYSIS:")
+    # Diagnostic findings
+    print("DIAGNOSTIC FINDINGS")
     print(f"  {results.root_cause_analysis}")
     print()
 
@@ -109,30 +97,33 @@ def main():
         f.write(f"Timestamp: {results.timestamp}\n\n")
 
         f.write("BOOTSTRAP DISTRIBUTION:\n")
-        f.write(f"  Mean ATE: ${boot.mean_ate:,.2f} ± ${boot.std_ate:,.2f}\n")
-        f.write(f"  95% CI: (${boot.ci_lower:,.2f}, ${boot.ci_upper:,.2f})\n")
+        f.write(f"  {fold_description}\n")
+        f.write(f"  Mean ATE: ${boot.mean_ate:,.2f} (bootstrap SD ${boot.std_ate:,.2f})\n")
         f.write(
-            f"  Normality: {'PASS' if boot.is_normal else 'FAIL'} (p={boot.normality_pvalue:.4f})\n"
+            f"  95% pairs-bootstrap percentile interval: (${boot.ci_lower:,.2f}, ${boot.ci_upper:,.2f})\n"
         )
+        f.write(f"  Shapiro-Wilk p: {boot.normality_pvalue:.4f}\n")
         f.write(f"  Outliers: {boot.n_outliers}/{boot.n_bootstrap}\n")
-        f.write(f"  Converged: {'YES' if boot.converged else 'NO'}\n\n")
+        f.write(
+            f"  CV of last 100 cumulative bootstrap means: {boot.metadata['cv_running_mean']:.2%}\n\n"
+        )
 
         f.write("HYPERPARAMETER SENSITIVITY:\n")
         for param_name, param_result in results.hyperparameter_sensitivity.items():
             f.write(f"  {param_name}:\n")
             f.write(f"    Sensitivity: {param_result.sensitivity_score:.3f}\n")
-            f.write(f"    Recommended: {param_result.recommended_value}\n")
+            f.write(f"    Value with smallest fitted ATE SE: {param_result.recommended_value}\n")
             f.write(
                 f"    ATE Range: ${param_result.metadata['min_ate']:,.2f} to ${param_result.metadata['max_ate']:,.2f}\n"
             )
         f.write("\n")
 
         f.write("SEED SENSITIVITY:\n")
-        f.write(f"  Mean ATE: ${seed.mean_ate:,.2f} ± ${seed.std_ate:,.2f}\n")
+        f.write(f"  Mean ATE: ${seed.mean_ate:,.2f} (SD across partitions ${seed.std_ate:,.2f})\n")
         f.write(f"  Range: ${seed.min_ate:,.2f} to ${seed.max_ate:,.2f}\n")
         f.write(f"  CV: {seed.cv_ate:.3f}\n\n")
 
-        f.write("ROOT CAUSE ANALYSIS:\n")
+        f.write("DIAGNOSTIC FINDINGS\n")
         f.write(f"  {results.root_cause_analysis}\n\n")
 
         f.write("RECOMMENDATIONS:\n")
