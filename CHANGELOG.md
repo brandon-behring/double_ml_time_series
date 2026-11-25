@@ -43,8 +43,13 @@ are the compatibility contract).
   test the DML validator uses, and their status is the worse of the bias and coverage verdicts.
   They classified the bias p-value alone, so `OLSWithControls.validate()` returned PASS with 76%
   of its 95% intervals covering the truth, and `NaiveOLS` with 34%. Their bias verdict follows
-  the DML validator's rule as well: FAIL needs a bias above 0.15, or of at least 0.1 with a
-  rejection at the 1% level, and a significant smaller bias is a WARNING. (#41)
+  the DML validator's rule as well: FAIL needs a bias above 0.15 (with no test), or of at least
+  0.1 with a rejection at the 1% level; any other rejection at the 5% level is a WARNING.
+  `OLSWithControls` now fails wherever it is run, because its standard error leaves out the
+  fitted intercept (#61, not repaired here). The forest and XGBoost baselines report bias, MSE
+  and coverage for the simulations that had both treatment arms, and warn when they leave one
+  out. A simulation without noise, whose errors are at the rounding level of the true effect,
+  is refused instead of judged. (#41)
 - The 401(k) comparison uses the fivefold Table 2B eligibility benchmarks and
   reports uncertainty for the mean fitted effect. Its status records whether a
   descriptive gap meets the caller's tolerance. Direct participation fits have
@@ -58,7 +63,9 @@ are the compatibility contract).
   distribution of the treatment and the confounder signal, and warns when the error
   innovation variance is floored. `EnhancedDGPGenerator` applies `omitted_var_strength` and
   `polynomial_degree` as documented and draws measurement noise last, so runs that differ only
-  in `measurement_error_std` share their latent draws.
+  in `measurement_error_std` share their latent draws. `omitted_var_strength` was ignored
+  before and defaults to 0, so `p_omitted > 0` without it now gives covariates that confound
+  nothing; the generator warns in that case.
 - The "no treatment variation" check is relative to the size of the treatment. `fwl_estimate`,
   `robinson_estimator`, `double_ml`, `TemporalPLRDML` and panel-mode `DynamicGEstimationDML`
   raise when the norm of the treatment residuals is at most the larger of two bounds:

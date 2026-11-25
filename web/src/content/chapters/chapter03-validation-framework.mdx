@@ -9,7 +9,7 @@ description: "A seven-method validation battery on synthetic DGPs with known gro
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_03.tex
-source_sha256: 1ef2dbd101fd7f273c0e46e7bae5b3d075914366a873a36bffee928a8871747d
+source_sha256: 4384ef88ea885afe1bc96eecfbf7816af7919275ae602f85ebd8fb7a9e54ec3d
 provenance:
   ai_tools:
     - Claude Code
@@ -460,7 +460,7 @@ $$
 
 Under the null, the $t_{R-1}$ reference distribution is exact for independent, identically distributed normal errors with positive variance. With independent, identically distributed errors of finite positive variance, the test is a large-sample approximation. For a time-series estimator, each dataset can be an entire independently generated series. Bootstrap resampling of the $R$ errors can provide a percentile interval for mean bias. The original $R$ datasets determine the degrees of freedom in the test.
 
-The OLS, weighting and ML baselines and the DML validator share one rule. The two-sided bias test and an exact binomial test of coverage are corrected together, by Bonferroni by default, and each validator reports separate bias and coverage verdicts. The bias verdict is FAIL when the absolute bias exceeds 0.15, or is at least 0.1 with a rejection at the 1% level, and WARNING for a rejection at the 5% level without that size. Report $\bar b$ and its Monte Carlo standard error alongside the label so readers can judge which biases the experiment could detect. Significant undercoverage gives FAIL and significant overcoverage gives WARNING. The overall verdict takes the more severe of the two, so small mean bias can coexist with a failed interval.
+The OLS, weighting and ML baselines and the DML validator share one rule. The two-sided bias test and an exact binomial test of coverage are corrected together, by Bonferroni by default, and each validator reports separate bias and coverage verdicts. The bias verdict is FAIL when the absolute bias exceeds 0.15, or is at least 0.1 with a rejection at the 1% level. Any other rejection at the 5% level is a WARNING. Report $\bar b$ and its Monte Carlo standard error alongside the label so readers can judge which biases the experiment could detect. Significant undercoverage gives FAIL and significant overcoverage gives WARNING. The overall verdict takes the more severe of the two, so small mean bias can coexist with a failed interval.
 
 ### Coverage validation
 

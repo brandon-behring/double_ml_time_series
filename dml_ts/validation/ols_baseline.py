@@ -178,6 +178,12 @@ class OLSWithControls:
     Standard econometrics approach that controls for observed confounders.
     Should have less bias than NaiveOLS but more than DML (less efficient).
 
+    Known defect (#61): the standard error is computed from a design matrix
+    without the fitted intercept, so the intervals are too short. ``validate``
+    reports this as a coverage verdict of FAIL even where the model is correct:
+    in Chapter 3's Experiment 3.1 its 95% intervals cover in 69 of 100 datasets,
+    and a reference interval that includes the intercept covers in 91.
+
     Args:
         n_simulations: Number of Monte Carlo simulations
         alpha: Significance level for confidence intervals (default: 0.05)

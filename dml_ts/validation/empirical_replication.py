@@ -149,8 +149,10 @@ class FourZeroOneKReplication:
     ) -> ReplicationResult:
         """Fit a conditional linear effect using cross-validated lasso nuisances.
 
-        The legacy alpha argument is recorded for compatibility. LassoCV and
-        LogisticRegressionCV select their own penalties on their training data.
+        The legacy alpha argument is recorded for compatibility. EconML fits each
+        cross-validated learner (LassoCV, LogisticRegressionCV) once on the whole
+        sample to select its penalty and reuses that penalty in every fold; the
+        penalties are not selected on the training folds.
         """
         from sklearn.linear_model import LassoCV, LogisticRegressionCV
 

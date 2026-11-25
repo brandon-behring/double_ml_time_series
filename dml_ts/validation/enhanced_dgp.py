@@ -11,6 +11,7 @@ Extends basic DGP with:
 Used to test DML performance under assumption violations.
 """
 
+import warnings
 from dataclasses import dataclass
 
 import numpy as np
@@ -137,6 +138,14 @@ class EnhancedDGPGenerator:
             raise ValueError("polynomial_degree must be a positive integer")
         if p_omitted < 0 or not np.isfinite(omitted_var_strength) or omitted_var_strength < 0:
             raise ValueError("p_omitted and omitted_var_strength must be nonnegative")
+        if p_omitted > 0 and omitted_var_strength == 0:
+            warnings.warn(
+                f"p_omitted={p_omitted} with omitted_var_strength=0: the omitted covariates "
+                "enter neither the assignment nor the outcome, so nothing is confounded by "
+                "them. Set omitted_var_strength above 0 for an omitted-variable design.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
         self.n = n
         self.p = p
         self.base_effect = base_effect

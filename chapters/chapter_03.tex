@@ -567,8 +567,8 @@ The OLS, weighting and ML baselines and the DML validator share one rule.
 The two-sided bias test and an exact binomial test of coverage are corrected
 together, by Bonferroni by default, and each validator reports separate bias
 and coverage verdicts. The bias verdict is FAIL when the absolute bias exceeds
-0.15, or is at least 0.1 with a rejection at the 1\% level, and WARNING for a
-rejection at the 5\% level without that size. Report $\bar b$ and its Monte
+0.15, or is at least 0.1 with a rejection at the 1\% level. Any other rejection
+at the 5\% level is a WARNING. Report $\bar b$ and its Monte
 Carlo standard error alongside the label so readers can judge which biases the
 experiment could detect. Significant undercoverage gives FAIL and significant
 overcoverage gives WARNING. The overall verdict takes the more severe of the two, so small mean bias can coexist with a failed interval.

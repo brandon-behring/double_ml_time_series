@@ -8,6 +8,7 @@ Two variants:
 Both use simple outcome regression without propensity score weighting.
 """
 
+import warnings
 from datetime import datetime
 
 import numpy as np
@@ -129,12 +130,19 @@ class RandomForestEstimator:
 
         bias = self._calculate_bias(estimates_arr, dgp.true_effect)
         mse = self._calculate_mse(estimates_arr, dgp.true_effect)
-        coverage = self._calculate_coverage(ci_bounds, dgp.true_effect)
 
-        # A draw with an empty treatment arm has no estimate and no interval. The bias
-        # test leaves it out, so the coverage test is made on the same draws.
+        # A draw with an empty treatment arm has no estimate and no interval. Bias, MSE,
+        # coverage and both tests are reported for the draws that were fitted.
         fitted = [i for i, e in enumerate(estimates) if not np.isnan(e)]
         fitted = fitted or list(range(len(estimates)))
+        if len(fitted) < len(estimates):
+            warnings.warn(
+                f"{len(estimates) - len(fitted)} of {len(estimates)} simulations had an empty "
+                f"treatment arm; bias, MSE and coverage are reported for the other {len(fitted)}.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+        coverage = self._calculate_coverage([ci_bounds[i] for i in fitted], dgp.true_effect)
         verdicts, bias_p_value, coverage_p_value = assess_simulation_draws(
             estimates_arr - dgp.true_effect,
             np.asarray(ci_bounds, dtype=float)[fitted],
@@ -338,12 +346,19 @@ class XGBoostEstimator:
 
         bias = self._calculate_bias(estimates_arr, dgp.true_effect)
         mse = self._calculate_mse(estimates_arr, dgp.true_effect)
-        coverage = self._calculate_coverage(ci_bounds, dgp.true_effect)
 
-        # A draw with an empty treatment arm has no estimate and no interval. The bias
-        # test leaves it out, so the coverage test is made on the same draws.
+        # A draw with an empty treatment arm has no estimate and no interval. Bias, MSE,
+        # coverage and both tests are reported for the draws that were fitted.
         fitted = [i for i, e in enumerate(estimates) if not np.isnan(e)]
         fitted = fitted or list(range(len(estimates)))
+        if len(fitted) < len(estimates):
+            warnings.warn(
+                f"{len(estimates) - len(fitted)} of {len(estimates)} simulations had an empty "
+                f"treatment arm; bias, MSE and coverage are reported for the other {len(fitted)}.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+        coverage = self._calculate_coverage([ci_bounds[i] for i in fitted], dgp.true_effect)
         verdicts, bias_p_value, coverage_p_value = assess_simulation_draws(
             estimates_arr - dgp.true_effect,
             np.asarray(ci_bounds, dtype=float)[fitted],

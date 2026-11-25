@@ -66,6 +66,9 @@ def _corrected_rejections(
 
 Status = Literal["PASS", "WARNING", "FAIL"]
 
+# Simulation errors below sqrt(eps) of the true effect cannot be told from rounding.
+_ROUNDING_RATIO = float(np.sqrt(np.finfo(float).eps))
+
 
 class SimulationVerdicts(NamedTuple):
     bias: Status
@@ -135,9 +138,11 @@ def assess_simulation_draws(
         ``(verdicts, bias_p_value, coverage_p_value)``.
 
     Raises:
-        ValueError: If there is not one error and one interval per draw, if an interval
-            holds a NaN or has its endpoints out of order, or if the bias test is
-            degenerate (see ``bias_p_value``).
+        ValueError: If ``true_effect`` is not finite or ``nominal`` is not in (0, 1); if
+            there is not one error and one interval per draw; if an interval holds a NaN
+            or has its endpoints out of order; if every error is at the rounding level of
+            the true effect (a simulation without noise leaves the tests nothing to judge);
+            or if the bias test is degenerate (see ``bias_p_value``).
 
     Examples:
         Unbiased estimates whose intervals are too short: the bias verdict passes and
@@ -150,11 +155,24 @@ def assess_simulation_draws(
         >>> verdicts.bias, verdicts.coverage, verdicts.overall
         ('PASS', 'FAIL', 'FAIL')
     """
+    if not np.isfinite(true_effect):
+        raise ValueError(f"true_effect must be finite, got {true_effect!r}")
+    if not 0 < nominal < 1:
+        raise ValueError(f"nominal coverage must be in (0, 1), got {nominal!r}")
     errors = np.asarray(simulation_errors, dtype=float)
     bounds = np.asarray(ci_bounds, dtype=float)
     if errors.ndim != 1 or bounds.shape != (errors.size, 2):
         raise ValueError(
             "Expected one simulation error and one confidence interval per independent draw"
+        )
+    # With a noise-free generator an exact estimator leaves errors of order 1e-15. A t-test
+    # and a coverage count on rounding residue fail it, so that case is refused instead.
+    largest = float(np.max(np.abs(errors))) if errors.size else 0.0
+    if true_effect != 0 and largest <= _ROUNDING_RATIO * abs(true_effect):
+        raise ValueError(
+            "Degenerate assessment: every simulation error is at the rounding level of the "
+            f"true effect (largest |error| {largest:.3g}, true effect {true_effect:.6g}). "
+            "The simulation has no noise for the bias and coverage tests to judge."
         )
     p_bias = bias_p_value(errors)
     if np.isnan(bounds).any() or np.any(bounds[:, 0] > bounds[:, 1]):
