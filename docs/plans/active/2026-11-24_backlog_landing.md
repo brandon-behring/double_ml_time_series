@@ -265,7 +265,7 @@ Part 0
 
 Part I (a box is ticked when the pull request is merged and its issues are checked)
 
-- [ ] PR-0 `chore/landing-tooling`
+- [x] PR-0 `chore/landing-tooling` (#67, merged 2026-11-25 as `04b96db`)
 - [ ] PR-A `fix/validation-fail-loud-41a` (#41)
 - [ ] PR-1 `fix/core-numerics-42` (#42)
 - [ ] PR-2 `fix/validation-inference` (#41, #61, #63)
@@ -468,6 +468,51 @@ The rule was fixed before the run. If everything passes, the work continues unch
 fails, each failure is classified (a pinned number that moved, an API change, a timeout) and
 re-run in the locked environment to confirm that drift is the cause; the work then stops for a
 choice between locking CI to `uv.lock` and regenerating the numbers.
+
+### Probe result (2026-11-25)
+
+Run on the exported snapshot (`024708c`, 818 files) with a fresh environment: numpy 2.5.5,
+scikit-learn 1.9.1, statsmodels 0.15.0, temporalcv 2.3.0, econml 0.17.1. The package and the
+namespace packages `docs/` and `scripts/` were imported from the export.
+
+| Stage | Result |
+|---|---|
+| tier1 + tier2 | 1,169 passed, 5 failed, 8 skipped |
+| examples | all ran |
+| doctests | 50 passed, 12 skipped |
+
+The five failures, classified:
+
+- **Two are artifacts of the export, not drift.** `test_documented_example_runs[git_output]` and
+  `[provenance]` in `test/validation/test_mathematical_review_checks.py` call `git rev-parse HEAD`,
+  and the export had no git metadata. With git metadata added, the 72 cases of that test pass
+  under the new versions.
+- **Three are pinned numbers that moved, and scikit-learn is the sole cause.** They pass in the
+  locked environment, and they pass in the probe environment when only scikit-learn is set back
+  to 1.6.1.
+  - `test/integration/test_adversarial_transport.py::test_archived_cricket_separates_effect_estimates_from_yearly_forecasts`:
+    the archived `rmse["dml"]` is 12.5298; scikit-learn 1.9.1 gives 12.4767.
+  - `test/integration/test_prospective_cricket.py::test_historical_freeze_replays_offline_and_power_is_for_separate_ranking`:
+    the hashed issuance does not replay.
+  - `test/validation/test_mathematical_review_checks.py::test_two_seed_replay_matches_archived_draws[refute_f3_trees]`:
+    the replayed errors differ from the archived draws.
+
+All three belong to PR-4. By the rule fixed before the run, slicing beyond PR-1 waits for the
+owner's choice between locking CI to `uv.lock` and regenerating the numbers. PR-A and PR-1 do not
+depend on it: both pass under the new versions. The probe covered tier1 + tier2 only; tier3 and
+tier4 were not run under the new versions.
+
+The logs are in `~/Claude/.backups/double_ml_time_series/gate-logs/probe-2026-11-25/`. The export
+and its environment were removed.
+
+### Other records of 2026-11-25
+
+- The crash repair was carried out as planned; `git fsck --full` reported no error afterwards.
+  The gate script and the hunk filter were restored from the previous session's transcript.
+- The two hook findings (obstacles 4 and 8) were already tracked in `lever_of_archimedes` as
+  #109 and #125. No new issue was filed; this repository's evidence was added to each as a
+  comment.
+- #68 was closed and reopened after PR-0 merged; all six checks pass at `0cca908`.
 
 ### Working rules added
 
