@@ -8,7 +8,41 @@ are the compatibility contract).
 
 ## [Unreleased]
 
-No unreleased changes.
+### Changed
+
+- `RollingWindowDML` fits complete windows of exactly `window_size` consecutive rows. Starts
+  advance by `step_size` from row 0, and the reported center is `start + window_size // 2`.
+  Before, windows were cut around centers: an odd `window_size` gave windows of
+  `window_size - 1` rows, and with an even one the window that ends at the last row was dropped
+  when `n - window_size` is a multiple of `step_size`. `window_size` and `step_size` must be
+  positive integers, and the lengths of `Y`, `T`, `X` and `time_index` are checked. (#42)
+- A classifier passed as a nuisance model supplies its conditional mean through `predict_proba`
+  (numeric class values weighted by their probabilities) in `double_ml`, `robinson_estimator`
+  and native `DynamicGEstimationDML`. Before, `predict` returned the most likely class. A
+  classifier without `predict_proba` raises `ValueError`.
+- The R² helpers return 0.0 only when the outcome variance is exactly zero. The cutoffs were
+  `1e-10` and `1e-12`.
+- Docstrings of `double_ml` and `TemporalPLRDML` describe the estimate as the slope of the
+  partially linear model. They called it the ATE; with a binary treatment and effects that vary
+  with X the slope weights each effect by `Var(T|X)` and can differ from the ATE.
+
+### Fixed
+
+- The "no treatment variation" check is relative to the size of the treatment. `fwl_estimate`,
+  `robinson_estimator`, `double_ml`, `TemporalPLRDML` and panel-mode `DynamicGEstimationDML`
+  raise when the norm of the treatment residuals is at most `norm(T) * n * eps`. The absolute
+  cutoff `sum(T̃²) < 1e-10` refused healthy data in small units and accepted an exact fit in
+  large ones. The weak-overlap warning of `TemporalPLRDML` compares `mean(T̃²)` with
+  `1e-6 * var(T)` for the same reason. (#42)
+- `fwl_estimate(method="ols")` takes its degrees of freedom from the rank of the controls, so a
+  redundant control column no longer changes the standard error. (#42)
+- Series-mode `DynamicGEstimationDML` residualizes the treatments with `model_t`. It used
+  `model_y` for both the outcome and the treatments and ignored `model_t`. (#42)
+- Panel-mode `DynamicGEstimationDML` draws one set of folds per fit and uses it for the outcome
+  and treatment residuals at every stage. With `random_state=None` each residualization was
+  shuffled separately.
+- `TemporalPLRDML.fit` and `effect_interval` raise on `alpha` outside (0, 1), and
+  `effect_interval` returns ordered bounds when `T1 < T0`.
 
 ## [1.1.4] - 2026-06-14
 
