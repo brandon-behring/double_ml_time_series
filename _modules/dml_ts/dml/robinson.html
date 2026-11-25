@@ -368,7 +368,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_r2</span> <span class="k">as</span> <span class="n">_compute_r2</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_nuisance_model</span><span class="p">,</span> <span class="n">theta_via_fwl</span><span class="p">,</span> <span class="n">validate_lengths</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_nuisance_model</span><span class="p">,</span> <span class="n">predict_conditional_mean</span><span class="p">,</span> <span class="n">theta_via_fwl</span><span class="p">,</span> <span class="n">validate_lengths</span>
 
 
 <div class="viewcode-block" id="RobinsonResult">
@@ -453,10 +453,10 @@
 <span class="sd">    X : array, shape (n, p)</span>
 <span class="sd">        Control variables / confounders.</span>
 <span class="sd">    model : sklearn estimator or str, optional</span>
-<span class="sd">        Model for nuisance estimation. Can be:</span>
-<span class="sd">        - An sklearn estimator with fit() and predict()</span>
-<span class="sd">        - A string: &quot;ridge&quot;, &quot;lasso&quot;, &quot;random_forest&quot;, &quot;gradient_boosting&quot;</span>
-<span class="sd">        - None: defaults to &quot;random_forest&quot;</span>
+<span class="sd">        A regressor with ``predict`` or a classifier with ``predict_proba`` for</span>
+<span class="sd">        numeric outcome and treatment classes. Supported string values are</span>
+<span class="sd">        &quot;ridge&quot;, &quot;lasso&quot;, &quot;random_forest&quot; and &quot;gradient_boosting&quot;.</span>
+<span class="sd">        The default is &quot;random_forest&quot;.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -512,12 +512,12 @@
 
     <span class="c1"># Step 1: Estimate E[Y|X]</span>
     <span class="n">outcome_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
-    <span class="n">Y_hat</span> <span class="o">=</span> <span class="n">outcome_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">Y_hat</span> <span class="o">=</span> <span class="n">predict_conditional_mean</span><span class="p">(</span><span class="n">outcome_model</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
     <span class="n">outcome_r2</span> <span class="o">=</span> <span class="n">_compute_r2</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">Y_hat</span><span class="p">)</span>
 
     <span class="c1"># Step 2: Estimate E[T|X]</span>
     <span class="n">treatment_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
-    <span class="n">T_hat</span> <span class="o">=</span> <span class="n">treatment_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">T_hat</span> <span class="o">=</span> <span class="n">predict_conditional_mean</span><span class="p">(</span><span class="n">treatment_model</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
     <span class="n">treatment_r2</span> <span class="o">=</span> <span class="n">_compute_r2</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">T_hat</span><span class="p">)</span>
 
     <span class="c1"># Step 3: Compute residuals</span>
@@ -528,6 +528,7 @@
     <span class="n">theta</span><span class="p">,</span> <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">theta_via_fwl</span><span class="p">(</span>
         <span class="n">Y_tilde</span><span class="p">,</span>
         <span class="n">T_tilde</span><span class="p">,</span>
+        <span class="n">treatment</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
         <span class="n">no_variation_msg</span><span class="o">=</span><span class="p">(</span>
             <span class="s2">&quot;Treatment has no variation after controlling for X. &quot;</span>
             <span class="s2">&quot;The nuisance model may have overfit or T is deterministic given X.&quot;</span>

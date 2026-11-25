@@ -313,9 +313,8 @@
   <h1>Source code for dml_ts.dml.double_ml</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Double Machine Learning (DML) with Cross-Fitting.</span>
 
-<span class="sd">This module implements the Chernozhukov et al. (2018) Double ML estimator,</span>
-<span class="sd">which achieves √n-consistency for treatment effects even with slow-rate</span>
-<span class="sd">ML nuisance estimators.</span>
+<span class="sd">This module implements the Chernozhukov et al. (2018) estimator of a</span>
+<span class="sd">partially linear regression slope from independent observations.</span>
 
 <span class="sd">Mathematical Foundation</span>
 <span class="sd">-----------------------</span>
@@ -325,11 +324,13 @@
 <span class="sd">    2. Overfitting bias: In-sample predictions overfit, creating spurious correlations</span>
 <span class="sd">    3. Standard errors: Don&#39;t account for nuisance estimation error</span>
 
-<span class="sd">DML solves all three via:</span>
+<span class="sd">The estimator combines three steps:</span>
 
-<span class="sd">    1. Neyman orthogonality: Moment condition is insensitive to small nuisance errors</span>
-<span class="sd">    2. Cross-fitting: Out-of-sample predictions eliminate overfitting bias</span>
-<span class="sd">    3. Influence functions: Valid inference without nuisance rate requirements</span>
+<span class="sd">    1. Neyman orthogonality makes the population score locally insensitive to</span>
+<span class="sd">       first-order errors in the conditional means.</span>
+<span class="sd">    2. Cross-fitting evaluates each observation using models trained on other folds.</span>
+<span class="sd">    3. The sample variability of the estimated influence scores gives the</span>
+<span class="sd">       standard error for independent observations under the DML assumptions.</span>
 
 <span class="sd">The Algorithm</span>
 <span class="sd">-------------</span>
@@ -344,9 +345,11 @@
 <span class="sd">4. Estimate θ̂ = Σ(Ỹᵢ·T̃ᵢ) / Σ(T̃ᵢ²)</span>
 <span class="sd">5. Compute SE via influence function: ψᵢ = (Ỹᵢ - θ̂·T̃ᵢ)·T̃ᵢ / E[T̃²]</span>
 
-<span class="sd">The critical insight: By using out-of-fold predictions, E[nuisance_error × score] = 0</span>
-<span class="sd">even when nuisance models are imperfect. This yields √n-consistency without</span>
-<span class="sd">requiring nuisance models to converge at √n rate.</span>
+<span class="sd">For nuisance errors a = m̂ - E[Y|X] and b = ℓ̂ - E[T|X], the change in the</span>
+<span class="sd">population moment at the true slope is E[a b - θ b²], conditional on the</span>
+<span class="sd">training sample. The first derivatives vanish at a = b = 0. For root-n</span>
+<span class="sd">inference the remaining term must be small relative to 1/√n, and residual</span>
+<span class="sd">treatment variation must be positive.</span>
 
 <span class="sd">References</span>
 <span class="sd">----------</span>
@@ -389,9 +392,9 @@
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    theta : float</span>
-<span class="sd">        Treatment effect estimate (ATE).</span>
+<span class="sd">        Fitted partially linear slope.</span>
 <span class="sd">    se : float</span>
-<span class="sd">        Standard error via influence function (valid inference).</span>
+<span class="sd">        Standard error from independent-observation influence scores.</span>
 <span class="sd">    t_stat : float</span>
 <span class="sd">        t-statistic = theta / se.</span>
 <span class="sd">    p_value : float</span>
@@ -496,8 +499,8 @@
 <span class="sd">    The variance is:</span>
 <span class="sd">        Var(θ̂) = Var(ψ) / n</span>
 
-<span class="sd">    This gives valid inference without requiring the nuisance models</span>
-<span class="sd">    to converge at √n rate.</span>
+<span class="sd">    This estimates sampling uncertainty under independent observations and</span>
+<span class="sd">    the orthogonal-score regularity conditions described by ``double_ml``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -545,11 +548,14 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DMLResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Double Machine Learning estimator with cross-fitting.</span>
 
-<span class="sd">    Estimates the Average Treatment Effect (ATE) in the partially linear model:</span>
+<span class="sd">    Estimates the common slope θ in the partially linear model:</span>
 <span class="sd">        Y = θ·T + g(X) + ε</span>
 
-<span class="sd">    using Neyman-orthogonal moment conditions and cross-fitting for</span>
-<span class="sd">    √n-consistent, asymptotically normal inference.</span>
+<span class="sd">    With an exogenous treatment and constant causal slope, θ gives the causal</span>
+<span class="sd">    effect per unit of treatment. For conditionally unconfounded binary treatment</span>
+<span class="sd">    with heterogeneous effects τ(X), the slope equals</span>
+<span class="sd">    E[Var(T|X) τ(X)] / E[Var(T|X)]. The population ATE averages τ(X) with the</span>
+<span class="sd">    population distribution of X, which can give a different value.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -569,6 +575,9 @@
 <span class="sd">        Model for E[Y|X]. Overrides `model` for outcome.</span>
 <span class="sd">    treatment_model : sklearn estimator, optional</span>
 <span class="sd">        Model for E[T|X]. Overrides `model` for treatment.</span>
+<span class="sd">        For either nuisance, a sklearn classifier must provide `predict_proba`.</span>
+<span class="sd">        Its probability-weighted numeric class values estimate the conditional</span>
+<span class="sd">        mean. For a 0/1 target this gives the probability of class 1.</span>
 <span class="sd">    alpha : float</span>
 <span class="sd">        Significance level for confidence intervals. Default: 0.05.</span>
 <span class="sd">    random_state : int</span>
@@ -581,15 +590,12 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    The key innovation of DML over Robinson (1988) is cross-fitting:</span>
-<span class="sd">    - Robinson: In-sample nuisance predictions → overfitting bias</span>
-<span class="sd">    - DML: Out-of-sample nuisance predictions → no overfitting bias</span>
-
-<span class="sd">    Cross-fitting ensures E[nuisance_error × score] = 0 even when</span>
-<span class="sd">    nuisance models are imperfect, yielding valid inference.</span>
-
-<span class="sd">    The influence function-based SE accounts for nuisance estimation error,</span>
-<span class="sd">    unlike naive SEs which assume known nuisance functions.</span>
+<span class="sd">    The score uses held-out residuals for both conditional means. Its population</span>
+<span class="sd">    derivative with respect to those means vanishes at their true values.</span>
+<span class="sd">    Second-order nuisance errors can still bias the slope. The influence-function</span>
+<span class="sd">    interval assumes independent observations, positive residual treatment</span>
+<span class="sd">    variation, suitable moments, and nuisance convergence fast enough for the</span>
+<span class="sd">    second-order errors to be negligible at the root-n scale.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -645,6 +651,7 @@
     <span class="n">theta</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">theta_via_fwl</span><span class="p">(</span>
         <span class="n">Y_tilde</span><span class="p">,</span>
         <span class="n">T_tilde</span><span class="p">,</span>
+        <span class="n">treatment</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
         <span class="n">no_variation_msg</span><span class="o">=</span><span class="p">(</span>
             <span class="s2">&quot;Treatment has no variation after controlling for X. &quot;</span>
             <span class="s2">&quot;This may indicate perfect prediction of T by X.&quot;</span>
@@ -691,7 +698,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare Robinson (no cross-fitting) vs DML (with cross-fitting).</span>
 
-<span class="sd">    This demonstrates the overfitting bias that cross-fitting eliminates.</span>
+<span class="sd">    Compare estimates obtained with in-sample and held-out nuisance predictions.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -799,13 +806,8 @@
     <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  95% CI Coverage:  N/A*           </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dml_coverages</span><span class="p">)</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  *Robinson&#39;s naive SE doesn&#39;t account for nuisance estimation,&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   so its coverage is typically too low (not computed here).&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;★ Key Insight:&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Cross-fitting eliminates the overfitting bias from in-sample&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  nuisance predictions. DML achieves correct coverage because&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  the influence function SE accounts for nuisance estimation error.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  *The coverage column summarizes DML&#39;s independent-observation&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   influence-score intervals across these simulated datasets.&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span></div>
 
 

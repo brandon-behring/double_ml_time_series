@@ -374,7 +374,13 @@
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelType</span><span class="p">,</span> <span class="n">cross_fit_predictions</span><span class="p">,</span> <span class="n">theta_via_fwl</span><span class="p">,</span> <span class="n">validate_lengths</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ModelType</span><span class="p">,</span>
+    <span class="n">cross_fit_predictions</span><span class="p">,</span>
+    <span class="n">no_variation_tolerance</span><span class="p">,</span>
+    <span class="n">theta_via_fwl</span><span class="p">,</span>
+    <span class="n">validate_lengths</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_r2</span> <span class="k">as</span> <span class="n">_compute_r2</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_nuisance_model</span> <span class="k">as</span> <span class="n">_get_nuisance_model</span>
 
@@ -545,9 +551,8 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate cross-fitted predictions for nuisance models using time series CV.</span>
 
-<span class="sd">    For each fold, trains models on out-of-fold data (respecting temporal order)</span>
-<span class="sd">    and predicts on in-fold data. This eliminates in-sample bias while</span>
-<span class="sd">    maintaining temporal structure.</span>
+<span class="sd">    Each fold trains its nuisance models on earlier observations and predicts</span>
+<span class="sd">    the outcomes and treatments for its held-out rows.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        X: Covariates (n, p)</span>
@@ -602,7 +607,8 @@
 <span class="sd">    5. Compute HAC standard errors (Newey-West) for autocorrelation</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        n_lags: Number of lags to include for treatment and confounders</span>
+<span class="sd">        n_lags: Past treatment values to append to the supplied controls. Supply</span>
+<span class="sd">            any lagged outcomes or lagged confounders as columns of X.</span>
 <span class="sd">        model_y: ML model for outcome nuisance function</span>
 <span class="sd">        model_t: ML model for treatment nuisance function</span>
 <span class="sd">        cv_strategy: Cross-validation strategy for time series</span>
@@ -644,7 +650,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize TemporalPLRDML.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            n_lags: Number of lags for treatment and confounders</span>
+<span class="sd">            n_lags: Number of past treatments to append to X</span>
 <span class="sd">            model_y: Model type for outcome regression</span>
 <span class="sd">            model_t: Model type for treatment propensity</span>
 <span class="sd">            cv_strategy: Time series CV strategy</span>
@@ -736,7 +742,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TemporalPLRDMLResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit the TemporalPLRDML model.</span>
 
-<span class="sd">        Estimates the Average Treatment Effect (ATE) in the partially linear model:</span>
+<span class="sd">        Estimates the common slope θ in the partially linear model:</span>
 <span class="sd">            Y_t = θ·T_t + g(X_t, T_{t-1}, ..., T_{t-L}) + ε_t</span>
 
 <span class="sd">        using Neyman-orthogonal moment conditions, time series cross-fitting,</span>
@@ -768,6 +774,8 @@
 
         <span class="c1"># Validate inputs</span>
         <span class="n">validate_lengths</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">alpha</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;alpha must be in (0, 1), got </span><span class="si">{</span><span class="n">alpha</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Create time index if not provided</span>
         <span class="k">if</span> <span class="n">time_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_index</span><span class="p">))</span> <span class="o">!=</span> <span class="n">n_samples</span><span class="p">:</span>
@@ -846,9 +854,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_X_augmented</span> <span class="o">=</span> <span class="n">X_used</span>
 
         <span class="c1"># Estimate theta via FWL</span>
-        <span class="n">theta</span><span class="p">,</span> <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">theta_via_fwl</span><span class="p">(</span>
+        <span class="n">theta</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">theta_via_fwl</span><span class="p">(</span>
             <span class="n">Y_tilde</span><span class="p">,</span>
             <span class="n">T_tilde</span><span class="p">,</span>
+            <span class="n">treatment</span><span class="o">=</span><span class="n">T_used</span><span class="p">,</span>
             <span class="n">no_variation_msg</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;Treatment has no variation after controlling for X and lags. &quot;</span>
                 <span class="s2">&quot;This may indicate perfect prediction of T by X.&quot;</span>
@@ -856,7 +865,7 @@
         <span class="p">)</span>
         <span class="n">T_tilde_sq_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">T_tilde_sq_mean</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">T_tilde_sq_mean</span> <span class="o">&lt;</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">T_used</span><span class="p">):</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="s2">&quot;Treatment residual variation is very low after controlling for &quot;</span>
                 <span class="s2">&quot;X and lags. Overlap may be weak and inference may be unstable.&quot;</span><span class="p">,</span>
@@ -995,11 +1004,12 @@
                 <span class="s2">&quot;Model must be fitted before calling effect_interval(). Call fit() first.&quot;</span>
             <span class="p">)</span>
 
-        <span class="n">z_crit</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">alpha</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;alpha must be in (0, 1), got </span><span class="si">{</span><span class="n">alpha</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">scale</span> <span class="o">=</span> <span class="n">T1</span> <span class="o">-</span> <span class="n">T0</span>
-
-        <span class="n">lower</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">theta</span> <span class="o">-</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">se</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
-        <span class="n">upper</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">theta</span> <span class="o">+</span> <span class="n">z_crit</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">se</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">estimate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">theta</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">margin</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">se</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">estimate</span> <span class="o">-</span> <span class="n">margin</span><span class="p">,</span> <span class="n">estimate</span> <span class="o">+</span> <span class="n">margin</span>
 
         <span class="k">if</span> <span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
@@ -1021,10 +1031,10 @@
 <span class="sd">    Estimates local treatment effects using a moving window approach,</span>
 <span class="sd">    useful when treatment effects vary over time.</span>
 
-<span class="sd">    The algorithm works as follows: for each window position t,</span>
-<span class="sd">    select observations in [t - window_size/2, t + window_size/2],</span>
-<span class="sd">    run DML on window data, and store the local treatment effect estimate.</span>
-<span class="sd">    Returns a time series of local effects with HAC standard errors.</span>
+<span class="sd">    Each complete window contains exactly `window_size` consecutive rows.</span>
+<span class="sd">    Window starts advance by `step_size` from zero. The center is the row at</span>
+<span class="sd">    `start + window_size // 2`, the later middle row for an even-sized window.</span>
+<span class="sd">    Returns local effects and HAC standard errors at those row positions.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        window_size: Size of rolling window</span>
@@ -1064,6 +1074,9 @@
         <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize RollingWindowDML.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&quot;window_size&quot;</span><span class="p">,</span> <span class="n">window_size</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;step_size&quot;</span><span class="p">,</span> <span class="n">step_size</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be a positive integer, got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="o">=</span> <span class="n">window_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span> <span class="o">=</span> <span class="n">step_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_y</span> <span class="o">=</span> <span class="n">model_y</span>
@@ -1093,7 +1106,8 @@
 <span class="sd">            Y: Outcome variable (n_samples,)</span>
 <span class="sd">            T: Treatment variable (n_samples,)</span>
 <span class="sd">            X: Confounders (n_samples, n_features)</span>
-<span class="sd">            time_index: Time index for each observation</span>
+<span class="sd">            time_index: Optional row labels, length-validated. Returned centers</span>
+<span class="sd">                are positions in the input, including when labels are supplied.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            self: Fitted model</span>
@@ -1106,11 +1120,11 @@
             <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
-
-        <span class="c1"># Compute window centers</span>
-        <span class="n">half_window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="n">centers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">half_window</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="n">half_window</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">centers</span><span class="p">:</span>
+        <span class="n">validate_lengths</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">time_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_index</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_samples</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;time_index length must match Y length&quot;</span><span class="p">)</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">starts</span><span class="p">:</span>
             <span class="c1"># window_size too large for the series produces an empty center list,</span>
             <span class="c1"># which would otherwise bypass the skip-warning loop and silently</span>
             <span class="c1"># return empty estimate arrays from get_effects().</span>
@@ -1125,9 +1139,9 @@
         <span class="n">kept_centers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">skipped</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">for</span> <span class="n">center</span> <span class="ow">in</span> <span class="n">centers</span><span class="p">:</span>
-            <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">center</span> <span class="o">-</span> <span class="n">half_window</span><span class="p">)</span>
-            <span class="n">end_idx</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">center</span> <span class="o">+</span> <span class="n">half_window</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">start_idx</span> <span class="ow">in</span> <span class="n">starts</span><span class="p">:</span>
+            <span class="n">center</span> <span class="o">=</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="n">end_idx</span> <span class="o">=</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span>
 
             <span class="n">Y_window</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
             <span class="n">T_window</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
@@ -1163,7 +1177,7 @@
             <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;center </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">skipped</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
             <span class="n">more</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; (+</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">skipped</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">5</span><span class="si">}</span><span class="s2"> more)&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">skipped</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;RollingWindowDML skipped </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">skipped</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;RollingWindowDML skipped </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">skipped</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">starts</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;windows — </span><span class="si">{</span><span class="n">details</span><span class="si">}{</span><span class="n">more</span><span class="si">}</span><span class="s2">. Reported estimates cover only &quot;</span>
                 <span class="s2">&quot;the successful windows at their correct centers.&quot;</span><span class="p">,</span>
                 <span class="ne">RuntimeWarning</span><span class="p">,</span>
@@ -1172,7 +1186,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_theta_series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theta_list</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_se_series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">se_list</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_time_centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">kept_centers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kept_centers</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_fitted</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
@@ -1337,6 +1351,15 @@
             <span class="n">X_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_demean_by_group</span><span class="p">(</span><span class="n">X_fe</span><span class="p">,</span> <span class="n">time_id</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown fixed_effects: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed_effects</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># A treatment that the fixed effects absorb leaves only rounding</span>
+        <span class="c1"># residue. Its size can be judged against the treatment before</span>
+        <span class="c1"># demeaning only: after demeaning there is no level left to compare with.</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">T_fe</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">no_variation_tolerance</span><span class="p">(</span><span class="n">T</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Treatment has no variation after removing </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed_effects</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;fixed effects: it is constant within the demeaned groups.&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Run TemporalPLRDML on transformed data</span>
         <span class="n">dml</span> <span class="o">=</span> <span class="n">TemporalPLRDML</span><span class="p">(</span>

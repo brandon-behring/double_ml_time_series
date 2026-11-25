@@ -685,7 +685,8 @@ This avoids explicitly forming (X’X)⁻¹.</p>
 <p>The FWL theorem guarantees that this gives the EXACT same coefficient
 as running the full regression Y ~ T + X. This is not an approximation.</p>
 <p>The standard error is computed assuming homoskedasticity:
-SE(θ̂) = σ̂ / √(Σ T̃ᵢ²) where σ̂² = Σ(Ỹᵢ - θ̂T̃ᵢ)² / (n - k - 1).</p>
+SE(θ̂) = σ̂ / √(Σ T̃ᵢ²) where σ̂² = Σ(Ỹᵢ - θ̂T̃ᵢ)² / (n - k - 1).
+Here k is the rank of the controls, including the intercept if supplied.</p>
 <p>For heteroskedasticity-robust SEs, use HC0/HC1/HC3 variants (not implemented
 here; see DML module for HAC inference).</p>
 </div>
@@ -894,10 +895,10 @@ ML models for the nuisance functions m(X) = E[T|X] and ℓ(X) = E[Y|X].</p>
 <li><p><strong>Y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.double" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">double</span></code></a>]]</span>) – Outcome variable.</p></li>
 <li><p><strong>T</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.double" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">double</span></code></a>]]</span>) – Treatment variable (continuous or binary).</p></li>
 <li><p><strong>X</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.double" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">double</span></code></a>]]</span>) – Control variables / confounders.</p></li>
-<li><p><strong>model</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'ridge'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lasso'</span></code>, <code class="docutils literal notranslate"><span class="pre">'random_forest'</span></code>, <code class="docutils literal notranslate"><span class="pre">'gradient_boosting'</span></code>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>) – Model for nuisance estimation. Can be:
-- An sklearn estimator with fit() and predict()
-- A string: “ridge”, “lasso”, “random_forest”, “gradient_boosting”
-- None: defaults to “random_forest”</p></li>
+<li><p><strong>model</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'ridge'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lasso'</span></code>, <code class="docutils literal notranslate"><span class="pre">'random_forest'</span></code>, <code class="docutils literal notranslate"><span class="pre">'gradient_boosting'</span></code>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>) – A regressor with <code class="docutils literal notranslate"><span class="pre">predict</span></code> or a classifier with <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code> for
+numeric outcome and treatment classes. Supported string values are
+“ridge”, “lasso”, “random_forest” and “gradient_boosting”.
+The default is “random_forest”.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -980,9 +981,8 @@ nuisance models are necessary.</p>
 <p>Cross-fitted DML with Neyman orthogonal scores. Resolves the overfitting bias
 of the Robinson estimator via sample splitting.</p>
 <p id="module-dml_ts.dml.double_ml">Double Machine Learning (DML) with Cross-Fitting.</p>
-<p>This module implements the Chernozhukov et al. (2018) Double ML estimator,
-which achieves √n-consistency for treatment effects even with slow-rate
-ML nuisance estimators.</p>
+<p>This module implements the Chernozhukov et al. (2018) estimator of a
+partially linear regression slope from independent observations.</p>
 <section id="id2">
 <h3>Mathematical Foundation<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <p>The problem with naive ML in causal inference:</p>
@@ -993,12 +993,14 @@ ML nuisance estimators.</p>
 <li><p>Standard errors: Don’t account for nuisance estimation error</p></li>
 </ol>
 </div></blockquote>
-<p>DML solves all three via:</p>
+<p>The estimator combines three steps:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><p>Neyman orthogonality: Moment condition is insensitive to small nuisance errors</p></li>
-<li><p>Cross-fitting: Out-of-sample predictions eliminate overfitting bias</p></li>
-<li><p>Influence functions: Valid inference without nuisance rate requirements</p></li>
+<li><p>Neyman orthogonality makes the population score locally insensitive to
+first-order errors in the conditional means.</p></li>
+<li><p>Cross-fitting evaluates each observation using models trained on other folds.</p></li>
+<li><p>The sample variability of the estimated influence scores gives the
+standard error for independent observations under the DML assumptions.</p></li>
 </ol>
 </div></blockquote>
 </section>
@@ -1015,9 +1017,11 @@ c. Predict on fold k: m̂₋ₖ(Xₖ), ℓ̂₋ₖ(Xₖ)</p></li>
 <li><p>Estimate θ̂ = Σ(Ỹᵢ·T̃ᵢ) / Σ(T̃ᵢ²)</p></li>
 <li><p>Compute SE via influence function: ψᵢ = (Ỹᵢ - θ̂·T̃ᵢ)·T̃ᵢ / E[T̃²]</p></li>
 </ol>
-<p>The critical insight: By using out-of-fold predictions, E[nuisance_error × score] = 0
-even when nuisance models are imperfect. This yields √n-consistency without
-requiring nuisance models to converge at √n rate.</p>
+<p>For nuisance errors a = m̂ - E[Y|X] and b = ℓ̂ - E[T|X], the change in the
+population moment at the true slope is E[a b - θ b²], conditional on the
+training sample. The first derivatives vanish at a = b = 0. For root-n
+inference the remaining term must be small relative to 1/√n, and residual
+treatment variation must be positive.</p>
 <div class="admonition-references admonition">
 <p class="admonition-title">References</p>
 <p>Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C.,
@@ -1035,8 +1039,8 @@ Econometrica, 56(4), 931-954.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>theta</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Treatment effect estimate (ATE).</p></li>
-<li><p><strong>se</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Standard error via influence function (valid inference).</p></li>
+<li><p><strong>theta</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Fitted partially linear slope.</p></li>
+<li><p><strong>se</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Standard error from independent-observation influence scores.</p></li>
 <li><p><strong>t_stat</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – t-statistic = theta / se.</p></li>
 <li><p><strong>p_value</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Two-sided p-value.</p></li>
 <li><p><strong>ci_lower</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Lower bound of 95% confidence interval.</p></li>
@@ -1150,11 +1154,14 @@ Econometrica, 56(4), 931-954.</p>
 <span class="sig-prename descclassname"><span class="pre">dml_ts.dml.double_ml.</span></span><span class="sig-name descname"><span class="pre">double_ml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outcome_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treatment_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/dml/double_ml.html#double_ml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.dml.double_ml.double_ml" title="Link to this definition">#</a></dt>
 <dd><p>Double Machine Learning estimator with cross-fitting.</p>
 <dl class="simple">
-<dt>Estimates the Average Treatment Effect (ATE) in the partially linear model:</dt><dd><p>Y = θ·T + g(X) + ε</p>
+<dt>Estimates the common slope θ in the partially linear model:</dt><dd><p>Y = θ·T + g(X) + ε</p>
 </dd>
 </dl>
-<p>using Neyman-orthogonal moment conditions and cross-fitting for
-√n-consistent, asymptotically normal inference.</p>
+<p>With an exogenous treatment and constant causal slope, θ gives the causal
+effect per unit of treatment. For conditionally unconfounded binary treatment
+with heterogeneous effects τ(X), the slope equals
+E[Var(T|X) τ(X)] / E[Var(T|X)]. The population ATE averages τ(X) with the
+population distribution of X, which can give a different value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1166,7 +1173,10 @@ Econometrica, 56(4), 931-954.</p>
 Options: “ridge”, “lasso”, “random_forest”, “gradient_boosting”
 Default: “random_forest”</p></li>
 <li><p><strong>outcome_model</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Model for E[Y|X]. Overrides <cite>model</cite> for outcome.</p></li>
-<li><p><strong>treatment_model</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Model for E[T|X]. Overrides <cite>model</cite> for treatment.</p></li>
+<li><p><strong>treatment_model</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Model for E[T|X]. Overrides <cite>model</cite> for treatment.
+For either nuisance, a sklearn classifier must provide <cite>predict_proba</cite>.
+Its probability-weighted numeric class values estimate the conditional
+mean. For a 0/1 target this gives the probability of class 1.</p></li>
 <li><p><strong>alpha</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Significance level for confidence intervals. Default: 0.05.</p></li>
 <li><p><strong>random_state</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Random seed for cross-validation fold splitting.</p></li>
 </ul>
@@ -1180,13 +1190,12 @@ Default: “random_forest”</p></li>
 </dl>
 <div class="admonition-notes admonition">
 <p class="admonition-title">Notes</p>
-<p>The key innovation of DML over Robinson (1988) is cross-fitting:
-- Robinson: In-sample nuisance predictions → overfitting bias
-- DML: Out-of-sample nuisance predictions → no overfitting bias</p>
-<p>Cross-fitting ensures E[nuisance_error × score] = 0 even when
-nuisance models are imperfect, yielding valid inference.</p>
-<p>The influence function-based SE accounts for nuisance estimation error,
-unlike naive SEs which assume known nuisance functions.</p>
+<p>The score uses held-out residuals for both conditional means. Its population
+derivative with respect to those means vanishes at their true values.
+Second-order nuisance errors can still bias the slope. The influence-function
+interval assumes independent observations, positive residual treatment
+variation, suitable moments, and nuisance convergence fast enough for the
+second-order errors to be negligible at the root-n scale.</p>
 </div>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
@@ -1211,7 +1220,7 @@ unlike naive SEs which assume known nuisance functions.</p>
 <dt class="sig sig-object py" id="dml_ts.dml.double_ml.compare_robinson_vs_dml">
 <span class="sig-prename descclassname"><span class="pre">dml_ts.dml.double_ml.</span></span><span class="sig-name descname"><span class="pre">compare_robinson_vs_dml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_theta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/dml/double_ml.html#compare_robinson_vs_dml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.dml.double_ml.compare_robinson_vs_dml" title="Link to this definition">#</a></dt>
 <dd><p>Compare Robinson (no cross-fitting) vs DML (with cross-fitting).</p>
-<p>This demonstrates the overfitting bias that cross-fitting eliminates.</p>
+<p>Compare estimates obtained with in-sample and held-out nuisance predictions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1460,7 +1469,8 @@ out-of-fold predictions without training on future observations</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n_lags</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of lags to include for treatment and confounders</p></li>
+<li><p><strong>n_lags</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Past treatment values to append to the supplied controls. Supply
+any lagged outcomes or lagged confounders as columns of X.</p></li>
 <li><p><strong>model_y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'ridge'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lasso'</span></code>, <code class="docutils literal notranslate"><span class="pre">'random_forest'</span></code>, <code class="docutils literal notranslate"><span class="pre">'gradient_boosting'</span></code>]</span>) – ML model for outcome nuisance function</p></li>
 <li><p><strong>model_t</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'ridge'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lasso'</span></code>, <code class="docutils literal notranslate"><span class="pre">'random_forest'</span></code>, <code class="docutils literal notranslate"><span class="pre">'gradient_boosting'</span></code>]</span>) – ML model for treatment nuisance function</p></li>
 <li><p><strong>cv_strategy</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'time_series_split'</span></code>, <code class="docutils literal notranslate"><span class="pre">'blocked_cv'</span></code>, <code class="docutils literal notranslate"><span class="pre">'purged_cv'</span></code>]</span>) – Cross-validation strategy for time series</p></li>
@@ -1496,7 +1506,7 @@ out-of-fold predictions without training on future observations</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n_lags</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of lags for treatment and confounders</p></li>
+<li><p><strong>n_lags</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of past treatments to append to X</p></li>
 <li><p><strong>model_y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'ridge'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lasso'</span></code>, <code class="docutils literal notranslate"><span class="pre">'random_forest'</span></code>, <code class="docutils literal notranslate"><span class="pre">'gradient_boosting'</span></code>]</span>) – Model type for outcome regression</p></li>
 <li><p><strong>model_t</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'ridge'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lasso'</span></code>, <code class="docutils literal notranslate"><span class="pre">'random_forest'</span></code>, <code class="docutils literal notranslate"><span class="pre">'gradient_boosting'</span></code>]</span>) – Model type for treatment propensity</p></li>
 <li><p><strong>cv_strategy</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'time_series_split'</span></code>, <code class="docutils literal notranslate"><span class="pre">'blocked_cv'</span></code>, <code class="docutils literal notranslate"><span class="pre">'purged_cv'</span></code>]</span>) – Time series CV strategy</p></li>
@@ -1519,7 +1529,7 @@ selection; 0 = no lags, i.e. heteroskedasticity-only SEs)</p></li>
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/dml/temporal_plr_dml.html#TemporalPLRDML.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.dml.temporal_plr_dml.TemporalPLRDML.fit" title="Link to this definition">#</a></dt>
 <dd><p>Fit the TemporalPLRDML model.</p>
 <dl class="simple">
-<dt>Estimates the Average Treatment Effect (ATE) in the partially linear model:</dt><dd><p>Y_t = θ·T_t + g(X_t, T_{t-1}, …, T_{t-L}) + ε_t</p>
+<dt>Estimates the common slope θ in the partially linear model:</dt><dd><p>Y_t = θ·T_t + g(X_t, T_{t-1}, …, T_{t-L}) + ε_t</p>
 </dd>
 </dl>
 <p>using Neyman-orthogonal moment conditions, time series cross-fitting,
@@ -1608,10 +1618,10 @@ splitting is positional (row order), so the values are not used</p></li>
 <p>Rolling-window DML for non-stationary treatment effects.</p>
 <p>Estimates local treatment effects using a moving window approach,
 useful when treatment effects vary over time.</p>
-<p>The algorithm works as follows: for each window position t,
-select observations in [t - window_size/2, t + window_size/2],
-run DML on window data, and store the local treatment effect estimate.
-Returns a time series of local effects with HAC standard errors.</p>
+<p>Each complete window contains exactly <cite>window_size</cite> consecutive rows.
+Window starts advance by <cite>step_size</cite> from zero. The center is the row at
+<cite>start + window_size // 2</cite>, the later middle row for an even-sized window.
+Returns local effects and HAC standard errors at those row positions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1659,7 +1669,8 @@ Returns a time series of local effects with HAC standard errors.</p>
 <li><p><strong>Y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span>) – Outcome variable (n_samples,)</p></li>
 <li><p><strong>T</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span>) – Treatment variable (n_samples,)</p></li>
 <li><p><strong>X</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span>) – Confounders (n_samples, n_features)</p></li>
-<li><p><strong>time_index</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Time index for each observation</p></li>
+<li><p><strong>time_index</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Optional row labels, length-validated. Returned centers
+are positions in the input, including when labels are supplied.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2084,7 +2095,8 @@ may be left <code class="docutils literal notranslate"><span class="pre">None</s
 <li><p><strong>model_y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></a></span>) – Outcome nuisance <code class="docutils literal notranslate"><span class="pre">E[Y|H]</span></code> – sklearn estimator or alias
 (<code class="docutils literal notranslate"><span class="pre">&quot;random_forest&quot;</span></code> default, <code class="docutils literal notranslate"><span class="pre">&quot;linear&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;ridge&quot;</span></code>,
 <code class="docutils literal notranslate"><span class="pre">&quot;gradient_boosting&quot;</span></code>).</p></li>
-<li><p><strong>model_t</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></a></span>) – Treatment nuisance <code class="docutils literal notranslate"><span class="pre">E[T|H]</span></code> (same options).</p></li>
+<li><p><strong>model_t</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html#sklearn.base.BaseEstimator" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></a></span>) – Treatment nuisance <code class="docutils literal notranslate"><span class="pre">E[T|H]</span></code> (same options). With the native
+backend, classifiers must provide probabilities for numeric classes.</p></li>
 <li><p><strong>n_folds</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Cross-fitting folds (panel KFold over units / series temporal CV).</p></li>
 <li><p><strong>gap</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Temporal-CV gap (series mode only).</p></li>
 <li><p><strong>random_state</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Seed for cross-fitting and nuisance models.</p></li>

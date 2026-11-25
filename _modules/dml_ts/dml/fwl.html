@@ -365,6 +365,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">temporalcv</span><span class="w"> </span><span class="kn">import</span> <span class="n">coverage_in_unit</span><span class="p">,</span> <span class="n">finite_se</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_numerically_constant</span><span class="p">,</span> <span class="n">theta_via_fwl</span>
 
 
 <div class="viewcode-block" id="FWLResult">
@@ -486,7 +487,7 @@
         <span class="c1"># Use a SCALE-INVARIANT rank check (matrix_rank&#39;s relative tolerance) so</span>
         <span class="c1"># genuinely collinear controls raise loudly while a merely scale-disparate</span>
         <span class="c1"># but full-rank design is accepted (method=&quot;ols&quot; is rank-safe regardless).</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Rank-deficient control matrix X (collinear columns) in QR &quot;</span>
                 <span class="s2">&quot;residualization: the FWL residuals are undefined. De-collinearize &quot;</span>
@@ -504,7 +505,7 @@
     <span class="c1"># Compute R²</span>
     <span class="n">ss_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">Y</span> <span class="o">-</span> <span class="n">Y</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">ss_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">residuals</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">r_squared</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">ss_res</span> <span class="o">/</span> <span class="n">ss_tot</span> <span class="k">if</span> <span class="n">ss_tot</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="n">r_squared</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">is_numerically_constant</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">ss_res</span> <span class="o">/</span> <span class="n">ss_tot</span>
 
     <span class="k">return</span> <span class="n">residuals</span><span class="p">,</span> <span class="n">r_squared</span></div>
 
@@ -551,6 +552,7 @@
 
 <span class="sd">    The standard error is computed assuming homoskedasticity:</span>
 <span class="sd">    SE(θ̂) = σ̂ / √(Σ T̃ᵢ²) where σ̂² = Σ(Ỹᵢ - θ̂T̃ᵢ)² / (n - k - 1).</span>
+<span class="sd">    Here k is the rank of the controls, including the intercept if supplied.</span>
 
 <span class="sd">    For heteroskedasticity-robust SEs, use HC0/HC1/HC3 variants (not implemented</span>
 <span class="sd">    here; see DML module for HAC inference).</span>
@@ -583,8 +585,6 @@
     <span class="k">if</span> <span class="n">add_intercept</span><span class="p">:</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">X</span><span class="p">])</span>
 
-    <span class="n">p</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Number of control variables (including intercept)</span>
-
     <span class="c1"># Step 1: Residualize Y on X</span>
     <span class="n">Y_tilde</span><span class="p">,</span> <span class="n">r2_Y</span> <span class="o">=</span> <span class="n">fwl_residualize</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
 
@@ -593,21 +593,22 @@
 
     <span class="c1"># Step 3: Regress Ỹ on T̃</span>
     <span class="c1"># θ̂ = (T̃&#39;T̃)⁻¹T̃&#39;Ỹ = Cov(T̃,Ỹ) / Var(T̃) since both have mean 0</span>
-    <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">T_tilde_sq_sum</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+    <span class="n">theta</span><span class="p">,</span> <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">theta_via_fwl</span><span class="p">(</span>
+        <span class="n">Y_tilde</span><span class="p">,</span>
+        <span class="n">T_tilde</span><span class="p">,</span>
+        <span class="n">treatment</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
+        <span class="n">no_variation_msg</span><span class="o">=</span><span class="p">(</span>
             <span class="s2">&quot;Treatment has no variation after controlling for X. &quot;</span>
             <span class="s2">&quot;This indicates perfect collinearity between T and X.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_tilde</span> <span class="o">*</span> <span class="n">Y_tilde</span><span class="p">)</span> <span class="o">/</span> <span class="n">T_tilde_sq_sum</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
 
     <span class="c1"># Step 4: Compute standard error (homoskedastic)</span>
     <span class="c1"># Residuals from final regression</span>
     <span class="n">final_residuals</span> <span class="o">=</span> <span class="n">Y_tilde</span> <span class="o">-</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">T_tilde</span>
 
     <span class="c1"># Degrees of freedom: n - (p controls) - 1 (treatment)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;ols&quot;</span> <span class="ow">and</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">p</span> <span class="o">-</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="n">df</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
