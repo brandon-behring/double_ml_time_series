@@ -26,20 +26,21 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../_static/documentation_options.js?v=62df3ba8"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
@@ -47,27 +48,34 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
-    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/dml/fwl';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -93,7 +101,47 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
     </header>
   
 
@@ -275,11 +323,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -311,7 +366,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for dml_ts.dml.fwl</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Frisch-Waugh-Lovell Theorem Implementation.</span>
+<span></span><span class="sd">"""Frisch-Waugh-Lovell Theorem Implementation.</span>
 
 <span class="sd">This module implements the FWL theorem from scratch as a pedagogical foundation</span>
 <span class="sd">for understanding Double Machine Learning. FWL shows that partial regression</span>
@@ -325,15 +380,15 @@
 
 <span class="sd">The coefficient β_T can be equivalently computed by:</span>
 
-<span class="sd">    1. Residualize Y on X: Ỹ = Y - X(X&#39;X)⁻¹X&#39;Y = M_X·Y</span>
-<span class="sd">    2. Residualize T on X: T̃ = T - X(X&#39;X)⁻¹X&#39;T = M_X·T</span>
-<span class="sd">    3. Regress residuals: β_T = (T̃&#39;T̃)⁻¹T̃&#39;Ỹ</span>
+<span class="sd">    1. Residualize Y on X: Ỹ = Y - X(X'X)⁻¹X'Y = M_X·Y</span>
+<span class="sd">    2. Residualize T on X: T̃ = T - X(X'X)⁻¹X'T = M_X·T</span>
+<span class="sd">    3. Regress residuals: β_T = (T̃'T̃)⁻¹T̃'Ỹ</span>
 
-<span class="sd">where M_X = I - X(X&#39;X)⁻¹X&#39; is the annihilator/residual maker matrix.</span>
+<span class="sd">where M_X = I - X(X'X)⁻¹X' is the annihilator/residual maker matrix.</span>
 
 <span class="sd">Why This Matters for DML</span>
 <span class="sd">------------------------</span>
-<span class="sd">Double ML is essentially &quot;FWL with ML nuisance models&quot;:</span>
+<span class="sd">Double ML is essentially "FWL with ML nuisance models":</span>
 <span class="sd">- FWL uses linear projection for E[Y|X] and E[T|X]</span>
 <span class="sd">- DML uses flexible ML models (random forest, boosting, etc.)</span>
 
@@ -353,7 +408,7 @@
 
 <span class="sd">Chernozhukov, V., et al. (2018). Double/debiased machine learning for treatment</span>
 <span class="sd">and structural parameters. The Econometrics Journal, 21(1), C1-C68.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -371,7 +426,7 @@
 <a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.fwl.FWLResult">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FWLResult</span><span class="p">(</span><span class="n">ResultBase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for FWL estimation.</span>
+<span class="w">    </span><span class="sd">"""Result container for FWL estimation.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -406,7 +461,7 @@
 <span class="sd">    True</span>
 <span class="sd">    &gt;&gt;&gt; bool(result.se &gt; 0)</span>
 <span class="sd">    True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">theta</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">se</span><span class="p">:</span> <span class="nb">float</span>
@@ -418,16 +473,16 @@
     <span class="n">r2_T</span><span class="p">:</span> <span class="nb">float</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;B3 numeric hard-fails at the result boundary.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""B3 numeric hard-fails at the result boundary."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FWLResult.theta is not finite: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">finite_se</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;FWLResult.se&quot;</span><span class="p">)</span>
-        <span class="n">coverage_in_unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;FWLResult.p_value&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"FWLResult.theta is not finite: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">finite_se</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"FWLResult.se"</span><span class="p">)</span>
+        <span class="n">coverage_in_unit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"FWLResult.p_value"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;FWLResult(θ=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, SE=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;t=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">t_stat</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, p=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="sa">f</span><span class="s2">"FWLResult(θ=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, SE=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, "</span>
+            <span class="sa">f</span><span class="s2">"t=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">t_stat</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, p=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)"</span>
         <span class="p">)</span></div>
 
 
@@ -437,11 +492,11 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">fwl_residualize</span><span class="p">(</span>
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="s2">&quot;qr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;qr&quot;</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"ols"</span><span class="p">,</span> <span class="s2">"qr"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"qr"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute residuals from projecting Y onto X.</span>
+<span class="w">    </span><span class="sd">"""Compute residuals from projecting Y onto X.</span>
 
-<span class="sd">    This is the M_X·Y operation where M_X = I - X(X&#39;X)⁻¹X&#39;.</span>
+<span class="sd">    This is the M_X·Y operation where M_X = I - X(X'X)⁻¹X'.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -449,21 +504,21 @@
 <span class="sd">        Variable to residualize.</span>
 <span class="sd">    X : array, shape (n, p)</span>
 <span class="sd">        Variables to partial out. Should include intercept if desired.</span>
-<span class="sd">    method : {&quot;ols&quot;, &quot;qr&quot;}</span>
-<span class="sd">        Computation method. &quot;qr&quot; is more numerically stable.</span>
+<span class="sd">    method : {"ols", "qr"}</span>
+<span class="sd">        Computation method. "qr" is more numerically stable.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    residuals : array, shape (n,)</span>
-<span class="sd">        Residualized Y: Ỹ = Y - X·β̂ where β̂ = (X&#39;X)⁻¹X&#39;Y.</span>
+<span class="sd">        Residualized Y: Ỹ = Y - X·β̂ where β̂ = (X'X)⁻¹X'Y.</span>
 <span class="sd">    r_squared : float</span>
 <span class="sd">        R² of the projection (variance explained by X).</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    The QR method computes residuals via</span>
-<span class="sd">    Ỹ = Y - Q(Q&#39;Y) where X = QR.</span>
-<span class="sd">    This avoids explicitly forming (X&#39;X)⁻¹.</span>
+<span class="sd">    Ỹ = Y - Q(Q'Y) where X = QR.</span>
+<span class="sd">    This avoids explicitly forming (X'X)⁻¹.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -474,29 +529,29 @@
 <span class="sd">    &gt;&gt;&gt; residuals, r2 = fwl_residualize(Y, X)</span>
 <span class="sd">    &gt;&gt;&gt; bool(np.allclose(residuals.sum(), 0))  # Residuals sum to ~0</span>
 <span class="sd">    True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;qr&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"qr"</span><span class="p">:</span>
         <span class="c1"># Numerically stable: Y_resid = Y - Q @ (Q.T @ Y).</span>
         <span class="c1"># np.linalg.qr returns a full-width Q even when X is rank-deficient, so</span>
         <span class="c1"># Q @ Q.T then over-projects onto spurious directions and silently</span>
         <span class="c1"># returns the WRONG residuals (a different theta) instead of failing.</span>
-        <span class="c1"># Use a SCALE-INVARIANT rank check (matrix_rank&#39;s relative tolerance) so</span>
+        <span class="c1"># Use a SCALE-INVARIANT rank check (matrix_rank's relative tolerance) so</span>
         <span class="c1"># genuinely collinear controls raise loudly while a merely scale-disparate</span>
-        <span class="c1"># but full-rank design is accepted (method=&quot;ols&quot; is rank-safe regardless).</span>
+        <span class="c1"># but full-rank design is accepted (method="ols" is rank-safe regardless).</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Rank-deficient control matrix X (collinear columns) in QR &quot;</span>
-                <span class="s2">&quot;residualization: the FWL residuals are undefined. De-collinearize &quot;</span>
-                <span class="s1">&#39;X, or call with method=&quot;ols&quot; (rank-safe least squares).&#39;</span>
+                <span class="s2">"Rank-deficient control matrix X (collinear columns) in QR "</span>
+                <span class="s2">"residualization: the FWL residuals are undefined. De-collinearize "</span>
+                <span class="s1">'X, or call with method="ols" (rank-safe least squares).'</span>
             <span class="p">)</span>
         <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">Y_hat</span> <span class="o">=</span> <span class="n">Q</span> <span class="o">@</span> <span class="p">(</span><span class="n">Q</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Y</span><span class="p">)</span>
         <span class="n">residuals</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="n">Y_hat</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># Direct OLS: β̂ = (X&#39;X)⁻¹X&#39;Y, Ỹ = Y - Xβ̂</span>
+        <span class="c1"># Direct OLS: β̂ = (X'X)⁻¹X'Y, Ỹ = Y - Xβ̂</span>
         <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">Y_hat</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span>
         <span class="n">residuals</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="n">Y_hat</span>
@@ -517,9 +572,9 @@
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">add_intercept</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="s2">&quot;qr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;qr&quot;</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"ols"</span><span class="p">,</span> <span class="s2">"qr"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"qr"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FWLResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate treatment effect using Frisch-Waugh-Lovell theorem.</span>
+<span class="w">    </span><span class="sd">"""Estimate treatment effect using Frisch-Waugh-Lovell theorem.</span>
 
 <span class="sd">    This computes β_T from Y = β₀ + β_T·T + X·β_X + ε by:</span>
 <span class="sd">    1. Residualizing Y on X</span>
@@ -536,7 +591,7 @@
 <span class="sd">        Control variables / confounders.</span>
 <span class="sd">    add_intercept : bool</span>
 <span class="sd">        Whether to add intercept to X for residualization.</span>
-<span class="sd">    method : {&quot;ols&quot;, &quot;qr&quot;}</span>
+<span class="sd">    method : {"ols", "qr"}</span>
 <span class="sd">        Method for computing projections.</span>
 
 <span class="sd">    Returns</span>
@@ -567,14 +622,14 @@
 <span class="sd">    &gt;&gt;&gt; result = fwl_estimate(Y, T, X)</span>
 <span class="sd">    &gt;&gt;&gt; bool(abs(result.theta - 2.0) &lt; 0.1)  # Should recover ~2.0</span>
 <span class="sd">    True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
 
     <span class="c1"># Validate inputs</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"T length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X rows (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"X rows (</span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) must match Y length (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -592,13 +647,13 @@
     <span class="n">T_tilde</span><span class="p">,</span> <span class="n">r2_T</span> <span class="o">=</span> <span class="n">fwl_residualize</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
 
     <span class="c1"># Step 3: Regress Ỹ on T̃</span>
-    <span class="c1"># θ̂ = (T̃&#39;T̃)⁻¹T̃&#39;Ỹ = Cov(T̃,Ỹ) / Var(T̃) since both have mean 0</span>
+    <span class="c1"># θ̂ = (T̃'T̃)⁻¹T̃'Ỹ = Cov(T̃,Ỹ) / Var(T̃) since both have mean 0</span>
     <span class="n">T_tilde_sq_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_tilde</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">T_tilde_sq_sum</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;Treatment has no variation after controlling for X. &quot;</span>
-            <span class="s2">&quot;This indicates perfect collinearity between T and X.&quot;</span>
+            <span class="s2">"Treatment has no variation after controlling for X. "</span>
+            <span class="s2">"This indicates perfect collinearity between T and X."</span>
         <span class="p">)</span>
 
     <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_tilde</span> <span class="o">*</span> <span class="n">Y_tilde</span><span class="p">)</span> <span class="o">/</span> <span class="n">T_tilde_sq_sum</span>
@@ -611,7 +666,7 @@
     <span class="n">df</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">p</span> <span class="o">-</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="n">df</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not enough degrees of freedom: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">, p=</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">. Need n &gt; p + 1.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Not enough degrees of freedom: n=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">, p=</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">. Need n &gt; p + 1."</span><span class="p">)</span>
 
     <span class="c1"># σ̂² = RSS / df</span>
     <span class="n">sigma_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">final_residuals</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">df</span>
@@ -648,7 +703,7 @@
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Demonstrate FWL theorem by comparing with direct OLS.</span>
+<span class="w">    </span><span class="sd">"""Demonstrate FWL theorem by comparing with direct OLS.</span>
 
 <span class="sd">    This function runs:</span>
 <span class="sd">    1. Full OLS regression: Y ~ T + X</span>
@@ -687,9 +742,9 @@
 <span class="sd">    &gt;&gt;&gt; T = np.random.randn(n)</span>
 <span class="sd">    &gt;&gt;&gt; Y = 1.5 * T + X @ [0.5, -0.3] + np.random.randn(n)</span>
 <span class="sd">    &gt;&gt;&gt; result = fwl_vs_ols_comparison(Y, T, X)</span>
-<span class="sd">    &gt;&gt;&gt; bool(result[&quot;match&quot;])</span>
+<span class="sd">    &gt;&gt;&gt; bool(result["match"])</span>
 <span class="sd">    True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -710,12 +765,12 @@
     <span class="n">match</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">theta_ols</span><span class="p">,</span> <span class="n">theta_fwl</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;theta_ols&quot;</span><span class="p">:</span> <span class="n">theta_ols</span><span class="p">,</span>
-        <span class="s2">&quot;theta_fwl&quot;</span><span class="p">:</span> <span class="n">theta_fwl</span><span class="p">,</span>
-        <span class="s2">&quot;difference&quot;</span><span class="p">:</span> <span class="n">diff</span><span class="p">,</span>
-        <span class="s2">&quot;relative_diff&quot;</span><span class="p">:</span> <span class="n">diff</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">theta_ols</span><span class="p">)</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">theta_ols</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="n">diff</span><span class="p">,</span>
-        <span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="n">match</span><span class="p">,</span>
-        <span class="s2">&quot;fwl_result&quot;</span><span class="p">:</span> <span class="n">fwl_result</span><span class="p">,</span>
+        <span class="s2">"theta_ols"</span><span class="p">:</span> <span class="n">theta_ols</span><span class="p">,</span>
+        <span class="s2">"theta_fwl"</span><span class="p">:</span> <span class="n">theta_fwl</span><span class="p">,</span>
+        <span class="s2">"difference"</span><span class="p">:</span> <span class="n">diff</span><span class="p">,</span>
+        <span class="s2">"relative_diff"</span><span class="p">:</span> <span class="n">diff</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">theta_ols</span><span class="p">)</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">theta_ols</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span> <span class="k">else</span> <span class="n">diff</span><span class="p">,</span>
+        <span class="s2">"match"</span><span class="p">:</span> <span class="n">match</span><span class="p">,</span>
+        <span class="s2">"fwl_result"</span><span class="p">:</span> <span class="n">fwl_result</span><span class="p">,</span>
     <span class="p">}</span></div>
 
 
@@ -723,21 +778,21 @@
 <div class="viewcode-block" id="demonstrate_fwl_theorem">
 <a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.fwl.demonstrate_fwl_theorem">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">demonstrate_fwl_theorem</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Print a demonstration of the FWL theorem.</span>
+<span class="w">    </span><span class="sd">"""Print a demonstration of the FWL theorem.</span>
 
 <span class="sd">    This function generates synthetic data and shows that FWL and OLS</span>
 <span class="sd">    give identical results, building intuition for why residualization works.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Frisch-Waugh-Lovell Theorem Demonstration&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Frisch-Waugh-Lovell Theorem Demonstration"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setup:&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Y = 2.0·T + 1.0·X₁ + 0.5·X₂ - 0.3·X₃ + ε&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  T = 0.5·X₁ + η  (treatment depends on confounder X₁)&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  True treatment effect: θ = 2.0&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Setup:"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"  Y = 2.0·T + 1.0·X₁ + 0.5·X₂ - 0.3·X₃ + ε"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"  T = 0.5·X₁ + η  (treatment depends on confounder X₁)"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"  True treatment effect: θ = 2.0"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">()</span>
 
     <span class="c1"># Generate data</span>
@@ -749,29 +804,29 @@
     <span class="c1"># Compare methods</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">fwl_vs_ols_comparison</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Results:&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  OLS (Y ~ T + X):      θ̂ = </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;theta_ols&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  FWL (residualize):    θ̂ = </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;theta_fwl&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Difference:           |Δ| = </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;difference&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Match (rtol=1e-8):    </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;match&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Results:"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  OLS (Y ~ T + X):      θ̂ = </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'theta_ols'</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  FWL (residualize):    θ̂ = </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'theta_fwl'</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  Difference:           |Δ| = </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'difference'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  Match (rtol=1e-8):    </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">'match'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FWL Details:&quot;</span><span class="p">)</span>
-    <span class="n">fwl</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;fwl_result&quot;</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Standard Error:       </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  t-statistic:          </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">t_stat</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  p-value:              </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">p_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  R²(Y~X):              </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">r2_Y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  R²(T~X):              </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">r2_T</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"FWL Details:"</span><span class="p">)</span>
+    <span class="n">fwl</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">"fwl_result"</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  Standard Error:       </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">se</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  t-statistic:          </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">t_stat</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  p-value:              </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">p_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  R²(Y~X):              </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">r2_Y</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  R²(T~X):              </span><span class="si">{</span><span class="n">fwl</span><span class="o">.</span><span class="n">r2_T</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;★ Key Insight:&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  FWL and OLS give EXACTLY the same coefficient (up to numerical precision).&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  This is not an approximation—it&#39;s algebraic identity.&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Double ML extends this by replacing linear projection with ML models.&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"★ Key Insight:"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"  FWL and OLS give EXACTLY the same coefficient (up to numerical precision)."</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"  This is not an approximation—it's algebraic identity."</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"  Double ML extends this by replacing linear projection with ML models."</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span></div>
 
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="n">demonstrate_fwl_theorem</span><span class="p">()</span>
 </pre></div>
 
@@ -835,8 +890,8 @@ By Brandon Behring
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

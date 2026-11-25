@@ -26,20 +26,21 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../_static/documentation_options.js?v=62df3ba8"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
@@ -47,27 +48,34 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
-    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/validation/dynamic_dgp';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -93,7 +101,47 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
     </header>
   
 
@@ -275,11 +323,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -311,25 +366,25 @@
                 <article class="bd-article">
                   
   <h1>Source code for dml_ts.validation.dynamic_dgp</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Dynamic-treatment DGP with known period-specific blips for g-estimation.</span>
+<span></span><span class="sd">"""Dynamic-treatment DGP with known period-specific blips for g-estimation.</span>
 
 <span class="sd">Generates data with a *known* sequence of per-period treatment effects</span>
 <span class="sd">``theta_t = (theta_1, ..., theta_m)`` so that recursive dynamic g-estimation</span>
 <span class="sd">(Lewis &amp; Syrgkanis, 2021, arXiv:2002.07285) can be validated against ground</span>
-<span class="sd">truth. This is the missing piece: the repo&#39;s existing DGPs expose only a scalar</span>
+<span class="sd">truth. This is the missing piece: the repo's existing DGPs expose only a scalar</span>
 <span class="sd">effect, fixed lag coefficients, or piecewise regimes -- none a true sequence of</span>
 <span class="sd">period-specific blips.</span>
 
 <span class="sd">Two settings (both supported):</span>
 
-<span class="sd">* ``mode=&quot;panel&quot;`` -- n i.i.d. trajectories, each of length m periods. This is</span>
+<span class="sd">* ``mode="panel"`` -- n i.i.d. trajectories, each of length m periods. This is</span>
 <span class="sd">  the canonical Lewis-Syrgkanis setting (the structure needed to identify m</span>
-<span class="sd">  separate blips) and is directly comparable to EconML&#39;s ``DynamicDML`` (stacked</span>
+<span class="sd">  separate blips) and is directly comparable to EconML's ``DynamicDML`` (stacked</span>
 <span class="sd">  rows + ``groups``).</span>
-<span class="sd">* ``mode=&quot;series&quot;`` -- a single long, stationary series with distributed-lag</span>
+<span class="sd">* ``mode="series"`` -- a single long, stationary series with distributed-lag</span>
 <span class="sd">  treatment effects ``Y_t = sum_k theta_{k+1} T_{t-k} + ...``. This is the</span>
 <span class="sd">  single-unit, stationarity-based adaptation that Lewis &amp; Syrgkanis also provide</span>
-<span class="sd">  (their &quot;progressive nuisance estimation analogue&quot;).</span>
+<span class="sd">  (their "progressive nuisance estimation analogue").</span>
 
 <span class="sd">Structural model (panel), with optional treatment-dependent state:</span>
 
@@ -345,10 +400,10 @@
 <span class="sd">    theta*_tau = theta_tau + gamma^T A^{m-2-tau} b   (tau &lt;= m-2),  theta*_{m-1} = theta_{m-1},</span>
 
 <span class="sd">which is exactly the structural-nested-mean-model estimand that g-estimation</span>
-<span class="sd">(and EconML&#39;s DynamicDML) recovers. ``DynamicTreatmentDGPResult.theta_t`` always</span>
+<span class="sd">(and EconML's DynamicDML) recovers. ``DynamicTreatmentDGPResult.theta_t`` always</span>
 <span class="sd">holds this total blip, so tests compare estimates against the correct target</span>
 <span class="sd">regardless of the ``state_feedback`` setting.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -363,17 +418,17 @@
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dynamic_dgp.DynamicTreatmentDGPResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">DynamicTreatmentDGPResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Synthetic dynamic-treatment data with known per-period blips.</span>
+<span class="w">    </span><span class="sd">"""Synthetic dynamic-treatment data with known per-period blips.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        Y: Outcome, stacked as ``(n_rows,)``. For ``mode=&quot;panel&quot;`` rows are</span>
-<span class="sd">            unit-major: unit 0&#39;s m periods, then unit 1&#39;s, etc. (``n_rows =</span>
-<span class="sd">            n_units * n_periods``). For ``mode=&quot;series&quot;`` it is the single</span>
+<span class="sd">        Y: Outcome, stacked as ``(n_rows,)``. For ``mode="panel"`` rows are</span>
+<span class="sd">            unit-major: unit 0's m periods, then unit 1's, etc. (``n_rows =</span>
+<span class="sd">            n_units * n_periods``). For ``mode="series"`` it is the single</span>
 <span class="sd">            series ``(series_length,)``.</span>
 <span class="sd">        T: Treatment, same stacking as ``Y``.</span>
 <span class="sd">        X: Confounders, ``(n_rows, p)``, same stacking.</span>
 <span class="sd">        groups: Unit id per row for the panel (EconML-compatible), or ``None``</span>
-<span class="sd">            for ``mode=&quot;series&quot;``.</span>
+<span class="sd">            for ``mode="series"``.</span>
 <span class="sd">        time_index: Within-unit period index ``0..m-1`` per row (panel), or</span>
 <span class="sd">            ``0..L-1`` for the series.</span>
 <span class="sd">        theta_t: True per-period total blip ``(m,)`` -- the g-estimation</span>
@@ -382,9 +437,9 @@
 <span class="sd">        n_units: Number of trajectories (1 for the series).</span>
 <span class="sd">        n_periods: Horizon m (number of blips).</span>
 <span class="sd">        p: Number of confounders.</span>
-<span class="sd">        mode: ``&quot;panel&quot;`` or ``&quot;series&quot;``.</span>
+<span class="sd">        mode: ``"panel"`` or ``"series"``.</span>
 <span class="sd">        state_feedback: Whether the state depended on past treatment.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
     <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
@@ -402,17 +457,17 @@
 <div class="viewcode-block" id="DynamicTreatmentDGPResult.panels">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dynamic_dgp.DynamicTreatmentDGPResult.panels">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">panels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reshape the panel stacking into ``(n_units, m)`` / ``(n_units, m, p)``.</span>
+<span class="w">        </span><span class="sd">"""Reshape the panel stacking into ``(n_units, m)`` / ``(n_units, m, p)``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ``(Y_panel, T_panel, X_panel)`` with shapes ``(n_units, m)``,</span>
 <span class="sd">            ``(n_units, m)`` and ``(n_units, m, p)``.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If called on a ``mode=&quot;series&quot;`` result.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;panel&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;panels() is only defined for mode=&#39;panel&#39;.&quot;</span><span class="p">)</span>
+<span class="sd">            ValueError: If called on a ``mode="series"`` result.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">!=</span> <span class="s2">"panel"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"panels() is only defined for mode='panel'."</span><span class="p">)</span>
         <span class="n">m</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_units</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span>
@@ -426,33 +481,33 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">to_econml</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return ``(Y, T, X, groups)`` in EconML ``DynamicDML.fit`` layout.</span>
+<span class="w">        </span><span class="sd">"""Return ``(Y, T, X, groups)`` in EconML ``DynamicDML.fit`` layout.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If called on a ``mode=&quot;series&quot;`` result (EconML</span>
+<span class="sd">            ValueError: If called on a ``mode="series"`` result (EconML</span>
 <span class="sd">                ``DynamicDML`` requires panel ``groups``).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;panel&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;to_econml() requires a panel result with groups.&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">!=</span> <span class="s2">"panel"</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"to_econml() requires a panel result with groups."</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span></div>
 </div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_as_matrix</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Coerce a scalar or array into a ``(p, p)`` state-transition matrix.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Coerce a scalar or array into a ``(p, p)`` state-transition matrix."""</span>
     <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">arr</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;state_transition must be a scalar or (</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">) matrix, got </span><span class="si">{</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"state_transition must be a scalar or (</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">) matrix, got </span><span class="si">{</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_as_vector</span><span class="p">(</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">default_first</span><span class="p">:</span> <span class="nb">float</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Coerce a scalar/array/None into a length-``p`` coefficient vector.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Coerce a scalar/array/None into a length-``p`` coefficient vector."""</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
         <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_first</span>
@@ -462,18 +517,18 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">p</span><span class="p">,):</span>
         <span class="k">return</span> <span class="n">arr</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;coefficient vector must be scalar or length </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"coefficient vector must be scalar or length </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="DynamicTreatmentDGP">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dynamic_dgp.DynamicTreatmentDGP">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DynamicTreatmentDGP</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate dynamic-treatment data with known per-period blips ``theta_t``.</span>
+<span class="w">    </span><span class="sd">"""Generate dynamic-treatment data with known per-period blips ``theta_t``.</span>
 
 <span class="sd">    See the module docstring for the structural model. The generator is fully</span>
 <span class="sd">    deterministic given ``random_state`` and, with ``noise_level=0`` and linear</span>
 <span class="sd">    nuisances, returns data whose blips are recovered exactly -- the basis for</span>
-<span class="sd">    the estimator&#39;s deterministic-recovery test.</span>
+<span class="sd">    the estimator's deterministic-recovery test.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        n_periods: Horizon ``m`` (number of per-period blips). Must be &gt;= 2.</span>
@@ -485,8 +540,8 @@
 <span class="sd">        p: Number of confounders.</span>
 <span class="sd">        state_feedback: If True, the state depends on past treatment</span>
 <span class="sd">            (``X_tau += b * T_{tau-1}``), creating genuine time-varying</span>
-<span class="sd">            confounding; the result&#39;s ``theta_t`` is adjusted to the closed-form</span>
-<span class="sd">            total effect. If False, the state is exogenous (matches EconML&#39;s</span>
+<span class="sd">            confounding; the result's ``theta_t`` is adjusted to the closed-form</span>
+<span class="sd">            total effect. If False, the state is exogenous (matches EconML's</span>
 <span class="sd">            example convention and yields an unambiguous estimand).</span>
 <span class="sd">        state_transition: AR coefficient for the state -- scalar (``c * I``) or a</span>
 <span class="sd">            ``(p, p)`` matrix ``A``.</span>
@@ -497,7 +552,7 @@
 <span class="sd">            state (scalar -&gt; first coordinate, or length-``p`` vector).</span>
 <span class="sd">        confounding_coef: ``gamma`` -- effect of the state on the outcome</span>
 <span class="sd">            (scalar -&gt; all coordinates, or length-``p`` vector).</span>
-<span class="sd">        treatment_type: ``&quot;continuous&quot;`` or ``&quot;binary&quot;``.</span>
+<span class="sd">        treatment_type: ``"continuous"`` or ``"binary"``.</span>
 <span class="sd">        noise_level: Default std for the state, treatment, and outcome noise</span>
 <span class="sd">            terms (used wherever a specific channel below is left ``None``).</span>
 <span class="sd">        state_noise: Std of the state shock ``eps`` (defaults to ``noise_level``).</span>
@@ -506,13 +561,13 @@
 <span class="sd">            identifies the blips; it must be &gt; 0 for recovery.</span>
 <span class="sd">        outcome_noise: Std of the outcome shock ``u`` (defaults to</span>
 <span class="sd">            ``noise_level``). Set to 0 for an exact (deterministic) recovery test.</span>
-<span class="sd">        series_length: Length of the single series for ``mode=&quot;series&quot;``.</span>
-<span class="sd">        mode: ``&quot;panel&quot;`` (default) or ``&quot;series&quot;``.</span>
+<span class="sd">        series_length: Length of the single series for ``mode="series"``.</span>
+<span class="sd">        mode: ``"panel"`` (default) or ``"series"``.</span>
 <span class="sd">        random_state: Seed for reproducibility.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: On invalid shapes or parameters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="DynamicTreatmentDGP.__init__">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dynamic_dgp.DynamicTreatmentDGP.__init__">[docs]</a>
@@ -527,24 +582,24 @@
         <span class="n">treatment_state_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">treatment_policy_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">confounding_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">treatment_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="s2">&quot;binary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;continuous&quot;</span><span class="p">,</span>
+        <span class="n">treatment_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"continuous"</span><span class="p">,</span> <span class="s2">"binary"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"continuous"</span><span class="p">,</span>
         <span class="n">noise_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">state_noise</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">treatment_noise</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">outcome_noise</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">series_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span>
-        <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span> <span class="s2">&quot;series&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;panel&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"panel"</span><span class="p">,</span> <span class="s2">"series"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"panel"</span><span class="p">,</span>
         <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="n">n_periods</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_periods (m) must be &gt;= 2, got </span><span class="si">{</span><span class="n">n_periods</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_periods (m) must be &gt;= 2, got </span><span class="si">{</span><span class="n">n_periods</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">p</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;p must be positive, got </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span> <span class="s2">&quot;series&quot;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mode must be &#39;panel&#39; or &#39;series&#39;, got </span><span class="si">{</span><span class="n">mode</span><span class="si">!r}</span><span class="s2">.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">treatment_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="s2">&quot;binary&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"p must be positive, got </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"panel"</span><span class="p">,</span> <span class="s2">"series"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mode must be 'panel' or 'series', got </span><span class="si">{</span><span class="n">mode</span><span class="si">!r}</span><span class="s2">."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">treatment_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"continuous"</span><span class="p">,</span> <span class="s2">"binary"</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;treatment_type must be &#39;continuous&#39; or &#39;binary&#39;, got </span><span class="si">{</span><span class="n">treatment_type</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"treatment_type must be 'continuous' or 'binary', got </span><span class="si">{</span><span class="n">treatment_type</span><span class="si">!r}</span><span class="s2">."</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_periods</span><span class="p">)</span>
@@ -565,7 +620,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">theta_direct</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">theta_arr</span><span class="p">))</span> <span class="k">if</span> <span class="n">theta_arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">theta_arr</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_direct</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">m</span><span class="p">,):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;theta_t must be scalar or length </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_direct</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"theta_t must be scalar or length </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_direct</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">_as_matrix</span><span class="p">(</span><span class="n">state_transition</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
@@ -579,7 +634,7 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_total_blip</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Closed-form total per-period blip (the g-estimation estimand).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Closed-form total per-period blip (the g-estimation estimand)."""</span>
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span>
         <span class="n">theta_star</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta_direct</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_feedback</span><span class="p">:</span>
@@ -598,13 +653,13 @@
 <div class="viewcode-block" id="DynamicTreatmentDGP.generate">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.dynamic_dgp.DynamicTreatmentDGP.generate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicTreatmentDGPResult</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the dataset.</span>
+<span class="w">        </span><span class="sd">"""Generate the dataset.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A :class:`DynamicTreatmentDGPResult` whose ``theta_t`` is the true</span>
 <span class="sd">            total per-period blip.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;panel&quot;</span><span class="p">:</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"panel"</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_panel</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_series</span><span class="p">()</span></div>
 
@@ -623,7 +678,7 @@
                     <span class="n">state</span> <span class="o">=</span> <span class="n">state</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">T</span><span class="p">[:,</span> <span class="n">tau</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>
                 <span class="n">X</span><span class="p">[:,</span> <span class="n">tau</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">state</span>
             <span class="n">lin</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">tau</span><span class="p">,</span> <span class="p">:]</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">pi</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_noise</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_type</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_type</span> <span class="o">==</span> <span class="s2">"continuous"</span><span class="p">:</span>
                 <span class="n">T</span><span class="p">[:,</span> <span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="n">lin</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">T</span><span class="p">[:,</span> <span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigmoid</span><span class="p">(</span><span class="n">lin</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
@@ -636,7 +691,7 @@
             <span class="n">cum_treatment</span><span class="p">[:,</span> <span class="n">tau</span><span class="p">]</span> <span class="o">=</span> <span class="n">running</span>
         <span class="n">Y</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">cum_treatment</span>
-            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ntp,p-&gt;nt&quot;</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"ntp,p-&gt;nt"</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
             <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcome_noise</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
         <span class="p">)</span>
 
@@ -654,7 +709,7 @@
             <span class="n">n_units</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
             <span class="n">n_periods</span><span class="o">=</span><span class="n">m</span><span class="p">,</span>
             <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">"panel"</span><span class="p">,</span>
             <span class="n">state_feedback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state_feedback</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -662,7 +717,7 @@
         <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
         <span class="n">m</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_periods</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">series_length</span>
         <span class="k">if</span> <span class="n">L</span> <span class="o">&lt;=</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;series_length (</span><span class="si">{</span><span class="n">L</span><span class="si">}</span><span class="s2">) must exceed n_periods + 10.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"series_length (</span><span class="si">{</span><span class="n">L</span><span class="si">}</span><span class="s2">) must exceed n_periods + 10."</span><span class="p">)</span>
 
         <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
         <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">L</span><span class="p">)</span>
@@ -676,7 +731,7 @@
             <span class="n">lin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pi</span> <span class="o">@</span> <span class="n">X</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_noise</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">())</span>
             <span class="n">T</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">lin</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_type</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_type</span> <span class="o">==</span> <span class="s2">"continuous"</span>
                 <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigmoid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lin</span><span class="p">))))</span>
             <span class="p">)</span>
 
@@ -697,7 +752,7 @@
             <span class="n">n_units</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">n_periods</span><span class="o">=</span><span class="n">m</span><span class="p">,</span>
             <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
-            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;series&quot;</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">"series"</span><span class="p">,</span>
             <span class="n">state_feedback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state_feedback</span><span class="p">,</span>
         <span class="p">)</span></div>
 
@@ -763,8 +818,8 @@ By Brandon Behring
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

@@ -26,20 +26,21 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../_static/documentation_options.js?v=62df3ba8"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
@@ -47,27 +48,34 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
-    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/validation/baseline_comparison';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -93,7 +101,47 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
     </header>
   
 
@@ -275,11 +323,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -311,7 +366,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for dml_ts.validation.baseline_comparison</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Unified comparison framework for baseline estimation methods.</span>
 
 <span class="sd">Provides side-by-side comparison of multiple causal inference estimators:</span>
@@ -324,7 +379,7 @@
 <span class="sd">- BiasValidation (Double Machine Learning - DML)</span>
 
 <span class="sd">Enables systematic evaluation of method performance across different DGP configurations.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
 
@@ -340,7 +395,7 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_Validatable</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for objects that support validate(dgp) -&gt; ValidationResult.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Protocol for objects that support validate(dgp) -&gt; ValidationResult."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ValidationResult</span><span class="p">:</span> <span class="o">...</span>
 
@@ -348,7 +403,7 @@
 <div class="viewcode-block" id="BaselineComparison">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BaselineComparison</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run all baseline methods on same DGP and compare results.</span>
 
 <span class="sd">    Provides unified framework for comparing:</span>
@@ -361,7 +416,7 @@
 <span class="sd">        n_simulations: Number of Monte Carlo simulations per method</span>
 <span class="sd">        random_state: Random seed for reproducibility</span>
 <span class="sd">        include_dml: Whether to include DML method (default: True)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="BaselineComparison.__init__">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.__init__">[docs]</a>
@@ -372,7 +427,7 @@
         <span class="n">include_dml</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">include_ml</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize comparison framework.</span>
 
 <span class="sd">        Args:</span>
@@ -380,7 +435,7 @@
 <span class="sd">            random_state: Random seed for reproducibility</span>
 <span class="sd">            include_dml: Whether to include DML method (default: True)</span>
 <span class="sd">            include_ml: Whether to include ML baseline methods (RF, XGBoost) (default: False)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span> <span class="o">=</span> <span class="n">n_simulations</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">include_dml</span> <span class="o">=</span> <span class="n">include_dml</span>
@@ -388,26 +443,26 @@
 
         <span class="c1"># Initialize all baseline methods</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_Validatable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;NaiveOLS&quot;</span><span class="p">:</span> <span class="n">NaiveOLS</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">),</span>
-            <span class="s2">&quot;OLSWithControls&quot;</span><span class="p">:</span> <span class="n">OLSWithControls</span><span class="p">(</span>
+            <span class="s2">"NaiveOLS"</span><span class="p">:</span> <span class="n">NaiveOLS</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">),</span>
+            <span class="s2">"OLSWithControls"</span><span class="p">:</span> <span class="n">OLSWithControls</span><span class="p">(</span>
                 <span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
             <span class="p">),</span>
-            <span class="s2">&quot;IPWEstimator&quot;</span><span class="p">:</span> <span class="n">IPWEstimator</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">),</span>
-            <span class="s2">&quot;AugmentedIPW&quot;</span><span class="p">:</span> <span class="n">AugmentedIPW</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">),</span>
+            <span class="s2">"IPWEstimator"</span><span class="p">:</span> <span class="n">IPWEstimator</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">),</span>
+            <span class="s2">"AugmentedIPW"</span><span class="p">:</span> <span class="n">AugmentedIPW</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">),</span>
         <span class="p">}</span>
 
         <span class="c1"># Optionally include ML baselines</span>
         <span class="k">if</span> <span class="n">include_ml</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">&quot;RandomForest&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RandomForestEstimator</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">"RandomForest"</span><span class="p">]</span> <span class="o">=</span> <span class="n">RandomForestEstimator</span><span class="p">(</span>
                 <span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">&quot;XGBoost&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">XGBoostEstimator</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">"XGBoost"</span><span class="p">]</span> <span class="o">=</span> <span class="n">XGBoostEstimator</span><span class="p">(</span>
                 <span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
             <span class="p">)</span>
 
         <span class="c1"># Optionally include DML</span>
         <span class="k">if</span> <span class="n">include_dml</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">&quot;DML&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">BiasValidation</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">[</span><span class="s2">"DML"</span><span class="p">]</span> <span class="o">=</span> <span class="n">BiasValidation</span><span class="p">(</span>
                 <span class="n">n_simulations</span><span class="o">=</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
             <span class="p">)</span></div>
 
@@ -415,7 +470,7 @@
 <div class="viewcode-block" id="BaselineComparison.compare">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.compare">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ValidationResult</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run all methods on same DGP with deterministic comparability.</span>
 
 <span class="sd">        FIXED (Issue C3): Reset DGP random state before each method to ensure</span>
@@ -427,7 +482,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dictionary mapping method names to ValidationResults</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">method</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="c1"># FIXED (Issue C3): Reset DGP random state for deterministic comparisons</span>
@@ -440,7 +495,7 @@
 <div class="viewcode-block" id="BaselineComparison.create_comparison_table">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.create_comparison_table">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_comparison_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create summary table comparing all methods.</span>
 
 <span class="sd">        Args:</span>
@@ -448,7 +503,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            DataFrame with one row per method, columns for key metrics</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
 
         <span class="c1"># Build comparison table</span>
@@ -456,14 +511,14 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
-                    <span class="s2">&quot;Bias&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;MSE&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;RMSE&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;Coverage&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">coverage</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;Status&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
-                    <span class="s2">&quot;Bias 95% CI&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;P-value&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">bias_p_value</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="s2">"Method"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                    <span class="s2">"Bias"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="s2">"MSE"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="s2">"RMSE"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="s2">"Coverage"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">coverage</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="s2">"Status"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+                    <span class="s2">"Bias 95% CI"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">]"</span><span class="p">,</span>
+                    <span class="s2">"P-value"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">bias_p_value</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span>
 
@@ -473,7 +528,7 @@
 <div class="viewcode-block" id="BaselineComparison.create_detailed_comparison_table">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.create_detailed_comparison_table">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_detailed_comparison_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create detailed comparison table with additional statistics.</span>
 
 <span class="sd">        Args:</span>
@@ -481,7 +536,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            DataFrame with extended metrics for in-depth analysis</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
 
         <span class="c1"># Build detailed table</span>
@@ -489,19 +544,19 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
-                    <span class="s2">&quot;Bias&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
-                    <span class="s2">&quot;Abs_Bias&quot;</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">),</span>
-                    <span class="s2">&quot;MSE&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="p">,</span>
-                    <span class="s2">&quot;RMSE&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="p">),</span>
-                    <span class="s2">&quot;Coverage&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">coverage</span><span class="p">,</span>
-                    <span class="s2">&quot;CI_Lower&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="p">,</span>
-                    <span class="s2">&quot;CI_Upper&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span><span class="p">,</span>
-                    <span class="s2">&quot;CI_Width&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span> <span class="o">-</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="p">,</span>
-                    <span class="s2">&quot;Status&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
-                    <span class="s2">&quot;P_Value&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">bias_p_value</span><span class="p">,</span>
-                    <span class="s2">&quot;N_Simulations&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">,</span>
-                    <span class="s2">&quot;Timestamp&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span>
+                    <span class="s2">"Method"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                    <span class="s2">"Bias"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+                    <span class="s2">"Abs_Bias"</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">bias</span><span class="p">),</span>
+                    <span class="s2">"MSE"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="p">,</span>
+                    <span class="s2">"RMSE"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mse</span><span class="p">),</span>
+                    <span class="s2">"Coverage"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">coverage</span><span class="p">,</span>
+                    <span class="s2">"CI_Lower"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="p">,</span>
+                    <span class="s2">"CI_Upper"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span><span class="p">,</span>
+                    <span class="s2">"CI_Width"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_upper</span> <span class="o">-</span> <span class="n">result</span><span class="o">.</span><span class="n">ci_lower</span><span class="p">,</span>
+                    <span class="s2">"Status"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+                    <span class="s2">"P_Value"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">bias_p_value</span><span class="p">,</span>
+                    <span class="s2">"N_Simulations"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">,</span>
+                    <span class="s2">"Timestamp"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span>
                 <span class="p">}</span>
             <span class="p">)</span>
 
@@ -511,7 +566,7 @@
 <div class="viewcode-block" id="BaselineComparison.compare_across_dgps">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.compare_across_dgps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compare_across_dgps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp_configs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare methods across multiple DGP configurations.</span>
 
 <span class="sd">        Args:</span>
@@ -520,7 +575,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dictionary mapping config string → comparison table</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">all_results</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">dgp_configs</span><span class="p">:</span>
@@ -532,17 +587,17 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_config_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert DGP config dict to readable string.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Convert DGP config dict to readable string."""</span>
         <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="s2">&quot;true_effect&quot;</span><span class="p">,</span> <span class="s2">&quot;confounding_strength&quot;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"n"</span><span class="p">,</span> <span class="s2">"p"</span><span class="p">,</span> <span class="s2">"true_effect"</span><span class="p">,</span> <span class="s2">"confounding_strength"</span><span class="p">]:</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BaselineComparison.generate_summary_statistics">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.baseline_comparison.BaselineComparison.generate_summary_statistics">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_summary_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgp</span><span class="p">:</span> <span class="n">DGPGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate summary statistics across all methods.</span>
 
 <span class="sd">        Args:</span>
@@ -550,7 +605,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dictionary with summary metrics (best, worst, average performance)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
 
         <span class="c1"># Extract biases</span>
@@ -565,22 +620,22 @@
         <span class="n">best_coverage_method</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">coverages</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">coverages</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;dgp_config&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
-                <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
-                <span class="s2">&quot;true_effect&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
-                <span class="s2">&quot;confounding_strength&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">confounding_strength</span><span class="p">,</span>
+            <span class="s2">"dgp_config"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"n"</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+                <span class="s2">"p"</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+                <span class="s2">"true_effect"</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
+                <span class="s2">"confounding_strength"</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">confounding_strength</span><span class="p">,</span>
             <span class="p">},</span>
-            <span class="s2">&quot;best_bias_method&quot;</span><span class="p">:</span> <span class="n">best_bias_method</span><span class="p">,</span>
-            <span class="s2">&quot;worst_bias_method&quot;</span><span class="p">:</span> <span class="n">worst_bias_method</span><span class="p">,</span>
-            <span class="s2">&quot;best_mse_method&quot;</span><span class="p">:</span> <span class="n">best_mse_method</span><span class="p">,</span>
-            <span class="s2">&quot;best_coverage_method&quot;</span><span class="p">:</span> <span class="n">best_coverage_method</span><span class="p">,</span>
-            <span class="s2">&quot;all_biases&quot;</span><span class="p">:</span> <span class="n">biases</span><span class="p">,</span>
-            <span class="s2">&quot;all_mses&quot;</span><span class="p">:</span> <span class="n">mses</span><span class="p">,</span>
-            <span class="s2">&quot;all_coverages&quot;</span><span class="p">:</span> <span class="n">coverages</span><span class="p">,</span>
-            <span class="s2">&quot;mean_absolute_bias&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">biases</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
-            <span class="s2">&quot;mean_mse&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">mses</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
-            <span class="s2">&quot;mean_coverage&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">coverages</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
+            <span class="s2">"best_bias_method"</span><span class="p">:</span> <span class="n">best_bias_method</span><span class="p">,</span>
+            <span class="s2">"worst_bias_method"</span><span class="p">:</span> <span class="n">worst_bias_method</span><span class="p">,</span>
+            <span class="s2">"best_mse_method"</span><span class="p">:</span> <span class="n">best_mse_method</span><span class="p">,</span>
+            <span class="s2">"best_coverage_method"</span><span class="p">:</span> <span class="n">best_coverage_method</span><span class="p">,</span>
+            <span class="s2">"all_biases"</span><span class="p">:</span> <span class="n">biases</span><span class="p">,</span>
+            <span class="s2">"all_mses"</span><span class="p">:</span> <span class="n">mses</span><span class="p">,</span>
+            <span class="s2">"all_coverages"</span><span class="p">:</span> <span class="n">coverages</span><span class="p">,</span>
+            <span class="s2">"mean_absolute_bias"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">biases</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
+            <span class="s2">"mean_mse"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">mses</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
+            <span class="s2">"mean_coverage"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">coverages</span><span class="o">.</span><span class="n">values</span><span class="p">())),</span>
         <span class="p">}</span></div>
 </div>
 
@@ -646,8 +701,8 @@ By Brandon Behring
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

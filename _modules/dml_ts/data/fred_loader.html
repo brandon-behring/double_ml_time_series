@@ -26,20 +26,21 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=b07499cc" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="../../../_static/documentation_options.js?v=62df3ba8"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
@@ -47,27 +48,34 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
-    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/dml_ts/data/fred_loader';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -93,7 +101,47 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
     </header>
   
 
@@ -275,11 +323,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -311,7 +366,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for dml_ts.data.fred_loader</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">FRED Data Loader for Macroeconomic Controls in DML.</span>
 
 <span class="sd">Provides standardized access to Federal Reserve Economic Data (FRED) for</span>
@@ -335,13 +390,13 @@
 <span class="sd">Usage:</span>
 <span class="sd">    &gt;&gt;&gt; from dml_ts.data import FREDLoader</span>
 <span class="sd">    &gt;&gt;&gt; # Requires live FRED API key + network; skipped in the doctest gate</span>
-<span class="sd">    &gt;&gt;&gt; loader = FREDLoader(api_key=&quot;your_api_key&quot;)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; loader = FREDLoader(api_key="your_api_key")  # doctest: +SKIP</span>
 <span class="sd">    &gt;&gt;&gt; macro_data = loader.get_macro_controls(  # doctest: +SKIP</span>
-<span class="sd">    ...     start_date=&quot;2010-01-01&quot;,</span>
-<span class="sd">    ...     end_date=&quot;2020-12-31&quot;,</span>
-<span class="sd">    ...     frequency=&quot;M&quot;</span>
+<span class="sd">    ...     start_date="2010-01-01",</span>
+<span class="sd">    ...     end_date="2020-12-31",</span>
+<span class="sd">    ...     frequency="M"</span>
 <span class="sd">    ... )</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -366,23 +421,23 @@
 
 
 <span class="c1"># Type aliases</span>
-<span class="n">FrequencyType</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span>
+<span class="n">FrequencyType</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"D"</span><span class="p">,</span> <span class="s2">"W"</span><span class="p">,</span> <span class="s2">"M"</span><span class="p">,</span> <span class="s2">"Q"</span><span class="p">,</span> <span class="s2">"A"</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="FREDSeries">
 <a class="viewcode-back" href="../../../api/data.html#dml_ts.data.fred_loader.FREDSeries">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FREDSeries</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for a FRED series with metadata.</span>
+<span class="w">    </span><span class="sd">"""Container for a FRED series with metadata.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        series_id: FRED series identifier (e.g., &quot;GDP&quot;, &quot;CPIAUCSL&quot;)</span>
+<span class="sd">        series_id: FRED series identifier (e.g., "GDP", "CPIAUCSL")</span>
 <span class="sd">        name: Human-readable name</span>
 <span class="sd">        description: Detailed description</span>
 <span class="sd">        frequency: Data frequency (D/W/M/Q/A)</span>
 <span class="sd">        units: Units of measurement</span>
 <span class="sd">        data: Time series data as pandas Series</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
@@ -397,7 +452,7 @@
 <a class="viewcode-back" href="../../../api/data.html#dml_ts.data.fred_loader.MacroControlsResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MacroControlsResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result container for macro control variables.</span>
+<span class="w">    </span><span class="sd">"""Result container for macro control variables.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        data: DataFrame with aligned macro indicators</span>
@@ -406,7 +461,7 @@
 <span class="sd">        end_date: Actual end date of data</span>
 <span class="sd">        frequency: Data frequency</span>
 <span class="sd">        missing_pct: Dict of missing data percentages by series</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
@@ -420,113 +475,113 @@
 <span class="c1"># Standard FRED series for DML macro controls</span>
 <span class="n">STANDARD_MACRO_SERIES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># Output measures</span>
-    <span class="s2">&quot;GDP&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Gross Domestic Product&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Nominal GDP in billions of dollars (quarterly)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;pct_change&quot;</span><span class="p">,</span>
+    <span class="s2">"GDP"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Gross Domestic Product"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Nominal GDP in billions of dollars (quarterly)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"pct_change"</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="s2">&quot;GDPC1&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Real GDP&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Real GDP in billions of chained 2017 dollars (quarterly)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;pct_change&quot;</span><span class="p">,</span>
+    <span class="s2">"GDPC1"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Real GDP"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Real GDP in billions of chained 2017 dollars (quarterly)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"pct_change"</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># Price measures</span>
-    <span class="s2">&quot;CPIAUCSL&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Consumer Price Index&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;CPI for All Urban Consumers (monthly)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;pct_change_yoy&quot;</span><span class="p">,</span>
+    <span class="s2">"CPIAUCSL"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Consumer Price Index"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"CPI for All Urban Consumers (monthly)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"pct_change_yoy"</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="s2">&quot;PCEPI&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;PCE Price Index&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Personal Consumption Expenditures Price Index (monthly)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;pct_change_yoy&quot;</span><span class="p">,</span>
+    <span class="s2">"PCEPI"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"PCE Price Index"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Personal Consumption Expenditures Price Index (monthly)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"pct_change_yoy"</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># Labor market</span>
-    <span class="s2">&quot;UNRATE&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Unemployment Rate&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Civilian Unemployment Rate (monthly, %)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+    <span class="s2">"UNRATE"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Unemployment Rate"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Civilian Unemployment Rate (monthly, %)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="s2">&quot;PAYEMS&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Total Nonfarm Payrolls&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Total Nonfarm Employment in thousands (monthly)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;pct_change&quot;</span><span class="p">,</span>
+    <span class="s2">"PAYEMS"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Total Nonfarm Payrolls"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Total Nonfarm Employment in thousands (monthly)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"pct_change"</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># Interest rates</span>
-    <span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Federal Funds Rate&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Effective Federal Funds Rate (monthly, %)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+    <span class="s2">"FEDFUNDS"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Federal Funds Rate"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Effective Federal Funds Rate (monthly, %)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="s2">&quot;GS10&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;10-Year Treasury Rate&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;10-Year Treasury Constant Maturity Rate (monthly, %)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+    <span class="s2">"GS10"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"10-Year Treasury Rate"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"10-Year Treasury Constant Maturity Rate (monthly, %)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="s2">&quot;TB3MS&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;3-Month Treasury Rate&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;3-Month Treasury Bill Rate (monthly, %)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+    <span class="s2">"TB3MS"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"3-Month Treasury Rate"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"3-Month Treasury Bill Rate (monthly, %)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># Financial conditions</span>
-    <span class="s2">&quot;SP500&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;S&amp;P 500 Index&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;S&amp;P 500 Stock Price Index (daily)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;pct_change&quot;</span><span class="p">,</span>
+    <span class="s2">"SP500"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"S&amp;P 500 Index"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"S&amp;P 500 Stock Price Index (daily)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"pct_change"</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="s2">&quot;VIXCLS&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;VIX Index&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;CBOE Volatility Index (daily)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+    <span class="s2">"VIXCLS"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"VIX Index"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"CBOE Volatility Index (daily)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># Credit</span>
-    <span class="s2">&quot;TOTCI&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Commercial &amp; Industrial Loans&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Commercial and Industrial Loans at All Commercial Banks (weekly)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;pct_change_yoy&quot;</span><span class="p">,</span>
+    <span class="s2">"TOTCI"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Commercial &amp; Industrial Loans"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Commercial and Industrial Loans at All Commercial Banks (weekly)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"pct_change_yoy"</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># Housing</span>
-    <span class="s2">&quot;HOUST&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Housing Starts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Housing Starts in thousands (monthly)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+    <span class="s2">"HOUST"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Housing Starts"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Housing Starts in thousands (monthly)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># Consumer</span>
-    <span class="s2">&quot;UMCSENT&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Consumer Sentiment&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;University of Michigan Consumer Sentiment Index (monthly)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+    <span class="s2">"UMCSENT"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Consumer Sentiment"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"University of Michigan Consumer Sentiment Index (monthly)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="c1"># Industrial</span>
-    <span class="s2">&quot;INDPRO&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Industrial Production&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Industrial Production Index (monthly)&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;default_transform&quot;</span><span class="p">:</span> <span class="s2">&quot;pct_change&quot;</span><span class="p">,</span>
+    <span class="s2">"INDPRO"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Industrial Production"</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Industrial Production Index (monthly)"</span><span class="p">,</span>
+        <span class="s2">"default_transform"</span><span class="p">:</span> <span class="s2">"pct_change"</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>
 
 <span class="c1"># Pre-defined macro control sets for common applications</span>
 <span class="n">MACRO_CONTROL_SETS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;basic&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;GDPC1&quot;</span><span class="p">,</span> <span class="s2">&quot;CPIAUCSL&quot;</span><span class="p">,</span> <span class="s2">&quot;UNRATE&quot;</span><span class="p">,</span> <span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;comprehensive&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;GDPC1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;CPIAUCSL&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;UNRATE&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;GS10&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;INDPRO&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;UMCSENT&quot;</span><span class="p">,</span>
+    <span class="s2">"basic"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"GDPC1"</span><span class="p">,</span> <span class="s2">"CPIAUCSL"</span><span class="p">,</span> <span class="s2">"UNRATE"</span><span class="p">,</span> <span class="s2">"FEDFUNDS"</span><span class="p">],</span>
+    <span class="s2">"comprehensive"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"GDPC1"</span><span class="p">,</span>
+        <span class="s2">"CPIAUCSL"</span><span class="p">,</span>
+        <span class="s2">"UNRATE"</span><span class="p">,</span>
+        <span class="s2">"FEDFUNDS"</span><span class="p">,</span>
+        <span class="s2">"GS10"</span><span class="p">,</span>
+        <span class="s2">"INDPRO"</span><span class="p">,</span>
+        <span class="s2">"UMCSENT"</span><span class="p">,</span>
     <span class="p">],</span>
-    <span class="s2">&quot;financial&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;SP500&quot;</span><span class="p">,</span> <span class="s2">&quot;VIXCLS&quot;</span><span class="p">,</span> <span class="s2">&quot;GS10&quot;</span><span class="p">,</span> <span class="s2">&quot;TB3MS&quot;</span><span class="p">,</span> <span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;labor&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;UNRATE&quot;</span><span class="p">,</span> <span class="s2">&quot;PAYEMS&quot;</span><span class="p">,</span> <span class="s2">&quot;GDPC1&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;inflation&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;CPIAUCSL&quot;</span><span class="p">,</span> <span class="s2">&quot;PCEPI&quot;</span><span class="p">,</span> <span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">,</span> <span class="s2">&quot;GS10&quot;</span><span class="p">],</span>
+    <span class="s2">"financial"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"SP500"</span><span class="p">,</span> <span class="s2">"VIXCLS"</span><span class="p">,</span> <span class="s2">"GS10"</span><span class="p">,</span> <span class="s2">"TB3MS"</span><span class="p">,</span> <span class="s2">"FEDFUNDS"</span><span class="p">],</span>
+    <span class="s2">"labor"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"UNRATE"</span><span class="p">,</span> <span class="s2">"PAYEMS"</span><span class="p">,</span> <span class="s2">"GDPC1"</span><span class="p">],</span>
+    <span class="s2">"inflation"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"CPIAUCSL"</span><span class="p">,</span> <span class="s2">"PCEPI"</span><span class="p">,</span> <span class="s2">"FEDFUNDS"</span><span class="p">,</span> <span class="s2">"GS10"</span><span class="p">],</span>
 <span class="p">}</span>
 
 
 <div class="viewcode-block" id="FREDLoader">
 <a class="viewcode-back" href="../../../api/data.html#dml_ts.data.fred_loader.FREDLoader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FREDLoader</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;FRED data loader for macroeconomic controls.</span>
+<span class="w">    </span><span class="sd">"""FRED data loader for macroeconomic controls.</span>
 
 <span class="sd">    Provides standardized access to FRED data with:</span>
 <span class="sd">    - Automatic frequency alignment</span>
@@ -541,9 +596,9 @@
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; # Requires live FRED API key + network; skipped in the doctest gate</span>
 <span class="sd">        &gt;&gt;&gt; loader = FREDLoader()  # doctest: +SKIP</span>
-<span class="sd">        &gt;&gt;&gt; data = loader.get_macro_controls(&quot;2015-01-01&quot;, &quot;2023-12-31&quot;)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; data = loader.get_macro_controls("2015-01-01", "2023-12-31")  # doctest: +SKIP</span>
 <span class="sd">        &gt;&gt;&gt; print(data.data.columns)  # doctest: +SKIP</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="FREDLoader.__init__">
 <a class="viewcode-back" href="../../../api/data.html#dml_ts.data.fred_loader.FREDLoader.__init__">[docs]</a>
@@ -552,18 +607,18 @@
         <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize FREDLoader.</span>
+<span class="w">        </span><span class="sd">"""Initialize FREDLoader.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            api_key: FRED API key. If None, looks for FRED_API_KEY env variable.</span>
 <span class="sd">            cache_dir: Directory for caching. Defaults to ~/.cache/fred_dml/</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;FRED_API_KEY&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"FRED_API_KEY"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fred</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Set up caching</span>
         <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.cache&quot;</span> <span class="o">/</span> <span class="s2">&quot;fred_dml&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">".cache"</span> <span class="o">/</span> <span class="s2">"fred_dml"</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
 
@@ -574,27 +629,27 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_fred_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get or create FRED API client.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Get or create FRED API client."""</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">FREDAPI_AVAILABLE</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;fredapi package not installed. Install with: pip install fredapi&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">"fredapi package not installed. Install with: pip install fredapi"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fred</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;FRED API key required. &quot;</span>
-                    <span class="s2">&quot;Set api_key parameter or FRED_API_KEY environment variable. &quot;</span>
-                    <span class="s2">&quot;Get a free key at: https://fred.stlouisfed.org/docs/api/api_key.html&quot;</span>
+                    <span class="s2">"FRED API key required. "</span>
+                    <span class="s2">"Set api_key parameter or FRED_API_KEY environment variable. "</span>
+                    <span class="s2">"Get a free key at: https://fred.stlouisfed.org/docs/api/api_key.html"</span>
                 <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fred</span> <span class="o">=</span> <span class="n">Fred</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fred</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_cache_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get cache file path for a series.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">series_id</span><span class="si">}</span><span class="s2">.parquet&quot;</span>
+<span class="w">        </span><span class="sd">"""Get cache file path for a series."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">series_id</span><span class="si">}</span><span class="s2">.parquet"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_from_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load series from cache if available and recent.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Load series from cache if available and recent."""</span>
         <span class="n">cache_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache_path</span><span class="p">(</span><span class="n">series_id</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
@@ -612,7 +667,7 @@
             <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_to_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save series to cache.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Save series to cache."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -621,7 +676,7 @@
             <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="n">series_id</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
             <span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to cache </span><span class="si">{</span><span class="n">series_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to cache </span><span class="si">{</span><span class="n">series_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FREDLoader.get_series">
 <a class="viewcode-back" href="../../../api/data.html#dml_ts.data.fred_loader.FREDLoader.get_series">[docs]</a>
@@ -632,10 +687,10 @@
         <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FREDSeries</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch a single FRED series.</span>
+<span class="w">        </span><span class="sd">"""Fetch a single FRED series.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            series_id: FRED series identifier (e.g., &quot;GDP&quot;, &quot;CPIAUCSL&quot;)</span>
+<span class="sd">            series_id: FRED series identifier (e.g., "GDP", "CPIAUCSL")</span>
 <span class="sd">            start_date: Start date (YYYY-MM-DD format)</span>
 <span class="sd">            end_date: End date (YYYY-MM-DD format)</span>
 <span class="sd">            use_cache: Whether to use cached data if available</span>
@@ -646,7 +701,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ImportError: If fredapi not installed</span>
 <span class="sd">            ValueError: If API key not set or series not found</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Check cache first</span>
         <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
             <span class="n">cached</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_from_cache</span><span class="p">(</span><span class="n">series_id</span><span class="p">)</span>
@@ -660,15 +715,15 @@
                 <span class="c1"># Get metadata from standard series or default</span>
                 <span class="n">meta</span> <span class="o">=</span> <span class="n">STANDARD_MACRO_SERIES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
                     <span class="n">series_id</span><span class="p">,</span>
-                    <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">series_id</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Custom FRED series&quot;</span><span class="p">},</span>
+                    <span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="n">series_id</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Custom FRED series"</span><span class="p">},</span>
                 <span class="p">)</span>
 
                 <span class="k">return</span> <span class="n">FREDSeries</span><span class="p">(</span>
                     <span class="n">series_id</span><span class="o">=</span><span class="n">series_id</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
-                    <span class="n">description</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-                    <span class="n">frequency</span><span class="o">=</span><span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span>
+                    <span class="n">description</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+                    <span class="n">frequency</span><span class="o">=</span><span class="s2">"unknown"</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">"unknown"</span><span class="p">,</span>
                     <span class="n">data</span><span class="o">=</span><span class="n">cached</span><span class="p">,</span>
                 <span class="p">)</span>
 
@@ -683,7 +738,7 @@
             <span class="p">)</span>
             <span class="n">info</span> <span class="o">=</span> <span class="n">fred</span><span class="o">.</span><span class="n">get_series_info</span><span class="p">(</span><span class="n">series_id</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to fetch FRED series </span><span class="si">{</span><span class="n">series_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to fetch FRED series </span><span class="si">{</span><span class="n">series_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
         <span class="c1"># Cache the full series (before date filtering)</span>
         <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
@@ -692,10 +747,10 @@
 
         <span class="k">return</span> <span class="n">FREDSeries</span><span class="p">(</span>
             <span class="n">series_id</span><span class="o">=</span><span class="n">series_id</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">series_id</span><span class="p">),</span>
-            <span class="n">description</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;notes&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
-            <span class="n">frequency</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;frequency_short&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;units&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"title"</span><span class="p">,</span> <span class="n">series_id</span><span class="p">),</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"notes"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"frequency_short"</span><span class="p">,</span> <span class="s2">"unknown"</span><span class="p">),</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"units"</span><span class="p">,</span> <span class="s2">"unknown"</span><span class="p">),</span>
             <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
         <span class="p">)</span></div>
 
@@ -709,7 +764,7 @@
         <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FREDSeries</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch multiple FRED series.</span>
+<span class="w">        </span><span class="sd">"""Fetch multiple FRED series.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            series_ids: List of FRED series identifiers</span>
@@ -719,13 +774,13 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict mapping series_id to FREDSeries</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">series_id</span> <span class="ow">in</span> <span class="n">series_ids</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">results</span><span class="p">[</span><span class="n">series_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_series</span><span class="p">(</span><span class="n">series_id</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">use_cache</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to fetch </span><span class="si">{</span><span class="n">series_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to fetch </span><span class="si">{</span><span class="n">series_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
                 <span class="k">continue</span>
 
         <span class="k">return</span> <span class="n">results</span></div>
@@ -735,9 +790,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
         <span class="n">target_freq</span><span class="p">:</span> <span class="n">FrequencyType</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"mean"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert series to target frequency.</span>
+<span class="w">        </span><span class="sd">"""Convert series to target frequency.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            series: Input time series</span>
@@ -746,34 +801,34 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Resampled series</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">freq_map</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;D&quot;</span><span class="p">:</span> <span class="s2">&quot;D&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;W&quot;</span><span class="p">:</span> <span class="s2">&quot;W&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="s2">&quot;ME&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;Q&quot;</span><span class="p">:</span> <span class="s2">&quot;QE&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="s2">&quot;YE&quot;</span><span class="p">,</span>
+            <span class="s2">"D"</span><span class="p">:</span> <span class="s2">"D"</span><span class="p">,</span>
+            <span class="s2">"W"</span><span class="p">:</span> <span class="s2">"W"</span><span class="p">,</span>
+            <span class="s2">"M"</span><span class="p">:</span> <span class="s2">"ME"</span><span class="p">,</span>
+            <span class="s2">"Q"</span><span class="p">:</span> <span class="s2">"QE"</span><span class="p">,</span>
+            <span class="s2">"A"</span><span class="p">:</span> <span class="s2">"YE"</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="n">target</span> <span class="o">=</span> <span class="n">freq_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target_freq</span><span class="p">,</span> <span class="n">target_freq</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"mean"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;last&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"last"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;first&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"first"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;sum&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"sum"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown aggregation method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown aggregation method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_transform</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
         <span class="n">transform</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply transformation to series.</span>
+<span class="w">        </span><span class="sd">"""Apply transformation to series.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            series: Input time series</span>
@@ -781,21 +836,21 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Transformed series</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">&quot;level&quot;</span><span class="p">:</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">"level"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">series</span>
-        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">&quot;pct_change&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">"pct_change"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
-        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">&quot;pct_change_yoy&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">"pct_change_yoy"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">pct_change</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>  <span class="c1"># Assumes monthly</span>
-        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">&quot;diff&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">"diff"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">series</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">"log"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">&quot;log_diff&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">transform</span> <span class="o">==</span> <span class="s2">"log_diff"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">series</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown transform: </span><span class="si">{</span><span class="n">transform</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown transform: </span><span class="si">{</span><span class="n">transform</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FREDLoader.get_macro_controls">
 <a class="viewcode-back" href="../../../api/data.html#dml_ts.data.fred_loader.FREDLoader.get_macro_controls">[docs]</a>
@@ -803,18 +858,18 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">series_set</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;basic&quot;</span><span class="p">,</span>
-        <span class="n">frequency</span><span class="p">:</span> <span class="n">FrequencyType</span> <span class="o">=</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span>
+        <span class="n">series_set</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"basic"</span><span class="p">,</span>
+        <span class="n">frequency</span><span class="p">:</span> <span class="n">FrequencyType</span> <span class="o">=</span> <span class="s2">"M"</span><span class="p">,</span>
         <span class="n">custom_series</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">transforms</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">fill_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ffill&quot;</span><span class="p">,</span>
+        <span class="n">fill_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ffill"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MacroControlsResult</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get aligned macro control variables for DML.</span>
+<span class="w">        </span><span class="sd">"""Get aligned macro control variables for DML.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            start_date: Start date (YYYY-MM-DD)</span>
 <span class="sd">            end_date: End date (YYYY-MM-DD)</span>
-<span class="sd">            series_set: Pre-defined set (&quot;basic&quot;, &quot;comprehensive&quot;, &quot;financial&quot;, etc.)</span>
+<span class="sd">            series_set: Pre-defined set ("basic", "comprehensive", "financial", etc.)</span>
 <span class="sd">            frequency: Target frequency (D/W/M/Q/A)</span>
 <span class="sd">            custom_series: Additional series to include</span>
 <span class="sd">            transforms: Dict of series_id -&gt; transform type</span>
@@ -827,14 +882,14 @@
 <span class="sd">            &gt;&gt;&gt; # Requires live FRED API key + network; skipped in the doctest gate</span>
 <span class="sd">            &gt;&gt;&gt; loader = FREDLoader()  # doctest: +SKIP</span>
 <span class="sd">            &gt;&gt;&gt; result = loader.get_macro_controls(  # doctest: +SKIP</span>
-<span class="sd">            ...     &quot;2015-01-01&quot;, &quot;2023-12-31&quot;,</span>
-<span class="sd">            ...     series_set=&quot;comprehensive&quot;,</span>
-<span class="sd">            ...     frequency=&quot;Q&quot;</span>
+<span class="sd">            ...     "2015-01-01", "2023-12-31",</span>
+<span class="sd">            ...     series_set="comprehensive",</span>
+<span class="sd">            ...     frequency="Q"</span>
 <span class="sd">            ... )</span>
 <span class="sd">            &gt;&gt;&gt; X_macro = result.data.values  # doctest: +SKIP</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Determine series to fetch</span>
-        <span class="n">series_ids</span> <span class="o">=</span> <span class="n">MACRO_CONTROL_SETS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">series_set</span><span class="p">,</span> <span class="n">MACRO_CONTROL_SETS</span><span class="p">[</span><span class="s2">&quot;basic&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">series_ids</span> <span class="o">=</span> <span class="n">MACRO_CONTROL_SETS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">series_set</span><span class="p">,</span> <span class="n">MACRO_CONTROL_SETS</span><span class="p">[</span><span class="s2">"basic"</span><span class="p">])</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">custom_series</span><span class="p">:</span>
             <span class="n">series_ids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">custom_series</span><span class="p">)</span>
@@ -846,7 +901,7 @@
         <span class="n">series_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_multiple_series</span><span class="p">(</span><span class="n">series_ids</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">series_data</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No FRED series could be fetched&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No FRED series could be fetched"</span><span class="p">)</span>
 
         <span class="c1"># Build aligned DataFrame</span>
         <span class="n">all_series</span> <span class="o">=</span> <span class="p">[]</span>
@@ -860,7 +915,7 @@
         <span class="k">for</span> <span class="n">series_id</span><span class="p">,</span> <span class="n">fred_series</span> <span class="ow">in</span> <span class="n">series_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="c1"># Get transform (use default if not specified)</span>
             <span class="n">default_transform</span> <span class="o">=</span> <span class="n">STANDARD_MACRO_SERIES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">series_id</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;default_transform&quot;</span><span class="p">,</span> <span class="s2">&quot;level&quot;</span>
+                <span class="s2">"default_transform"</span><span class="p">,</span> <span class="s2">"level"</span>
             <span class="p">)</span>
             <span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">series_id</span><span class="p">,</span> <span class="n">default_transform</span><span class="p">)</span>
 
@@ -876,10 +931,10 @@
             <span class="n">all_series</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transformed</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">series_id</span><span class="p">))</span>
 
             <span class="n">metadata</span><span class="p">[</span><span class="n">series_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">fred_series</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">fred_series</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
-                <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="n">fred_series</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-                <span class="s2">&quot;transform&quot;</span><span class="p">:</span> <span class="n">transform</span><span class="p">,</span>
+                <span class="s2">"name"</span><span class="p">:</span> <span class="n">fred_series</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">"description"</span><span class="p">:</span> <span class="n">fred_series</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                <span class="s2">"units"</span><span class="p">:</span> <span class="n">fred_series</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+                <span class="s2">"transform"</span><span class="p">:</span> <span class="n">transform</span><span class="p">,</span>
             <span class="p">}</span>
 
         <span class="c1"># Combine into DataFrame</span>
@@ -890,12 +945,12 @@
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">start_date</span><span class="p">:</span><span class="n">end_date</span><span class="p">]</span>
 
         <span class="c1"># Fill missing values</span>
-        <span class="k">if</span> <span class="n">fill_method</span> <span class="o">==</span> <span class="s2">&quot;ffill&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fill_method</span> <span class="o">==</span> <span class="s2">"ffill"</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">fill_method</span> <span class="o">==</span> <span class="s2">&quot;bfill&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">fill_method</span> <span class="o">==</span> <span class="s2">"bfill"</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">bfill</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">fill_method</span> <span class="o">==</span> <span class="s2">&quot;interpolate&quot;</span><span class="p">:</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">fill_method</span> <span class="o">==</span> <span class="s2">"interpolate"</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"time"</span><span class="p">)</span>
 
         <span class="c1"># Drop remaining NaN rows</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
@@ -914,11 +969,11 @@
 <a class="viewcode-back" href="../../../api/data.html#dml_ts.data.fred_loader.FREDLoader.list_available_series">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">list_available_series</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;List pre-defined FRED series with descriptions.</span>
+<span class="w">        </span><span class="sd">"""List pre-defined FRED series with descriptions.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of series_id -&gt; metadata</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">STANDARD_MACRO_SERIES</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 
 
@@ -926,11 +981,11 @@
 <a class="viewcode-back" href="../../../api/data.html#dml_ts.data.fred_loader.FREDLoader.list_control_sets">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">list_control_sets</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;List pre-defined macro control sets.</span>
+<span class="w">        </span><span class="sd">"""List pre-defined macro control sets.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of set_name -&gt; list of series_ids</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">MACRO_CONTROL_SETS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 </div>
 
@@ -939,12 +994,12 @@
 <div class="viewcode-block" id="create_synthetic_fred_data">
 <a class="viewcode-back" href="../../../api/data.html#dml_ts.data.fred_loader.create_synthetic_fred_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_synthetic_fred_data</span><span class="p">(</span>
-    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;2010-01-01&quot;</span><span class="p">,</span>
-    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;2023-12-31&quot;</span><span class="p">,</span>
-    <span class="n">frequency</span><span class="p">:</span> <span class="n">FrequencyType</span> <span class="o">=</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"2010-01-01"</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"2023-12-31"</span><span class="p">,</span>
+    <span class="n">frequency</span><span class="p">:</span> <span class="n">FrequencyType</span> <span class="o">=</span> <span class="s2">"M"</span><span class="p">,</span>
     <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MacroControlsResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create synthetic FRED-like data for testing without API access.</span>
+<span class="w">    </span><span class="sd">"""Create synthetic FRED-like data for testing without API access.</span>
 
 <span class="sd">    Generates realistic macro data with:</span>
 <span class="sd">    - GDP growth: AR(1) with trend</span>
@@ -965,14 +1020,14 @@
 <span class="sd">        &gt;&gt;&gt; data = create_synthetic_fred_data(seed=42)</span>
 <span class="sd">        &gt;&gt;&gt; X_macro = data.data.values  # Use as controls in DML</span>
 <span class="sd">        &gt;&gt;&gt; list(data.data.columns)</span>
-<span class="sd">        [&#39;GDPC1&#39;, &#39;CPIAUCSL&#39;, &#39;UNRATE&#39;, &#39;FEDFUNDS&#39;]</span>
+<span class="sd">        ['GDPC1', 'CPIAUCSL', 'UNRATE', 'FEDFUNDS']</span>
 <span class="sd">        &gt;&gt;&gt; bool(X_macro.shape[1] == 4)</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
     <span class="c1"># Create date index (use pandas frequency aliases)</span>
-    <span class="n">freq_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;D&quot;</span><span class="p">:</span> <span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;W&quot;</span><span class="p">:</span> <span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="s2">&quot;ME&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">:</span> <span class="s2">&quot;QE&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="s2">&quot;YE&quot;</span><span class="p">}</span>
+    <span class="n">freq_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"D"</span><span class="p">:</span> <span class="s2">"D"</span><span class="p">,</span> <span class="s2">"W"</span><span class="p">:</span> <span class="s2">"W"</span><span class="p">,</span> <span class="s2">"M"</span><span class="p">:</span> <span class="s2">"ME"</span><span class="p">,</span> <span class="s2">"Q"</span><span class="p">:</span> <span class="s2">"QE"</span><span class="p">,</span> <span class="s2">"A"</span><span class="p">:</span> <span class="s2">"YE"</span><span class="p">}</span>
     <span class="n">pd_freq</span> <span class="o">=</span> <span class="n">freq_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">frequency</span><span class="p">,</span> <span class="n">frequency</span><span class="p">)</span>
     <span class="n">date_range</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">pd_freq</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">date_range</span><span class="p">)</span>
@@ -1008,39 +1063,39 @@
     <span class="c1"># Create DataFrame</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
         <span class="p">{</span>
-            <span class="s2">&quot;GDPC1&quot;</span><span class="p">:</span> <span class="n">gdp_growth</span><span class="p">,</span>
-            <span class="s2">&quot;CPIAUCSL&quot;</span><span class="p">:</span> <span class="n">inflation</span><span class="p">,</span>
-            <span class="s2">&quot;UNRATE&quot;</span><span class="p">:</span> <span class="n">unemployment</span><span class="p">,</span>
-            <span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">:</span> <span class="n">fed_rate</span><span class="p">,</span>
+            <span class="s2">"GDPC1"</span><span class="p">:</span> <span class="n">gdp_growth</span><span class="p">,</span>
+            <span class="s2">"CPIAUCSL"</span><span class="p">:</span> <span class="n">inflation</span><span class="p">,</span>
+            <span class="s2">"UNRATE"</span><span class="p">:</span> <span class="n">unemployment</span><span class="p">,</span>
+            <span class="s2">"FEDFUNDS"</span><span class="p">:</span> <span class="n">fed_rate</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="n">index</span><span class="o">=</span><span class="n">date_range</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># Metadata</span>
     <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;GDPC1&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Real GDP Growth (Synthetic)&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;AR(1) process with trend&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;Percent Change&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+        <span class="s2">"GDPC1"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Real GDP Growth (Synthetic)"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"AR(1) process with trend"</span><span class="p">,</span>
+            <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"Percent Change"</span><span class="p">,</span>
+            <span class="s2">"transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="s2">&quot;CPIAUCSL&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;CPI Inflation (Synthetic)&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Mean-reverting AR(1)&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;Percent Change YoY&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+        <span class="s2">"CPIAUCSL"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"CPI Inflation (Synthetic)"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Mean-reverting AR(1)"</span><span class="p">,</span>
+            <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"Percent Change YoY"</span><span class="p">,</span>
+            <span class="s2">"transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="s2">&quot;UNRATE&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Unemployment Rate (Synthetic)&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Counter-cyclical to GDP&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;Percent&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+        <span class="s2">"UNRATE"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Unemployment Rate (Synthetic)"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Counter-cyclical to GDP"</span><span class="p">,</span>
+            <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"Percent"</span><span class="p">,</span>
+            <span class="s2">"transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Federal Funds Rate (Synthetic)&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Taylor rule approximation&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;Percent&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;transform&quot;</span><span class="p">:</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span>
+        <span class="s2">"FEDFUNDS"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Federal Funds Rate (Synthetic)"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Taylor rule approximation"</span><span class="p">,</span>
+            <span class="s2">"units"</span><span class="p">:</span> <span class="s2">"Percent"</span><span class="p">,</span>
+            <span class="s2">"transform"</span><span class="p">:</span> <span class="s2">"level"</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">}</span>
 
@@ -1050,7 +1105,7 @@
         <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span>
         <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span>
         <span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">,</span>
-        <span class="n">missing_pct</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;GDPC1&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;CPIAUCSL&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;UNRATE&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span>
+        <span class="n">missing_pct</span><span class="o">=</span><span class="p">{</span><span class="s2">"GDPC1"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"CPIAUCSL"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"UNRATE"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"FEDFUNDS"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span>
     <span class="p">)</span></div>
 
 </pre></div>
@@ -1115,8 +1170,8 @@ By Brandon Behring
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>
