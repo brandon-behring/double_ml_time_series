@@ -11,7 +11,8 @@ from datetime import datetime
 import numpy as np
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
-from dml_ts.validation._simulation_inference import baseline_bias_status, percentile_interval
+from dml_ts.validation._simulation_inference import percentile_interval
+from dml_ts.validation.bias_validation import assess_simulation_draws
 from dml_ts.validation.bootstrap_config import DEFAULT_BOOTSTRAP_CONFIG, BootstrapConfig
 from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.validation_result import ValidationResult
@@ -106,14 +107,20 @@ class IPWEstimator:
         mse = self._calculate_mse(estimates_arr, dgp.true_effect)
         coverage = self._calculate_coverage(ci_bounds, dgp.true_effect)
 
-        status, bias_p_value = baseline_bias_status(estimates_arr - dgp.true_effect)
+        verdicts, bias_p_value, coverage_p_value = assess_simulation_draws(
+            estimates_arr - dgp.true_effect,
+            np.asarray(ci_bounds, dtype=float),
+            dgp.true_effect,
+            nominal=1 - self.alpha,
+        )
         bias_samples = self._calculate_bias_samples(estimates_arr, dgp.true_effect)
         bias_lower, bias_upper = percentile_interval(bias_samples, self.alpha)
 
         return ValidationResult(
             method="IPWEstimator",
-            status=status,
-            bias_status=status,
+            status=verdicts.overall,
+            bias_status=verdicts.bias,
+            coverage_status=verdicts.coverage,
             bias=bias,
             mse=mse,
             coverage=coverage,
@@ -132,6 +139,7 @@ class IPWEstimator:
                 "propensity_model": "LogisticRegression",
             },
             bias_p_value=bias_p_value,
+            coverage_p_value=coverage_p_value,
         )
 
     def _calculate_ci_bootstrap(
@@ -297,14 +305,20 @@ class AugmentedIPW:
         mse = self._calculate_mse(estimates_arr, dgp.true_effect)
         coverage = self._calculate_coverage(ci_bounds, dgp.true_effect)
 
-        status, bias_p_value = baseline_bias_status(estimates_arr - dgp.true_effect)
+        verdicts, bias_p_value, coverage_p_value = assess_simulation_draws(
+            estimates_arr - dgp.true_effect,
+            np.asarray(ci_bounds, dtype=float),
+            dgp.true_effect,
+            nominal=1 - self.alpha,
+        )
         bias_samples = self._calculate_bias_samples(estimates_arr, dgp.true_effect)
         bias_lower, bias_upper = percentile_interval(bias_samples, self.alpha)
 
         return ValidationResult(
             method="AugmentedIPW",
-            status=status,
-            bias_status=status,
+            status=verdicts.overall,
+            bias_status=verdicts.bias,
+            coverage_status=verdicts.coverage,
             bias=bias,
             mse=mse,
             coverage=coverage,
@@ -325,6 +339,7 @@ class AugmentedIPW:
                 "doubly_robust": True,
             },
             bias_p_value=bias_p_value,
+            coverage_p_value=coverage_p_value,
         )
 
     def _calculate_ci_bootstrap(

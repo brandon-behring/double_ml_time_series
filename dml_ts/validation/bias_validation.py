@@ -106,6 +106,74 @@ def classify_bias_and_coverage(
     return SimulationVerdicts(bias_status, coverage_status)
 
 
+def assess_simulation_draws(
+    simulation_errors: np.ndarray,
+    ci_bounds: np.ndarray,
+    true_effect: float,
+    nominal: float,
+    alpha_test: float = 0.05,
+    correction_method: Literal["bonferroni", "holm", "none"] = "bonferroni",
+    practical_epsilon: float = 0.1,
+) -> tuple[SimulationVerdicts, float, float]:
+    """Judge the bias and the interval coverage of one estimator across independent draws.
+
+    The DML validator and the six baselines share this path. The bias test is the
+    one-sample t-test of ``bias_p_value`` on one signed error per draw. The coverage test
+    is the exact binomial test of the number of intervals that contain ``true_effect``
+    against ``nominal``. Both p-values go to ``classify_bias_and_coverage``.
+
+    Args:
+        simulation_errors: Estimate minus truth, one per independent draw, ``(R,)``.
+        ci_bounds: Lower and upper interval endpoints per draw, ``(R, 2)``.
+        true_effect: The effect the intervals should contain.
+        nominal: Nominal coverage of the intervals, for example 0.95.
+        alpha_test: Familywise significance level of the two tests.
+        correction_method: Multiple-testing correction across the two tests.
+        practical_epsilon: Absolute bias from which a strict rejection is a FAIL.
+
+    Returns:
+        ``(verdicts, bias_p_value, coverage_p_value)``.
+
+    Raises:
+        ValueError: If there is not one error and one interval per draw, if an interval
+            holds a NaN or has its endpoints out of order, or if the bias test is
+            degenerate (see ``bias_p_value``).
+
+    Examples:
+        Unbiased estimates whose intervals are too short: the bias verdict passes and
+        the coverage verdict fails, so the estimator fails.
+
+        >>> import numpy as np
+        >>> errors = np.linspace(-1.0, 1.0, 200)
+        >>> narrow = np.column_stack([errors - 0.25, errors + 0.25])
+        >>> verdicts, p_bias, p_coverage = assess_simulation_draws(errors, narrow, 0.0, 0.95)
+        >>> verdicts.bias, verdicts.coverage, verdicts.overall
+        ('PASS', 'FAIL', 'FAIL')
+    """
+    errors = np.asarray(simulation_errors, dtype=float)
+    bounds = np.asarray(ci_bounds, dtype=float)
+    if errors.ndim != 1 or bounds.shape != (errors.size, 2):
+        raise ValueError(
+            "Expected one simulation error and one confidence interval per independent draw"
+        )
+    p_bias = bias_p_value(errors)
+    if np.isnan(bounds).any() or np.any(bounds[:, 0] > bounds[:, 1]):
+        raise ValueError("Per-draw intervals must have ordered endpoints and contain no NaN")
+    covered = int(np.count_nonzero((bounds[:, 0] <= true_effect) & (true_effect <= bounds[:, 1])))
+    p_coverage = float(stats.binomtest(covered, errors.size, nominal).pvalue)
+    verdicts = classify_bias_and_coverage(
+        float(np.mean(errors)),
+        p_bias,
+        covered / errors.size,
+        nominal,
+        p_coverage,
+        alpha_test,
+        correction_method,
+        practical_epsilon,
+    )
+    return verdicts, p_bias, p_coverage
+
+
 class BiasValidation:
     """Validates DML estimator bias through Monte Carlo simulation.
 
@@ -411,24 +479,18 @@ class BiasValidation:
             raise ValueError(
                 "Expected one simulation error and one confidence interval per independent draw"
             )
-        p_bias = bias_p_value(simulation_errors)
-        if np.isnan(ci_bounds).any() or np.any(ci_bounds[:, 0] > ci_bounds[:, 1]):
-            raise ValueError("Per-draw intervals must have ordered endpoints and contain no NaN")
+        verdicts, p_bias, p_coverage = assess_simulation_draws(
+            simulation_errors,
+            ci_bounds,
+            true_effect,
+            1 - self.alpha,
+            alpha_test,
+            correction_method,
+            practical_epsilon,
+        )
         covered = int(
             np.count_nonzero((ci_bounds[:, 0] <= true_effect) & (true_effect <= ci_bounds[:, 1]))
         )
         if not np.isclose(coverage, covered / n_simulations, rtol=0, atol=1e-12):
             raise ValueError("Reported coverage disagrees with the per-draw intervals")
-        nominal = 1 - self.alpha
-        p_coverage = float(stats.binomtest(covered, n_simulations, nominal).pvalue)
-        verdicts = classify_bias_and_coverage(
-            float(np.mean(simulation_errors)),
-            p_bias,
-            coverage,
-            nominal,
-            p_coverage,
-            alpha_test,
-            correction_method,
-            practical_epsilon,
-        )
         return verdicts, p_bias, p_coverage
