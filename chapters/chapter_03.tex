@@ -9,7 +9,7 @@
 
 \section{Introduction to Validation Strategy}
 
-Before applying Double Machine Learning (DML) to real-world empirical data---where the true treatment effect is unknown---we must establish confidence in our methodology through rigorous validation on synthetic data where the ground truth is known by construction. This chapter presents a comprehensive validation framework comparing seven causal inference methods, demonstrating why DML's cross-fitting and Neyman orthogonality provide superior performance under confounding.
+Before applying Double Machine Learning (DML) to real-world empirical data---where the true treatment effect is unknown---we must establish confidence in our methodology through rigorous validation on synthetic data where the ground truth is known by construction. This chapter presents a comprehensive validation framework for comparing seven causal inference methods under controlled degrees of confounding.
 
 \subsection{Why Validate Causal Inference Methods?}
 
@@ -29,7 +29,7 @@ This allows us to evaluate estimator properties---bias, variance, coverage---tha
 
 Our validation strategy follows a two-stage approach:
 
-\textbf{Stage 1 (This Chapter): Synthetic Validation}
+\textbf{Stage 1 (synthetic validation)}
 
 We generate controlled datasets with known treatment effects and systematically test estimators across scenarios:
 \begin{itemize}
@@ -39,11 +39,9 @@ We generate controlled datasets with known treatment effects and systematically 
     \item \textbf{Dimensionality}: Low ($p=5$) to moderate ($p=30$) confounders
 \end{itemize}
 
-\textbf{Stage 2 (Chapter 4): Empirical Replication}
+\textbf{Stage 2 (empirical comparison)}
 
-After establishing DML's superior performance on synthetic data, we validate against published empirical benchmarks---specifically, Chernozhukov et al. (2018) 401(k) study---where expert consensus provides an approximate ``ground truth'' for comparison.
-
-This synthetic-first approach builds reader confidence: if DML works correctly when we know $\tau_0$, we can trust its estimates when we don't.
+Section~\ref{sec:401k-benchmark} compares estimates of 401(k) eligibility and participation with published results on the same survey records. The comparison tests whether the data, target and estimating procedure account for numerical differences.
 
 \subsection{The Seven-Method Comparison Framework}
 
@@ -105,8 +103,8 @@ This chapter progresses from simple baselines to sophisticated DML variants:
 
 Two comprehensive experiments demonstrating baseline method limitations:
 \begin{itemize}
-    \item \textbf{Experiment 3.1}: Confounding strength sensitivity (5 scenarios)
-    \item \textbf{Experiment 3.2}: Sample size robustness ($n \in \{200, 500, 1000, 2000, 5000\}$)
+    \item \textbf{Experiment 3.1}. Confounding strength and the difference between mean bias and RMSE.
+    \item \textbf{Experiment 3.2}. Sample size and OLS estimation error.
 \end{itemize}
 
 Expected findings: NaiveOLS fails under any confounding; OLS requires correct linear specification; IPW/AIPW sensitive to propensity score estimation; ML baselines improve but lack theoretical guarantees.
@@ -151,7 +149,7 @@ Decision framework for practitioners:
     \item When to use which method?
     \item Validation checklist
     \item Common pitfalls and diagnostics
-    \item Transition to empirical applications
+    \item The 401(k) empirical benchmark
 \end{itemize}
 
 By the end of this chapter, readers will understand not just \textit{that} DML works, but \textit{why} it outperforms alternatives and \textit{when} to apply it.
@@ -195,7 +193,7 @@ Y_i = \tau_0 T_i + X_i'\alpha + \epsilon_i
 \]
 where $\gamma$ controls confounding strength (here $\gamma=1.0$), and $\beta, \alpha$ are randomly generated coefficient vectors ensuring $X$ affects both treatment assignment and outcomes.
 
-Key design feature: when $\gamma = 0$ (no confounding), even NaiveOLS recovers $\tau_0$ correctly; as $\gamma$ increases, confounding bias grows, and only methods properly adjusting for $X$ remain unbiased.
+At $\gamma=0$, assignment is independent of the covariates. Positive $\gamma$ lets covariates influence both assignment and outcome, with the sign of the resulting confounding depending on the realized coefficients.
 
 We can verify the data generating process:
 
@@ -224,161 +222,110 @@ print(f"Oracle std: {np.std(effects):.4f}")
 
 The oracle estimator (knowing true linear specification) achieves near-zero bias. Our validation experiments test whether DML matches oracle performance when functional forms are \textit{unknown} and potentially misspecified.
 
-\textbf{Next Steps}: Section 2 begins systematic comparison of all seven methods, starting with confounding sensitivity analysis.
-
 % ============================================================================
 % SECTION 2: BASELINE METHODS COMPARISON
 % ============================================================================
 
 \section{Baseline Methods Comparison}
 
-This section systematically evaluates all seven estimation methods across controlled scenarios, demonstrating why DML's theoretical guarantees translate into practical performance advantages.
+The first two experiments use ordinary least squares (OLS) with and without controls. In each experiment, both methods see the same 100 independently generated datasets for each parameter setting.
 
 \subsection{Experiment 3.1: Confounding Strength Sensitivity}
 
-Our first experiment varies confounding strength $\gamma \in \{0, 0.5, 1.0, 1.5, 2.0\}$ while holding other parameters fixed ($n=1000$, $p=5$, $\tau_0=2.0$).
-
-\marginnote[Design Rationale]{At $\gamma=0$, even NaiveOLS should work. As $\gamma$ increases, methods that fail to properly adjust for confounding will show increasing bias.}%
+Set $n=1000$, $p=5$, $\tau_0=2$, and confounding strength $\gamma=1$. The generator redraws the treatment and outcome coefficients independently on every dataset. Omitted-variable bias can therefore change sign across datasets. Mean signed error measures its average, while root mean squared error (RMSE) also captures large errors of opposite signs.
 
 \begin{minted}{python}
-from dml_ts.validation.baseline_comparison import BaselineComparison
 from dml_ts.validation.dgp_generator import DGPGenerator
-import pandas as pd
+from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
 
-# Configure experiment
-n_simulations = 100
-confounding_levels = [0.0, 0.5, 1.0, 1.5, 2.0]
 
-# Run comparison across confounding strengths
-comparison = BaselineComparison(n_simulations=100, random_state=42, include_ml=True)
-
-results_by_gamma = {}
-for gamma in confounding_levels:
-    dgp = DGPGenerator(
-        n=1000, p=5, true_effect=2.0,
-        confounding_strength=gamma,
-        treatment_model='linear',
-        outcome_model='linear',
-        random_state=42
+def linear_dgp(n=1000, gamma=1.0):
+    return DGPGenerator(
+        n=n, p=5, true_effect=2.0, confounding_strength=gamma,
+        treatment_model="linear", outcome_model="linear", random_state=42,
     )
-    results_by_gamma[gamma] = comparison.create_detailed_comparison_table(dgp)
 
-# Display results for gamma=1.0 (moderate confounding)
-print(results_by_gamma[1.0][['Method', 'Bias', 'RMSE', 'Coverage', 'Status']])
+
+def ols_results(n=1000):
+    for model in (NaiveOLS, OLSWithControls):
+        validator = model(n_simulations=100, random_state=42)
+        yield model.__name__, validator.validate(linear_dgp(n=n))
+
+
+for name, result in ols_results():
+    print(name, f"{result.bias:+.4f}", f"{result.mse**0.5:.4f}",
+          f"{result.coverage:.0%}", f"{result.bias_p_value:.5f}", result.status)
 \end{minted}
-
-\textbf{Expected Results} (summarized):
 
 \begin{table}[htbp]
 \centering
-\caption{Method Performance at $\gamma=1.0$ (Moderate Confounding)}
+\caption{OLS results on 100 datasets at $\gamma=1$}
 \label{tab:exp31_results}
-\begin{tabular}{lrrrc}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lrrrrc}
 \hline
-\textbf{Method} & \textbf{Bias} & \textbf{RMSE} & \textbf{Coverage} & \textbf{Status} \\
+Method & Bias & RMSE & Coverage & $p$ (bias) & Status \\
 \hline
-NaiveOLS & 0.847 & 0.851 & 0\% & FAIL \\
-OLSWithControls & 0.003 & 0.098 & 95\% & PASS \\
-IPW & 0.021 & 0.142 & 93\% & PASS \\
-AIPW & 0.008 & 0.112 & 94\% & PASS \\
-RandomForest & 0.156 & 0.198 & 78\% & WARNING \\
-XGBoost & 0.089 & 0.145 & 85\% & WARNING \\
-\textbf{DML} & \textbf{0.002} & \textbf{0.095} & \textbf{95\%} & \textbf{PASS} \\
+NaiveOLS & +0.1327 & 1.2538 & 15\% & 0.29231 & PASS \\
+OLSWithControls & +0.0180 & 0.0917 & 69\% & 0.04948 & WARNING \\
 \hline
 \end{tabular}
 \end{table}
 
-\textbf{Key Observations}:
+The unadjusted estimate passed the mean-bias test even though its nominal 95\% interval covered the true effect in only 15 of 100 datasets. The controlled estimate had much smaller RMSE. Its mean error was 0.0180 with a Monte Carlo standard error of 0.0090, giving a two-sided bias $p$-value of 0.04948 and a WARNING. These OLS labels use the bias test alone.
 
-\begin{enumerate}
-\item \textbf{NaiveOLS}: Catastrophic failure under confounding---bias of 0.847 when $\tau_0=2.0$ (42\% relative bias). This demonstrates why ignoring confounders is never acceptable.
+The controlled OLS interval covered the true effect in 69 of 100 datasets. Its slope standard error uses a design matrix that omits the fitted intercept. A reference interval including the intercept in the covariance calculation and using a Student $t$ critical value covered in 91 of the same 100 datasets.
 
-\item \textbf{OLSWithControls}: Works well when the true DGP is linear. However, this success relies on correct specification---it will fail under nonlinearity.
-
-\item \textbf{IPW/AIPW}: Slightly higher variance than OLS due to inverse probability weighting, but achieve correct coverage. AIPW's double robustness provides a safety margin.
-
-\item \textbf{ML Baselines (RF, XGBoost)}: Despite flexibility, these methods show bias and under-coverage. The reason: without cross-fitting, overfitting in nuisance estimation contaminates treatment effect estimates.
-
-\item \textbf{DML}: Best-in-class performance---lowest bias, lowest RMSE, correct coverage. Cross-fitting eliminates the overfitting bias that plagues ML baselines.
-\end{enumerate}
-
-\sidenote{The gap between ML baselines and DML demonstrates the importance of cross-fitting, not just flexible modeling.}%
-
-The following code visualizes how bias evolves as confounding strength increases.
+To extend the comparison, the following optional listing fits all seven methods over five values of $\gamma$. The figure plots the absolute value of each method's mean signed error.
 
 \begin{minted}{python}
 import matplotlib.pyplot as plt
-import numpy as np
+from dml_ts.validation.baseline_comparison import BaselineComparison
 
-# Extract biases for each method across gamma values
-methods = ['NaiveOLS', 'OLSWithControls', 'IPW', 'AIPW', 'DML']
+comparison = BaselineComparison(n_simulations=100, random_state=42, include_ml=True)
 gammas = [0.0, 0.5, 1.0, 1.5, 2.0]
+tables = []
+for gamma in gammas:
+    dgp = linear_dgp(gamma=gamma)
+    table = comparison.create_detailed_comparison_table(dgp)
+    tables.append(table.set_index("Method"))
 
-fig, ax = plt.subplots(figsize=(10, 6))
-
-for method in methods:
-    biases = [results_by_gamma[g].loc[
-        results_by_gamma[g]['Method'] == method, 'Abs_Bias'
-    ].values[0] for g in gammas]
-    ax.plot(gammas, biases, marker='o', label=method, linewidth=2)
-
-ax.set_xlabel('Confounding Strength ($\\gamma$)', fontsize=12)
-ax.set_ylabel('Absolute Bias', fontsize=12)
-ax.set_title('Bias vs Confounding Strength', fontsize=14)
-ax.legend(loc='upper left')
-ax.grid(True, alpha=0.3)
-ax.set_yscale('log')
-plt.tight_layout()
-plt.savefig('../../output/confounding_sensitivity.png', dpi=300)
+fig, ax = plt.subplots()
+for method in comparison.methods:
+    ax.plot(gammas, [table.at[method, "Abs_Bias"] for table in tables],
+            marker="o", label=method)
+ax.set(xlabel="Confounding strength", ylabel="Absolute mean bias")
+ax.legend()
+fig.tight_layout()
+plt.show()
 \end{minted}
-
-\margintip[Interpretation]{The log scale reveals that NaiveOLS bias grows linearly with $\gamma$, while DML and OLS (with correct specification) remain essentially flat.}%
 
 \subsection{Experiment 3.2: Sample Size Robustness}
 
-Next, we examine how methods scale with sample size $n \in \{200, 500, 1000, 2000, 5000\}$, holding confounding fixed at $\gamma=1.0$.
+Keep $\gamma=1$ and vary the observations per dataset, $n$. At each size, the table reports RMSE across 100 datasets using the two OLS fits defined above.
 
 \begin{minted}{python}
-sample_sizes = [200, 500, 1000, 2000, 5000]
-
-results_by_n = {}
-for n in sample_sizes:
-    dgp = DGPGenerator(
-        n=n, p=5, true_effect=2.0,
-        confounding_strength=1.0,
-        treatment_model='linear',
-        outcome_model='linear',
-        random_state=42
-    )
-    results_by_n[n] = comparison.create_detailed_comparison_table(dgp)
-
-# Expected RMSE scaling: 1/sqrt(n) for consistent estimators
+for n in (200, 500, 1000, 2000, 5000):
+    for name, result in ols_results(n):
+        print(n, name, f"{result.mse**0.5:.3f}")
 \end{minted}
-
-\textbf{Expected Findings}:
 
 \begin{table}[htbp]
 \centering
-\caption{RMSE Scaling with Sample Size ($\gamma=1.0$)}
+\caption{Measured OLS RMSE by observations per dataset}
 \label{tab:exp32_rmse}
+\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{lrrrrr}
 \hline
-\textbf{Method} & $n=200$ & $n=500$ & $n=1000$ & $n=2000$ & $n=5000$ \\
+Method & $n=200$ & $n=500$ & $n=1000$ & $n=2000$ & $n=5000$ \\
 \hline
-NaiveOLS & 0.872 & 0.855 & 0.851 & 0.849 & 0.847 \\
-OLSWithControls & 0.218 & 0.139 & 0.098 & 0.069 & 0.044 \\
-IPW & 0.312 & 0.198 & 0.142 & 0.101 & 0.064 \\
-AIPW & 0.248 & 0.158 & 0.112 & 0.079 & 0.050 \\
-\textbf{DML} & \textbf{0.214} & \textbf{0.135} & \textbf{0.095} & \textbf{0.067} & \textbf{0.042} \\
+NaiveOLS & 1.412 & 1.253 & 1.254 & 1.153 & 1.303 \\
+OLSWithControls & 0.182 & 0.115 & 0.092 & 0.056 & 0.038 \\
 \hline
 \end{tabular}
 \end{table}
 
-\marginwarning[NaiveOLS]{Notice that NaiveOLS RMSE does NOT decrease with $n$---it converges to the confounding bias, demonstrating inconsistency.}%
-
-\textbf{Key Insight}: For consistent estimators (OLS, IPW, AIPW, DML), RMSE scales as $O(n^{-1/2})$---doubling the sample size reduces RMSE by $\sqrt{2} \approx 1.41$. NaiveOLS violates this pattern because it's \textit{inconsistent}: no matter how large $n$ becomes, bias persists.
-
-DML consistently achieves the lowest RMSE, matching the oracle OLS estimator when specification is correct, while providing robustness against misspecification.
+Across these five sample sizes, adjusted OLS RMSE fell from 0.182 to 0.038. Unadjusted OLS RMSE exceeded 1 at every size. Increasing the sample size leaves confounders omitted from the unadjusted fit.
 
 % ============================================================================
 % SECTION 3: DML DEEP DIVE
@@ -386,7 +333,7 @@ DML consistently achieves the lowest RMSE, matching the oracle OLS estimator whe
 
 \section{DML Deep Dive}
 
-Having established DML's superior performance in standard scenarios, we now explore its internal mechanics: cross-fitting sensitivity, nuisance model selection, and heterogeneous treatment effects.
+The next three experiments examine how fold count, nuisance learners, and treatment heterogeneity affect DML.
 
 \subsection{Experiment 3.3: Cross-Fitting Sensitivity}
 
@@ -589,7 +536,7 @@ DML successfully recovers the heterogeneous treatment effect function, enabling 
 
 \section{Statistical Testing Framework}
 
-Rigorous validation requires formal hypothesis testing, not just point estimates. This section develops the statistical framework for declaring methods PASS, WARNING, or FAIL.
+On synthetic data we can test two properties separately. Does the mean estimate recover the known effect? Do the reported intervals cover it at the advertised rate?
 
 \subsection{Hypothesis Testing for Bias}
 
@@ -599,92 +546,83 @@ H_0&: \text{Bias} = \mathbb{E}[\hat{\tau}] - \tau_0 = 0 \\
 H_1&: \text{Bias} \neq 0
 \end{align}
 
-Using $B$ bootstrap samples of the bias distribution, we compute:
+Generate $R$ independent datasets and estimate the effect once on each. Let
+$b_r=\hat{\tau}_r-\tau_0$ be the error on dataset $r$, $\bar b$ the mean error,
+and $s_b$ the sample standard deviation of the errors (divisor $R-1$).
+The Monte Carlo standard error and one-sample test statistic are
 \[
-t = \frac{\bar{b}}{\text{SE}(b)} \sim t_{B-1}
+  \operatorname{MCSE}(\bar b)=\frac{s_b}{\sqrt{R}},
+  \qquad t=\frac{\bar b}{s_b/\sqrt{R}}.
 \]
+Under the null, the $t_{R-1}$ reference distribution is exact for independent,
+identically distributed normal errors with positive variance. With independent,
+identically distributed errors of finite positive variance, the test is a
+large-sample approximation. For a time-series estimator, each dataset can be
+an entire independently generated series. Bootstrap resampling of the $R$
+errors can provide a percentile interval for mean bias. The original $R$
+datasets determine the degrees of freedom in the test.
 
-where $\bar{b}$ is the mean bias and $\text{SE}(b)$ is the bootstrap standard error.
-
-\textbf{Decision Rules}:
-\begin{itemize}
-\item \textbf{PASS}: $p > 0.05$ (cannot reject $H_0$)
-\item \textbf{WARNING}: $0.01 < p \leq 0.05$ (marginal evidence of bias)
-\item \textbf{FAIL}: $p \leq 0.01$ (strong evidence of bias)
-\end{itemize}
-
-\marginnote[Conservative Testing]{The FAIL threshold at $p=0.01$ (not 0.05) reduces false positive rate, acknowledging that simulation variability can produce spurious significance.}%
+The OLS, weighting and ML baselines label the two-sided bias test FAIL for
+$p<0.01$, WARNING for $0.01\leq p<0.05$, and PASS for $p\geq 0.05$ at the
+default cutoffs. Report $\bar b$ and its Monte Carlo standard error alongside
+the label so readers can judge which biases the experiment could detect.
+The DML validator also considers coverage, applies a Bonferroni correction
+by default across the two tests, and uses practical thresholds on absolute bias. The DML validator reports separate bias and coverage verdicts. After the multiple-testing correction, significant undercoverage gives FAIL and significant overcoverage gives WARNING. The overall verdict takes the more severe of the two, so small mean bias can coexist with a failed interval.
 
 \subsection{Coverage Validation}
 
-A 95\% confidence interval should contain the true parameter in 95\% of simulations. We test:
-\begin{align}
-H_0&: \text{Coverage} = 0.95 \\
-H_1&: \text{Coverage} \neq 0.95
-\end{align}
-
-Using a binomial test with $n$ simulations and $k$ covers:
-\[
-p = 2 \min\left( P(X \leq k), P(X \geq k) \right) \quad \text{where } X \sim \text{Binom}(n, 0.95)
-\]
+For each independent dataset, record whether the estimated effect interval
+contains $\tau_0$. If the intervals achieve their nominal coverage $q=1-\alpha$,
+the number of covers $K$ has a $\operatorname{Binomial}(R,q)$ distribution.
+For $k$ observed covers, the exact two-sided binomial test sums the null
+probabilities of counts whose probability is at most that of $k$.
+For example, use $q=0.90$ when assessing 90\% intervals.
 
 \subsection{Experiment 3.6: Power Analysis}
 
-Statistical power increases with the number of simulations. We examine how $n_{\text{sim}} \in \{100, 250, 500, 1000, 2000\}$ affects our ability to detect bias.
+Suppose an estimator's error on a fresh dataset has a normal distribution
+with mean $0.05$ and standard deviation $0.10$. How often does the two-sided
+5\% bias test detect this departure from zero? Each trial below contains $R$
+independent errors. We repeat the trial 1,000 times for each $R$ and count
+rejections.
 
 \begin{minted}{python}
-from scipy import stats
 import numpy as np
+from scipy import stats
 
-# Simulate power analysis for detecting a small bias (0.05)
-true_bias = 0.05
-true_se = 0.10  # Standard error of estimator
-n_sims_list = [100, 250, 500, 1000, 2000]
+rng = np.random.default_rng(20261119)
 n_trials = 1000
-
-power_results = {}
-for n_sims in n_sims_list:
-    detections = 0
-    for _ in range(n_trials):
-        # Simulate n_sims estimates with true bias
-        estimates = true_bias + true_se * np.random.randn(n_sims)
-
-        # t-test for bias
-        t_stat = np.mean(estimates) / (np.std(estimates) / np.sqrt(n_sims))
-        p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df=n_sims-1))
-
-        if p_value < 0.05:
-            detections += 1
-
-    power_results[n_sims] = detections / n_trials
-
-print("Power to detect bias=0.05 (SE=0.10):")
-for n_sims, power in power_results.items():
-    print(f"  n_sim={n_sims:4d}: Power={power:.1%}")
+for r in (100, 250, 500, 1000, 2000):
+    errors = rng.normal(0.05, 0.10, size=(n_trials, r))
+    p_values = stats.ttest_1samp(errors, popmean=0.0, axis=1).pvalue
+    rejections = np.count_nonzero(p_values < 0.05)
+    print(f"{r:4d}  {rejections:4d}  {rejections / n_trials:.1%}")
 \end{minted}
-
-\textbf{Expected Results}:
 
 \begin{table}[htbp]
 \centering
-\caption{Statistical Power by Number of Simulations}
+\caption{Seeded power experiment for a mean bias of 0.05 over 1,000 trials}
 \label{tab:exp36_power}
-\begin{tabular}{rr}
+\begin{tabular}{rrr}
 \hline
-\textbf{Simulations} & \textbf{Power} \\
+\textbf{Datasets per trial ($R$)} & \textbf{Rejections} & \textbf{Estimated power} \\
 \hline
-100 & 17\% \\
-250 & 34\% \\
-500 & 56\% \\
-1000 & 80\% \\
-2000 & 95\% \\
+100 & 998 & 99.8\% \\
+250 & 1000 & 100.0\% \\
+500 & 1000 & 100.0\% \\
+1000 & 1000 & 100.0\% \\
+2000 & 1000 & 100.0\% \\
 \hline
 \end{tabular}
 \end{table}
 
-\marginwarning[Simulation Count]{With only 100 simulations, we have 17\% power to detect a bias of 0.05---missing most true positives! Use $\geq$500 simulations for reliable validation.}%
-
-\textbf{Recommendation}: Use 500+ simulations for standard validation, 1000+ for publication-quality results.
+At $R=100$, the mean error has standard error $0.10/\sqrt{100}=0.01$, so the
+injected bias is five standard errors from zero. The exact power under normal
+errors is 99.86\%, calculated from a noncentral $t$ distribution with 99 degrees
+of freedom and noncentrality 5. At the same $R$ and error standard deviation,
+a bias of $0.01$ gives noncentrality 1 and power of only 16.77\%.
+Choose $R$ using the smallest bias that matters in the application, the spread
+of estimates across datasets, and the intended test level.
 
 % ============================================================================
 % SECTION 5: COMPUTATIONAL PERFORMANCE
@@ -766,41 +704,26 @@ This section distills our experimental findings into actionable guidance.
 \subsection{Method Selection Decision Tree}
 
 \begin{verbatim}
-Is treatment randomly assigned?
-+-- YES --> Use difference-in-means (no DML needed)
-+-- NO  --> Continue
-
-Do you observe all confounders?
-+-- NO  --> Use instrumental variables or RDD
-+-- YES --> Continue
-
-Is n < 200?
-+-- YES --> Use OLS with controls (DML needs larger n)
-+-- NO  --> Continue
-
-Is the relationship likely linear?
-+-- YES --> DML with Lasso nuisance models
-+-- NO  --> DML with Random Forest or XGBoost
-
-Do you expect heterogeneous effects?
-+-- YES --> DML CATE estimation
-+-- NO  --> DML ATE estimation
+1. Define the intervention, target population, units and horizon.
+2. Identify assignment. For randomization, start with the design contrast.
+   Use an IV or discontinuity only with a credible instrument or threshold.
+3. Compare adjusted OLS or ANCOVA with cross-fitted nuisance adjustment
+   on the same rows. For dynamic effects, define exposure histories.
+4. Evaluate nuisance losses, residual treatment variation and uncertainty.
+   Count independent assigning units and eligible future periods.
+5. Evaluate heterogeneity or a policy on held-out outcome-based contrasts.
 \end{verbatim}
 
 \subsection{Validation Checklist}
 
-Before trusting any causal estimate, verify:
+For each application record the following.
 
 \begin{enumerate}
-\item \textbf{First-Stage Fit}: $R^2 > 0.1$ for both $\mathbb{E}[Y|X]$ and $\mathbb{E}[T|X]$
-
-\item \textbf{Overlap}: Propensity scores not extreme (e.g., $0.05 < e(X) < 0.95$)
-
-\item \textbf{Sensitivity Analysis}: Robustness value $> R^2$ of strongest observed confounder
-
-\item \textbf{Coverage Check}: 95\% CI contains true effect in 95\% of simulations (for synthetic data)
-
-\item \textbf{Cross-Validation}: Consistent estimates across different fold splits
+\item \textbf{Nuisance prediction}. Compare outcome and treatment losses against design-appropriate baselines on held-out data. In a randomized trial the assignment probability can be known.
+\item \textbf{Treatment support}. Inspect residual dose variation or arm counts and propensity tails by unit, date and eligible subgroup. Report any restriction and its new target population.
+\item \textbf{Sensitivity}. Specify the omitted cause or selection mechanism and the change in the effect needed to alter the scientific conclusion.
+\item \textbf{Interval calibration}. On independent simulated datasets report hits, planned draws, failures, interval width and Monte Carlo uncertainty. Real observational data supply no known counterfactual for coverage.
+\item \textbf{Cross-validation}. Match folds to the assigning units and information set. Compare the same target and eligible rows across folds or report how they differ.
 \end{enumerate}
 
 \subsection{Common Pitfalls}
@@ -823,25 +746,73 @@ If $R^2 < 0.05$ in nuisance estimation, DML variance inflates dramatically. Inve
 
 DML cannot estimate treatment effects in regions of covariate space where only treated or only control units exist. Check propensity score distributions and trim extreme observations.
 
+\subsection{An Empirical Benchmark for 401(k) Eligibility and Participation}
+\label{sec:401k-benchmark}
+
+How much does access to an employer's 401(k) plan change net financial assets? In the 1991 Survey of Income and Program Participation, 3,682 of 9,915 records were eligible. Of those eligible, 2,594 participated. No one participated among the 6,233 ineligible records. The companion CSV matches the authors' data in all 14 columns and in row order. See \cite[Section~6.2, Tables~2--3]{chernozhukov2018double}.
+
+\textbf{Eligibility.} Table 2A estimates the average effect of eligibility, allowing outcome regressions to differ between eligible and ineligible households. Its causal interpretation requires eligibility to be conditionally independent of potential outcomes given the controls and sufficient overlap. The authors keep observations whose estimated propensity lies strictly between 0.01 and 0.99, which can change the population represented in the score. Table 2B fits a partially linear regression (PLR) with a constant eligibility coefficient. Under heterogeneous effects, that coefficient generally weights conditional effects by the conditional variance of eligibility. The paper uses nine controls including income, age and pension status.
+
+\textbf{Participation.} Table 3 uses eligibility as an instrument for participation. The IV estimate divides the covariate-adjusted effect of eligibility on assets by its effect on participation. The code trims on the estimated instrument propensity. Under instrument relevance, conditional independence, exclusion, monotonicity and overlap, the ratio identifies the effect for people who participate because their employer offers access. Treating participation directly as a regressor changes the identifying assumptions.
+
+\textbf{Repeating the authors' calculation.} For each of the three models we ran their public R estimation routines on 100 fresh twofold partitions and 100 fresh fivefold partitions of the same records. Each of these 600 runs returned seven estimates and standard errors. The original partition assignments were unavailable. The table shows dollar estimates for the two learner families in the companion comparison. \href{https://github.com/VC2015/DMLonGitHub/tree/b91cbf96c01eccd73367fbd6601ecdd7aa78403b}{Authors' replication code}.
+
+\begin{table}[htbp]
+\centering
+\caption{Estimated effects on net financial assets in dollars. Each refit is the median across 100 fresh partitions.}
+\label{tab:401k-refits}
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+ & & \multicolumn{2}{c}{Rigorous lasso} & \multicolumn{2}{c}{Forest} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+Paper table and target & Folds & Paper & Refit & Paper & Refit \\
+\midrule
+2A. Eligibility, interactive & 2 & 6,830 & 6,874 & 7,770 & 7,933 \\
+2A. Eligibility, interactive & 5 & 7,170 & 7,174 & 8,105 & 8,125 \\
+2B. Eligibility, PLR & 2 & 7,717 & 7,700 & 9,116 & 9,046 \\
+2B. Eligibility, PLR & 5 & 8,187 & 8,182 & 9,247 & 9,244 \\
+3. Participation, IV & 2 & 8,978 & 8,652 & 11,384 & 11,294 \\
+3. Participation, IV & 5 & 8,944 & 8,886 & 11,764 & 11,617 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For the fivefold PLR, the forest and lasso refits gave \$9,243.65 and \$8,182.27. Each lies within five dollars of its published point estimate. For the forest, the median within-partition standard error was \$1,292 (published \$1,295). Accounting for variation across partitions gave \$1,314 (published \$1,328). The paper's adjustment adds the squared deviation from the learner's median estimate to each partition's variance, takes the median of these sums, then takes its square root. For the fivefold participation lasso this gave \$2,551, compared with \$3,307 in print. The released R driver centers estimates differently across learners.
+
+Across all 42 cells, the median absolute difference between refitted and published point estimates was \$42. The largest gap was \$672 for the twofold interactive ``Best'' column. In the public code that selector always returns the first learner for the interactive model. Its estimate and standard error equaled rigorous lasso's in all 200 interactive runs. The published twofold estimates were \$7,546 for ``Best'' and \$6,830 for lasso.
+
+\textbf{The companion Python fit.} With seed 42 and one fivefold partition, \texttt{FourZeroOneKReplication} averages fitted eligibility effects across the sample. It supplies all 11 covariates, including the two additional wealth variables \texttt{nifa} and \texttt{tw}, as effect modifiers. The forest mean was \$7,025 (95\% interval \$6,061 to \$7,989) and the cross-validated lasso mean was \$6,705 (\$6,005 to \$7,405). These intervals use EconML's inference for the mean effect. When we restrict adjustment to the nine published controls and impose a constant final effect, the estimates were \$9,144 and \$4,165. The authors use a 1,000-tree forest and a rigorous lasso with polynomial and interaction terms. The companion uses 500 trees and fits lasso on raw columns. The lasso optimizer issued convergence warnings. The companion means fall 2,222 and 1,482 dollars below the respective fivefold Table 2B coefficients. These gaps compare different specifications on the same records. A statistical test of their differences would require the sampling covariance.
+
+Run this listing from the repository root to compare the published point estimates with the medians from all 4,200 archived joint estimates. This cross-sectional exercise checks implementation and numerical reproducibility. Assessing a time-series design requires observations with a defined time ordering.
+
+\begin{minted}{python}
+from pathlib import Path
+import pandas as pd
+
+audit = Path("docs/audits/2026-11-19_time_series_dml")
+draws = pd.read_csv(audit / "401k-draws.csv.gz")
+joint = draws.loc[draws["run"] == "joint"]
+keys = ["panel", "folds", "method"]
+medians = joint.groupby(keys)["estimate"].median()
+paper = pd.read_csv(audit / "401k-summary.csv").set_index(keys)
+cells = paper[["published_estimate"]].join(medians)
+print(cells.round(2).to_string())
+\end{minted}
+
 \subsection{Transition to Empirical Applications}
 
-Having validated DML on synthetic data, Chapter 4 applies these methods to real-world benchmarks:
-\begin{itemize}
-\item Chernozhukov et al. (2018) 401(k) study replication
-\item LaLonde/Dehejia-Wahba job training dataset
-\item Insurance pricing case study
-\end{itemize}
-
-The validation framework developed here---comparing methods, checking coverage, diagnosing first stages---transfers directly to empirical work where ground truth is unknown.
+Chapter 4 estimates the conditional relationship between orange juice prices and sales. The true elasticity is unknown. In that setting, compare specifications and examine how stores set prices before interpreting the slope as a causal effect.
 
 \section{Summary}
 
-This chapter established DML's empirical superiority through systematic validation:
+The experiments compare estimation error, interval coverage, statistical power, and computational cost.
 
 \begin{enumerate}
-\item \textbf{Experiment 3.1}: DML maintains low bias across confounding strengths; NaiveOLS fails catastrophically
+\item \textbf{Experiment 3.1}. At $\gamma=1$, covariate adjustment reduced OLS RMSE from 1.254 to 0.092 across 100 independent datasets.
 
-\item \textbf{Experiment 3.2}: DML scales as $O(n^{-1/2})$ like oracle OLS; NaiveOLS is inconsistent
+\item \textbf{Experiment 3.2}. Adjusted OLS RMSE fell as the sample grew. Unadjusted OLS RMSE exceeded 1 at all five sample sizes.
 
 \item \textbf{Experiment 3.3}: $K=5$ folds balance efficiency and computation; any $K \geq 2$ is valid
 
@@ -849,7 +820,7 @@ This chapter established DML's empirical superiority through systematic validati
 
 \item \textbf{Experiment 3.5}: DML CATE estimation captures heterogeneous effects for personalized policy
 
-\item \textbf{Experiment 3.6}: Use 500+ simulations for reliable validation
+\item \textbf{Experiment 3.6}. With 100 independent estimates of standard deviation 0.10, the two-sided 5\% test has 99.86\% power for bias 0.05 and 16.77\% power for bias 0.01.
 
 \item \textbf{Experiment 3.7}: DML computational cost is moderate (10-50$\times$ OLS) and justified by theoretical guarantees
 \end{enumerate}
