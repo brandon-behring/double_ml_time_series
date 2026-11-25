@@ -272,14 +272,20 @@ class BootstrapDiagnostics:
             >>> diag.diagnose_distribution(n_bootstrap=1000)  # doctest: +SKIP
             DistributionDiagnostic(is_normal=True, skewness=0.12, ...)
         """
+        # Shapiro-Wilk needs >= 3 observations to test normality. Fabricating
+        # normality_pvalue=0.0 (-> is_normal=False) from fewer would assert
+        # non-normality out of insufficient data, so fail loudly up front.
+        if n_bootstrap < 3:
+            raise ValueError(
+                "diagnose_distribution needs n_bootstrap >= 3 for the Shapiro-Wilk "
+                f"normality test, got {n_bootstrap}."
+            )
+
         # Generate bootstrap distribution
         boot_estimates = self._bootstrap_estimates(n_bootstrap)
 
         # Normality test (Shapiro-Wilk)
-        if len(boot_estimates) >= 3:
-            stat, normality_pvalue = stats.shapiro(boot_estimates)
-        else:
-            normality_pvalue = 0.0
+        stat, normality_pvalue = stats.shapiro(boot_estimates)
         is_normal = bool(float(normality_pvalue) > alpha)
 
         # Skewness and kurtosis

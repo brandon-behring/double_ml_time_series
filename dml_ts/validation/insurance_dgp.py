@@ -38,10 +38,12 @@ Usage:
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
+from numpy.linalg import LinAlgError
 from numpy.typing import NDArray
 
 # Type aliases
@@ -627,6 +629,7 @@ def validate_dgp_recovery(
     estimates = []
     ses = []
     covers = []
+    n_failed = 0
 
     for sim in range(n_sims):
         dgp = create_insurance_dgp(
@@ -650,8 +653,19 @@ def validate_dgp_recovery(
             estimates.append(result.theta)
             ses.append(result.se)
             covers.append(result.ci_lower <= true_tau <= result.ci_upper)
-        except Exception:
-            # Skip failed simulations
+        except (LinAlgError, ValueError) as exc:
+            # A degenerate simulation (singular design / no variation) is excluded, but
+            # NOT silently: the reported bias/coverage are conditional on the survivors
+            # (survivorship bias), so warn and count. Narrowed from a bare `except
+            # Exception` so genuine bugs (KeyError, AttributeError, ...) still surface.
+            n_failed += 1
+            warnings.warn(
+                f"validate_dgp_recovery: simulation {sim} excluded after "
+                f"{type(exc).__name__}: {exc}. Reported metrics are conditional on the "
+                f"{n_sims - n_failed} surviving simulation(s) (survivorship bias).",
+                RuntimeWarning,
+                stacklevel=2,
+            )
             continue
 
     if len(estimates) < n_sims * 0.5:
@@ -667,4 +681,5 @@ def validate_dgp_recovery(
         "avg_se": float(np.mean(ses_arr)),
         "empirical_se": float(np.std(estimates_arr)),
         "n_successful": len(estimates_arr),
+        "n_failed": n_failed,
     }
