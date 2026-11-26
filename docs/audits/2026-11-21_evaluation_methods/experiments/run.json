@@ -1,0 +1,20 @@
+{
+  "frozen_protocol_sha256": "7e8d832bbc6616abf0161aaf609decb526fa6703a93bdb0ad111c0eaa44b39ec",
+  "data_paths": 6000,
+  "archived_factorial_estimates": 144000,
+  "selection_decisions": 48000,
+  "workers": 20,
+  "threads_per_worker": 1,
+  "seconds": 144.9,
+  "diagonal_parity": {
+    "matched_estimates": 48000,
+    "max_abs_difference_by_column": {
+      "truth": 1.351696532481128e-13,
+      "estimate": 3.742606224932388e-11,
+      "iid": 2.8137492336099967e-12,
+      "hac": 4.885425397560539e-12,
+      "outcome_mse": 1.896638423204422e-06,
+      "treatment_mse": 3.291759639978409e-06
+    }
+  }
+}

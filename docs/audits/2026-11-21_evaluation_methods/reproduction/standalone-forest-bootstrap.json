@@ -1,0 +1,160 @@
+{
+  "snapshot_source_sha256": "78262c3970ffd37afc6b10e7c9b7de6d6e821cfc71ed1b90039320b14845453e",
+  "data_sets": 6,
+  "paired_resamples_per_data_set": 4,
+  "sample_size": 200,
+  "plant": 2,
+  "estimator": "BootstrapDiagnostics with its default 100-tree nuisance models",
+  "position_folds_mean": 1.9128574131018483,
+  "original_unit_folds_mean": 1.9378024576051853,
+  "position_folds_rmse_vs_plant": 0.24232051974666086,
+  "original_unit_folds_rmse_vs_plant": 0.2414359486819503,
+  "maximum_absolute_paired_shift": 0.5583252718840876,
+  "scope": "The four resamples per dataset are dependent; these checks do not measure coverage.",
+  "draws": [
+    {
+      "data_seed": 100,
+      "draw": 0,
+      "position_folds": 1.953023500118973,
+      "original_unit_folds": 2.234737505843394
+    },
+    {
+      "data_seed": 100,
+      "draw": 1,
+      "position_folds": 2.103692458585,
+      "original_unit_folds": 2.04632350824121
+    },
+    {
+      "data_seed": 100,
+      "draw": 2,
+      "position_folds": 2.003882511634929,
+      "original_unit_folds": 1.7436593284907136
+    },
+    {
+      "data_seed": 100,
+      "draw": 3,
+      "position_folds": 1.8548091644975109,
+      "original_unit_folds": 1.8656521237168853
+    },
+    {
+      "data_seed": 101,
+      "draw": 0,
+      "position_folds": 2.202903797501203,
+      "original_unit_folds": 2.436670603514794
+    },
+    {
+      "data_seed": 101,
+      "draw": 1,
+      "position_folds": 2.2320151554355308,
+      "original_unit_folds": 2.023689872586283
+    },
+    {
+      "data_seed": 101,
+      "draw": 2,
+      "position_folds": 2.18312717492289,
+      "original_unit_folds": 1.9560711546450356
+    },
+    {
+      "data_seed": 101,
+      "draw": 3,
+      "position_folds": 2.216565474775287,
+      "original_unit_folds": 2.0620006283416275
+    },
+    {
+      "data_seed": 102,
+      "draw": 0,
+      "position_folds": 1.9932633435468818,
+      "original_unit_folds": 2.2642207321437193
+    },
+    {
+      "data_seed": 102,
+      "draw": 1,
+      "position_folds": 1.9235214255800117,
+      "original_unit_folds": 2.005442862989448
+    },
+    {
+      "data_seed": 102,
+      "draw": 2,
+      "position_folds": 2.067099094686967,
+      "original_unit_folds": 1.8744331197878459
+    },
+    {
+      "data_seed": 102,
+      "draw": 3,
+      "position_folds": 1.6272749543045115,
+      "original_unit_folds": 1.7129905251251927
+    },
+    {
+      "data_seed": 103,
+      "draw": 0,
+      "position_folds": 2.1374635753519446,
+      "original_unit_folds": 1.8967035167729795
+    },
+    {
+      "data_seed": 103,
+      "draw": 1,
+      "position_folds": 1.7497772505453748,
+      "original_unit_folds": 2.076396416525441
+    },
+    {
+      "data_seed": 103,
+      "draw": 2,
+      "position_folds": 1.8808876673546877,
+      "original_unit_folds": 2.220505077056349
+    },
+    {
+      "data_seed": 103,
+      "draw": 3,
+      "position_folds": 1.8858238448741118,
+      "original_unit_folds": 2.0831573192860597
+    },
+    {
+      "data_seed": 104,
+      "draw": 0,
+      "position_folds": 1.8308900437069098,
+      "original_unit_folds": 1.3773825723193598
+    },
+    {
+      "data_seed": 104,
+      "draw": 1,
+      "position_folds": 1.8173223029361327,
+      "original_unit_folds": 1.8089326003958917
+    },
+    {
+      "data_seed": 104,
+      "draw": 2,
+      "position_folds": 1.7662871072071018,
+      "original_unit_folds": 1.7581578935730968
+    },
+    {
+      "data_seed": 104,
+      "draw": 3,
+      "position_folds": 1.416338563669824,
+      "original_unit_folds": 1.5326956198664914
+    },
+    {
+      "data_seed": 105,
+      "draw": 0,
+      "position_folds": 1.724304212032708,
+      "original_unit_folds": 1.7698575382607737
+    },
+    {
+      "data_seed": 105,
+      "draw": 1,
+      "position_folds": 2.1057017894953787,
+      "original_unit_folds": 2.0567272696831305
+    },
+    {
+      "data_seed": 105,
+      "draw": 2,
+      "position_folds": 1.3895458658309932,
+      "original_unit_folds": 1.9478711377150808
+    },
+    {
+      "data_seed": 105,
+      "draw": 3,
+      "position_folds": 1.8430576358494921,
+      "original_unit_folds": 1.7529800556436443
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "versions": {
+    "nbclient": "0.11.0",
+    "ipykernel": "7.4.0",
+    "pandas": "3.0.3",
+    "statsmodels": "0.14.6"
+  },
+  "original_ref": "0cca908463719d46dbe43a44c17a6d2dd81ceb89",
+  "original": {
+    "example_validation": {
+      "stopped_at_cell": 2,
+      "exception": "ModuleNotFoundError",
+      "message": "No module named 'src'"
+    },
+    "method1_bias_validation_results": {
+      "stopped_at_cell": 8,
+      "exception": "KeyError",
+      "message": "0.0414714399413171"
+    }
+  },
+  "corrected": {
+    "example_validation": {
+      "completed_code_cells": 11,
+      "n_simulations": 1000,
+      "bias": 0.0038918167798193586,
+      "mse": 0.006289524193775483,
+      "coverage": 0.957,
+      "ci_lower": -0.001026054687154129,
+      "ci_upper": 0.008809688246792846,
+      "status": "PASS",
+      "coverage_p_value": 0.34534882750488693,
+      "identical_serial_parallel_draws": 1000,
+      "controlled_and_naive_example": [
+        "True effect: 2.000",
+        "Treatment only: 0.748 (single-dataset error -1.252)",
+        "With controls: 2.144 (single-dataset error +0.144)"
+      ]
+    },
+    "method1_bias_validation_results": {
+      "completed_code_cells": 11,
+      "archived_configs": 81,
+      "archived_status": {
+        "PASS": 43,
+        "WARNING": 25,
+        "FAIL": 13
+      },
+      "largest_absolute_bias": 0.40313530745123,
+      "figures_written": 4,
+      "tables_written": 2
+    }
+  }
+}

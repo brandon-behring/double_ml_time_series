@@ -1,0 +1,6 @@
+{
+  "implementation": "unmodified public double_ml, classifier.predict on held-out rows",
+  "estimate": 0.75,
+  "se": 0.06458336837206266,
+  "brier": 0.25
+}

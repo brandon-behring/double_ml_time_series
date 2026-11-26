@@ -1,0 +1,53 @@
+{
+  "manifest": {
+    "sample_rows": 9915,
+    "seed": 42,
+    "bootstrap_draws": 1000,
+    "bootstrap_indices_sha256": "e78f6f31a589bfa8b01757f92313b05e20c3450ae91de89028924cfa16e1297c",
+    "source_sha256": {
+      "scripts/run_lasso_diagnostic.py": "ec644c446bc57217c96edf8d898b2913f94af68e74691db6f75cbb42f5671061",
+      "dml_ts/validation/lasso_diagnostic.py": "c61e05e5695b76b96eea82233cb4f3fab81cc79eb4799d2297d67aaaf31f4332",
+      "test/fixtures/401k_data.csv": "d4d4a8a4a06f7ebf89b9b9b96139ef0c2ca31178be728770d6c747f8dc8f51c4"
+    },
+    "versions": {
+      "econml": "0.16.0",
+      "scikit-learn": "1.6.1",
+      "numpy": "2.4.6",
+      "scipy": "1.17.1"
+    }
+  },
+  "verification": {
+    "serial": [
+      6905.037616258989,
+      6348.893277365103,
+      7145.703770761024
+    ],
+    "parallel": [
+      6905.037616258989,
+      6348.893277365103,
+      7145.703770761024
+    ],
+    "exact": true,
+    "mean": 6799.878221461706,
+    "ci": [
+      6376.700494309797,
+      7133.670463035923
+    ]
+  },
+  "serial-peak": {
+    "rows": 9915,
+    "verified_serial_estimates": [
+      6905.037616258989,
+      6348.893277365103,
+      7145.703770761024
+    ],
+    "full_process_peak_rss_kib": 320732,
+    "measurement": "/proc/self/status VmHWM before process exit",
+    "initial_process_rusage_maxrss_kib": 644472,
+    "final_process_rusage_maxrss_kib": 644472,
+    "warnings": {
+      "UserWarning": 6,
+      "ConvergenceWarning": 168
+    }
+  }
+}

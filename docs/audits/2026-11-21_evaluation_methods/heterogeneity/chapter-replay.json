@@ -1,0 +1,44 @@
+{
+  "versions": {
+    "econml": "0.16.0",
+    "scikit-learn": "1.6.1",
+    "numpy": "2.4.6",
+    "statsmodels": "0.14.6"
+  },
+  "executed_blocks": 11,
+  "figures_generated_in_temporary_directory": [
+    "cate_tree.pdf",
+    "cate_visualization.pdf"
+  ],
+  "train_people": 1200,
+  "eval_people": 800,
+  "forest_effect_rmse": 0.3356800088961152,
+  "linear_effect_rmse": 0.17550324994194683,
+  "linear_intercept": 0.9729587622667146,
+  "average_linear_effect": 0.9347637693887841,
+  "heldout_blp": {
+    "slope": 0.943426797180198,
+    "se": 0.11943143876826372,
+    "p": 2.8043578584683355e-15
+  },
+  "policy_treat_fraction": 0.6575,
+  "cost": 0.2,
+  "policy_gain": 1.2637872854775085,
+  "policy_se": 0.15248855572374842,
+  "policy_finite_cohort_true_gain": 1.2629887301907021,
+  "treat_all_gain": 0.8991176327345067,
+  "gain_versus_treat_all": 0.3646696527430018,
+  "se_versus_treat_all": 0.09907190726316023,
+  "insurance": {
+    "moderate": {
+      "rmse": 0.2257406151755379,
+      "predicted_sd": 0.02136349353724797,
+      "true_sd": 0.0
+    },
+    "full": {
+      "rmse": 0.3539423014037191,
+      "predicted_sd": 0.12593582041561746,
+      "true_sd": 0.19708295528883424
+    }
+  }
+}

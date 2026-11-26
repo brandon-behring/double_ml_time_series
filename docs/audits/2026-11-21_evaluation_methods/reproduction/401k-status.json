@@ -1,0 +1,51 @@
+{
+  "active_at_last_dispatch_poll": 0,
+  "admission_resources": {
+    "audit_r_processes": 0,
+    "available_gib": 64.61,
+    "cpu_slots": 31,
+    "host_busy_cores": 18.1,
+    "largest_audit_worker_rss_gib": 0.0,
+    "memory_slots": 22,
+    "other_busy_cores": 18.1,
+    "parallel_growth_reserved_gib": 0.0,
+    "remaining_fit_budget_bytes": 52191182848,
+    "reserved_worker_growth_gib": 0.0
+  },
+  "as_of_utc": "2026-11-22T05:23:44Z",
+  "completed_bundles": 600,
+  "dispatcher_complete": true,
+  "exact_estimate_and_se": 4200,
+  "failure_counts": {},
+  "finite_rows": 4200,
+  "high_water": {
+    "audit_r_processes": 19,
+    "dispatcher_workers": 19,
+    "host_busy_cores": 104.25,
+    "largest_audit_worker_rss_gib": 2.889,
+    "min_available_gib": 31.76,
+    "worker_peak_rss_gib_by_fit": {
+      "LATE-k2": 1.7986984252929688,
+      "LATE-k5": 2.9530563354492188,
+      "interactive-k2": 1.5600395202636719,
+      "interactive-k5": 2.267017364501953,
+      "plinear-k2": 1.4975700378417969,
+      "plinear-k5": 2.400066375732422
+    }
+  },
+  "max_abs_estimate_difference": 0.0,
+  "max_abs_se_difference": 0.0,
+  "panels": {
+    "LATE-k2": 100,
+    "LATE-k5": 100,
+    "interactive-k2": 100,
+    "interactive-k5": 100,
+    "plinear-k2": 100,
+    "plinear-k5": 100
+  },
+  "previous_archive_sha256": "eb4e29c5ddf12d2f934cbe2fe06b562c9f87554d2564cf51d54d314c3afc2920",
+  "receipt_basis": "final seven-method R bundles only",
+  "retry_exhausted": [],
+  "total_bundles": 600,
+  "within_numerical_tolerance": 4200
+}

@@ -1,0 +1,41 @@
+{
+  "utc": "2026-11-21T15:53:31Z",
+  "previous_coordinator": 3127491,
+  "new_coordinator": 3738163,
+  "existing_jobs": 17,
+  "verified_same_worker_pid_and_start_ticks": [
+    "all-LATE-k5-r015",
+    "all-LATE-k5-r012",
+    "all-interactive-k5-r014",
+    "all-interactive-k5-r015",
+    "all-interactive-k5-r016",
+    "all-interactive-k2-r018",
+    "all-plinear-k5-r017",
+    "all-interactive-k2-r017",
+    "all-LATE-k5-r013",
+    "all-LATE-k5-r014",
+    "all-LATE-k2-r018",
+    "all-LATE-k2-r017",
+    "all-LATE-k5-r016",
+    "all-plinear-k5-r016",
+    "all-LATE-k5-r017",
+    "all-plinear-k5-r015",
+    "all-interactive-k5-r017"
+  ],
+  "jobs_completed_during_handoff": [],
+  "failed_jobs": {},
+  "admission_resources": {
+    "audit_r_processes": 17,
+    "available_gib": 36.7,
+    "cpu_slots": 11,
+    "host_busy_cores": 38.77,
+    "largest_audit_worker_rss_gib": 2.16,
+    "memory_slots": -2,
+    "other_busy_cores": 21.77,
+    "parallel_growth_reserved_gib": 2.5,
+    "remaining_fit_budget_bytes": -3510549716,
+    "reserved_worker_growth_gib": 21.47
+  },
+  "native_receipt_sha256": "5f1dcdfff539b2b0e8080f0648da611b1555290a0bb63e9a4deeadcd36880d26",
+  "shared_dispatcher_sha256": "035027d233d0553b58330959d20dbb05a60f0a08148f98d20f95cdb942f11051"
+}

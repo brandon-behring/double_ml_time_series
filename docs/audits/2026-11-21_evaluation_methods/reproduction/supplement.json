@@ -1,0 +1,118 @@
+{
+  "steps": {
+    "italy-authors": {
+      "rc": 0,
+      "stdout_sha256": "f28fcc1de22c9fd33859ac1a119b16ffe5e3ed4598040e9a214eb301bd7896e3",
+      "error": null
+    },
+    "gdp-survey-verification": {
+      "rc": 0,
+      "stdout_sha256": "a1f70556d0e9b7095c42ab2b9bff71427c8545350735415c05358864d78a6655",
+      "error": null
+    },
+    "cricket-original-roster": {
+      "rc": 0,
+      "stdout_sha256": "7e8261f681ec635380e91827d6a7e407161297422d48d49873a565dd6d3b0cc5",
+      "error": null
+    },
+    "cricket-precision": {
+      "rc": 0,
+      "stdout_sha256": "22a464aed8f09b098499a93a7003c3ae8de90d70fb29bf683ccfb65f480a6516",
+      "error": null
+    },
+    "rolling-reminder-origins": {
+      "rc": 0,
+      "stdout_sha256": "7398487f6b7651a51990c04521a5ed7b58c81cc007aca3e4d0ef62978ec40f6b",
+      "error": null
+    },
+    "rolling-reminder-calibration": {
+      "rc": 0,
+      "stdout_sha256": "eeb3c78fb123125a0565fa34a7fbb024ef03393636c883f00e226a1cbc2bc4b6",
+      "error": null
+    },
+    "rolling-reminder-bootstrap": {
+      "rc": 0,
+      "stdout_sha256": "2d5ff0ea5ab84ad3c66dd1ab6f12fea3aa34a81131c1307ad9c424d613035401",
+      "error": null
+    }
+  },
+  "rolling_files": [
+    {
+      "file": "bootstrap-calibration.csv",
+      "regenerated_sha256": "3db8c73ca4075a7b4e66068f8a16c04abaa787496534f893f00b827c6e1e9f05",
+      "archived_sha256": "3db8c73ca4075a7b4e66068f8a16c04abaa787496534f893f00b827c6e1e9f05"
+    },
+    {
+      "file": "calibration-draws.csv.gz",
+      "regenerated_sha256": "2f8a914ab046af56997c869e7c9050ba980bdade02fb37934c74a7d8f5bfea8a",
+      "archived_sha256": "2f8a914ab046af56997c869e7c9050ba980bdade02fb37934c74a7d8f5bfea8a"
+    },
+    {
+      "file": "calibration-summary.csv",
+      "regenerated_sha256": "327f19b1e78c5b7a61028539c3ce3a94385797e7741f26ce8b34eb3b08bc73e0",
+      "archived_sha256": "327f19b1e78c5b7a61028539c3ce3a94385797e7741f26ce8b34eb3b08bc73e0"
+    },
+    {
+      "file": "mybp-freezes/2022-01-01.json",
+      "regenerated_sha256": "43163d0f503630c8481161aa12b1fde0718ee24e8e39bde2485393315009c879",
+      "archived_sha256": "43163d0f503630c8481161aa12b1fde0718ee24e8e39bde2485393315009c879"
+    },
+    {
+      "file": "mybp-freezes/2022-04-01.json",
+      "regenerated_sha256": "8236ea1a8ccc0f3257068c66028462158dc69103f60cf8b391a4c465eed965ad",
+      "archived_sha256": "8236ea1a8ccc0f3257068c66028462158dc69103f60cf8b391a4c465eed965ad"
+    },
+    {
+      "file": "mybp-freezes/2022-07-01.json",
+      "regenerated_sha256": "9c4572f47ab52bb24ede0a863fd145c91f31df82f6417b25f67bbf9f7a39457a",
+      "archived_sha256": "9c4572f47ab52bb24ede0a863fd145c91f31df82f6417b25f67bbf9f7a39457a"
+    },
+    {
+      "file": "mybp-freezes/2022-10-01.json",
+      "regenerated_sha256": "fff557479939d46e93d3926830059b7b13dc55e60fca232a9f31d25faa3cf35d",
+      "archived_sha256": "fff557479939d46e93d3926830059b7b13dc55e60fca232a9f31d25faa3cf35d"
+    },
+    {
+      "file": "mybp-freezes/2023-01-01.json",
+      "regenerated_sha256": "d0828294876911cbb41652af860ed720e8527b732013eef69eb9294ddaaa0678",
+      "archived_sha256": "d0828294876911cbb41652af860ed720e8527b732013eef69eb9294ddaaa0678"
+    },
+    {
+      "file": "mybp-freezes/2023-04-01.json",
+      "regenerated_sha256": "b67d7418f544b65c55d98903c0b45b62403b0f2019d2dc47bec757adb1a0cc6d",
+      "archived_sha256": "b67d7418f544b65c55d98903c0b45b62403b0f2019d2dc47bec757adb1a0cc6d"
+    },
+    {
+      "file": "mybp-freezes/2023-07-01.json",
+      "regenerated_sha256": "6e5f8672c0b0a24062c9b31eeb7d9e37bc3a7d03f9f9078b6f7ef6d2c73acce5",
+      "archived_sha256": "6e5f8672c0b0a24062c9b31eeb7d9e37bc3a7d03f9f9078b6f7ef6d2c73acce5"
+    },
+    {
+      "file": "mybp-origins.csv",
+      "regenerated_sha256": "1deec396a16b0266f39ab03cb58ff8c8d099e22f4a1a59a05b675a34a425cd3e",
+      "archived_sha256": "1deec396a16b0266f39ab03cb58ff8c8d099e22f4a1a59a05b675a34a425cd3e"
+    },
+    {
+      "file": "mybp-summary.json",
+      "regenerated_sha256": "2bc5e03a84d2a6dc5e96f0ed390393ad51e569f5a934edd068a274ac98063dc9",
+      "archived_sha256": "2bc5e03a84d2a6dc5e96f0ed390393ad51e569f5a934edd068a274ac98063dc9"
+    }
+  ],
+  "comparisons": {
+    "gdp-survey-verification": {
+      "numeric_fields": 774,
+      "max_abs_difference": 0.0,
+      "field_differences": []
+    },
+    "italy-authors": {
+      "numeric_fields": 34,
+      "max_abs_difference": 0.0,
+      "field_differences": []
+    },
+    "cricket-precision": {
+      "numeric_fields": 15,
+      "max_abs_difference": 0.0,
+      "field_differences": []
+    }
+  }
+}

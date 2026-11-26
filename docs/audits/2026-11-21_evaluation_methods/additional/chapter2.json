@@ -1,0 +1,9 @@
+{
+  "econml": "0.16.0",
+  "sklearn": "1.6.1",
+  "stdout": [
+    "True ATE: 2.50\nDML Estimate: 2.407\n95% CI: [2.343, 2.471]\nAdjusted OLS: 2.501",
+    "Method  Estimate  CI_Lower  CI_Upper  Absolute_Error  CI_Width\n            Lasso     2.499     2.462     2.535           0.001     0.073\n            Ridge     2.498     2.464     2.532           0.002     0.068\n    Random Forest     2.407     2.343     2.471           0.093     0.128\nGradient Boosting     2.272     2.216     2.328           0.228     0.112\n\nPlot saved to output/dml_ml_comparison.png",
+    "First-Stage Diagnostics:\nE[T|X] R^2: 0.611 (+/-0.025)\nE[Y|X] R^2: 0.577 (+/-0.018)"
+  ]
+}

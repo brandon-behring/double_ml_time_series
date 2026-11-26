@@ -1,0 +1,16 @@
+{
+  "sample_size": 9915,
+  "sample_seed": null,
+  "econml": "0.16.0",
+  "outer_partition_seeds": [
+    0,
+    1
+  ],
+  "learner_seed": 42,
+  "estimates": [
+    6648.935765897943,
+    6717.247266779132
+  ],
+  "sd_across_partitions": 48.303525506119065,
+  "convergence_warnings": 112
+}

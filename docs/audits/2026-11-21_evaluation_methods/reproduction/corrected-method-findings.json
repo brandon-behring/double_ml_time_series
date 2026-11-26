@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-11-21T12:42:00.158049",
+  "configurations": 6,
+  "methods_compared": [
+    "NaiveOLS",
+    "OLSWithControls",
+    "IPWEstimator",
+    "AugmentedIPW",
+    "RandomForest",
+    "XGBoost",
+    "DML"
+  ],
+  "simulations_per_method": 20,
+  "best_methods_by_metric": {
+    "lowest_mean_bias": {
+      "Method": "OLSWithControls",
+      "Abs_Bias": 0.033883859648007934,
+      "MSE": 0.015629342654566954,
+      "Coverage": 0.6666666666666666,
+      "Coverage_Error": 0.28333333333333327
+    },
+    "lowest_mse": {
+      "Method": "OLSWithControls",
+      "Abs_Bias": 0.033883859648007934,
+      "MSE": 0.015629342654566954,
+      "Coverage": 0.6666666666666666,
+      "Coverage_Error": 0.28333333333333327
+    },
+    "highest_coverage": {
+      "Method": "IPWEstimator",
+      "Abs_Bias": 0.11139697701380424,
+      "MSE": 0.5195413982554887,
+      "Coverage": 0.8583333333333334,
+      "Coverage_Error": 0.1416666666666667
+    },
+    "closest_to_nominal_coverage": {
+      "Method": "AugmentedIPW",
+      "Abs_Bias": 0.03452324397969201,
+      "MSE": 0.030824238556454196,
+      "Coverage": 0.8416666666666667,
+      "Coverage_Error": 0.1083333333333333
+    }
+  },
+  "method_statistics": {
+    "NaiveOLS": {
+      "mean_abs_bias": 0.17121383726940312,
+      "mean_mse": 3.0259703525670703,
+      "mean_coverage": 0.2916666666666667,
+      "pass_rate": 100.0
+    },
+    "OLSWithControls": {
+      "mean_abs_bias": 0.033883859648007934,
+      "mean_mse": 0.01562934265456695,
+      "mean_coverage": 0.6666666666666666,
+      "pass_rate": 66.66666666666666
+    },
+    "IPWEstimator": {
+      "mean_abs_bias": 0.11139697701380424,
+      "mean_mse": 0.5195413982554887,
+      "mean_coverage": 0.8583333333333334,
+      "pass_rate": 100.0
+    },
+    "AugmentedIPW": {
+      "mean_abs_bias": 0.03452324397969202,
+      "mean_mse": 0.030824238556454192,
+      "mean_coverage": 0.8416666666666667,
+      "pass_rate": 83.33333333333334
+    },
+    "RandomForest": {
+      "mean_abs_bias": 0.04456887035158569,
+      "mean_mse": 0.8050479112315528,
+      "mean_coverage": 0.5083333333333333,
+      "pass_rate": 100.0
+    },
+    "XGBoost": {
+      "mean_abs_bias": 0.05736056786959743,
+      "mean_mse": 0.38992626011612375,
+      "mean_coverage": 0.55,
+      "pass_rate": 100.0
+    },
+    "DML": {
+      "mean_abs_bias": 0.050205584301857904,
+      "mean_mse": 0.11972086583512638,
+      "mean_coverage": 0.775,
+      "pass_rate": 50.0
+    }
+  }
+}

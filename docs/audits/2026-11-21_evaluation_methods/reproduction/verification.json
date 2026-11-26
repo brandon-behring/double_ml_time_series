@@ -1,0 +1,59 @@
+{
+  "versions_in_verification_environment": {
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "pandas": "3.0.3",
+    "scikit-learn": "1.6.1",
+    "temporalcv": "2.2.0",
+    "econml": "0.16.0",
+    "sphinx": "9.1.0",
+    "pytest": "9.0.3"
+  },
+  "pdf": {
+    "pages": 180,
+    "sha256": "be9ef289eee1bef0f626cf66e8d0922e318f3c7f6f67e824bd5bcd9c67853332",
+    "unresolved_references": false
+  },
+  "web": {
+    "academic_chapters": 10,
+    "pages": 15,
+    "chapter_9_sha256": "fc0b9caf01c98faf7c9a0408f50947272ace98fd58ceb0feda0d18496b19283d"
+  },
+  "edition_source_files": {
+    "chapters/chapter_02.tex": {
+      "current": "ea8848280137d4bcf125429dd206d47a6affbde4fcd04260f0c2db9e1b914482",
+      "built": "ea8848280137d4bcf125429dd206d47a6affbde4fcd04260f0c2db9e1b914482"
+    },
+    "chapters/chapter_03.tex": {
+      "current": "f83c5243262fc8d3f60752d39d343a15c86e042ea3d5cdc059751fc4e3bf17b9",
+      "built": "f83c5243262fc8d3f60752d39d343a15c86e042ea3d5cdc059751fc4e3bf17b9"
+    },
+    "chapters/chapter_09.tex": {
+      "current": "5f0d5ef755e4c037748f3358572d5acea14797f718c6f61aec441548ab10212b",
+      "built": "5f0d5ef755e4c037748f3358572d5acea14797f718c6f61aec441548ab10212b"
+    },
+    "web/src/content/chapters/chapter02-neyman-orthogonality-dml.mdx": {
+      "current": "d1c34ec898b22a627e4dcbcf54cd399b8cf974e80148c8656a6bfea6265f2ac9",
+      "built": "d1c34ec898b22a627e4dcbcf54cd399b8cf974e80148c8656a6bfea6265f2ac9"
+    },
+    "web/src/content/chapters/chapter03-validation-framework.mdx": {
+      "current": "46866f7056e8a522e8d9232fc6e0e80defbf6fa045b8e4e882f6d3e7b59dac3a",
+      "built": "46866f7056e8a522e8d9232fc6e0e80defbf6fa045b8e4e882f6d3e7b59dac3a"
+    },
+    "web/src/content/chapters/chapter09-heterogeneity.mdx": {
+      "current": "c418305430072db4ea472d0155cdbf2bc4ddb9eb818da4f5acad7173a70cd8d6",
+      "built": "c418305430072db4ea472d0155cdbf2bc4ddb9eb818da4f5acad7173a70cd8d6"
+    }
+  },
+  "sphinx_strict": "passed",
+  "ci_mypy": "Success: no issues found in 46 source files",
+  "tests": {
+    "current-core-pytest": "968 passed, 9 skipped, 214 deselected, 335 warnings in 92.82s (0:01:32)",
+    "complete-suite": "1154 passed, 37 skipped, 1053 warnings in 6421.98s (1:47:01)",
+    "edition-drift-tests": "7 passed in 0.02s",
+    "temporalcv-sibling-tests": "72 passed, 10 warnings in 28.18s",
+    "monitor-tests": "43 passed in 0.09s",
+    "effect-forecast-tests": "31 passed in 0.05s",
+    "audit-contract-tests": "3 passed in 0.07s"
+  }
+}

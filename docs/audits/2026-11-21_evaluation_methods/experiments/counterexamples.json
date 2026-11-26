@@ -1,0 +1,51 @@
+{
+  "error_alignment": [
+    {
+      "outcome_prediction_sign": 1.0,
+      "estimate": 1.0,
+      "se": 0.05607721540920443,
+      "outcome_mse": 3.0,
+      "treatment_mse": 2.0,
+      "outcome_r2": -0.5,
+      "treatment_r2": -1.0
+    },
+    {
+      "outcome_prediction_sign": -1.0,
+      "estimate": 0.0,
+      "se": 0.05607721540920443,
+      "outcome_mse": 3.0,
+      "treatment_mse": 2.0,
+      "outcome_r2": -0.5,
+      "treatment_r2": -1.0
+    }
+  ],
+  "binary": {
+    "hard_labels": {
+      "estimate": 0.75,
+      "se": 0.06458336837206266,
+      "brier": 0.25
+    },
+    "probabilities": {
+      "estimate": 0.9953926997973236,
+      "se": 0.0745301832550996,
+      "brier": 0.18798912293054126
+    },
+    "native_classifier": {
+      "estimate": 0.9953926997973236,
+      "se": 0.0745301832550996,
+      "brier": 0.18798912293054126
+    }
+  },
+  "overlap": {
+    "A": {
+      "population_ate_error": 2.0,
+      "population_cate_rmse": 2.8284271247461903,
+      "excess_oracle_r_loss": 0.0792
+    },
+    "B": {
+      "population_ate_error": 0.5,
+      "population_cate_rmse": 0.7071067811865476,
+      "excess_oracle_r_loss": 0.125
+    }
+  }
+}

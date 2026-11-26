@@ -1,0 +1,22 @@
+[
+  {
+    "prior_execution_log": "dml-27-all-nov20-final.log",
+    "sha256": "caf05800da2ad3027f40b053302961af8cd57d8d11f3e33ca6c1a2f0870fef92",
+    "study_count": 27
+  },
+  {
+    "prior_execution_log": "dml-rolling-full-locked.txt",
+    "sha256": "1084898d26a307e89b879ff47a886ad3a435818967ee9352f13698a2ce89e731",
+    "study_count": 5
+  },
+  {
+    "prior_execution_log": "dml-prospective-cli-final-locked.log",
+    "sha256": "31f457825a35bc83bd7d5ca74ab9eb5c23efada078526149cb2daef233bb7086",
+    "study_count": 3
+  },
+  {
+    "prior_execution_log": "dml-method-validation-weighted.log",
+    "sha256": "95ecf4b80013ad3e85fc271d3c9defca043e2ffad1955b8caf12e7e6ce120b3e",
+    "study_count": 5
+  }
+]

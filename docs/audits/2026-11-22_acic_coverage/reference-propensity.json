@@ -1,0 +1,41 @@
+{
+  "design": 30,
+  "analysis": "Exploratory, selected after the primary coverage study",
+  "population_ate": 10.0,
+  "reference_files": 50,
+  "evaluation_files": 50,
+  "reference_rule": "Odd ranks (1-based) after sorting the 100 filenames by numeric suffix",
+  "reference_estimator": "The estimated assignment probability is (row treatment count + 0.5) / 51. It requires treatment assignments from 50 sibling simulations.",
+  "rows_per_file": 5735,
+  "covariates": 26,
+  "identical_X_files_verified": 100,
+  "reference_rows_clipped": 68,
+  "mcse_scope": "Paired SD across 50 evaluation files divided by sqrt(50), conditional on the observed set of reference assignments and fixed X.",
+  "ordinary": {
+    "mean_aipw": 21.8259462447109,
+    "bias": 11.825946244710897,
+    "rmse": 11.839645995949606,
+    "mean_brier": 0.18373797644200607,
+    "mean_bounded_brier": 0.18373797644200607
+  },
+  "reference": {
+    "mean_aipw": 8.24713750958504,
+    "bias": -1.7528624904149603,
+    "rmse": 2.224089121591927,
+    "mean_brier": 0.14001164665055726,
+    "mean_bounded_brier": 0.14001140823377237
+  },
+  "reference_minus_ordinary": {
+    "mean": -13.578808735125856,
+    "conditional_paired_mcse": 0.1674418461240026
+  },
+  "squared_error_change": {
+    "mean": -135.23064488862198,
+    "conditional_paired_mcse": 2.4858106242570717
+  },
+  "brier_change": {
+    "mean": -0.04372632979144882,
+    "conditional_paired_mcse": 0.00032628232389217513
+  },
+  "evaluation_files_smaller_absolute_error": 50
+}
