@@ -9,7 +9,7 @@ description: "Regularization bias in ML nuisance estimation, Neyman orthogonalit
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_02.tex
-source_sha256: fe5e715a0188a374ae7e43465a5796e1bc9dc1e02f3fc3cb5a49f2a31ea3dafd
+source_sha256: ef5acbd70242905d4f24c72ca6764b934195423ce2168f36e20faf27b81d75e3
 provenance:
   ai_tools:
     - Claude Code
@@ -266,7 +266,7 @@ After obtaining $\hat{\tau}_{\text{DML}}$, we need the standard error for confid
 
 <MarginNote title="Inference">The theorem gives asymptotic coverage under its sampling and nuisance-rate conditions.</MarginNote>
 
-For independent observations, fixed-fold cross-fitting, the nuisance product rate above, positive residual treatment variation and suitable moment bounds, the DML estimator satisfies:
+For independent observations, fixed-fold cross-fitting, nuisance errors that each vanish in $L_2$ and satisfy the product rate above, positive residual treatment variation and suitable moment bounds, the DML estimator satisfies:
 
 $$
 \sqrt{n}(\hat{\tau}_{\text{DML}} - \tau_0) \xrightarrow{d} N(0, \Sigma)

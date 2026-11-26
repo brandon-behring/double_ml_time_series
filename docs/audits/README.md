@@ -20,9 +20,11 @@ priority and software readiness.
 
 The [public-data comparison](2026-11-19_time_series_dml/README.md#four-further-tests-with-public-research-data) adds results on retail recommendations, bracero exclusion, teacher pay and weatherization.
 
-Not every file these folders refer to is in the repository. Twenty-eight files that depend on
-the pending redesign of `PanelDML` are held and are listed in
-[`docs/CURRENT_STATUS.md`](../CURRENT_STATUS.md). Six files that reproduce a provider's rows
+Not every file these folders refer to is in the repository, and the reports describe the
+November working copy, not `main`. Twenty-eight files of these folders that depend on the
+pending redesign of `PanelDML` are held and are listed in
+[`docs/CURRENT_STATUS.md`](../CURRENT_STATUS.md), which also says what the reports claim about
+Chapters 6 and 8 that `main` does not yet hold. Seven files that reproduce a provider's rows
 without a licence that grants redistribution are held and are listed, with the licences and
 attributions of the files that are here, in [`DATA_SOURCES.md`](DATA_SOURCES.md).
 
@@ -45,7 +47,7 @@ The [public-data experiments](2026-11-21_public_data_extensions/README.md) use b
 When a newer audit supersedes this one:
 
 1. Add the new file as `YYYY-MM-DD_short_scope.md`.
-2. Update this README so there is exactly one current canonical audit.
+2. Update this README's list of current audits.
 3. State which older claims are still valid and which are superseded.
 4. Keep command evidence, source links, unresolved questions, and assumptions in
    the audit itself.

@@ -12,14 +12,18 @@ are the compatibility contract).
 
 - `dml_ts.validation.effect_forecast` freezes a set of effect forecasts with their protocol
   under a digest, and scores them against experimental estimates that are supplied later.
-- The November audits under `docs/audits/`, with 32 tests: the time-series DML audit and its
-  replays of published experiments (2026-11-19), the evaluation-methods audit (2026-11-21),
-  the ACIC coverage study and the mathematical review (2026-11-22). 34 files that these
-  folders refer to are not in the repository: 28 depend on the pending redesign of `PanelDML`
-  (listed in `docs/CURRENT_STATUS.md`), and 6 reproduce a provider's rows under terms that do
-  not grant redistribution (listed in `docs/audits/DATA_SOURCES.md`, with the licences and
-  attributions of the data files that are here). 31 test cases replay external archives and
-  skip unless `DML_TS_EXTERNAL_REPLAY=1` is set. (#65)
+- The November audits under `docs/audits/`, with 31 test files: the time-series DML audit and
+  its replays of published experiments (2026-11-19), the evaluation-methods audit (2026-11-21),
+  the ACIC coverage study and the mathematical review (2026-11-22). 35 files of these folders
+  are not in the repository: 28 depend on the pending redesign of `PanelDML` (listed in
+  `docs/CURRENT_STATUS.md`), and 7 reproduce a provider's rows under terms that do not grant
+  redistribution (listed in `docs/audits/DATA_SOURCES.md`, with the licences and attributions
+  of the data files that are here). The reports were written against the November working
+  copy and refer to those files, and to a module, a script and three tests that are not landed
+  either. 31 test cases replay external archives and skip unless `DML_TS_EXTERNAL_REPLAY=1` is
+  set. Two tests that replay the archived cricket forecast are held: its fold assignment
+  depends on the CPU through an unstable sort, so the forecast reproduces only on some
+  machines (#86). (#65)
 
 ### Changed
 

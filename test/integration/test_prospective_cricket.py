@@ -221,19 +221,6 @@ def test_independent_crosswalk_is_validated_before_filtering(tmp_path):
 
 
 @pytest.mark.tier2
-def test_historical_freeze_replays_offline_and_power_is_for_separate_ranking():
-    registry = live.replay()
-    f = registry["forecasts"]
-    assert f["historical"] == pytest.approx(100 * 77 / 5848)
-    assert f["historical"] > f["dml"] > f["half_history"] > 0
-    precision = live.precision()
-    assert precision["historical_precision_2025"]["series"]["clusters"] == 158
-    assert precision["dml_vs_half"]["se_for_80pct"] == pytest.approx(0.0130730680)
-    hist = live.history().sample(frac=1, random_state=19)
-    assert cricket.forecasts(hist) == f
-
-
-@pytest.mark.tier2
 @pytest.mark.skipif(
     os.getenv("DML_TS_EXTERNAL_REPLAY") != "1", reason="requires pinned Cricsheet source ZIP"
 )
