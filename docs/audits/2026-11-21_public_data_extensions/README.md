@@ -9,9 +9,7 @@ These calculations test how well an estimator recovers a known dynamic effect, h
 | Quarter-hour ride demand | Observed counts, simulated block assignments and carryover | One-hour and six-hour blocks target 33.93 and 78.32 additional rides per quarter, respectively, under a sustained effect of 100. Larger blocks change the estimand and the number of independent assignments. [Switchback analysis](time_series_dml.md#when-randomization-happens-in-time-blocks) |
 | Repeated cooperation games | The published estimator and design, synthetic shared assignments and outcomes | Under a fixed sharp null the pair-based tests rejected in 4.57% and 4.27% of paths by design probability. Independent draws for partners inflated both rates to about 17.7%. [Point estimates, assignment and inference](cooperation_panel.md) |
 
-## Handoff for Claude
-
-The owner requested local Git only. The worktree is `double_ml_time_series-audit-20261121` on branch `audit/public-data-extensions-2026-11-21`. Commit `5f262b5` holds the four data examples and reference outputs, `af73c36` records independent replays and verified downloads, and `d9a49e7` adds the package comparison on matched bike hours. The local input cache is `output/time-series-dml/`. Check its four hashes with the command below before reusing it. The cooperation panel uses synthetic outcomes and pair assignments. Scientific use of the participant workbook requires the permission described in the source ZIP.
+## Next steps
 
 The first unfinished estimator experiment is the larger paired bike comparison. Preserve the same offer histories, elapsed-hour outcomes, evaluation timestamps and calendar folds across methods. Start from the four matched histories and their saved results. Expand to enough common histories to report bias and interval coverage with Monte Carlo uncertainty. Report the scalar estimate separately at each horizon and distinguish time gaps measured in hours from gaps measured in eligible rows. The remaining extensions and their design limitations are listed at the end of this report. [Matched-hour evidence and commands](time_series_dml.md#the-repository-estimator-on-the-same-bike-offers)
 
