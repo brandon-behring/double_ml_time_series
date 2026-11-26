@@ -1,13 +1,4 @@
-"""Sensitivity analysis tools for causal inference.
-
-This module provides methods to assess the robustness of causal effect
-estimates to violations of the unconfoundedness assumption.
-
-Available Methods
------------------
-- Rosenbaum Bounds: Classic bounds for hidden bias assessment
-- Parametric Sensitivity: Chernozhukov-style sensitivity analysis
-"""
+"""Sensitivity curves for a scalar effect under an assumed log-gamma bias function."""
 
 from .rosenbaum import RosenbaumBounds, SensitivityResult, compute_sensitivity_for_dml
 

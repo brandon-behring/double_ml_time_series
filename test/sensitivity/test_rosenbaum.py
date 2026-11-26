@@ -149,7 +149,7 @@ class TestRosenbaumBounds:
 
         assert "Rosenbaum Bounds Sensitivity Analysis" in summary
         assert "Critical Gamma" in summary
-        assert result.interpretation in summary
+        assert result.gamma_label in summary
 
     @pytest.mark.tier1
     def test_result_repr(self, bounds: RosenbaumBounds) -> None:
@@ -222,15 +222,32 @@ class TestComputeSensitivityForDML:
         assert result.alpha == 0.01
 
     @pytest.mark.tier1
-    def test_treatment_r2_affects_result(self) -> None:
-        """Test that treatment R² affects sensitivity result."""
-        # High R² (treatment well predicted)
-        high_r2 = compute_sensitivity_for_dml(theta=2.0, se=0.5, n_samples=1000, treatment_r2=0.8)
+    def test_balanced_proxy_cancels_sample_size_and_treatment_r2(self) -> None:
+        from scipy.stats import norm
 
-        # Low R² (treatment poorly predicted)
-        low_r2 = compute_sensitivity_for_dml(theta=2.0, se=0.5, n_samples=1000, treatment_r2=0.1)
+        expected = compute_sensitivity_for_dml(1.4, 0.5, 1000, treatment_r2=0.1)
+        for n, r2 in [(1000, 0.8), (57, 0.9)]:
+            got = compute_sensitivity_for_dml(1.4, 0.5, n, treatment_r2=r2)
+            assert got.p_values_by_gamma == expected.p_values_by_gamma
+            for gamma, p in got.p_values_by_gamma.items():
+                assert p == pytest.approx(2 * norm.sf(max(0, 2.8 - np.log(gamma))))
 
-        # Results should differ (effective sample sizes differ)
-        # With same theta/se, different n_eff means different gamma_critical
-        # This tests that the R² parameter is actually used
-        assert high_r2.gamma_critical != low_r2.gamma_critical or True  # At minimum, no crash
+
+@pytest.mark.tier1
+@pytest.mark.parametrize("step,limit", [(0.2, 1.25), (0.004, 1.015), (0.1, 1.3)])
+def test_grid_endpoint_and_censoring(step, limit):
+    from scipy.stats import norm
+
+    bounds = RosenbaumBounds(gamma_max=limit, gamma_step=step)
+    result = bounds.analyze(10, 1, 30, 30)
+    assert list(result.p_values_by_gamma) == list(result.gamma_values)
+    assert np.all(np.diff(result.gamma_values) > 0)
+    assert (result.gamma_values[0], result.gamma_values[-1]) == (1, limit)
+    assert result.gamma_critical == limit and not result.crossing_observed
+    assert "No crossing" in result.summary()
+    theta = norm.isf(0.025) + np.log(np.mean(result.gamma_values[-2:]))
+    endpoint = bounds.analyze(theta, 1, 30, 30)
+    assert endpoint.gamma_critical == limit and endpoint.crossing_observed
+    del result.p_values_by_gamma[limit]  # Legacy grids could omit the upper endpoint.
+    assert not result.crossing_observed
+    assert "No crossing" in result.summary()

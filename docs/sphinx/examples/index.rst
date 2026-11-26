@@ -86,7 +86,7 @@ to fully nonlinear with temporal dynamics.
 Sensitivity Analysis
 --------------------
 
-Rosenbaum bounds sensitivity analysis applied to DML results.
+An illustrative log-gamma bias curve for a DML estimate and standard error.
 
 .. literalinclude:: ../../../examples/example_sensitivity.py
    :language: python

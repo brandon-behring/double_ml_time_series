@@ -1,18 +1,4 @@
-"""Rosenbaum Bounds Sensitivity Analysis.
-
-Demonstrates sensitivity analysis for DML treatment effect estimates.
-Quantifies how strong unmeasured confounding would need to be to
-overturn causal conclusions.
-
-Interpretation:
-    - Gamma > 2.0: Robust — strong confounding needed to overturn
-    - Gamma 1.5-2.0: Moderately robust
-    - Gamma 1.2-1.5: Sensitive — modest confounding could alter results
-    - Gamma < 1.2: Fragile — very sensitive to unmeasured confounding
-
-Usage:
-    python examples/example_sensitivity.py
-"""
+"""Illustrate an assumed log-gamma bias curve on a DML estimate."""
 
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
@@ -70,21 +56,6 @@ def main() -> None:
 
     print(sensitivity.summary())
     print()
-
-    # ── Interpretation ───────────────────────────────────────────────────
-    print("=" * 60)
-    print("Interpretation")
-    print("=" * 60)
-    gamma_crit = sensitivity.gamma_critical
-    print(f"  Critical Gamma: {gamma_crit:.2f}")
-    if gamma_crit > 2.0:
-        print("  → ROBUST: Very strong unmeasured confounding needed to overturn")
-    elif gamma_crit > 1.5:
-        print("  → MODERATELY ROBUST: Moderate confounding could affect conclusions")
-    elif gamma_crit > 1.2:
-        print("  → SENSITIVE: Modest confounding could alter results")
-    else:
-        print("  → FRAGILE: Very sensitive to unmeasured confounding")
 
 
 if __name__ == "__main__":
