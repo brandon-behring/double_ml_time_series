@@ -4,13 +4,43 @@ Tests the OJDataLoader class to ensure correct data loading,
 preprocessing, and validation for DML price elasticity analysis.
 """
 
+import hashlib
 import tempfile
+from io import BytesIO
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-from dml_ts.data.oj_loader import OJDataLoader, OJDataset
+from dml_ts.data.oj_loader import OJ_DATASET_HASH, OJDataLoader, OJDataset
+
+
+@pytest.mark.tier1
+@pytest.mark.parametrize("force", [False, True])
+def test_changed_download_preserves_cached_file(tmp_path, monkeypatch, force):
+    from dml_ts.data import oj_loader
+
+    cache = tmp_path / "oj_large.csv"
+    cache.write_bytes(b"previous cached data")
+    monkeypatch.setattr(oj_loader, "urlopen", lambda *args, **kwargs: BytesIO(b"unexpected bytes"))
+    with pytest.raises(RuntimeError, match="SHA-256"):
+        OJDataLoader(cache_dir=tmp_path).load(force_download=force)
+    assert cache.read_bytes() == b"previous cached data"
+
+
+@pytest.mark.tier1
+def test_legacy_cache_is_refreshed_once_from_pinned_source(tmp_path, monkeypatch):
+    from dml_ts.data import oj_loader
+
+    source = b"store,week\n2,40\n"
+    cache = tmp_path / "oj_large.csv"
+    cache.write_bytes(b"store,week\n1,40\n")
+    monkeypatch.setattr(oj_loader, "OJ_DATASET_HASH", hashlib.sha256(source).hexdigest())
+    monkeypatch.setattr(oj_loader, "urlopen", lambda *args, **kwargs: BytesIO(source))
+    assert OJDataLoader(tmp_path)._load_raw()["store"].tolist() == [2]
+    assert cache.read_bytes() == source
+    monkeypatch.setattr(oj_loader, "urlopen", lambda *a, **kw: pytest.fail("cache hit expected"))
+    assert OJDataLoader(tmp_path)._load_raw()["store"].tolist() == [2]
 
 
 @pytest.mark.tier2
@@ -141,7 +171,7 @@ class TestOJDataLoader:
 
             # Cache file should exist
             cache_file = cache_dir / "oj_large.csv"
-            assert cache_file.exists()
+            assert hashlib.sha256(cache_file.read_bytes()).hexdigest() == OJ_DATASET_HASH
 
             # Second load - from cache
             loader2 = OJDataLoader(cache_dir=cache_dir)

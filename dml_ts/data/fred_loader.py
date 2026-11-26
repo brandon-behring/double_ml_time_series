@@ -442,12 +442,14 @@ class FREDLoader:
         self,
         series: pd.Series,
         transform: str,
+        frequency: FrequencyType,
     ) -> pd.Series:
         """Apply transformation to series.
 
         Args:
             series: Input time series
             transform: Transformation type
+            frequency: Frequency of the regularly resampled series
 
         Returns:
             Transformed series
@@ -457,7 +459,13 @@ class FREDLoader:
         elif transform == "pct_change":
             return series.pct_change() * 100
         elif transform == "pct_change_yoy":
-            return series.pct_change(12) * 100  # Assumes monthly
+            if frequency == "D":
+                # Match calendar anniversaries, including Feb 29 to Feb 28.
+                previous_dates = series.index - pd.DateOffset(years=1)
+                previous = series.reindex(previous_dates).set_axis(series.index)
+                return (series / previous - 1) * 100
+            periods = {"W": 52, "M": 12, "Q": 4, "A": 1}[frequency]
+            return series.pct_change(periods=periods, fill_method=None) * 100
         elif transform == "diff":
             return series.diff()
         elif transform == "log":
@@ -485,7 +493,9 @@ class FREDLoader:
             series_set: Pre-defined set ("basic", "comprehensive", "financial", etc.)
             frequency: Target frequency (D/W/M/Q/A)
             custom_series: Additional series to include
-            transforms: Dict of series_id -> transform type
+            transforms: Dict of series_id -> transform type. Year-over-year
+                growth compares daily calendar anniversaries, 52 weekly periods,
+                or the same month, quarter or year one year earlier.
             fill_method: Method for filling missing values
 
         Returns:
@@ -536,7 +546,7 @@ class FREDLoader:
             aligned = self._convert_frequency(fred_series.data, frequency)
 
             # Apply transform
-            transformed = self._apply_transform(aligned, transform)
+            transformed = self._apply_transform(aligned, transform, frequency)
 
             # Track missing data
             missing_pct[series_id] = float(transformed.isna().mean() * 100)

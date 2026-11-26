@@ -1,8 +1,7 @@
 """Dominick's Orange Juice Dataset Loader.
 
-Loads the OJ dataset from Microsoft Azure blob storage. This dataset contains
-store-level panel data on orange juice sales from Dominick's Finer Foods,
-a major Chicago-area supermarket chain.
+Loads a pinned extract of weekly orange juice sales by brand and store at
+Dominick's Finer Foods, a Chicago-area supermarket chain.
 
 The dataset is widely used for causal inference demonstrations, particularly
 for estimating price elasticity of demand with confounders like income and
@@ -11,10 +10,10 @@ demographics.
 Data Source
 -----------
 University of Chicago Booth School of Business, Kilts Center for Marketing.
-https://research.chicagobooth.edu/kilts/marketing-databases/dominicks
+https://www.chicagobooth.edu/research/kilts/research-data/dominicks
 
 GitHub mirror (used here):
-https://github.com/gchoi/Dataset/raw/refs/heads/master/oj.csv
+https://github.com/gchoi/Dataset/blob/8e81d46872564218a78be95d53a9c6bd3b00b199/oj.csv
 
 References
 ----------
@@ -27,19 +26,23 @@ Supermarket Scanner Data. Marketing Science, 16(4), 315-337.
 
 from __future__ import annotations
 
+import hashlib
 import warnings
 from dataclasses import dataclass, field
+from io import BytesIO
 from pathlib import Path
+from tempfile import NamedTemporaryFile
+from urllib.request import urlopen
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 
-# GitHub mirror URL for OJ dataset (Azure blob now private)
-OJ_DATASET_URL = "https://github.com/gchoi/Dataset/raw/refs/heads/master/oj.csv"
-
-# Expected SHA256 hash for data integrity verification
-OJ_DATASET_HASH = None  # Will be set after first download verification
+OJ_DATASET_URL = (
+    "https://raw.githubusercontent.com/gchoi/Dataset/"
+    "8e81d46872564218a78be95d53a9c6bd3b00b199/oj.csv"
+)
+OJ_DATASET_HASH = "01b8c698a0511231cf09424cf946fe849fb902639e4584023d6040955701c522"
 
 
 @dataclass
@@ -120,7 +123,6 @@ Treatment (T = log price):
   Std:            {np.std(self.T):.3f}
   Range:          [{np.min(self.T):.3f}, {np.max(self.T):.3f}]
 
-Expected elasticity: ~-2.5 to -3.5 (standard finding in literature)
 """
 
 
@@ -232,23 +234,36 @@ class OJDataLoader:
 
     def _load_raw(self, force_download: bool = False) -> pd.DataFrame:
         """Load raw dataframe from cache or download."""
-        # Check cache first
+        # Older releases reserialized the CSV. Refresh those files from the
+        # pinned source, leaving the existing cache in place if the fetch fails.
         if self.cache_dir and not force_download:
             cache_path = self.cache_dir / "oj_large.csv"
             if cache_path.exists():
-                self._raw_df = pd.read_csv(cache_path)
-                return self._raw_df
+                cached = cache_path.read_bytes()
+                if hashlib.sha256(cached).hexdigest() == OJ_DATASET_HASH:
+                    self._raw_df = pd.read_csv(BytesIO(cached))
+                    return self._raw_df
 
-        # Download from Azure
         try:
-            self._raw_df = pd.read_csv(OJ_DATASET_URL)
-        except Exception as e:
+            with urlopen(OJ_DATASET_URL, timeout=60) as response:
+                source_bytes = response.read()
+        except OSError as e:
             raise RuntimeError(f"Failed to download OJ dataset from {OJ_DATASET_URL}: {e}") from e
+        if hashlib.sha256(source_bytes).hexdigest() != OJ_DATASET_HASH:
+            raise RuntimeError("Downloaded OJ dataset differs from the pinned SHA-256 digest.")
+        self._raw_df = pd.read_csv(BytesIO(source_bytes))
 
         # Cache if directory specified
         if self.cache_dir:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
-            self._raw_df.to_csv(self.cache_dir / "oj_large.csv", index=False)
+            tmp = NamedTemporaryFile(dir=self.cache_dir, delete=False)
+            pending = Path(tmp.name)
+            try:
+                with tmp:
+                    tmp.write(source_bytes)
+                pending.replace(self.cache_dir / "oj_large.csv")
+            finally:
+                pending.unlink(missing_ok=True)
 
         return self._raw_df
 

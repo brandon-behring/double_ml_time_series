@@ -30,11 +30,10 @@ class TestChapter4Workflow:
 
     @pytest.mark.tier2
     def test_oj_dml_pipeline(self, oj_data: OJDataset) -> None:
-        """Test complete OJ → DML pipeline produces reasonable results.
+        """Reproduce the pooled slope and its four uncertainty calculations."""
+        import statsmodels.api as sm
+        from statsmodels.stats.sandwich_covariance import cov_cluster_2groups
 
-        Expected finding: Price elasticity of OJ demand is negative,
-        typically in the range -2.5 to -3.5.
-        """
         # Run DML on full OJ dataset
         result = double_ml(
             Y=oj_data.Y,
@@ -51,25 +50,34 @@ class TestChapter4Workflow:
         assert not np.isnan(result.se)
         assert result.se > 0
 
-        # Treatment effect should be negative (higher price → lower sales)
-        assert result.theta < 0, f"Expected negative elasticity, got {result.theta}"
-
-        # Elasticity should be in reasonable range (-5 to 0)
-        # Standard finding is -2.5 to -3.5
-        assert -5.0 < result.theta < 0, f"Elasticity {result.theta} outside reasonable range"
-
-        # p-value should indicate statistical significance
-        assert result.p_value < 0.05, f"Expected significant effect, p={result.p_value}"
-
-        # First-stage R² should be reasonable (confounders predict outcome/treatment)
-        assert result.outcome_r2_cv > 0.1, f"Low outcome R²: {result.outcome_r2_cv}"
+        # Compare to measured outputs on the pinned extract and verify the
+        # two-way correction independently on the normalized influence scores.
+        frame = oj_data.raw_df
+        assert frame is not None
+        assert frame.groupby(["store", "week"]).size().eq(3).all()
+        assert not frame.duplicated(["store", "brand", "week"]).any()
+        assert result.theta == pytest.approx(-1.1673, abs=0.001)
+        assert result.se == pytest.approx(0.01584, abs=0.0001)
+        final = sm.OLS(result.Y_residual, result.T_residual, hasconst=False).fit()
+        both, store, week = cov_cluster_2groups(
+            final, frame.store.to_numpy(), frame.week.to_numpy()
+        )
+        scores = frame.assign(score=result.influence_scores)
+        components = []
+        for keys in [["store"], ["week"], ["store", "week"]]:
+            sums = scores.groupby(keys)["score"].sum().to_numpy()
+            components.append(len(sums) / (len(sums) - 1) * sums @ sums / len(scores) ** 2)
+        np.testing.assert_allclose(
+            [store.item(), week.item(), both.item()],
+            [components[0], components[1], components[0] + components[1] - components[2]],
+        )
+        np.testing.assert_allclose(
+            np.sqrt([store.item(), week.item(), both.item()]), [0.0710, 0.0945, 0.1171], atol=0.0003
+        )
 
     @pytest.mark.tier2
     def test_baseline_comparison_oj(self, oj_data: OJDataset) -> None:
-        """Test that DML outperforms naive OLS on OJ data.
-
-        DML should control for confounders better than naive regression.
-        """
+        """Compare the three pooled conditional slopes on the same extract."""
         from sklearn.linear_model import LinearRegression
 
         # Naive OLS: regress Y on T only (ignores confounders)
@@ -93,22 +101,9 @@ class TestChapter4Workflow:
             random_state=42,
         )
 
-        # All estimates should be negative (law of demand)
-        assert naive_theta < 0, f"Naive OLS theta={naive_theta} should be negative"
-        assert controls_theta < 0, f"OLS+Controls theta={controls_theta} should be negative"
-        assert dml_result.theta < 0, f"DML theta={dml_result.theta} should be negative"
-
-        # DML should differ from naive OLS (confounding adjustment)
-        # The magnitude of difference depends on confounding strength
-        # Just check they're not identical
-        assert abs(dml_result.theta - naive_theta) > 0.01, (
-            f"DML ({dml_result.theta}) too similar to naive ({naive_theta})"
-        )
-
-        # DML confidence interval should be reasonable width
-        # Lower bound relaxed: precise estimates with large samples can have narrow CIs
-        ci_width = dml_result.ci_upper - dml_result.ci_lower
-        assert 0.01 < ci_width < 2.0, f"CI width {ci_width} seems unreasonable"
+        assert naive_theta == pytest.approx(-1.6013, abs=0.0001)
+        assert controls_theta == pytest.approx(-1.1697, abs=0.0001)
+        assert dml_result.theta == pytest.approx(-1.1673, abs=0.001)
 
     @pytest.mark.tier2
     def test_sensitivity_with_dml_results(self, oj_data: OJDataset) -> None:
@@ -151,8 +146,7 @@ class TestChapter4Workflow:
         p_at_1 = sensitivity.p_values_by_gamma.get(1.0, 1.0)
         assert p_at_1 < 0.05, f"p-value at Γ=1 should be significant, got {p_at_1}"
 
-        # For a well-identified estimate like OJ elasticity, expect moderate robustness
-        # (Literature suggests the effect is robust but not bulletproof)
+        # Check the diagnostic interface with observed values as inputs.
         assert sensitivity.gamma_critical > 1.0, (
             f"Expected gamma_critical > 1 for significant effect, got {sensitivity.gamma_critical}"
         )
