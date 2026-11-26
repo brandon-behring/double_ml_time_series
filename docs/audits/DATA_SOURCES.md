@@ -27,8 +27,8 @@ licence, what the files hold, verdict) is in
 | Casey, Glennerster, Miguel and Voors, [Sierra Leone community-development replication data](https://zenodo.org/records/7411565) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `2026-11-19_time_series_dml/rolling/external-controls.json` (`sierra_leone`) | Estimates computed here |
 | ZOZO, Inc., [Open Bandit Dataset](https://huggingface.co/datasets/zozonext/open-bandit) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `2026-11-19_time_series_dml/rolling/external-controls.json` (`retail`) | Estimates and three aggregate cells computed here |
 | DellaVigna and Linos, nudge-units replication package (Econometric Society supplement to "RCTs to Scale: Comprehensive Evidence From Two Nudge Units", *Econometrica* 2022) | The [Econometric Society's permission](https://www.econometricsociety.org/publications/econometrica/permissions) for replication packages, after attribution | `2026-11-19_time_series_dml/rolling/external-controls.json` (`nudge_units`) | Estimates computed here |
-| Fanaee-T, H. (2013). Bike Sharing [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5W894 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | the bike entries of `2026-11-21_evaluation_methods/reproduction/standalone-stdout.json.gz` | Estimates computed here |
-| Hofmann and Siebenbrunner, [iFlex dynamic-price experiment](https://zenodo.org/records/8248802) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | the iFlex entries of the same archive | Estimates and arm counts computed here; one schedule row is printed |
+| Fanaee-T, H. (2013). Bike Sharing [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5W894 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `2026-11-21_public_data_extensions/reference/bike-*.json`; the bike entries of `2026-11-21_evaluation_methods/reproduction/standalone-stdout.json.gz` | Estimates computed here on the hourly histories |
+| Hofmann and Siebenbrunner, [iFlex dynamic-price experiment](https://zenodo.org/records/8248802) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | `2026-11-21_public_data_extensions/reference/iflex-results.txt`; the iFlex entries of the same archive | Estimates and arm counts computed here; one schedule row is printed in the archive |
 | Klasnja and co-authors, [HeartSteps V1 data](https://github.com/klasnja/HeartStepsV1) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | the `heartsteps` entry of the same archive | Estimates computed here |
 
 Contains information from Cricsheet, which is made available under the ODC Attribution License.
@@ -45,6 +45,18 @@ Contains information from Cricsheet, which is made available under the ODC Attri
   vintage dates and digests of the downloads, and no series value. U.S. Bureau of Economic
   Analysis, Real Gross Domestic Product [GDPC1], retrieved from ALFRED, Federal Reserve Bank of
   St. Louis.
+
+## Sources cited without a stated licence
+
+- **Quarter-hour ride counts** (Blanchet, Glynn, Johari, Wu and Xing,
+  [repository](https://github.com/wenqian-xing/conservative-inference-switchback-experiments)).
+  `2026-11-21_public_data_extensions/reference/ride-switchback.json` holds estimates and design
+  summaries computed here on the count series; no count is stored. The repository states no
+  licence and asks for a citation.
+- **The cooperation panel** of `2026-11-21_public_data_extensions/` uses synthetic outcomes and
+  assignments. Of the supplement of Bojinov, Rambachan and Shephard (2021) only the digest of
+  the archive is stored; its participant workbook asks for the original authors' permission
+  for scientific use, and no participant value is in the repository.
 
 ## Values quoted from publications
 
