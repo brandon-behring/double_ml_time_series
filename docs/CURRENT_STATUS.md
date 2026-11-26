@@ -26,6 +26,7 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
 | Applications (#80) | The insurance pipeline scores held-out rows in the treatment's units; the insurance generator returns its rows in one product-major order; the sensitivity module's docstrings call its curve a log-gamma bias curve (its printed summary is still headed "Rosenbaum Bounds"); the orange-juice loader checks a pinned digest; the registry and the result store write atomically |
 | Continuous integration (#73) | Installs from `uv.lock`; a weekly job with unpinned dependencies reports drift and blocks nothing |
 | Audits and Chapters 2 and 5 (this change) | The four November audit folders with 31 test files, the effect-forecast module with its test, and both editions of Chapters 2 and 5 |
+| Public-data experiments | `docs/audits/2026-11-21_public_data_extensions/`: four experiments on public data (bicycle demand, household electricity offers, ride counts, a repeated cooperation game) with their scripts and reference outputs. Its comparison of `TemporalPLRDML` on matched bike hours reproduces its stored output byte for byte on `main`'s code |
 
 ### Not on `main`, and what follows from it
 
