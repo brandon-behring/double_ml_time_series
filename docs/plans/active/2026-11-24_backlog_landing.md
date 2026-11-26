@@ -269,8 +269,9 @@ Part I (a box is ticked when the pull request is merged and its issues are check
 - [x] PR-L `ci/lock-dependencies` (#73, merged 2026-11-25 as `f56fa08`; #70 stays open)
 - [x] PR-A `fix/validation-fail-loud-41a` (#68, merged 2026-11-25 as `87d9191`; #41 stays open)
 - [x] PR-1 `fix/core-numerics-42` (#69, merged 2026-11-25 as `257022d`; #42 stays open)
-- [ ] PR-1b `fix/silent-wrong-slopes-72` (#72, #42)
-- [ ] PR-2 `fix/validation-inference` (#41, #61, #63)
+- [x] PR-1b `fix/silent-wrong-slopes-72` (#74, merged 2026-11-25 as `19a8911`; #72 closed, #42 stays open)
+- [x] PR-2 `fix/validation-inference` (#78, merged 2026-11-25 as `dc917cf`; #41, #61, #63 stay open)
+- [ ] PR-1c `fix/series-labels-and-constant-scored-rows` (#75, #76)
 - [ ] PR-3 `fix/applications-pipeline` (#44, #60, #62, #64)
 - [ ] PR-4 `docs/november-audits` (#65, #70)
 - [ ] PR-5 `audit/public-data-extensions-2026-11-21`
@@ -807,3 +808,49 @@ Branch `fix/silent-wrong-slopes-72` from `origin/main` after #69 merges.
   slices: before a deviation, search the chapters for what the changed function prints.
 - **A commit message with a wrong reason** (`d296a91`, the 401(k) p-value) was corrected in the
   message of `d59f35b`, since commits are not amended here without the owner's word.
+
+## Addendum 3, 2026-11-25 (evening): decisions at the second stop
+
+The plan above stands. Steps 1 to 7 of addendum 2 are done.
+
+### Decisions taken at the second stop (the owner's)
+
+| Decision | Choice |
+|---|---|
+| Merging #74 and #78 | Both |
+| #75 (a pandas `Series` read by label) and #76 (`TemporalPLRDML`, a treatment constant on the scored rows) | One small pull request before PR-3 (PR-1c) |
+| A treatment the controls determine, under a learner that only approximates it (17.7% significant in series mode under ridge) | Deferred to #42 and #51; documented only |
+| The clause "a bias above 0.15 is a FAIL", which the baselines now share (20.7% false bias verdicts for naive OLS in Experiment 3.1) | Kept; decided under #56 |
+
+### Order from here
+
+1. Merge #74, then #78, with their stored checks on `main`.
+2. PR-1c, with mutation check and adversarial review.
+3. PR-3 `fix/applications-pipeline`, sliced while PR-1c is in CI and review.
+4. Stop and report PR-1c and PR-3. Neither merges without a go-ahead.
+5. Then the licence check of the third-party-derived files, PR-4, PR-5 and the exit from Part I.
+
+### Amendments for PR-3, found while planning it
+
+- **`insurance_dgp.py` has nine hunks against `main`, not eight.** The second
+  (`_generate_competitor_treatment`) is the reverse of PR-0's `float(...)` cast and is never
+  applied. PR-3 takes hunks 1, 3, 4, 5 and 6; hunks 7 to 9 (`validate_dgp_recovery`) stay held.
+- **`uv.lock` is made with `uv lock`, in two commits:** the format rewrite alone (revision 3 to
+  5, no package moved), then `filelock`.
+- **The listings of Chapters 4, 9 and 10 are run on the slice** before the chapters are taken,
+  since `test_published_results.py` is held and nothing else checks them.
+
+### Record of the second stop's first step
+
+- **#74 merged as `19a8911`.** On the merged `main` the script of #72 raises in `fwl_estimate`,
+  `double_ml` and `robinson_estimator`, and the flat inputs give 2.0335 and 2.0411. #72 closed
+  through its bare closing line. The series-mode item is struck in the status comment on #42.
+- **#78 merged as `dc917cf`,** after it was closed and reopened so that CI tested it merged with
+  #74 (eight checks green). On the merged `main`, `OLSWithControls` and `NaiveOLS` on
+  `DGPGenerator(n=200, p=5, true_effect=1.0, random_state=42)` with 300 simulations report
+  coverage 0.76 and 0.34, bias PASS, coverage FAIL, status FAIL. #41, #61 and #63 are open.
+- **The state of #75 and #76 on that `main`,** before PR-1c (`gate-logs/pr1c/stored_checks.py`):
+  `double_ml` returns 1.8198 for a shuffled frame and 2.0181 for a sorted one where the arrays
+  give 2.0299 and 2.0383; with labels 50..349 against 0..299 `fwl_estimate` returns -0.1539,
+  `robinson_estimator` -0.1535 and `double_ml` a `KeyError`; `TemporalPLRDML` returns 2.09 with a
+  standard error of 0.12 for a treatment that is 1 on the first 60 of 400 rows.
