@@ -60,14 +60,56 @@ def test_a_reordered_frame_gives_the_slope_of_its_arrays(name, reordering):
 
 @pytest.mark.tier2
 @pytest.mark.parametrize("name", sorted(SLOPES))
-def test_different_labels_on_outcome_and_treatment_are_paired_by_position(name):
-    """Labels 50..349 against 0..299: aligned by label, 250 rows met the wrong partner."""
+def test_pandas_inputs_with_different_labels_are_refused(name):
+    """Labels 50..349 against 0..299: aligned by label, 250 rows met the wrong partner.
+
+    Pairing by position is right only if the labels agree, so the call is refused and the
+    arrays are accepted.
+    """
     df = frame()
     x = df[["x0", "x1"]].to_numpy()
     outcome = pd.Series(df["y"].to_numpy(), index=range(50, 350))
     treatment = pd.Series(df["t"].to_numpy(), index=range(300))
+    with pytest.raises(ValueError, match="Y and T carry different pandas indexes"):
+        SLOPES[name](outcome, treatment, x)
     from_arrays = SLOPES[name](df["y"].to_numpy(), df["t"].to_numpy(), x)
-    assert_allclose(SLOPES[name](outcome, treatment, x), from_arrays, rtol=RTOL)
+    assert_allclose(
+        SLOPES[name](outcome.to_numpy(), treatment.to_numpy(), x), from_arrays, rtol=RTOL
+    )
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("name", sorted(SLOPES))
+def test_the_same_units_in_another_order_are_refused(name):
+    """A treatment taken from a reordered copy of the frame has the same labels, shuffled.
+
+    Read by position it is paired with the wrong outcomes: ``fwl_estimate`` returned 0.17
+    where the aligned inputs give 2.03.
+    """
+    df = frame()
+    shuffled = df.sample(frac=1, random_state=0)
+    controls = df[["x0", "x1"]]
+    with pytest.raises(ValueError, match="Y and T carry different pandas indexes"):
+        SLOPES[name](df["y"], shuffled["t"], controls)
+    with pytest.raises(ValueError, match="Y and X carry different pandas indexes"):
+        SLOPES[name](df["y"], df["t"], shuffled[["x0", "x1"]])
+    aligned = shuffled["t"].loc[df.index]
+    assert_allclose(
+        SLOPES[name](df["y"], aligned, controls),
+        SLOPES[name](df["y"].to_numpy(), df["t"].to_numpy(), controls.to_numpy()),
+        rtol=RTOL,
+    )
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("name", sorted(SLOPES))
+def test_one_labelled_input_among_arrays_is_read_by_position(name):
+    """With a single pandas input there are no two sets of labels to disagree."""
+    df = frame().sample(frac=1, random_state=3)
+    x = df[["x0", "x1"]].to_numpy()
+    from_arrays = SLOPES[name](df["y"].to_numpy(), df["t"].to_numpy(), x)
+    assert_allclose(SLOPES[name](df["y"], df["t"].to_numpy(), x), from_arrays, rtol=RTOL)
+    assert_allclose(SLOPES[name](df["y"].to_numpy(), df["t"], x), from_arrays, rtol=RTOL)
 
 
 @pytest.mark.tier2
@@ -99,7 +141,7 @@ def test_a_one_column_frame_is_still_refused_after_the_conversion(name):
 @pytest.mark.tier1
 def test_as_validated_arrays_returns_positional_float_arrays():
     y = pd.Series([1.0, 2.0, 3.0], index=[2, 0, 1])
-    Y, T, X = as_validated_arrays(y, [0, 1, 0], pd.Series([5, 6, 7], index=[9, 8, 7]))
+    Y, T, X = as_validated_arrays(y, [0, 1, 0], pd.Series([5, 6, 7], index=[2, 0, 1]))
     assert (type(Y), type(T), type(X)) == (np.ndarray, np.ndarray, np.ndarray)
     assert (Y.dtype, T.dtype, X.dtype) == (np.float64, np.float64, np.float64)
     assert Y.tolist() == [1.0, 2.0, 3.0]
@@ -115,3 +157,32 @@ def test_as_validated_arrays_keeps_the_length_and_shape_errors():
         as_validated_arrays([1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [[1.0], [2.0]])
     with pytest.raises(ValueError, match="Y must be one-dimensional"):
         as_validated_arrays([[1.0], [2.0]], [1.0, 2.0], [[1.0], [2.0]])
+
+
+@pytest.mark.tier1
+@pytest.mark.parametrize(
+    "bad,name",
+    [
+        (lambda: (["a", "b", "c"], [0, 1, 0], [1.0, 2.0, 3.0]), "Y"),
+        (
+            lambda: (
+                [1.0, 2.0, 3.0],
+                [0, 1, 0],
+                pd.DataFrame({"c": pd.Categorical(["A", "B", "A"])}),
+            ),
+            "X",
+        ),
+        (lambda: ([1.0, 2.0, 3.0], [None, object(), 1], [1.0, 2.0, 3.0]), "T"),
+    ],
+)
+def test_as_validated_arrays_names_the_argument_it_cannot_read(bad, name):
+    with pytest.raises(ValueError, match=rf"^{name} could not be read as a float array"):
+        as_validated_arrays(*bad())
+
+
+@pytest.mark.tier1
+def test_missing_values_in_nullable_columns_become_nan():
+    """``pd.NA`` is read as NaN, which the estimators' finite checks then refuse."""
+    y = pd.Series([1.0, 2.0, pd.NA], dtype="Float64")
+    Y, _, _ = as_validated_arrays(y, pd.Series([0, 1, 0], dtype="Int64"), [1.0, 2.0, 3.0])
+    assert np.isnan(Y[2]) and Y[:2].tolist() == [1.0, 2.0]

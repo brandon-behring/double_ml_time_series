@@ -112,12 +112,17 @@ are the compatibility contract).
   that had been shuffled, sorted or filtered gave a wrong slope with no error (`double_ml`: 1.82
   where the arrays give 2.03), and an outcome and a treatment with different labels were paired
   by label (`fwl_estimate` and `robinson_estimator`: -0.15 for a slope of 2). `Y`, `T` and `X`
-  are converted to float arrays at entry, as `TemporalPLRDML` does; lists are accepted. (#75)
+  are converted to float arrays at entry, as `TemporalPLRDML` does; lists are accepted. Two
+  pandas inputs whose indexes differ, in value or in order, are refused: read by position, the
+  same units in another order would be paired wrongly. Align them, or pass `.to_numpy()`. (#75)
 - `TemporalPLRDML` raises when the treatment is constant on the rows it scores. The first block
   of a time-series split is trained on and not scored; a treatment that varies only there left a
   "residual" that was the error of the nuisance prediction, and the fit returned an estimate
   with a small standard error (1.63 with 0.12 in one draw, for a slope of 2). `RollingWindowDML`
-  reports such a window as skipped, with this reason. (#76)
+  reports such a window as skipped, with this reason. `PanelDML` hands unit-major rows to the
+  same split, so its unscored block is the first units; a panel whose treatment varies only in
+  those units returned 17.2 with a standard error of 5.7 for a slope of 2 and is now refused.
+  (#76)
 
 ## [1.1.4] - 2026-06-14
 

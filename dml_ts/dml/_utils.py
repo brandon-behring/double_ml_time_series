@@ -262,16 +262,28 @@ def cross_fit_predictions(
     return Y_hat, T_hat
 
 
+def _read_as_floats(name: str, values: object) -> NDArray[np.float64]:
+    """Convert one argument to a float array, naming it when it cannot be read."""
+    try:
+        return np.asarray(values, dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} could not be read as a float array: {exc}") from exc
+
+
 def as_validated_arrays(
     Y: object, T: object, X: object
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     """Convert Y, T and X to float arrays, check their shapes, and make X two-dimensional.
 
-    The conversion comes first because a pandas ``Series`` is indexed by label and an
-    array by position. With a reordered index, ``Y[train_idx]`` picked other rows than
+    Rows are paired by position. A pandas ``Series`` is indexed by label and an array by
+    position: with a reordered index, ``Y[train_idx]`` picked other rows than
     ``X[train_idx]``, and two ``Series`` with different labels were aligned by label when
-    multiplied; both gave a wrong slope with no error (#75). After the conversion every
-    row is addressed by its position, as ``TemporalPLRDML.fit`` has always done.
+    multiplied; both gave a wrong slope with no error (#75). The conversion removes the
+    labels, as ``TemporalPLRDML.fit`` has always done.
+
+    Pairing by position is only right when the labels agree. Two pandas inputs whose
+    indexes differ, in value or in order, are therefore refused: the same units in another
+    order would be paired wrongly, and nothing in the numbers would show it.
 
     Args:
         Y: Outcome, anything ``np.asarray`` reads as a one-dimensional float array.
@@ -282,8 +294,9 @@ def as_validated_arrays(
         ``(Y, T, X)`` as float arrays, X of shape ``(n, p)``.
 
     Raises:
-        ValueError: If Y or T is not one-dimensional or the lengths disagree
-            (see ``validate_lengths``), or if a value cannot be read as a float.
+        ValueError: If a value cannot be read as a float; if Y or T is not
+            one-dimensional or the lengths disagree (see ``validate_lengths``); or if two
+            of the inputs are pandas objects with different indexes.
 
     Examples:
         >>> import numpy as np
@@ -292,11 +305,34 @@ def as_validated_arrays(
         >>> Y, T, X = as_validated_arrays(y, [0, 1, 0], [5.0, 6.0, 7.0])
         >>> Y.tolist(), T.tolist(), X.shape
         ([1.0, 2.0, 3.0], [0.0, 1.0, 0.0], (3, 1))
+        >>> as_validated_arrays(y, y.sort_index(), [5.0, 6.0, 7.0])  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: Y and T carry different pandas indexes. ...
     """
-    Y_arr = np.asarray(Y, dtype=float)
-    T_arr = np.asarray(T, dtype=float)
-    X_arr = np.asarray(X, dtype=float)
+    Y_arr = _read_as_floats("Y", Y)
+    T_arr = _read_as_floats("T", T)
+    X_arr = _read_as_floats("X", X)
     validate_lengths(Y_arr, T_arr, X_arr)
+    # A pandas Series or DataFrame is recognized by an index that can be compared;
+    # a list also has an ``index`` attribute, which is a method.
+    labelled = [
+        (name, index)
+        for name, index in (
+            ("Y", getattr(Y, "index", None)),
+            ("T", getattr(T, "index", None)),
+            ("X", getattr(X, "index", None)),
+        )
+        if hasattr(index, "equals")
+    ]
+    for name, index in labelled[1:]:
+        if not index.equals(labelled[0][1]):
+            raise ValueError(
+                f"{labelled[0][0]} and {name} carry different pandas indexes. Rows are paired "
+                "by position, so labels that differ in value or in order would be paired "
+                "wrongly. Align the inputs first (for example with .loc or .reindex), or pass "
+                "arrays with .to_numpy() if the rows are already in the same order."
+            )
     if X_arr.ndim == 1:
         X_arr = X_arr.reshape(-1, 1)
     return Y_arr, T_arr, X_arr

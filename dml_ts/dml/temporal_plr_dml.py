@@ -514,8 +514,9 @@ class TemporalPLRDML:
             raise ValueError(
                 f"Treatment has no variation on the scored rows: the treatment is constant "
                 f"({T_used[0]:.6g}) on the {n_used} rows that have an out-of-fold prediction. "
-                f"The first {dropped_initial_rows} rows are trained on and not scored, so "
-                "variation there does not identify the effect."
+                f"The other {dropped_initial_rows} rows (the first block of the split, and any "
+                "gap) are trained on and not scored, so variation there does not identify the "
+                "effect."
             )
 
         # Compute cross-validated R² on rows with valid OOF predictions.

@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from dml_ts.dml import RollingWindowDML, TemporalPLRDML
+from dml_ts.dml import PanelDML, RollingWindowDML, TemporalPLRDML
 
 LEARNERS = ["ridge", "lasso", "random_forest", "gradient_boosting"]
 
@@ -82,3 +82,38 @@ def test_rolling_window_with_a_constant_treatment_is_a_named_skip():
     centers, slopes, _ = rolling.get_effects()
     assert list(centers) == [50, 250, 350]
     assert_allclose(slopes, 2.0, atol=0.6)
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("treated_units", [1, 5])
+def test_panel_whose_treated_units_are_never_scored_is_refused(treated_units):
+    """PanelDML is not edited here, but its inner estimator is this one.
+
+    It hands unit-major rows to the same time-series split, so the first block that is
+    trained on and never scored is the first UNITS. With the treatment varying only in those
+    units the fit returned 17.2 with a standard error of 5.7 (one unit) and 4.4 with 1.0 (five
+    units) for a true slope of 2. How panels should be split belongs to the PanelDML redesign;
+    until then such a panel is refused.
+    """
+    rng = np.random.default_rng(0)
+    units, periods = 30, 10
+    individual = np.repeat(np.arange(units), periods)
+    period = np.tile(np.arange(periods), units)
+    x = rng.standard_normal((units * periods, 2))
+    treatment = np.where(individual < treated_units, rng.standard_normal(units * periods), 0.0)
+    y = 2.0 * treatment + x[:, 1] + rng.standard_normal(units * periods)
+    with pytest.raises(ValueError, match="Treatment has no variation on the scored rows"):
+        PanelDML(model_y="ridge", model_t="ridge").fit(y, treatment, x, individual, period)
+
+
+@pytest.mark.tier2
+def test_panel_with_every_unit_treated_keeps_its_estimate():
+    rng = np.random.default_rng(0)
+    units, periods = 30, 10
+    individual = np.repeat(np.arange(units), periods)
+    period = np.tile(np.arange(periods), units)
+    x = rng.standard_normal((units * periods, 2))
+    treatment = rng.standard_normal(units * periods)
+    y = 2.0 * treatment + x[:, 1] + rng.standard_normal(units * periods)
+    result = PanelDML(model_y="ridge", model_t="ridge").fit(y, treatment, x, individual, period)
+    assert_allclose(result.theta, 2.0, atol=0.2)
