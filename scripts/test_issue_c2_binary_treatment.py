@@ -1,124 +1,110 @@
-"""
-Test script for Issue C2: Binary Treatment Mis-specification Impact Analysis
+"""Compare two binary-treatment nuisance specifications on paired iid simulations."""
 
-This script empirically tests whether using discrete_treatment=False with RandomForestRegressor
-vs discrete_treatment=True with RandomForestClassifier has a material impact on:
-- Bias
-- MSE
-- Coverage
-
-Decision Criteria:
-- Bias difference >5% → Fix is critical
-- Coverage difference >10% → Fix is critical
-- Otherwise → Document as limitation
-
-Runtime: ~10-15 minutes (100 simulations × 2 configurations × 5 scenarios)
-"""
-
+import argparse
 import sys
+from datetime import datetime
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from datetime import datetime
-from typing import Literal
+from joblib import Parallel, delayed, parallel_config
+from scipy.stats import binomtest
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.model_selection import StratifiedKFold
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from dml_ts.validation.dgp_generator import DGPGenerator  # noqa: E402
 
-from dml_ts.validation.dgp_generator import DGPGenerator
-from econml.dml import LinearDML
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+SCENARIOS = [
+    (500, 5, 2.0, 0.5),
+    (500, 10, 2.0, 1.0),
+    (200, 10, 2.0, 2.0),
+    (500, 5, 0.5, 1.0),
+    (1000, 5, 2.0, 0.5),
+]
 
 
-def run_dml_with_config(
-    dgp: DGPGenerator,
-    n_simulations: int,
-    discrete_treatment: bool,
-    config_name: str,
-    random_state: int = 42,
-) -> dict:
-    """
-    Run DML validation with specified configuration.
+def fit_draw(data, random_state, discrete_treatment, folds):
+    from econml.dml import LinearDML
 
-    Args:
-        dgp: Data generating process
-        n_simulations: Number of Monte Carlo simulations
-        discrete_treatment: Whether to use discrete_treatment=True
-        config_name: Name for this configuration
-        random_state: Random seed
+    options = {
+        "n_estimators": 100,
+        "max_depth": 10,
+        "min_samples_leaf": 10,
+        "random_state": random_state,
+        "n_jobs": 1,
+    }
+    model_t = (
+        RandomForestClassifier(max_features="sqrt", **options)
+        if discrete_treatment
+        else RandomForestRegressor(max_features=1.0, **options)
+    )
+    estimator = LinearDML(
+        model_y=RandomForestRegressor(max_features=1.0, **options),
+        model_t=model_t,
+        discrete_treatment=discrete_treatment,
+        cv=folds,
+        random_state=random_state,
+    )
+    estimator.fit(Y=data.Y, T=data.T, X=data.X)
+    estimate = float(estimator.ate(X=data.X))
+    lower, upper = estimator.ate_interval(X=data.X, alpha=0.05)
+    return estimate, float(lower), float(upper)
 
-    Returns:
-        Dictionary with bias, mse, coverage, and metadata
-    """
-    rng = np.random.RandomState(random_state)
-    estimates = np.zeros(n_simulations)
-    ci_bounds = np.zeros((n_simulations, 2))
 
-    for i in range(n_simulations):
-        # Generate data
-        data = dgp.generate()
+def paired_draw(data, seed):
+    # Hold both the data and nuisance train/test assignments fixed across methods.
+    folds = list(StratifiedKFold(n_splits=5, shuffle=True, random_state=seed).split(data.X, data.T))
+    return [fit_draw(data, seed, discrete, folds) for discrete in [False, True]]
 
-        # Configure models based on discrete_treatment setting
-        model_y = RandomForestRegressor(
-            n_estimators=100,
-            max_depth=10,
-            min_samples_leaf=10,
-            random_state=random_state,
-        )
 
-        if discrete_treatment:
-            # CORRECT: Use classifier for binary treatment
-            model_t = RandomForestClassifier(
-                n_estimators=100,
-                max_depth=10,
-                min_samples_leaf=10,
-                random_state=random_state,
-            )
-        else:
-            # CURRENT: Use regressor (incorrect for binary treatment)
-            model_t = RandomForestRegressor(
-                n_estimators=100,
-                max_depth=10,
-                min_samples_leaf=10,
-                random_state=random_state,
-            )
-
-        # Fit DML
-        dml = LinearDML(
-            model_y=model_y,
-            model_t=model_t,
-            discrete_treatment=discrete_treatment,
-            cv=5,
-            random_state=random_state,
-        )
-
-        dml.fit(Y=data.Y, T=data.T, X=data.X)
-
-        # Get estimate and CI
-        ate = dml.effect(X=data.X).mean()
-        ci_lower, ci_upper = dml.effect_interval(X=data.X, alpha=0.05)
-
-        estimates[i] = ate
-        ci_bounds[i, 0] = ci_lower.mean()
-        ci_bounds[i, 1] = ci_upper.mean()
-
-    # Calculate metrics
-    bias = float(np.mean(estimates) - dgp.true_effect)
-    mse = float(np.mean((estimates - dgp.true_effect) ** 2))
-    rmse = float(np.sqrt(mse))
-
-    # Coverage: proportion of CIs containing true effect
-    covers = (ci_bounds[:, 0] <= dgp.true_effect) & (dgp.true_effect <= ci_bounds[:, 1])
-    coverage = float(np.mean(covers))
-
+def summarize(estimates, lower, upper, truth):
+    error = estimates - truth
+    covered = (lower <= truth) & (truth <= upper)
+    interval = binomtest(int(covered.sum()), len(covered)).proportion_ci(0.95, method="exact")
     return {
+        "bias": error.mean(),
+        "abs_bias": abs(error.mean()),
+        "bias_mcse": error.std(ddof=1) / np.sqrt(len(error)),
+        "mse": np.mean(error**2),
+        "rmse": np.sqrt(np.mean(error**2)),
+        "coverage": covered.mean(),
+        "covered": int(covered.sum()),
+        "coverage_mc_lower": interval.low,
+        "coverage_mc_upper": interval.high,
+    }
+
+
+def paired_differences(draws, truth):
+    estimate, lower, upper = draws.transpose(2, 0, 1)
+    hit = ((lower <= truth) & (truth <= upper)).astype(float)
+    contrasts = {
+        "signed_error": estimate[:, 1] - estimate[:, 0],
+        "squared_error": (estimate[:, 1] - truth) ** 2 - (estimate[:, 0] - truth) ** 2,
+        "coverage": hit[:, 1] - hit[:, 0],
+    }
+    result = {}
+    for metric, delta in contrasts.items():
+        result[metric + "_difference"] = delta.mean()
+        result[metric + "_difference_mcse"] = delta.std(ddof=1) / np.sqrt(len(delta))
+    return result
+
+
+def run_dml_with_config(dgp, n_simulations, discrete_treatment, config_name, random_state=42):
+    """Evaluate one configuration on a supplied generator, preserving direct callers."""
+    if n_simulations < 2:
+        raise ValueError("At least two draws are required to estimate Monte Carlo uncertainty")
+    values = []
+    splitter = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
+    for _ in range(n_simulations):
+        sample = dgp.generate()
+        folds = list(splitter.split(sample.X, sample.T))
+        values.append(fit_draw(sample, random_state, discrete_treatment, folds))
+    return {
+        **summarize(*np.asarray(values).T, truth=dgp.true_effect),
         "configuration": config_name,
         "discrete_treatment": discrete_treatment,
-        "bias": bias,
-        "abs_bias": abs(bias),
-        "mse": mse,
-        "rmse": rmse,
-        "coverage": coverage,
         "n_simulations": n_simulations,
         "dgp_n": dgp.n,
         "dgp_p": dgp.p,
@@ -127,155 +113,69 @@ def run_dml_with_config(
     }
 
 
-def main():
-    """Run comprehensive comparison across multiple scenarios."""
-
-    print("=" * 80)
-    print("ISSUE C2: BINARY TREATMENT MIS-SPECIFICATION IMPACT ANALYSIS")
-    print("=" * 80)
-    print()
-    print("Testing whether discrete_treatment setting materially affects results...")
-    print()
-
-    # Define test scenarios (smaller n_simulations for speed)
-    scenarios = [
-        # (n, p, true_effect, confounding_strength, description)
-        (500, 5, 2.0, 0.5, "Easy: Large n, few confounders, weak confounding"),
-        (500, 10, 2.0, 1.0, "Moderate: Medium confounding, more covariates"),
-        (200, 10, 2.0, 2.0, "Challenging: Smaller n, strong confounding"),
-        (500, 5, 0.5, 1.0, "Small effect: Harder to detect"),
-        (1000, 5, 2.0, 0.5, "Large sample: Should reduce variance"),
-    ]
-
-    n_simulations = 100  # Reduced for speed (full analysis would use 1000)
-    random_state = 42
-
-    results = []
-
-    for i, (n, p, true_effect, confounding, description) in enumerate(scenarios, 1):
-        print(f"\n{'─' * 80}")
-        print(f"Scenario {i}/{len(scenarios)}: {description}")
-        print(f"  n={n}, p={p}, true_effect={true_effect}, confounding={confounding}")
-        print(f"{'─' * 80}")
-
-        # Create DGP
+def main(output_dir=ROOT / "results/impact_analysis", n_simulations=100, n_jobs=1):
+    if n_simulations < 2 or n_jobs < 1:
+        raise ValueError("Use at least two simulations and one fit worker")
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    seed = 42
+    summaries, comparisons, records = [], [], []
+    for n, p, truth, strength in SCENARIOS:
         dgp = DGPGenerator(
-            n=n,
-            p=p,
-            true_effect=true_effect,
-            confounding_strength=confounding,
-            random_state=random_state,
+            n=n, p=p, true_effect=truth, confounding_strength=strength, random_state=seed
         )
-
-        # Test CURRENT configuration (discrete_treatment=False + Regressor)
-        print("  Testing CURRENT config (discrete_treatment=False + Regressor)...")
-        current_result = run_dml_with_config(
-            dgp,
-            n_simulations,
-            discrete_treatment=False,
-            config_name="CURRENT",
-            random_state=random_state,
+        # Advance one generator in the caller. Worker ordering cannot change the data.
+        with parallel_config(backend="loky", inner_max_num_threads=1):
+            fits = Parallel(n_jobs=min(n_jobs, n_simulations))(
+                delayed(paired_draw)(dgp.generate(), seed) for _ in range(n_simulations)
+            )
+        draws = np.asarray(fits)
+        design = {"dgp_n": n, "dgp_p": p, "dgp_true_effect": truth, "dgp_confounding": strength}
+        for j, label in enumerate(["regression nuisance", "classifier nuisance"]):
+            estimates, lower, upper = draws[:, j, :].T
+            summaries.append(
+                {
+                    **design,
+                    "configuration": label,
+                    "discrete_treatment": bool(j),
+                    "n_simulations": n_simulations,
+                    **summarize(estimates, lower, upper, truth),
+                }
+            )
+            records.extend(
+                {
+                    **design,
+                    "draw": i,
+                    "configuration": label,
+                    "estimate": e,
+                    "lower": lo,
+                    "upper": hi,
+                }
+                for i, (e, lo, hi) in enumerate(draws[:, j, :])
+            )
+        comparisons.append(
+            {**design, "n_simulations": n_simulations, **paired_differences(draws, truth)}
         )
-        results.append(current_result)
-        print(f"    Bias: {current_result['bias']:.4f}, Coverage: {current_result['coverage']:.2%}")
-
-        # Test CORRECTED configuration (discrete_treatment=True + Classifier)
-        print("  Testing CORRECTED config (discrete_treatment=True + Classifier)...")
-        corrected_result = run_dml_with_config(
-            dgp,
-            n_simulations,
-            discrete_treatment=True,
-            config_name="CORRECTED",
-            random_state=random_state,
-        )
-        results.append(corrected_result)
-        print(
-            f"    Bias: {corrected_result['bias']:.4f}, Coverage: {corrected_result['coverage']:.2%}"
-        )
-
-        # Calculate differences
-        bias_diff = abs(corrected_result["bias"] - current_result["bias"])
-        bias_pct_change = (
-            (bias_diff / abs(current_result["bias"])) * 100 if current_result["bias"] != 0 else 0
-        )
-        coverage_diff = abs(corrected_result["coverage"] - current_result["coverage"])
-        coverage_pct_diff = coverage_diff * 100  # Already in [0,1], convert to percentage points
-
-        print(f"  Differences:")
-        print(f"    Bias: {bias_diff:.4f} (change: {bias_pct_change:.1f}%)")
-        print(f"    Coverage: {coverage_diff:.2%} ({coverage_pct_diff:.1f} percentage points)")
-
-        # Decision criteria
-        bias_critical = bias_pct_change > 5.0
-        coverage_critical = coverage_pct_diff > 10.0
-
-        if bias_critical or coverage_critical:
-            print(f"  ⚠️  CRITICAL: Fix is needed (bias>{5}% or coverage>{10}pp)")
-        else:
-            print(f"  ✓ Difference within acceptable range")
-
-    # Save results
-    df = pd.DataFrame(results)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = Path(__file__).parent.parent / "results" / "impact_analysis"
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    csv_path = output_path / f"issue_c2_impact_{timestamp}.csv"
-    df.to_csv(csv_path, index=False)
-
-    print(f"\n{'=' * 80}")
-    print("SUMMARY & DECISION")
-    print(f"{'=' * 80}\n")
-
-    # Group by configuration and calculate averages
-    summary = (
-        df.groupby("configuration")
-        .agg(
-            {
-                "bias": "mean",
-                "abs_bias": "mean",
-                "coverage": "mean",
-                "mse": "mean",
-            }
-        )
-        .round(4)
+    summary = pd.DataFrame(summaries)
+    comparison = pd.DataFrame(comparisons)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    summary.to_csv(output_dir / f"issue_c2_impact_{stamp}.csv", index=False)
+    comparison.to_csv(output_dir / f"issue_c2_paired_{stamp}.csv", index=False)
+    pd.DataFrame(records).to_csv(
+        output_dir / f"issue_c2_draws_{stamp}.csv.gz",
+        index=False,
+        compression={"method": "gzip", "mtime": 0},
     )
-
-    print("Average metrics across all scenarios:")
-    print(summary)
-    print()
-
-    # Overall decision
-    current_avg = summary.loc["CURRENT"]
-    corrected_avg = summary.loc["CORRECTED"]
-
-    overall_bias_diff = abs(corrected_avg["bias"] - current_avg["bias"])
-    overall_coverage_diff = abs(corrected_avg["coverage"] - current_avg["coverage"])
-
-    print(f"Overall differences:")
-    print(f"  Average bias difference: {overall_bias_diff:.4f}")
-    print(f"  Average coverage difference: {overall_coverage_diff:.2%}")
-    print()
-
-    # Decision
-    if overall_bias_diff / abs(current_avg["bias"]) > 0.05 or overall_coverage_diff > 0.10:
-        decision = "FIX REQUIRED"
-        priority = "HIGH"
-        reasoning = "Differences exceed decision criteria (>5% bias or >10% coverage)"
-    else:
-        decision = "DOCUMENT AS LIMITATION"
-        priority = "LOW"
-        reasoning = "Differences within acceptable range for teaching purposes"
-
-    print(f"DECISION: {decision}")
-    print(f"PRIORITY: {priority}")
-    print(f"REASONING: {reasoning}")
-    print()
-    print(f"Results saved to: {csv_path}")
-    print()
-
-    return df, decision, priority
+    print(summary.to_string(index=False))
+    print("\nClassifier minus regression on paired draws and identical stratified folds")
+    print(comparison.to_string(index=False))
+    return summary, comparison
 
 
 if __name__ == "__main__":
-    results_df, decision, priority = main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "results/impact_analysis")
+    parser.add_argument("--draws", type=int, default=100)
+    parser.add_argument("--jobs", type=int, default=1)
+    args = parser.parse_args()
+    main(args.output_dir, args.draws, args.jobs)

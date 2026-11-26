@@ -711,3 +711,44 @@ class TestDMLIntegration:
         avg_mid = np.mean(mid_effects)
         # With noise, just check mid is somewhat higher
         assert avg_mid > avg_early - 1.0  # Allow for noise
+
+
+@pytest.mark.tier2
+def test_stationary_initial_treatment_matches_ar1_variance():
+    """Initial and late observations have the same analytically known variance."""
+    phi = 0.95
+    dgp = TimeSeriesDGPGenerator(
+        n_periods=65,
+        p=1,
+        true_effect=2.0,
+        treatment_ar_coefs=np.array([phi]),
+        confounding_strength=0,
+        random_state=20261120,
+    )
+    values = np.array([dgp.generate().T[[0, 60]] for _ in range(1500)])
+    variance = 0.5 / (1 - phi**2)
+    # For independent Gaussian observations, sampling SD of variance is V sqrt(2/(R-1)).
+    np.testing.assert_allclose(
+        values.var(axis=0, ddof=1), variance, rtol=4 * np.sqrt(2 / (len(values) - 1))
+    )
+
+
+@pytest.mark.tier2
+def test_stationary_initial_joint_distribution_with_covariates():
+    """Lag-two dynamics retain the same treatment/covariate covariance at each end."""
+    dgp = TimeSeriesDGPGenerator(
+        n_periods=65,
+        p=1,
+        true_effect=2.0,
+        treatment_ar_order=2,
+        treatment_ar_coefs=np.array([0.5, 0.2]),
+        confounder_var_coef=0.8,
+        random_state=42,
+    )
+    # Squaring the cross-product retains its signal when the coefficient varies across draws.
+    pairs = []
+    for _ in range(1200):
+        data = dgp.generate()
+        pairs.append((data.T[[0, -1]] * data.X[[0, -1], 0]) ** 2)
+    deltas = np.diff(np.array(pairs), axis=1).ravel()
+    assert abs(deltas.mean()) < 4 * deltas.std(ddof=1) / np.sqrt(len(deltas))

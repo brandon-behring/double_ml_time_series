@@ -589,3 +589,77 @@ class TestBootstrapDiagnosticsIntegration:
         assert "ci" in recommendations
         assert all(isinstance(v, int) for v in recommendations.values())
         assert all(v > 0 for v in recommendations.values())
+
+
+@pytest.mark.tier2
+def test_coverage_uses_one_new_dataset_per_replication(monkeypatch):
+    draws = DGPGenerator(n=80, p=1, true_effect=2.0, random_state=42)
+    diag = BootstrapDiagnostics(draws.generate(), "OLS", random_state=7)
+    calls = []
+
+    def generate():
+        data = draws.generate()
+        calls.append(data)
+        return data
+
+    def reference_bootstrap(self, size):
+        # Give alternating datasets an interval covering truth and then missing it.
+        row = next((i for i, data in enumerate(calls) if data is self.data), -1)
+        return np.full(size, 2 if row in (0, 2) else 3)
+
+    with pytest.raises(ValueError, match="independent datasets"):
+        diag.diagnose_convergence("coverage", [10], true_value=2)
+    monkeypatch.setattr(BootstrapDiagnostics, "_bootstrap_estimates", reference_bootstrap)
+    result = diag.diagnose_convergence(
+        "coverage", [10, 20], 2.0, n_replications=4, data_generator=generate
+    )
+    assert len(calls) == 4
+    np.testing.assert_array_equal(result.estimates, [0.5, 0.5])
+    np.testing.assert_allclose(result.std_errors, np.sqrt(1 / 12))
+    assert result.diagnostics["independent_datasets"] == 4
+    fixed = diag.diagnose_convergence("conditional_inclusion", [10], 2.0, n_replications=4)
+    assert fixed.estimates == [0.0]
+    assert fixed.diagnostics["independent_datasets"] == 1
+
+
+@pytest.mark.tier1
+def test_forest_bootstrap_and_point_fit_share_original_unit_folds(monkeypatch):
+    data = DGPGenerator(n=100, p=3, true_effect=2.0, random_state=3).generate()
+    data.X[:, 0] = np.arange(data.n)
+    diag = BootstrapDiagnostics(data, "LinearDML", random_state=388)
+    fitted = []
+
+    def record(Y, T, X, cv):
+        fitted.append((X[:, 0].astype(int), cv))
+        return float(Y.mean())
+
+    monkeypatch.setattr(diag, "_estimate_dml", record)
+    diag._estimate_point()
+    diag.diagnose_distribution(n_bootstrap=4)
+    source_ids, initial = fitted[0]
+    original_fold = np.empty(data.n, dtype=int)
+    for k, (_, test) in enumerate(initial):
+        original_fold[source_ids[test]] = k
+    assert len(fitted) == 5
+    rng = np.random.RandomState(388)
+    for ids, folds in fitted[1:]:
+        np.testing.assert_array_equal(ids, rng.choice(data.n, size=data.n, replace=True))
+        assert len(set(ids)) < data.n
+        assert sorted(np.concatenate([test for _, test in folds])) == list(range(data.n))
+        for k, (train, test) in enumerate(folds):
+            assert set(ids[train]).isdisjoint(ids[test])
+            assert np.all(original_fold[ids[test]] == k)
+
+
+@pytest.mark.tier1
+def test_bootstrap_skips_an_original_fold_with_no_sampled_rows():
+    from dml_ts.validation._bootstrap_folds import resampled_folds
+
+    original_fold = np.array([0, 1, 2, 3, 4])
+    sampled = np.array([1, 1, 3, 3, 3])
+    splits = resampled_folds(original_fold, sampled)
+    assert len(splits) == 2
+    for train, test in splits:
+        assert np.unique(original_fold[sampled[test]]).size == 1
+        assert set(sampled[train]).isdisjoint(sampled[test])
+    assert sorted(np.concatenate([test for _, test in splits])) == list(range(len(sampled)))

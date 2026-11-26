@@ -1,18 +1,12 @@
-"""
-Quick verification script to demonstrate the coverage bug fix.
+"""Check that reported coverage counts per-fit EconML ate_interval hits.
 
-Before Fix:
-  - Coverage ~0.09-0.24 (using Monte Carlo SE)
-
-After Fix:
-  - Coverage ~0.90-1.00 (using DML's actual CIs from effect_interval())
-
-Usage:
-    python scripts/verify_coverage_fix.py
+Run from the repository root with python scripts/verify_coverage_fix.py.
 """
 
-from dml_ts.validation.dgp_generator import DGPGenerator
+import os
+
 from dml_ts.validation.bias_validation import BiasValidation
+from dml_ts.validation.dgp_generator import DGPGenerator
 
 print("=" * 80)
 print("COVERAGE BUG FIX VERIFICATION")
@@ -36,10 +30,15 @@ print(f"  confounding_strength = {dgp.confounding_strength}")
 print()
 
 # Run validation with moderate number of simulations
-validator = BiasValidation(n_simulations=100, alpha=0.05, random_state=42)
+validator = BiasValidation(
+    n_simulations=100,
+    alpha=0.05,
+    random_state=42,
+    n_jobs=int(os.environ.get("DML_VALIDATION_DRAW_JOBS", "1")),
+)
 
 print(f"Running validation ({validator.n_simulations} simulations)...")
-print("This will take ~3-5 minutes...")
+print(f"Independent fit workers: {validator.n_jobs}")
 print()
 
 result = validator.validate(dgp)
@@ -56,35 +55,14 @@ print()
 print(f"Coverage: {result.coverage:.2%}")
 print()
 
-# Interpretation
-print("=" * 80)
-print("INTERPRETATION")
-print("=" * 80)
-print()
-
-if 0.85 <= result.coverage <= 1.00:
-    print("✅ COVERAGE FIX SUCCESSFUL!")
-    print()
-    print(f"Coverage rate of {result.coverage:.2%} is approximately nominal (expected ~95%)")
-    print("This confirms DML's confidence intervals are now calculated correctly.")
-    print()
-    print("How it works:")
-    print(
-        "  1. _estimate_effect() returns (estimate, ci_lower, ci_upper) from dml.effect_interval()"
-    )
-    print("  2. _run_simulations() collects CI bounds for each simulation")
-    print("  3. _calculate_coverage() checks: (ci_lower ≤ true_effect ≤ ci_upper)")
-    print("  4. Coverage = proportion of CIs containing true effect")
-else:
-    print("❌ COVERAGE STILL BROKEN!")
-    print()
-    print(f"Coverage rate of {result.coverage:.2%} is far below nominal 95%")
-    print("Expected coverage to be in range [0.85, 1.00]")
-    print()
-    print("Possible issues:")
-    print("  - DML's effect_interval() not working correctly")
-    print("  - CI bounds not being stored properly")
-    print("  - Coverage calculation logic error")
-
-print()
-print("=" * 80)
+# Cross-check the saved marginal ATE intervals against the reported hit rate.
+bounds = result.ci_estimates
+hits = int(((bounds[:, 0] <= dgp.true_effect) & (dgp.true_effect <= bounds[:, 1])).sum())
+expected_count = result.n_simulations
+if len(bounds) != expected_count or hits / expected_count != result.coverage:
+    raise AssertionError("Reported coverage disagrees with the stored per-fit ATE intervals")
+print(f"Marginal ATE interval hits: {hits}/{expected_count}")
+print(
+    f"Exact binomial p for nominal {1 - validator.alpha:.0%} coverage: {result.coverage_p_value:.6g}"
+)
+print(f"Within-scenario coverage verdict: {result.coverage_status}")

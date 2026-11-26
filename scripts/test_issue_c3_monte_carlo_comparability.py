@@ -1,45 +1,35 @@
-"""
-Test script for Issue C3: Monte Carlo Comparability Impact Analysis
+"""Measure rank variability across seeds when five estimators receive separate iid draws.
 
-This script tests whether the BaselineComparison's current approach (where each method
-sees different random draws) vs. a corrected approach (where all methods see identical
-draws) materially affects method rankings and bias comparisons.
-
-Issue: BaselineComparison.compare() reuses a single DGPGenerator, so each method consumes
-a different sequence of draws instead of evaluating on the same datasets.
-
-Decision Criteria:
-- If method rankings change across multiple runs → Fix is critical
-- If relative bias differs >10% → Fix is critical
-- Otherwise → Document as limitation
-
-Runtime: ~15-20 minutes (100 simulations × 7 methods × 2 approaches × 3 scenarios)
+The CLI replays the original unmatched design. It cannot isolate how much rank
+variation is attributable to the data-sharing rule. BaselineComparison.compare
+supports a matched-draw comparison for that separate question.
 """
 
 import sys
-from pathlib import Path
-import numpy as np
-import pandas as pd
-from datetime import datetime
-from typing import Dict, List
 from copy import deepcopy
+from datetime import datetime
+from pathlib import Path
 
-# Add src to path
+import pandas as pd
+
+# Run directly from the repository root.
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
 from dml_ts.validation.bias_validation import BiasValidation
+from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.ipw_baseline import AugmentedIPW, IPWEstimator
 from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
-from dml_ts.validation.ipw_baseline import IPWEstimator, AugmentedIPW
 
 
-def run_comparison_current(dgp: DGPGenerator, methods: Dict, n_simulations: int) -> Dict:
+def run_comparison_current(dgp: DGPGenerator, methods: dict, n_simulations: int) -> dict:
     """
-    CURRENT approach: Each method calls dgp.generate() independently.
+    Historical approach: Each method calls dgp.generate() independently.
     This means each method sees DIFFERENT random draws.
     """
     results = {}
     for name, method in methods.items():
+        if method.n_simulations != n_simulations:
+            raise ValueError(f"{name} must use {n_simulations} simulations")
         result = method.validate(dgp)
         results[name] = {
             "bias": result.bias,
@@ -50,49 +40,29 @@ def run_comparison_current(dgp: DGPGenerator, methods: Dict, n_simulations: int)
     return results
 
 
-def run_comparison_corrected(dgp_config: Dict, methods: Dict, n_simulations: int) -> Dict:
+def run_comparison_corrected(dgp_config: dict, methods: dict, n_simulations: int) -> dict:
     """
-    CORRECTED approach: Pre-generate all datasets, replay for each method.
-    This means each method sees IDENTICAL random draws.
+    Run each public validator on a fresh copy of one generator state.
     """
-    # Pre-generate all datasets
-    dgp = DGPGenerator(**dgp_config)
-    datasets: List[DGPResult] = []
-    for _ in range(n_simulations):
-        datasets.append(dgp.generate())
-
-    # Now run each method on the SAME datasets
+    # Each copy starts with the same generator state. The public validator computes
+    # per-fit bounds for each supported method, preserving its coverage definition.
+    generator = DGPGenerator(**dgp_config)
     results = {}
     for name, method in methods.items():
-        estimates = []
-        for data in datasets:
-            # Each method's internal logic for single dataset
-            if hasattr(method, "_estimate_effect"):
-                estimate, _, _ = method._estimate_effect(data)
-            else:
-                # For baseline methods without _estimate_effect, we need to adapt
-                # For simplicity, we'll skip this corrected approach for baselines
-                # and only test on DML (BiasValidation)
-                continue
-            estimates.append(estimate)
-
-        # Calculate metrics
-        true_effect = dgp_config["true_effect"]
-        estimates_array = np.array(estimates)
-        bias = float(np.mean(estimates_array) - true_effect)
-        mse = float(np.mean((estimates_array - true_effect) ** 2))
-
+        if method.n_simulations != n_simulations:
+            raise ValueError(f"{name} must use {n_simulations} simulations")
+        fit = method.validate(deepcopy(generator))
         results[name] = {
-            "bias": bias,
-            "abs_bias": abs(bias),
-            "mse": mse,
-            "coverage": None,  # Would need CIs for coverage
+            "bias": fit.bias,
+            "abs_bias": abs(fit.bias),
+            "mse": fit.mse,
+            "coverage": fit.coverage,
         }
 
     return results
 
 
-def compare_rankings(current: Dict, corrected: Dict) -> tuple:
+def compare_rankings(current: dict, corrected: dict) -> tuple:
     """
     Compare method rankings by bias between two approaches.
 
@@ -139,7 +109,7 @@ def main():
     print("ISSUE C3: MONTE CARLO COMPARABILITY IMPACT ANALYSIS")
     print("=" * 80)
     print()
-    print("Testing whether methods seeing different random draws affects rankings...")
+    print("Measuring rank variation across seeds under the historical unmatched-draw design.")
     print()
 
     # Test scenarios
@@ -198,7 +168,7 @@ def main():
                 "DML": BiasValidation(n_simulations=n_simulations, random_state=run_seed),
             }
 
-            # Create DGP for CURRENT approach
+            # Start the historical unmatched design at the specified seed.
             dgp_current = DGPGenerator(
                 n=scenario_config["n"],
                 p=scenario_config["p"],
@@ -207,18 +177,16 @@ def main():
                 random_state=run_seed,
             )
 
-            # Run CURRENT approach
+            # Each validator advances the common generator.
             current_results = run_comparison_current(dgp_current, methods, n_simulations)
 
             # Get rankings
             current_ranking = sorted(current_results.items(), key=lambda x: x[1]["abs_bias"])
-            current_rank_names = [name for name, _ in current_ranking]
 
-            print(f"  Run {run + 1}/{n_runs}: Current ranking (by abs bias)")
+            print(f"  Run {run + 1}/{n_runs}: Unmatched-draw ranking (by absolute bias)")
             for rank, (name, metrics) in enumerate(current_ranking, 1):
                 print(
-                    f"    {rank}. {name:20s} bias={metrics['bias']:+.4f}, "
-                    f"mse={metrics['mse']:.4f}"
+                    f"    {rank}. {name:20s} bias={metrics['bias']:+.4f}, mse={metrics['mse']:.4f}"
                 )
 
             # Store results
@@ -263,13 +231,13 @@ def main():
             )
 
         # Check if any method's rank changed by >1
-        max_rank_variance = rank_stats["std"].max()
+        max_rank_sd = rank_stats["std"].max()
         max_rank_range = (rank_stats["max"] - rank_stats["min"]).max()
 
-        if max_rank_variance > 1.0 or max_rank_range > 2:
+        if max_rank_sd > 1.0 or max_rank_range > 2:
             print(f"\n  ⚠️  HIGH INSTABILITY: Rankings vary by up to {max_rank_range:.0f} positions")
         else:
-            print(f"\n  ✓ Rankings stable across runs (max variance: {max_rank_variance:.2f})")
+            print(f"\n  ✓ Rankings stable across runs (maximum rank SD: {max_rank_sd:.2f})")
 
         print()
 
@@ -282,39 +250,31 @@ def main():
     df.to_csv(csv_path, index=False)
 
     print(f"{'=' * 80}")
-    print("SUMMARY & DECISION")
+    print("UNMATCHED-DRAW RANK SUMMARY")
     print(f"{'=' * 80}\n")
 
-    # Overall decision
+    # Descriptive rank spread across runs.
     overall_rank_std = df.groupby(["scenario", "method"])["rank"].std().max()
     overall_rank_range = (
         df.groupby(["scenario", "method"])["rank"].max()
         - df.groupby(["scenario", "method"])["rank"].min()
     ).max()
 
-    print(f"Overall ranking stability:")
+    print("Overall ranking stability:")
     print(f"  Max std deviation in ranks: {overall_rank_std:.2f}")
     print(f"  Max rank range: {overall_rank_range:.0f} positions")
     print()
 
-    if overall_rank_std > 1.0 or overall_rank_range > 2:
-        decision = "FIX REQUIRED"
-        priority = "HIGH"
-        reasoning = "Rankings are unstable - methods seeing different data leads to inconsistent comparisons"
-    else:
-        decision = "LOW PRIORITY"
-        priority = "MEDIUM"
-        reasoning = "Rankings are relatively stable despite different random draws"
-
-    print(f"DECISION: {decision}")
-    print(f"PRIORITY: {priority}")
-    print(f"REASONING: {reasoning}")
-    print()
+    description = (
+        "large rank variation"
+        if overall_rank_std > 1.0 or overall_rank_range > 2
+        else "small rank variation"
+    )
+    print(f"Historical unmatched-draw design: {description}")
+    print("These runs do not quantify the change in rank variability from matching the draws.")
     print(f"Results saved to: {csv_path}")
-    print()
-
-    return df, decision, priority
+    return df, description, "descriptive"
 
 
 if __name__ == "__main__":
-    results_df, decision, priority = main()
+    main()

@@ -9,14 +9,21 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
+from scipy.stats import binomtest
 
 # Add scripts directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 
-from comprehensive_coverage_test import create_test_scenarios, run_coverage_stress_test
+import comprehensive_coverage_test as coverage_script
+from comprehensive_coverage_test import (
+    coverage_exit_code,
+    create_test_scenarios,
+    run_coverage_stress_test,
+)
 
 
 @pytest.mark.tier1
@@ -101,6 +108,12 @@ class TestScenarioCreation:
         assert has_large, "Should include very large sample scenario"
 
 
+@pytest.fixture(scope="module")
+def real_coverage_suite(tmp_path_factory):
+    pytest.importorskip("econml")
+    return run_coverage_stress_test(tmp_path_factory.mktemp("real_coverage"), n_simulations=3)
+
+
 @pytest.mark.tier4
 class TestCoverageStressTest:
     """Test the main coverage stress test functionality."""
@@ -146,7 +159,9 @@ class TestCoverageStressTest:
             "bias",
             "mse",
             "status",
-            "p_value",
+            "coverage_p_value",
+            "bias_p_value",
+            "coverage_p_value_holm",
             "n_simulations",
         ]
 
@@ -161,9 +176,9 @@ class TestCoverageStressTest:
         assert result["scenario_num"].min() == 1, "Scenario numbering should start at 1"
         assert result["scenario_num"].max() == 15, "Scenario numbering should end at 15"
 
-    def test_coverage_in_valid_range(self, temp_output_dir):
+    def test_coverage_in_valid_range(self, real_coverage_suite):
         """Test that coverage values are in valid range [0, 1]."""
-        result = run_coverage_stress_test(output_dir=temp_output_dir, n_simulations=2)
+        result = real_coverage_suite
 
         valid_coverage = result[result["actual_coverage"].notna()]
         assert (valid_coverage["actual_coverage"] >= 0).all(), "Coverage should be >= 0"
@@ -190,17 +205,17 @@ class TestCoverageStressTest:
         df = pd.read_csv(csv_files[0])
         assert len(df) == 15, "Saved CSV should have 15 rows"
 
-    def test_status_values_are_valid(self, temp_output_dir):
+    def test_status_values_are_valid(self, real_coverage_suite):
         """Test that status values are in expected set."""
-        result = run_coverage_stress_test(output_dir=temp_output_dir, n_simulations=2)
+        result = real_coverage_suite
 
         valid_statuses = {"PASS", "WARNING", "FAIL", "ERROR"}
         for status in result["status"]:
             assert status in valid_statuses, f"Invalid status: {status}"
 
-    def test_bias_and_mse_are_numeric(self, temp_output_dir):
+    def test_bias_and_mse_are_numeric(self, real_coverage_suite):
         """Test that bias and MSE are numeric values."""
-        result = run_coverage_stress_test(output_dir=temp_output_dir, n_simulations=2)
+        result = real_coverage_suite
 
         # Filter out ERROR scenarios
         valid = result[result["status"] != "ERROR"]
@@ -208,12 +223,13 @@ class TestCoverageStressTest:
         assert pd.api.types.is_numeric_dtype(valid["bias"]), "Bias should be numeric"
         assert pd.api.types.is_numeric_dtype(valid["mse"]), "MSE should be numeric"
 
-    def test_n_simulations_parameter_respected(self, temp_output_dir):
+    def test_n_simulations_parameter_respected(self, real_coverage_suite):
         """Test that n_simulations parameter is used correctly."""
         n_sims = 3
-        result = run_coverage_stress_test(output_dir=temp_output_dir, n_simulations=n_sims)
+        result = real_coverage_suite
 
         valid = result[result["status"] != "ERROR"]
+        assert len(valid) > 0
         assert (valid["n_simulations"] == n_sims).all(), (
             f"All scenarios should use n_simulations={n_sims}"
         )
@@ -230,17 +246,13 @@ class TestCoverageCategorization:
         yield temp_dir
         shutil.rmtree(temp_dir, ignore_errors=True)
 
-    def test_categorization_thresholds(self, temp_output_dir):
-        """Test that coverage values are properly stored and categorizable.
-
-        The script stores plain percentage strings in coverage_pct (e.g., '95.0%')
-        and numeric values in actual_coverage. Emoji categorization is console-only.
-        This test verifies the DataFrame contains valid, consistent values.
-        """
-        result = run_coverage_stress_test(output_dir=temp_output_dir, n_simulations=2)
+    def test_categorization_thresholds(self, real_coverage_suite):
+        """Check stored counts, exact p-values and percentages on real completed fits."""
+        result = real_coverage_suite
 
         valid = result[result["actual_coverage"].notna()]
 
+        assert len(valid) > 0
         for _, row in valid.iterrows():
             coverage = row["actual_coverage"]
 
@@ -252,32 +264,69 @@ class TestCoverageCategorization:
                 f"coverage_pct '{row['coverage_pct']}' doesn't match actual_coverage {coverage}"
             )
 
-            # Verify categorization thresholds are distinguishable
-            if coverage > 0.98:
-                assert coverage > 0.90, "Overconservative implies above undercoverage"
-            elif coverage < 0.90:
-                assert coverage < 0.98, "Undercoverage implies below overconservative"
+            count = int(row["n_covered"])
+            n = int(row["n_simulations"])
+            assert coverage == count / n
+            assert row["coverage_p_value"] == binomtest(count, n, row["nominal_coverage"]).pvalue
 
 
 @pytest.mark.tier1
 class TestExitCodes:
     """Test exit code logic for automated validation."""
 
-    def test_exit_codes_defined(self):
-        """Test that script defines expected exit codes in __main__ block."""
-        # Read the script to verify exit code logic exists
-        script_path = (
-            Path(__file__).parent.parent.parent / "scripts" / "comprehensive_coverage_test.py"
-        )
+    @pytest.mark.parametrize(
+        ("hits", "runs", "failure", "expected_code"),
+        [
+            (50, 50, False, 0),
+            (42, 50, False, 3),
+            (500, 500, False, 2),
+            (47, 50, True, 1),
+        ],
+    )
+    def test_actual_suite_decision(self, monkeypatch, tmp_path, hits, runs, failure, expected_code):
+        scenarios = create_test_scenarios()
+        index = 0
 
-        with open(script_path) as f:
-            script_content = f.read()
+        def validate(validator, dgp):
+            nonlocal index
+            index += 1
+            if failure and index > 1:
+                raise ValueError("invalid fit")
+            count = hits if index == 1 else round(runs * 0.95)
+            return SimpleNamespace(
+                coverage=count / runs,
+                bias=0.0,
+                mse=0.03,
+                status="PASS",
+                bias_status="PASS",
+                coverage_status="PASS",
+                n_simulations=runs,
+                bias_p_value=0.72,
+                coverage_p_value=binomtest(count, runs, 0.95).pvalue,
+            )
 
-        # Check for exit code definitions
-        assert "sys.exit(0)" in script_content, "Should have success exit code (0)"
-        assert "sys.exit(1)" in script_content, "Should have all-failed exit code (1)"
-        assert "sys.exit(2)" in script_content, "Should have overconservative exit code (2)"
-        assert "sys.exit(3)" in script_content, "Should have undercoverage exit code (3)"
+        monkeypatch.setattr(coverage_script.BiasValidation, "validate", validate)
+        result = run_coverage_stress_test(tmp_path, runs)
+        assert len(result) == len(scenarios)
+        assert coverage_exit_code(result) == expected_code
+        assert result.loc[0, "bias_p_value"] == 0.72
+        assert result.loc[0, "coverage_p_value"] == binomtest(hits, runs, 0.95).pvalue
+        assert result.loc[0, "coverage_mc_ci_lower"] == binomtest(hits, runs).proportion_ci().low
+        if failure:
+            assert (result["suite_coverage_status"] == "INCOMPLETE").sum() == 14
+            assert result.loc[1:, "coverage_p_value"].isna().all()
+        if hits == 42:
+            assert result.loc[0, "coverage_p_value_holm"] == pytest.approx(
+                15 * binomtest(42, 50, 0.95).pvalue
+            )
+
+    def test_scenario_descriptions_match_frozen_dimensions(self):
+        scenarios = create_test_scenarios()
+        assert max(s["p"] / s["n"] for s in scenarios) == pytest.approx(0.6)
+        for n, p in ((100, 20), (50, 30)):
+            (row,) = [s for s in scenarios if s["n"] == n and s["p"] == p]
+            assert f"{p} covariates for {n} observations" in row["name"]
+        assert all("p>n" not in s["name"] and "p>>n" not in s["name"] for s in scenarios)
 
 
 @pytest.mark.tier4
@@ -309,18 +358,8 @@ class TestErrorHandling:
             "ERROR",
         }, "Should have valid status"
 
-    def test_handles_high_dimensional_scenarios(self, temp_output_dir):
-        """Test that high-dimensional scenarios (p > n) are handled."""
+    def test_handles_largest_covariate_fraction(self, temp_output_dir):
         result = run_coverage_stress_test(output_dir=temp_output_dir, n_simulations=1)
-
-        # Find high-dimensional scenarios
-        high_dim = result[result["p"] > result["n"]]
-
-        if len(high_dim) > 0:
-            # Should handle gracefully, not crash
-            assert high_dim["status"].iloc[0] in {
-                "PASS",
-                "WARNING",
-                "FAIL",
-                "ERROR",
-            }, "Should handle p > n scenarios"
+        row = result.loc[(result["p"] / result["n"]).idxmax()]
+        assert (row["p"], row["n"]) == (30, 50)
+        assert row["status"] in {"PASS", "WARNING", "FAIL", "ERROR"}

@@ -47,23 +47,24 @@ class TestNaiveOLS:
         assert result.n_simulations == 10
 
     def test_detects_confounding_bias(self):
-        """Test that NaiveOLS detects significant bias with confounding."""
-        # Create DGP with strong confounding
-        dgp = DGPGenerator(
-            n=1000,
-            p=5,
-            true_effect=2.0,
-            confounding_strength=1.0,  # Strong confounding
-            random_state=42,
-        )
+        """Detect the known 0.5 omitted-variable bias across independent draws."""
 
+        class ConfoundedDGP(DGPGenerator):
+            def _generate_treatment(self, X):
+                propensity = np.where(X[:, 0] > 0, 0.75, 0.25)
+                return self._rng.binomial(1, propensity)
+
+            def _generate_outcome(self, T, X):
+                return self.true_effect * T + (X[:, 0] > 0) + self._rng.normal(size=self.n)
+
+        dgp = ConfoundedDGP(n=1000, p=1, true_effect=2.0, random_state=42)
         estimator = NaiveOLS(n_simulations=20, random_state=42)
         result = estimator.validate(dgp)
 
-        # NaiveOLS should show significant bias (FAIL or WARNING)
-        assert result.status in ["FAIL", "WARNING"]
-        # Bias should be substantial due to confounding
-        assert abs(result.bias) > 0.1
+        # E[1(X > 0) | T=1] - E[1(X > 0) | T=0] = 0.75 - 0.25.
+        assert result.bias == pytest.approx(0.5, abs=0.1)
+        assert result.bias_p_value < 0.01
+        assert result.status == "FAIL"
 
     def test_less_biased_without_confounding(self):
         """Test NaiveOLS with weak confounding (no confounding)."""

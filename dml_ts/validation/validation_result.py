@@ -1,11 +1,24 @@
 """Validation result data structure for Double ML validation methods."""
 
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, field, fields
 from datetime import datetime
 from typing import Any, Literal
 
 import numpy as np
+
+
+def _json_value(value: Any) -> Any:
+    """Convert nested simulation outputs to their ordinary JSON equivalents."""
+    if isinstance(value, np.ndarray):
+        return _json_value(value.tolist())
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, dict):
+        return {key: _json_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_value(item) for item in value]
+    return value
 
 
 @dataclass
@@ -31,6 +44,9 @@ class ValidationResult:
         bias_p_value: Optional p-value from bias hypothesis test
         coverage_p_value: Optional p-value from coverage hypothesis test
         statistical_status: Optional status from statistical hypothesis testing
+        bias_status: Optional verdict for the point estimator
+        coverage_status: Optional verdict for interval calibration
+        storage_metadata: Additional metadata supplied when archiving the result
 
     Examples:
         >>> result = ValidationResult(
@@ -64,6 +80,9 @@ class ValidationResult:
     bias_p_value: float | None = None
     coverage_p_value: float | None = None
     statistical_status: Literal["PASS", "FAIL", "WARNING"] | None = None
+    bias_status: Literal["PASS", "FAIL", "WARNING"] | None = None
+    coverage_status: Literal["PASS", "FAIL", "WARNING"] | None = None
+    storage_metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization.
@@ -71,7 +90,7 @@ class ValidationResult:
         Returns:
             Dictionary representation with JSON-serializable types
         """
-        d = asdict(self)
+        d = {f.name: _json_value(getattr(self, f.name)) for f in fields(self)}
         # Convert datetime to ISO format string
         d["timestamp"] = self.timestamp.isoformat()
         return d
@@ -98,6 +117,9 @@ class ValidationResult:
         d_copy = d.copy()
         if isinstance(d_copy["timestamp"], str):
             d_copy["timestamp"] = datetime.fromisoformat(d_copy["timestamp"])
+        for key in ("ci_estimates", "point_estimates"):
+            if d_copy.get(key) is not None:
+                d_copy[key] = np.asarray(d_copy[key], dtype=float)
 
         return cls(**d_copy)
 
@@ -122,16 +144,26 @@ class ValidationResult:
         """
         return self.status == "PASS"
 
+    @property
+    def bias_ci_level(self) -> float:
+        """Confidence level of the bias interval. Historical results used 95%."""
+        return float(self.metadata.get("bias_ci_level", 0.95))
+
     def summary(self) -> str:
         """Generate human-readable summary.
 
         Returns:
             Formatted summary string
         """
+        verdicts = ""
+        if self.bias_status is not None:
+            verdicts += f"\nPoint bias status: {self.bias_status}"
+        if self.coverage_status is not None:
+            verdicts += f"\nInterval coverage status: {self.coverage_status}"
         return f"""
 Validation Method: {self.method}
-Status: {self.status}
-Bias: {self.bias:.4f} (95% CI: [{self.ci_lower:.4f}, {self.ci_upper:.4f}])
+Status: {self.status}{verdicts}
+Bias: {self.bias:.4f} ({100 * self.bias_ci_level:g}% CI: [{self.ci_lower:.4f}, {self.ci_upper:.4f}])
 MSE: {self.mse:.4f}
 Coverage: {self.coverage:.2%}
 Simulations: {self.n_simulations:,}

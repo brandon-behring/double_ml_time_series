@@ -118,7 +118,7 @@ class TestValidationResultSerialization:
             "ci_upper": 0.05,
             "n_simulations": 2000,
             "timestamp": "2025-11-13T12:00:00",
-            "metadata": {"key": "value"},
+            "metadata": {"alpha": 0.2},
         }
 
         result = ValidationResult.from_dict(d)
@@ -126,6 +126,8 @@ class TestValidationResultSerialization:
         assert result.method == "mse"
         assert result.bias == 0.01
         assert result.timestamp == datetime(2025, 11, 13, 12, 0, 0)
+        # Historical runs always returned the 95% bias interval, even with a custom alpha.
+        assert "95% CI" in result.summary()
 
     def test_to_json(self):
         """Test conversion to JSON string."""

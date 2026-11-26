@@ -11,10 +11,15 @@ Tests that BaselineComparison properly:
 import numpy as np
 import pandas as pd
 import pytest
+from scipy import stats
 
 from dml_ts.dml import econml_available
 from dml_ts.validation.baseline_comparison import BaselineComparison
+from dml_ts.validation.bootstrap_config import BootstrapConfig
 from dml_ts.validation.dgp_generator import DGPGenerator
+from dml_ts.validation.ipw_baseline import AugmentedIPW, IPWEstimator
+from dml_ts.validation.ml_baseline import RandomForestEstimator, XGBoostEstimator
+from dml_ts.validation.ols_baseline import NaiveOLS, OLSWithControls
 
 
 class TestBaselineComparisonBasic:
@@ -50,6 +55,56 @@ class TestBaselineComparisonBasic:
         assert "OLSWithControls" in results
         assert "IPWEstimator" in results
         assert "AugmentedIPW" in results
+
+    @pytest.mark.tier2
+    @pytest.mark.parametrize(
+        "estimator",
+        [
+            NaiveOLS,
+            OLSWithControls,
+            IPWEstimator,
+            AugmentedIPW,
+            RandomForestEstimator,
+            XGBoostEstimator,
+        ],
+    )
+    def test_bias_p_value_matches_simulation_moments(self, estimator):
+        n = 5
+        method = estimator(
+            n_simulations=n,
+            bootstrap_config=BootstrapConfig(n_bootstrap_bias=23, n_bootstrap_ci=2),
+            random_state=123,
+        )
+        dgp = DGPGenerator(n=100, p=2, true_effect=2.0, random_state=123)
+        result = method.validate(dgp)
+
+        # The reported MSE and bias give the second and first raw moments of the n errors.
+        standard_error = np.sqrt((result.mse - result.bias**2) / (n - 1))
+        expected = 2 * stats.t.sf(abs(result.bias) / standard_error, df=n - 1)
+        assert result.bias_p_value == pytest.approx(expected)
+
+    @pytest.mark.tier2
+    @pytest.mark.parametrize("estimator", [RandomForestEstimator, XGBoostEstimator])
+    def test_bias_test_counts_draws_with_both_arms(self, estimator, monkeypatch):
+        dgp = DGPGenerator(n=100, p=2, true_effect=2.0, random_state=123)
+        draws = [dgp.generate() for _ in range(4)]
+        draws[0].T[:] = 0
+        monkeypatch.setattr(dgp, "generate", iter(draws).__next__)
+        method = estimator(
+            n_simulations=4,
+            n_estimators=3,
+            bootstrap_config=BootstrapConfig(n_bootstrap_bias=10, n_bootstrap_ci=2),
+            random_state=123,
+        )
+
+        result = method.validate(dgp)
+
+        assert result.n_simulations == 4
+        assert result.metadata["n_bias_simulations"] == 3
+        standard_error = np.sqrt((result.mse - result.bias**2) / 2)
+        assert result.bias_p_value == pytest.approx(
+            2 * stats.t.sf(abs(result.bias) / standard_error, df=2)
+        )
 
 
 @pytest.mark.tier2
@@ -126,13 +181,20 @@ class TestBaselineComparisonAcrossDGPs:
 
         configs = [
             {"n": 300, "p": 3, "true_effect": 2.0, "random_state": 42},
-            {"n": 500, "p": 5, "true_effect": 1.0, "random_state": 42},
+            {
+                "n": 300,
+                "p": 3,
+                "true_effect": 2.0,
+                "random_state": 42,
+                "outcome_model": "nonlinear",
+            },
         ]
 
         results = comp.compare_across_dgps(configs)
 
         # Should have one table per config
-        assert len(results) >= 1  # At least one valid config
+        assert len(results) == len(configs)
+        assert any("outcome_model=nonlinear" in key for key in results)
         assert all(isinstance(v, pd.DataFrame) for v in results.values())
 
     def test_config_to_string_formatting(self):
@@ -282,3 +344,54 @@ class TestBaselineComparisonReproducibility:
                 break
 
         assert biases_differ
+
+
+@pytest.mark.tier1
+@pytest.mark.parametrize(("dgp_seed", "comparison_seed"), [(317, None), (None, 317), (None, None)])
+def test_paired_inputs_are_replayable_and_method_order_independent(dgp_seed, comparison_seed):
+    from datetime import datetime
+    from hashlib import sha256
+
+    from dml_ts.validation.validation_result import ValidationResult
+
+    class Recorder:
+        def validate(self, dgp):
+            hashes = []
+            for _ in range(3):
+                draw = dgp.generate()
+                hashes.append(
+                    sha256(draw.X.tobytes() + draw.T.tobytes() + draw.Y.tobytes()).hexdigest()
+                )
+            return ValidationResult(
+                "record", "PASS", 0.0, 0.0, 1.0, 0.0, 0.0, 3, datetime.now(), {"hashes": hashes}
+            )
+
+    dgp = DGPGenerator(n=30, p=2, true_effect=2, random_state=dgp_seed)
+    comparison = BaselineComparison(random_state=comparison_seed)
+    comparison.methods = {"a": Recorder(), "b": Recorder()}
+    first = comparison.compare(dgp)
+    assert first["a"].metadata == first["b"].metadata
+    assert len(set(first["a"].metadata["hashes"])) == 3
+    comparison.random_state = first["a"].metadata["comparison_data_seed"]
+    comparison.methods = dict(reversed(comparison.methods.items()))
+    replay = comparison.compare(dgp)
+    assert replay["b"].metadata == first["a"].metadata == replay["a"].metadata
+
+
+@pytest.mark.tier1
+def test_best_coverage_uses_distance_from_configured_nominal(monkeypatch):
+    from datetime import datetime
+
+    from dml_ts.validation.validation_result import ValidationResult
+
+    def result(coverage):
+        return ValidationResult(
+            "test", "PASS", 0.0, 0.0, coverage, 0.0, 0.0, 10, datetime.now(), {"alpha": 0.2}
+        )
+
+    comparison = BaselineComparison()
+    monkeypatch.setattr(
+        comparison, "compare", lambda dgp: {"always": result(1.0), "calibrated": result(0.8)}
+    )
+    summary = comparison.generate_summary_statistics(DGPGenerator(n=30, p=1, true_effect=2.0))
+    assert summary["best_coverage_method"] == "calibrated"

@@ -230,7 +230,7 @@ class TestRootCauseAnalysis:
         root_cause, recommendations = diag._analyze_root_cause(bootstrap, hyperparams, seed)
 
         # Should indicate no obvious issues
-        assert "No obvious diagnostic issues" in root_cause
+        assert "met their configured thresholds" in root_cause
         assert len(recommendations) > 0
 
     @pytest.mark.tier1
@@ -327,3 +327,92 @@ class TestHyperparameterSensitivityAnalysis:
 
         with pytest.raises(ValueError, match="Unknown parameter"):
             diag.analyze_hyperparameter_sensitivity("invalid_param")
+
+
+@pytest.mark.tier1
+def test_partition_sensitivity_keeps_learners_fixed(monkeypatch):
+    import sys
+    from types import ModuleType
+
+    fake = ModuleType("econml.dml")
+    calls = []
+
+    class FakeDML:
+        def __init__(self, **options):
+            calls.append(options)
+
+        def fit(self, **data):
+            return self
+
+        def effect(self, X):
+            return np.ones(len(X))
+
+    fake.LinearDML = FakeDML
+    monkeypatch.setitem(sys.modules, "econml.dml", fake)
+    diag = LassoDiagnostic(random_state=712, verbose=False)
+    treatment = np.repeat([0, 1], 50)
+    features = np.arange(100).reshape(-1, 1)
+    monkeypatch.setattr(diag, "preprocess_data", lambda: (features.ravel(), treatment, features))
+    result = diag.analyze_seed_sensitivity(3)
+    assert result.metadata["learner_seed"] == 712
+    assert len(calls) == 3
+    partitions = []
+    for opts in calls:
+        assert (
+            opts["model_y"].random_state
+            == opts["model_t"].random_state
+            == opts["random_state"]
+            == 712
+        )
+        test_sets = [test for train, test in opts["cv"]]
+        assert len(test_sets) == 5
+        assert sorted(np.concatenate(test_sets)) == list(range(100))
+        assert all(treatment[test].sum() == 10 for test in test_sets)
+        partitions.append(tuple(test_sets[0]))
+    assert len(set(partitions)) == 3
+
+
+@pytest.mark.tier1
+def test_pairs_bootstrap_keeps_original_households_in_their_fixed_fold(monkeypatch):
+    import sys
+    from types import ModuleType, SimpleNamespace
+
+    fake = ModuleType("econml.dml")
+    calls = []
+
+    class FoldRecorder:
+        def __init__(self, *, cv, **kwargs):
+            self.cv = cv
+
+        def fit(self, Y, T, X):
+            calls.append((X[:, 0], self.cv))
+            return self
+
+        def effect(self, X):
+            return X[:, 0]
+
+    fake.LinearDML = FoldRecorder
+    monkeypatch.setitem(sys.modules, "econml.dml", fake)
+    diag = LassoDiagnostic(random_state=94)
+    ids = np.arange(100)
+    monkeypatch.setattr(diag, "preprocess_data", lambda: (ids, ids % 2, ids[:, None]))
+    result = diag.analyze_bootstrap_distribution(n_bootstrap=4)
+    assert result.metadata["resampling_unit"] == "original household row"
+    assert len(calls) == 4
+    rng = np.random.RandomState(94)
+    inherited_fold = {}
+    for draw_ids, folds in calls:
+        np.testing.assert_array_equal(draw_ids, rng.choice(len(ids), size=len(ids), replace=True))
+        assert len(set(draw_ids)) < len(draw_ids)
+        assert len(folds) == 5
+        assert sorted(np.concatenate([test for _, test in folds])) == list(range(len(ids)))
+        for k, (train, test) in enumerate(folds):
+            assert set(draw_ids[train]).isdisjoint(draw_ids[test])
+            assert set(draw_ids[train] % 2) == {0, 1}
+            for household in draw_ids[test]:
+                assert inherited_fold.setdefault(household, k) == k
+    monkeypatch.setattr(
+        diag, "_rng", SimpleNamespace(choice=lambda *args, **kwargs: np.zeros(len(ids), dtype=int))
+    )
+    with pytest.raises(ValueError, match="at least two represented original-unit folds"):
+        diag.analyze_bootstrap_distribution(n_bootstrap=1)

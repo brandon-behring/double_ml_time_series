@@ -31,6 +31,7 @@ Usage:
     True
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -38,6 +39,8 @@ import numpy as np
 from scipy import stats
 
 from dml_ts.validation.dgp_generator import DGPResult
+
+from ._bootstrap_folds import original_fold_ids, resampled_folds
 
 
 @dataclass
@@ -89,6 +92,10 @@ class DistributionDiagnostic:
 class BootstrapDiagnostics:
     """Bootstrap quality diagnostics for DML validation.
 
+    LinearDML case refits use fixed original-unit folds. Repeated copies of a
+    source row share its fold; the underlying forest nuisance fits use fixed
+    hyperparameters. Each original row is assumed to represent one sampling unit.
+
     Provides comprehensive diagnostics for bootstrap procedures including:
     - Convergence analysis (optimal n_bootstrap)
     - Distribution diagnostics (normality, skewness, kurtosis)
@@ -138,14 +145,16 @@ class BootstrapDiagnostics:
         self.estimator_type = estimator_type
         self.random_state = random_state
         self._rng = np.random.RandomState(random_state)
+        self._original_fold_ids: np.ndarray | None = None
 
     def diagnose_convergence(
         self,
-        target: Literal["bias", "variance", "coverage"],
+        target: Literal["bias", "variance", "coverage", "conditional_inclusion"],
         n_bootstrap_range: list[int],
         true_value: float | None = None,
         n_replications: int = 10,
         tolerance: float = 0.05,
+        data_generator: Callable[[], DGPResult] | None = None,
     ) -> ConvergenceDiagnostic:
         """Diagnose bootstrap convergence across different sample sizes.
 
@@ -153,11 +162,15 @@ class BootstrapDiagnostics:
         Uses multiple replications to assess Monte Carlo variability.
 
         Args:
-            target: What to diagnose ("bias", "variance", "coverage")
+            target: Statistic to diagnose. "coverage" uses independent generated datasets.
+                "conditional_inclusion" repeats the bootstrap on the supplied fixed data.
             n_bootstrap_range: List of n_bootstrap values to test
-            true_value: True parameter value (required for bias/coverage)
+            true_value: Parameter value for bias, coverage or conditional inclusion
             n_replications: Number of replications per n_bootstrap
             tolerance: Relative change threshold for convergence (default 5%)
+            data_generator: Callable producing a fresh independent dataset per replication,
+                e.g. a persistent seeded DGP's generate method. Required for coverage.
+                The same replication is used for every bootstrap sample size.
 
         Returns:
             ConvergenceDiagnostic with convergence assessment and recommendations
@@ -170,37 +183,39 @@ class BootstrapDiagnostics:
             ... )
             ConvergenceDiagnostic(converged=True, recommended_n=1000, ...)
         """
-        if target in ["bias", "coverage"] and true_value is None:
+        if target not in ("bias", "variance", "coverage", "conditional_inclusion"):
+            raise ValueError(f"Unknown convergence target: {target}")
+        if target != "variance" and true_value is None:
             raise ValueError(f"true_value required for {target} diagnostics")
+        if target == "coverage" and data_generator is None:
+            raise ValueError(
+                "coverage requires a data_generator for independent datasets; "
+                "use conditional_inclusion for one fixed dataset"
+            )
+        if n_replications < 2 or not n_bootstrap_range or min(n_bootstrap_range) < 2:
+            raise ValueError("Use at least two replications and bootstrap sizes of at least two")
 
-        estimates_by_n = []
-        std_errors_by_n = []
+        measurements = np.empty((n_replications, len(n_bootstrap_range)))
+        for replication in range(n_replications):
+            trial = self
+            if target == "coverage" and data_generator is not None:
+                trial = BootstrapDiagnostics(
+                    data_generator(), self.estimator_type, int(self._rng.randint(2**31))
+                )
+            for column, n_boot in enumerate(n_bootstrap_range):
+                estimates = trial._bootstrap_estimates(n_boot)
+                if target == "variance":
+                    value = np.var(estimates, ddof=1)
+                elif target == "bias":
+                    value = np.mean(estimates) - true_value
+                else:
+                    lower, upper = np.quantile(estimates, [0.025, 0.975])
+                    value = float(lower <= true_value <= upper)
+                measurements[replication, column] = value
 
-        for n_boot in n_bootstrap_range:
-            # Run multiple replications to assess stability
-            replication_estimates = []
-
-            for _ in range(n_replications):
-                if target == "bias":
-                    # Bootstrap estimate of bias
-                    boot_estimates = self._bootstrap_estimates(n_boot)
-                    bias_estimate = np.mean(boot_estimates) - true_value
-                    replication_estimates.append(bias_estimate)
-
-                elif target == "variance":
-                    # Bootstrap estimate of variance
-                    boot_estimates = self._bootstrap_estimates(n_boot)
-                    var_estimate = np.var(boot_estimates, ddof=1)
-                    replication_estimates.append(var_estimate)
-
-                elif target == "coverage":
-                    # Bootstrap coverage rate
-                    boot_cis = self._bootstrap_confidence_intervals(n_boot)
-                    coverage = np.mean([ci[0] <= true_value <= ci[1] for ci in boot_cis])
-                    replication_estimates.append(coverage)
-
-            estimates_by_n.append(np.mean(replication_estimates))
-            std_errors_by_n.append(np.std(replication_estimates, ddof=1))
+        estimates_by_n = measurements.mean(axis=0).tolist()
+        replication_sd = measurements.std(axis=0, ddof=1)
+        std_errors_by_n = (replication_sd / np.sqrt(n_replications)).tolist()
 
         # Assess convergence: relative change between consecutive n_bootstrap values
         converged = False
@@ -246,6 +261,8 @@ class BootstrapDiagnostics:
                 "n_replications": n_replications,
                 "true_value": true_value,
                 "monte_carlo_error": std_errors_by_n,
+                "replication_sd": replication_sd.tolist(),
+                "independent_datasets": n_replications if target == "coverage" else 1,
             },
         )
 
@@ -283,6 +300,17 @@ class BootstrapDiagnostics:
 
         # Generate bootstrap distribution
         boot_estimates = self._bootstrap_estimates(n_bootstrap)
+
+        # A non-finite or point-mass (all-identical) bootstrap distribution cannot be
+        # diagnosed: Shapiro-Wilk returns p=1.0 (is_normal=True) and skew/kurtosis become
+        # NaN, fabricating a normality verdict from degenerate data. Fail loud instead.
+        if not np.all(np.isfinite(boot_estimates)) or np.ptp(boot_estimates) == 0:
+            raise ValueError(
+                "Degenerate bootstrap distribution: estimates are non-finite or a single "
+                f"point mass (range={float(np.ptp(boot_estimates)):.3g}); normality and "
+                "skewness diagnostics would be fabricated. Check for a constant/degenerate "
+                "sample."
+            )
 
         # Normality test (Shapiro-Wilk)
         stat, normality_pvalue = stats.shapiro(boot_estimates)
@@ -404,7 +432,8 @@ class BootstrapDiagnostics:
 
             # Estimate on bootstrap sample
             if self.estimator_type == "LinearDML":
-                estimate = self._estimate_dml(Y_boot, T_boot, X_boot)
+                folds = self._dml_folds(indices)
+                estimate = self._estimate_dml(Y_boot, T_boot, X_boot, cv=folds)
             elif self.estimator_type == "OLS":
                 estimate = self._estimate_ols(Y_boot, T_boot, X_boot)
             elif self.estimator_type in ["IPW", "AIPW"]:
@@ -416,30 +445,30 @@ class BootstrapDiagnostics:
 
         return boot_estimates
 
-    def _bootstrap_confidence_intervals(self, n_bootstrap: int) -> list[tuple[float, float]]:
-        """Generate bootstrap confidence intervals (percentile method).
-
-        Args:
-            n_bootstrap: Number of bootstrap samples
-
-        Returns:
-            List of (lower, upper) CI bounds
-        """
-        boot_estimates = self._bootstrap_estimates(n_bootstrap)
-        ci_lower = float(np.percentile(boot_estimates, 2.5))
-        ci_upper = float(np.percentile(boot_estimates, 97.5))
-        return [(ci_lower, ci_upper)]
+    def _dml_folds(self, indices: np.ndarray) -> list[tuple[np.ndarray, np.ndarray]]:
+        if self._original_fold_ids is None:
+            self._original_fold_ids = original_fold_ids(
+                self.data.T, self.random_state, stratified=False
+            )
+        return resampled_folds(self._original_fold_ids, indices)
 
     def _estimate_point(self) -> float:
         """Estimate point estimate on full data."""
         if self.estimator_type == "LinearDML":
-            return self._estimate_dml(self.data.Y, self.data.T, self.data.X)
+            folds = self._dml_folds(np.arange(len(self.data.Y)))
+            return self._estimate_dml(self.data.Y, self.data.T, self.data.X, cv=folds)
         elif self.estimator_type == "OLS":
             return self._estimate_ols(self.data.Y, self.data.T, self.data.X)
         else:
             raise NotImplementedError(f"{self.estimator_type} not yet implemented")
 
-    def _estimate_dml(self, Y: np.ndarray, T: np.ndarray, X: np.ndarray) -> float:
+    def _estimate_dml(
+        self,
+        Y: np.ndarray,
+        T: np.ndarray,
+        X: np.ndarray,
+        cv: int | list[tuple[np.ndarray, np.ndarray]] = 5,
+    ) -> float:
         """Estimate treatment effect using LinearDML."""
         from econml.dml import LinearDML
         from sklearn.ensemble import RandomForestRegressor
@@ -455,7 +484,7 @@ class BootstrapDiagnostics:
             model_y=model_y,
             model_t=model_t,
             discrete_treatment=False,
-            cv=5,
+            cv=cv,
             random_state=self.random_state,
         )
 

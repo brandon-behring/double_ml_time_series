@@ -7,12 +7,13 @@ Two variants:
 """
 
 from datetime import datetime
-from typing import Literal
 
 import numpy as np
 from scipy import stats
 from sklearn.linear_model import LinearRegression
 
+from dml_ts.validation._simulation_inference import percentile_interval
+from dml_ts.validation.bias_validation import assess_simulation_draws
 from dml_ts.validation.bootstrap_config import DEFAULT_BOOTSTRAP_CONFIG, BootstrapConfig
 from dml_ts.validation.dgp_generator import DGPGenerator
 from dml_ts.validation.validation_result import ValidationResult
@@ -76,6 +77,7 @@ class NaiveOLS:
         estimates = []
         ci_bounds = []
 
+        z_critical = stats.norm.isf(self.alpha / 2)
         for _ in range(self.n_simulations):
             data = dgp.generate()
 
@@ -98,8 +100,8 @@ class NaiveOLS:
             se = np.sqrt(mse_residuals / T_var) if T_var > 0 else np.inf
 
             # Confidence interval
-            ci_lower = ate - 1.96 * se
-            ci_upper = ate + 1.96 * se
+            ci_lower = ate - z_critical * se
+            ci_upper = ate + z_critical * se
 
             estimates.append(ate)
             ci_bounds.append((ci_lower, ci_upper))
@@ -110,18 +112,25 @@ class NaiveOLS:
         mse = self._calculate_mse(estimates_arr, dgp.true_effect)
         coverage = self._calculate_coverage(ci_bounds, dgp.true_effect)
 
-        # Statistical hypothesis test for bias
+        verdicts, bias_p_value, coverage_p_value = assess_simulation_draws(
+            estimates_arr - dgp.true_effect,
+            np.asarray(ci_bounds, dtype=float),
+            dgp.true_effect,
+            nominal=1 - self.alpha,
+        )
         bias_samples = self._calculate_bias_samples(estimates_arr, dgp.true_effect)
-        status, bias_p_value = self._determine_status(bias_samples)
+        bias_lower, bias_upper = percentile_interval(bias_samples, self.alpha)
 
         return ValidationResult(
             method="NaiveOLS",
-            status=status,
+            status=verdicts.overall,
+            bias_status=verdicts.bias,
+            coverage_status=verdicts.coverage,
             bias=bias,
             mse=mse,
             coverage=coverage,
-            ci_lower=float(np.percentile(bias_samples, 2.5)),
-            ci_upper=float(np.percentile(bias_samples, 97.5)),
+            ci_lower=bias_lower,
+            ci_upper=bias_upper,
             n_simulations=self.n_simulations,
             timestamp=datetime.now(),
             metadata={
@@ -130,15 +139,17 @@ class NaiveOLS:
                 "dgp_true_effect": dgp.true_effect,
                 "dgp_confounding": dgp.confounding_strength,
                 "alpha": self.alpha,
+                "bias_ci_level": 1 - self.alpha,
                 "estimator": "NaiveOLS",
                 "controls_used": False,
             },
             bias_p_value=bias_p_value,
+            coverage_p_value=coverage_p_value,
         )
 
     def _calculate_bias(self, estimates: np.ndarray, true_effect: float) -> float:
         """Calculate bias: E[θ̂] - θ₀"""
-        return float(np.mean(estimates) - true_effect)
+        return float(np.mean(estimates - true_effect))
 
     def _calculate_mse(self, estimates: np.ndarray, true_effect: float) -> float:
         """Calculate mean squared error: E[(θ̂ - θ₀)²]"""
@@ -150,37 +161,14 @@ class NaiveOLS:
         return float(np.mean(covers))
 
     def _calculate_bias_samples(self, estimates: np.ndarray, true_effect: float) -> np.ndarray:
-        """Bootstrap samples of bias for hypothesis testing"""
+        """Resample independent estimates for the percentile interval on mean bias."""
         n_bootstrap = self.bootstrap_config.n_bootstrap_bias
+        simulation_errors = estimates - true_effect
         bias_samples = np.zeros(n_bootstrap)
         for i in range(n_bootstrap):
-            sample = self._rng.choice(estimates, size=len(estimates), replace=True)
-            bias_samples[i] = np.mean(sample) - true_effect
+            sample = self._rng.choice(simulation_errors, size=len(simulation_errors), replace=True)
+            bias_samples[i] = np.mean(sample)
         return bias_samples
-
-    def _determine_status(
-        self, bias_samples: np.ndarray, alpha_test: float = 0.05
-    ) -> tuple[Literal["PASS", "FAIL", "WARNING"], float]:
-        """Determine validation status using t-test for bias"""
-        mean_bias = np.mean(bias_samples)
-        se_bias = np.std(bias_samples) / np.sqrt(len(bias_samples))
-
-        if se_bias > 0:
-            t_stat = mean_bias / se_bias
-            df = len(bias_samples) - 1
-            bias_p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df=df))
-        else:
-            bias_p_value = 0.0 if mean_bias != 0 else 1.0
-
-        status: Literal["PASS", "FAIL", "WARNING"]
-        if bias_p_value < 0.01:
-            status = "FAIL"
-        elif bias_p_value < alpha_test:
-            status = "WARNING"
-        else:
-            status = "PASS"
-
-        return status, bias_p_value
 
 
 class OLSWithControls:
@@ -189,6 +177,12 @@ class OLSWithControls:
 
     Standard econometrics approach that controls for observed confounders.
     Should have less bias than NaiveOLS but more than DML (less efficient).
+
+    Known defect (#61): the standard error is computed from a design matrix
+    without the fitted intercept, so the intervals are too short. ``validate``
+    reports this as a coverage verdict of FAIL even where the model is correct:
+    in Chapter 3's Experiment 3.1 its 95% intervals cover in 69 of 100 datasets,
+    and a reference interval that includes the intercept covers in 91.
 
     Args:
         n_simulations: Number of Monte Carlo simulations
@@ -242,6 +236,7 @@ class OLSWithControls:
         estimates = []
         ci_bounds = []
 
+        z_critical = stats.norm.isf(self.alpha / 2)
         for _ in range(self.n_simulations):
             data = dgp.generate()
 
@@ -268,8 +263,8 @@ class OLSWithControls:
                 se = np.inf
 
             # Confidence interval
-            ci_lower = ate - 1.96 * se
-            ci_upper = ate + 1.96 * se
+            ci_lower = ate - z_critical * se
+            ci_upper = ate + z_critical * se
 
             estimates.append(ate)
             ci_bounds.append((ci_lower, ci_upper))
@@ -280,18 +275,25 @@ class OLSWithControls:
         mse = self._calculate_mse(estimates_arr, dgp.true_effect)
         coverage = self._calculate_coverage(ci_bounds, dgp.true_effect)
 
-        # Statistical hypothesis test for bias
+        verdicts, bias_p_value, coverage_p_value = assess_simulation_draws(
+            estimates_arr - dgp.true_effect,
+            np.asarray(ci_bounds, dtype=float),
+            dgp.true_effect,
+            nominal=1 - self.alpha,
+        )
         bias_samples = self._calculate_bias_samples(estimates_arr, dgp.true_effect)
-        status, bias_p_value = self._determine_status(bias_samples)
+        bias_lower, bias_upper = percentile_interval(bias_samples, self.alpha)
 
         return ValidationResult(
             method="OLSWithControls",
-            status=status,
+            status=verdicts.overall,
+            bias_status=verdicts.bias,
+            coverage_status=verdicts.coverage,
             bias=bias,
             mse=mse,
             coverage=coverage,
-            ci_lower=float(np.percentile(bias_samples, 2.5)),
-            ci_upper=float(np.percentile(bias_samples, 97.5)),
+            ci_lower=bias_lower,
+            ci_upper=bias_upper,
             n_simulations=self.n_simulations,
             timestamp=datetime.now(),
             metadata={
@@ -300,15 +302,17 @@ class OLSWithControls:
                 "dgp_true_effect": dgp.true_effect,
                 "dgp_confounding": dgp.confounding_strength,
                 "alpha": self.alpha,
+                "bias_ci_level": 1 - self.alpha,
                 "estimator": "OLSWithControls",
                 "controls_used": True,
             },
             bias_p_value=bias_p_value,
+            coverage_p_value=coverage_p_value,
         )
 
     def _calculate_bias(self, estimates: np.ndarray, true_effect: float) -> float:
         """Calculate bias: E[θ̂] - θ₀"""
-        return float(np.mean(estimates) - true_effect)
+        return float(np.mean(estimates - true_effect))
 
     def _calculate_mse(self, estimates: np.ndarray, true_effect: float) -> float:
         """Calculate mean squared error: E[(θ̂ - θ₀)²]"""
@@ -320,34 +324,11 @@ class OLSWithControls:
         return float(np.mean(covers))
 
     def _calculate_bias_samples(self, estimates: np.ndarray, true_effect: float) -> np.ndarray:
-        """Bootstrap samples of bias for hypothesis testing"""
+        """Resample independent estimates for the percentile interval on mean bias."""
         n_bootstrap = self.bootstrap_config.n_bootstrap_bias
+        simulation_errors = estimates - true_effect
         bias_samples = np.zeros(n_bootstrap)
         for i in range(n_bootstrap):
-            sample = self._rng.choice(estimates, size=len(estimates), replace=True)
-            bias_samples[i] = np.mean(sample) - true_effect
+            sample = self._rng.choice(simulation_errors, size=len(simulation_errors), replace=True)
+            bias_samples[i] = np.mean(sample)
         return bias_samples
-
-    def _determine_status(
-        self, bias_samples: np.ndarray, alpha_test: float = 0.05
-    ) -> tuple[Literal["PASS", "FAIL", "WARNING"], float]:
-        """Determine validation status using t-test for bias"""
-        mean_bias = np.mean(bias_samples)
-        se_bias = np.std(bias_samples) / np.sqrt(len(bias_samples))
-
-        if se_bias > 0:
-            t_stat = mean_bias / se_bias
-            df = len(bias_samples) - 1
-            bias_p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df=df))
-        else:
-            bias_p_value = 0.0 if mean_bias != 0 else 1.0
-
-        status: Literal["PASS", "FAIL", "WARNING"]
-        if bias_p_value < 0.01:
-            status = "FAIL"
-        elif bias_p_value < alpha_test:
-            status = "WARNING"
-        else:
-            status = "PASS"
-
-        return status, bias_p_value

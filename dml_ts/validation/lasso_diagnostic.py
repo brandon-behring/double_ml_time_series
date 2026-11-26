@@ -1,32 +1,11 @@
-"""
-Diagnostic module for investigating 401(k) Lasso mismatch.
+"""Stability diagnostics for the companion 401(k) eligibility fit.
 
-Analyzes the -44.4% difference between published and replicated Lasso ATE estimates
-in Chernozhukov et al. (2018) 401(k) study.
-
-Problem:
-    - Published ATE: $9,580
-    - Our ATE: $5,330 (-44.4% difference)
-    - SE: $6,930 (130% of point estimate - extremely wide!)
-    - CI: $-8,253 to $18,913 (spans $27,167)
-
-Diagnostic Goals:
-    1. Bootstrap distribution analysis (convergence, outliers, normality)
-    2. Hyperparameter sensitivity (cv_folds, max_iter)
-    3. Cross-fitting seed analysis (random_state variability)
-    4. Implementation configuration comparison with published paper
-
-Usage:
-    Requires the real 401(k) dataset (downloaded via ``doubleml.fetch_401K``)
-    and many econml DML fits, so the example is skipped under doctest.
-
-    >>> from dml_ts.validation.lasso_diagnostic import LassoDiagnostic  # doctest: +SKIP
-    >>> diagnostic = LassoDiagnostic(random_state=42)  # doctest: +SKIP
-    >>> results = diagnostic.run_comprehensive_diagnostic()  # doctest: +SKIP
-    >>> bool(results.bootstrap_diagnostic.converged)  # doctest: +SKIP
-    True
-    >>> float(round(results.seed_sensitivity.cv_ate, 2))  # doctest: +SKIP
-    0.35
+The companion lasso uses a single fivefold partition, cross-validated nuisance
+penalties and linearly heterogeneous effects. Its default inputs include the
+wealth measures nifa and tw. Chernozhukov et al. (2018), Table 2, Panel B,
+report $8,187 for the fivefold homogeneous partially linear coefficient with
+rigorous lasso, aggregated across 100 partitions. The diagnostics here measure
+sensitivity to resampling, tuning and seeds within the companion specification.
 """
 
 from dataclasses import dataclass
@@ -36,6 +15,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from scipy import stats
+
+from ._bootstrap_folds import original_fold_ids, resampled_folds
 
 
 @dataclass
@@ -82,7 +63,7 @@ class HyperparameterSensitivityResult:
         std_errors: Array of standard errors for each parameter value
         sensitivity_score: Coefficient of variation (std/mean) of ATE estimates
         is_sensitive: Whether ATE is sensitive to this parameter (CV > 0.1)
-        recommended_value: Recommended parameter value based on stability
+        recommended_value: Candidate with the smallest reported ATE standard error
         metadata: Additional analysis info
     """
 
@@ -127,13 +108,13 @@ class SeedSensitivityResult:
 
 @dataclass
 class ComprehensiveDiagnosticResult:
-    """Comprehensive diagnostic results for 401(k) Lasso mismatch.
+    """Results of the 401(k) lasso stability checks.
 
     Attributes:
         bootstrap_diagnostic: Bootstrap distribution analysis
         hyperparameter_sensitivity: Dict of sensitivity analyses (cv_folds, max_iter)
         seed_sensitivity: Cross-fitting seed analysis
-        root_cause_analysis: Identified root cause(s) of mismatch
+        root_cause_analysis: Summary of the observed diagnostic signals
         recommendations: List of recommendations for fixing or documenting issue
         timestamp: When diagnostic was performed
     """
@@ -147,10 +128,7 @@ class ComprehensiveDiagnosticResult:
 
 
 class LassoDiagnostic:
-    """Diagnostic tool for investigating 401(k) Lasso mismatch.
-
-    Performs comprehensive diagnostic analysis to explain the -44.4% difference
-    between published and replicated Lasso ATE estimates.
+    """Diagnose sensitivity of the companion lasso eligibility estimate.
 
     Args:
         data_path: Path to 401(k) dataset (optional, loads from doubleml if None)
@@ -184,9 +162,9 @@ class LassoDiagnostic:
         self.verbose = verbose
         self._rng = np.random.RandomState(random_state)
         self._data: pd.DataFrame | None = None
-        self._Y = None
-        self._T = None
-        self._X = None
+        self._Y: np.ndarray | None = None
+        self._T: np.ndarray | None = None
+        self._X: np.ndarray | None = None
 
     def _log(self, message: str) -> None:
         """Print message if verbose mode enabled."""
@@ -226,27 +204,25 @@ class LassoDiagnostic:
         df = self.load_data()
 
         # Outcome
-        self._Y = df["net_tfa"].values
+        self._Y = np.asarray(df["net_tfa"])
 
         # Treatment (e401 eligibility)
-        self._T = df["e401"].values
+        self._T = np.asarray(df["e401"])
 
-        # Controls (exclude outcome and treatments)
-        # FIXED (Issue C5): Include all 11 published covariates (removed 'nifa', 'tw' from exclusion)
-        # Published design: age, inc, fsize, educ, male, db, marr, twoearn, pira, hown
+        # The companion adds nifa and tw to the published nine controls.
         control_vars = [col for col in df.columns if col not in ["net_tfa", "e401", "p401"]]
-        self._X = df[control_vars].values
+        self._X = np.asarray(df[control_vars])
 
         return self._Y, self._T, self._X
 
     def analyze_bootstrap_distribution(self, n_bootstrap: int = 1000) -> BootstrapDiagnosticResult:
         """Analyze bootstrap distribution of Lasso ATE estimates.
 
-        Performs bootstrap resampling to check:
-        - Distribution convergence
-        - Normality (Shapiro-Wilk test)
-        - Outlier detection (>3 SD from mean)
-        - CI stability
+        This pairs bootstrap holds a fivefold, treatment-stratified partition of
+        the original household records fixed. Every resampled copy inherits its
+        household's fold. The output describes variability of the refitted
+        effect, conditional on that partition. In EconML 0.16 the two penalties
+        are selected using these folds across the whole bootstrap sample.
 
         Args:
             n_bootstrap: Number of bootstrap samples
@@ -267,12 +243,14 @@ class LassoDiagnostic:
             23
         """
         from econml.dml import LinearDML
-        from sklearn.linear_model import LassoCV
+        from sklearn.linear_model import LassoCV, LogisticRegressionCV
 
         self._log(f"Running bootstrap distribution analysis (B={n_bootstrap})...")
 
         Y, T, X = self.preprocess_data()
         n = len(Y)
+        original_fold = original_fold_ids(T, self.random_state, stratified=True)
+        n_arms = np.unique(T).size
 
         ate_estimates = np.zeros(n_bootstrap)
 
@@ -286,21 +264,22 @@ class LassoDiagnostic:
             T_boot = T[boot_idx]
             X_boot = X[boot_idx, :]
 
-            # Fit Lasso DML
-            model_y = LassoCV(cv=5, random_state=self.random_state)
-            # FIXED (Issue C2): Use logistic regression for binary treatment
-            from sklearn.linear_model import LogisticRegressionCV
+            folds = resampled_folds(original_fold, boot_idx)
+            if any(np.unique(T_boot[train]).size != n_arms for train, _ in folds):
+                raise ValueError(
+                    f"Bootstrap draw {b + 1} lacks a treatment arm in a household training fold"
+                )
 
+            model_y = LassoCV(random_state=self.random_state)
             model_t = LogisticRegressionCV(
-                cv=5, penalty="l1", solver="saga", random_state=self.random_state, max_iter=1000
+                penalty="l1", solver="saga", random_state=self.random_state, max_iter=1000
             )
 
-            # FIXED (Issue C2): discrete_treatment=True for binary treatment
             dml = LinearDML(
                 model_y=model_y,
                 model_t=model_t,
                 discrete_treatment=True,
-                cv=5,
+                cv=folds,
                 random_state=self.random_state,
             )
 
@@ -331,9 +310,9 @@ class LassoDiagnostic:
         self._log(f"  Mean ATE: ${mean_ate:,.2f}")
         self._log(f"  Std ATE: ${std_ate:,.2f}")
         self._log(f"  95% CI: (${ci_lower:,.2f}, ${ci_upper:,.2f})")
-        self._log(f"  Normality: {is_normal} (p={normality_pvalue:.4f})")
+        self._log(f"  Shapiro-Wilk p: {normality_pvalue:.4f}")
         self._log(f"  Outliers: {n_outliers}/{n_bootstrap} ({100 * n_outliers / n_bootstrap:.1f}%)")
-        self._log(f"  Converged: {converged} (CV={100 * cv_running:.2f}%)")
+        self._log(f"  Last 100 cumulative means: CV={100 * cv_running:.2f}%")
 
         return BootstrapDiagnosticResult(
             ate_estimates=ate_estimates,
@@ -351,6 +330,8 @@ class LassoDiagnostic:
                 "cv_running_mean": float(cv_running),
                 "outlier_threshold": 3.0,
                 "normality_test": "Shapiro-Wilk",
+                "resampling_unit": "original household row",
+                "folds": "five fixed stratified original-household folds",
             },
         )
 
@@ -450,9 +431,9 @@ class LassoDiagnostic:
             dml.fit(Y=Y, T=T, X=X)
 
             # Extract ATE and SE
-            ate = float(dml.effect(X=X).mean())
-            ci_lower, ci_upper = dml.effect_interval(X=X, alpha=0.05)
-            se = float((ci_upper.mean() - ci_lower.mean()) / (2 * 1.96))
+            inference = dml.ate_inference(X=X)
+            ate = float(np.squeeze(inference.mean_point))
+            se = float(np.squeeze(inference.stderr_mean))
 
             ate_estimates[i] = ate
             std_errors[i] = se
@@ -465,12 +446,12 @@ class LassoDiagnostic:
         sensitivity_score = float(std_ate / np.abs(mean_ate)) if mean_ate != 0 else np.inf
         is_sensitive = sensitivity_score > 0.1
 
-        # Recommend value with minimum variance
+        # Descriptive minimum of the fitted standard errors across tested settings.
         recommended_idx = np.argmin(std_errors)
         recommended_value = values[recommended_idx]
 
         self._log(f"  Sensitivity: {sensitivity_score:.3f} ({'HIGH' if is_sensitive else 'LOW'})")
-        self._log(f"  Recommended {parameter}: {recommended_value}")
+        self._log(f"  {parameter} with smallest fitted SE: {recommended_value}")
 
         return HyperparameterSensitivityResult(
             parameter_name=parameter,
@@ -510,7 +491,8 @@ class LassoDiagnostic:
             0.35
         """
         from econml.dml import LinearDML
-        from sklearn.linear_model import LassoCV
+        from sklearn.linear_model import LassoCV, LogisticRegressionCV
+        from sklearn.model_selection import StratifiedKFold
 
         self._log(f"Analyzing seed sensitivity ({n_seeds} seeds)...")
 
@@ -523,21 +505,19 @@ class LassoDiagnostic:
         for i, seed in enumerate(random_states):
             self._log(f"  Testing random_state={seed}")
 
-            model_y = LassoCV(cv=5, random_state=seed)
-            # FIXED (Issue C2): Use logistic regression for binary treatment
-            from sklearn.linear_model import LogisticRegressionCV
+            model_y = LassoCV(cv=5, random_state=self.random_state)
 
             model_t = LogisticRegressionCV(
-                cv=5, penalty="l1", solver="saga", random_state=seed, max_iter=1000
+                cv=5, penalty="l1", solver="saga", random_state=self.random_state, max_iter=1000
             )
 
-            # FIXED (Issue C2): discrete_treatment=True for binary treatment
+            splitter = StratifiedKFold(n_splits=5, shuffle=True, random_state=int(seed))
             dml = LinearDML(
                 model_y=model_y,
                 model_t=model_t,
                 discrete_treatment=True,
-                cv=5,
-                random_state=seed,
+                cv=list(splitter.split(X, T)),
+                random_state=self.random_state,
             )
 
             dml.fit(Y=Y, T=T, X=X)
@@ -570,6 +550,8 @@ class LassoDiagnostic:
             is_stable=is_stable,
             metadata={
                 "n_seeds": n_seeds,
+                "learner_seed": self.random_state,
+                "fold_design": "5 shuffled treatment-stratified folds",
                 "stability_threshold": 0.1,
             },
         )
@@ -577,13 +559,13 @@ class LassoDiagnostic:
     def run_comprehensive_diagnostic(
         self, n_bootstrap: int = 1000, n_seeds: int = 20
     ) -> ComprehensiveDiagnosticResult:
-        """Run complete diagnostic analysis for 401(k) Lasso mismatch.
+        """Run the bootstrap, tuning and split-sensitivity diagnostics.
 
         Performs:
         1. Bootstrap distribution analysis
         2. Hyperparameter sensitivity (cv_folds, max_iter)
         3. Cross-fitting seed analysis
-        4. Root cause identification
+        4. Summary of observed diagnostic signals
         5. Recommendations
 
         Args:
@@ -629,12 +611,12 @@ class LassoDiagnostic:
         self._log("")
 
         # 4. Root cause analysis
-        self._log("PHASE 4: Root Cause Analysis")
+        self._log("PHASE 4: Diagnostic Findings")
         self._log("-" * 80)
         root_cause, recommendations = self._analyze_root_cause(
             bootstrap_result, hyperparameter_results, seed_result
         )
-        self._log(f"Root Cause: {root_cause}")
+        self._log(f"Diagnostic findings: {root_cause}")
         self._log("")
         self._log("Recommendations:")
         for rec in recommendations:
@@ -656,7 +638,7 @@ class LassoDiagnostic:
         hyperparameters: dict[str, HyperparameterSensitivityResult],
         seed: SeedSensitivityResult,
     ) -> tuple[str, list[str]]:
-        """Identify root cause of mismatch from diagnostic results.
+        """Summarize the observed diagnostic signals and corresponding checks.
 
         Args:
             bootstrap: Bootstrap distribution analysis
@@ -671,13 +653,15 @@ class LassoDiagnostic:
 
         # Check bootstrap convergence
         if not bootstrap.converged:
-            causes.append("Bootstrap distribution not converged")
+            causes.append("CV of the last 100 cumulative bootstrap means reaches 1%")
             recommendations.append(f"Increase bootstrap samples (current: {bootstrap.n_bootstrap})")
 
         # Check normality
         if not bootstrap.is_normal:
-            causes.append("Bootstrap distribution non-normal (heavy tails or skewness)")
-            recommendations.append("Consider robust standard errors or percentile bootstrap CIs")
+            causes.append("Shapiro-Wilk rejects normality of the bootstrap estimates at 5%")
+            recommendations.append(
+                "Inspect the shape of the reported percentile bootstrap distribution"
+            )
 
         # Check outliers
         if bootstrap.has_outliers:
@@ -685,7 +669,9 @@ class LassoDiagnostic:
                 f"Bootstrap distribution has {bootstrap.n_outliers} outliers "
                 f"({100 * bootstrap.n_outliers / bootstrap.n_bootstrap:.1f}%)"
             )
-            recommendations.append("Investigate and potentially remove outlier samples")
+            recommendations.append(
+                "Inspect input rows and convergence for the extreme resampled fits"
+            )
 
         # Check hyperparameter sensitivity
         sensitive_params = [name for name, result in hyperparameters.items() if result.is_sensitive]
@@ -693,7 +679,9 @@ class LassoDiagnostic:
             causes.append(f"High sensitivity to hyperparameters: {', '.join(sensitive_params)}")
             for param in sensitive_params:
                 rec_value = hyperparameters[param].recommended_value
-                recommendations.append(f"Use {param}={rec_value} for stability")
+                recommendations.append(
+                    f"Report all tested {param} values; {rec_value} gave the smallest fitted SE"
+                )
 
         # Check seed stability
         if not seed.is_stable:
@@ -705,13 +693,7 @@ class LassoDiagnostic:
 
         # Synthesize root cause
         if len(causes) == 0:
-            root_cause = (
-                "No obvious diagnostic issues found. Mismatch likely due to "
-                "implementation differences between published paper and EconML "
-                "(e.g., Lasso solver, convergence criteria, cross-fitting procedure)."
-            )
-            recommendations.append("Document mismatch as acceptable implementation variation")
-            recommendations.append("Focus on Random Forest replication (MATCH status)")
+            root_cause = "All assessed stability diagnostics met their configured thresholds."
         elif len(causes) == 1:
             root_cause = causes[0]
         else:
@@ -721,6 +703,6 @@ class LassoDiagnostic:
         recommendations.append(
             "Compare Lasso solver and convergence settings with published implementation"
         )
-        recommendations.append("Consider flagging Lasso as limitation and relying on RF validation")
+        recommendations.append("Report the fitted effect model, covariates and split design.")
 
         return root_cause, recommendations

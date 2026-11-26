@@ -2,17 +2,19 @@
 
 Validates DML estimator bias, MSE, and confidence interval coverage
 through repeated Monte Carlo draws from a known DGP. Uses EconML's
-LinearDML with bootstrap-based hypothesis tests for statistical and
-practical significance.
+LinearDML with a one-sample t-test for mean simulation error and a
+bootstrap percentile interval for bias.
 """
 
 from datetime import datetime
-from typing import Literal
+from typing import Literal, NamedTuple
 
 import numpy as np
+from joblib import Parallel, delayed, parallel_config
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
 
+from dml_ts.validation._simulation_inference import bias_p_value, percentile_interval
 from dml_ts.validation.dgp_generator import DGPGenerator, DGPResult
 from dml_ts.validation.validation_result import ValidationResult
 
@@ -62,6 +64,134 @@ def _corrected_rejections(
     raise ValueError(f"Unknown correction_method: {method}. Use 'bonferroni', 'holm', or 'none'")
 
 
+Status = Literal["PASS", "WARNING", "FAIL"]
+
+# Simulation errors below sqrt(eps) of the true effect cannot be told from rounding.
+_ROUNDING_RATIO = float(np.sqrt(np.finfo(float).eps))
+
+
+class SimulationVerdicts(NamedTuple):
+    bias: Status
+    coverage: Status
+
+    @property
+    def overall(self) -> Status:
+        if "FAIL" in self:
+            return "FAIL"
+        return "WARNING" if "WARNING" in self else "PASS"
+
+
+def classify_bias_and_coverage(
+    bias: float,
+    p_bias: float,
+    coverage: float,
+    nominal: float,
+    p_coverage: float,
+    alpha_test: float = 0.05,
+    correction_method: Literal["bonferroni", "holm", "none"] = "bonferroni",
+    practical_epsilon: float = 0.1,
+) -> SimulationVerdicts:
+    """Classify mean bias and interval calibration at familywise significance levels."""
+    p_values = [p_bias, p_coverage]
+    bias_rejected, coverage_rejected = _corrected_rejections(
+        p_values, alpha_test, correction_method
+    )
+    strict_bias = _corrected_rejections(p_values, 0.01, correction_method)[0]
+    bias_status: Status = "PASS"
+    if abs(bias) > 0.15 or (abs(bias) >= practical_epsilon and strict_bias):
+        bias_status = "FAIL"
+    elif bias_rejected:
+        bias_status = "WARNING"
+
+    coverage_status: Status = "PASS"
+    if coverage_rejected:
+        coverage_status = "FAIL" if coverage < nominal else "WARNING"
+    return SimulationVerdicts(bias_status, coverage_status)
+
+
+def assess_simulation_draws(
+    simulation_errors: np.ndarray,
+    ci_bounds: np.ndarray,
+    true_effect: float,
+    nominal: float,
+    alpha_test: float = 0.05,
+    correction_method: Literal["bonferroni", "holm", "none"] = "bonferroni",
+    practical_epsilon: float = 0.1,
+) -> tuple[SimulationVerdicts, float, float]:
+    """Judge the bias and the interval coverage of one estimator across independent draws.
+
+    The DML validator and the six baselines share this path. The bias test is the
+    one-sample t-test of ``bias_p_value`` on one signed error per draw. The coverage test
+    is the exact binomial test of the number of intervals that contain ``true_effect``
+    against ``nominal``. Both p-values go to ``classify_bias_and_coverage``.
+
+    Args:
+        simulation_errors: Estimate minus truth, one per independent draw, ``(R,)``.
+        ci_bounds: Lower and upper interval endpoints per draw, ``(R, 2)``.
+        true_effect: The effect the intervals should contain.
+        nominal: Nominal coverage of the intervals, for example 0.95.
+        alpha_test: Familywise significance level of the two tests.
+        correction_method: Multiple-testing correction across the two tests.
+        practical_epsilon: Absolute bias from which a strict rejection is a FAIL.
+
+    Returns:
+        ``(verdicts, bias_p_value, coverage_p_value)``.
+
+    Raises:
+        ValueError: If ``true_effect`` is not finite or ``nominal`` is not in (0, 1); if
+            there is not one error and one interval per draw; if an interval holds a NaN
+            or has its endpoints out of order; if every error is at the rounding level of
+            the true effect (a simulation without noise leaves the tests nothing to judge);
+            or if the bias test is degenerate (see ``bias_p_value``).
+
+    Examples:
+        Unbiased estimates whose intervals are too short: the bias verdict passes and
+        the coverage verdict fails, so the estimator fails.
+
+        >>> import numpy as np
+        >>> errors = np.linspace(-1.0, 1.0, 200)
+        >>> narrow = np.column_stack([errors - 0.25, errors + 0.25])
+        >>> verdicts, p_bias, p_coverage = assess_simulation_draws(errors, narrow, 0.0, 0.95)
+        >>> verdicts.bias, verdicts.coverage, verdicts.overall
+        ('PASS', 'FAIL', 'FAIL')
+    """
+    if not np.isfinite(true_effect):
+        raise ValueError(f"true_effect must be finite, got {true_effect!r}")
+    if not 0 < nominal < 1:
+        raise ValueError(f"nominal coverage must be in (0, 1), got {nominal!r}")
+    errors = np.asarray(simulation_errors, dtype=float)
+    bounds = np.asarray(ci_bounds, dtype=float)
+    if errors.ndim != 1 or bounds.shape != (errors.size, 2):
+        raise ValueError(
+            "Expected one simulation error and one confidence interval per independent draw"
+        )
+    # With a noise-free generator an exact estimator leaves errors of order 1e-15. A t-test
+    # and a coverage count on rounding residue fail it, so that case is refused instead.
+    largest = float(np.max(np.abs(errors))) if errors.size else 0.0
+    if true_effect != 0 and largest <= _ROUNDING_RATIO * abs(true_effect):
+        raise ValueError(
+            "Degenerate assessment: every simulation error is at the rounding level of the "
+            f"true effect (largest |error| {largest:.3g}, true effect {true_effect:.6g}). "
+            "The simulation has no noise for the bias and coverage tests to judge."
+        )
+    p_bias = bias_p_value(errors)
+    if np.isnan(bounds).any() or np.any(bounds[:, 0] > bounds[:, 1]):
+        raise ValueError("Per-draw intervals must have ordered endpoints and contain no NaN")
+    covered = int(np.count_nonzero((bounds[:, 0] <= true_effect) & (true_effect <= bounds[:, 1])))
+    p_coverage = float(stats.binomtest(covered, errors.size, nominal).pvalue)
+    verdicts = classify_bias_and_coverage(
+        float(np.mean(errors)),
+        p_bias,
+        covered / errors.size,
+        nominal,
+        p_coverage,
+        alpha_test,
+        correction_method,
+        practical_epsilon,
+    )
+    return verdicts, p_bias, p_coverage
+
+
 class BiasValidation:
     """Validates DML estimator bias through Monte Carlo simulation.
 
@@ -77,9 +207,13 @@ class BiasValidation:
         random_state: Random seed for reproducibility
 
     Examples:
-        >>> # Production runs use n_simulations=1000; shrunk here so the
-        >>> # example stays fast. The per-seed status is stochastic, so we
-        >>> # assert the recovered bias is finite rather than a fixed label.
+        This numerical example requires the optional EconML dependency.
+        The test runs ten fits and checks that the recovered bias is finite.
+
+        >>> from importlib.util import find_spec
+        >>> if find_spec("econml") is None:
+        ...     import pytest
+        ...     pytest.skip("Install the full extra to run the EconML validation example")
         >>> validator = BiasValidation(n_simulations=10, random_state=42)
         >>> dgp = DGPGenerator(n=150, p=5, true_effect=2.0, random_state=42)
         >>> result = validator.validate(dgp)
@@ -92,6 +226,7 @@ class BiasValidation:
         n_simulations: int = 1000,
         alpha: float = 0.05,
         random_state: int | None = None,
+        n_jobs: int = 1,
     ):
         """Initialize validation method.
 
@@ -99,11 +234,15 @@ class BiasValidation:
             n_simulations: Number of Monte Carlo simulations
             alpha: Significance level (default: 0.05 for 95% CI)
             random_state: Random seed for reproducibility
+            n_jobs: Number of independent DML fits to run concurrently
         """
         if n_simulations <= 0:
             raise ValueError(f"n_simulations must be positive, got {n_simulations}")
         if not (0 < alpha < 1):
             raise ValueError(f"alpha must be between 0 and 1 (exclusive), got {alpha}")
+        if n_jobs < 1:
+            raise ValueError("n_jobs must be positive")
+        self.n_jobs = n_jobs
         self.n_simulations = n_simulations
         self.alpha = alpha
         self.random_state = random_state
@@ -119,6 +258,10 @@ class BiasValidation:
         Returns:
             ValidationResult with status and metrics
         """
+        if self.n_simulations < 2:
+            raise ValueError(
+                "Degenerate bias test requires at least two independent simulation errors"
+            )
         # Step 1: Run Monte Carlo simulations (now returns estimates + CI bounds)
         estimates, ci_bounds = self._run_simulations(dgp)
 
@@ -127,24 +270,24 @@ class BiasValidation:
         mse = self._calculate_mse(estimates, dgp.true_effect)
         coverage = self._calculate_coverage(ci_bounds, dgp.true_effect)  # Use actual DML CIs
 
-        # Step 3: Calculate bootstrap CI for bias (needed for t-test)
-        bias_samples = self._calculate_bias_samples(estimates, dgp.true_effect)
-        ci_lower, ci_upper = np.percentile(bias_samples, [2.5, 97.5])
-
-        # Step 4: Determine status using statistical hypothesis tests
-        status, bias_p_value, coverage_p_value = self._determine_statistical_status(
-            bias_samples, coverage, self.n_simulations, ci_bounds, dgp.true_effect
+        # Step 3: Test mean error across the independent simulations.
+        verdicts, p_bias, coverage_p_value = self._assess_draws(
+            estimates - dgp.true_effect, coverage, self.n_simulations, ci_bounds, dgp.true_effect
         )
+
+        # Step 4: Bootstrap the percentile interval for bias.
+        bias_samples = self._calculate_bias_samples(estimates, dgp.true_effect)
+        ci_lower, ci_upper = percentile_interval(bias_samples, self.alpha)
 
         # Create result (with CI bounds and p-values stored for analysis)
         result = ValidationResult(
             method="BiasValidation",
-            status=status,
+            status=verdicts.overall,
             bias=bias,
             mse=mse,
             coverage=coverage,
-            ci_lower=float(ci_lower),
-            ci_upper=float(ci_upper),
+            ci_lower=ci_lower,
+            ci_upper=ci_upper,
             n_simulations=self.n_simulations,
             timestamp=datetime.now(),
             metadata={
@@ -153,6 +296,8 @@ class BiasValidation:
                 "dgp_true_effect": dgp.true_effect,
                 "dgp_confounding": dgp.confounding_strength,
                 "alpha": self.alpha,
+                "nominal_coverage": 1 - self.alpha,
+                "bias_ci_level": 1 - self.alpha,
                 "estimator": "LinearDML",
                 "model_y": "RandomForestRegressor(n_estimators=100)",
                 "model_t": "RandomForestClassifier(n_estimators=100)",  # FIXED: Classifier for binary treatment
@@ -163,9 +308,11 @@ class BiasValidation:
             ci_estimates=ci_bounds,
             point_estimates=estimates,
             # Store statistical test results (Phase 0 Day 2)
-            bias_p_value=bias_p_value,
+            bias_p_value=p_bias,
             coverage_p_value=coverage_p_value,
-            statistical_status=status,
+            statistical_status=verdicts.overall,
+            bias_status=verdicts.bias,
+            coverage_status=verdicts.coverage,
         )
 
         return result
@@ -182,28 +329,25 @@ class BiasValidation:
                 - estimates: Point estimates (n_simulations,)
                 - ci_bounds: CI bounds (n_simulations, 2) where [:, 0] = lower, [:, 1] = upper
         """
-        estimates = np.zeros(self.n_simulations)
-        ci_bounds = np.zeros((self.n_simulations, 2))
-
-        for i in range(self.n_simulations):
-            # Generate data
-            data = dgp.generate()
-
-            # Estimate effect with DML (returns point estimate + CI)
-            estimate, ci_lower, ci_upper = self._estimate_effect(data)
-
-            estimates[i] = estimate
-            ci_bounds[i, 0] = ci_lower
-            ci_bounds[i, 1] = ci_upper
-
-        return estimates, ci_bounds
+        # One producer advances the DGP's RNG in the original order. Only
+        # independent fits are dispatched. Results retain their input order.
+        if self.n_jobs == 1:
+            fits = [self._estimate_effect(dgp.generate()) for _ in range(self.n_simulations)]
+        else:
+            with parallel_config(backend="loky", inner_max_num_threads=1):
+                fits = Parallel(n_jobs=min(self.n_jobs, self.n_simulations))(
+                    delayed(self._estimate_effect)(dgp.generate())
+                    for _ in range(self.n_simulations)
+                )
+        values = np.asarray(fits, dtype=float)
+        return values[:, 0], values[:, 1:]
 
     def _estimate_effect(self, data: DGPResult) -> tuple[float, float, float]:
         """
         Estimate treatment effect using Double Machine Learning (DML).
 
-        Uses LinearDML from EconML with RandomForestRegressor models
-        for both outcome and treatment. Cross-fitting with 5 folds.
+        Uses five-fold EconML LinearDML with a forest regressor for the
+        outcome and a forest classifier for the binary treatment.
 
         Args:
             data: Generated dataset
@@ -218,13 +362,13 @@ class BiasValidation:
         model_y = RandomForestRegressor(
             n_estimators=100, max_depth=10, min_samples_leaf=10, random_state=self.random_state
         )
-        # FIXED (Issue C2): Use classifier for binary treatment (86.5% bias reduction)
+        # Estimate assignment probabilities with a classifier for the binary-treatment API.
         model_t = RandomForestClassifier(
             n_estimators=100, max_depth=10, min_samples_leaf=10, random_state=self.random_state
         )
 
         # DML estimator with cross-fitting
-        # FIXED (Issue C2): discrete_treatment=True for binary treatment (DML orthogonal score theory)
+        # Tell EconML that the binary assignment has two discrete levels.
         dml = LinearDML(
             model_y=model_y,
             model_t=model_t,
@@ -255,7 +399,7 @@ class BiasValidation:
         Returns:
             Bias
         """
-        return float(np.mean(estimates) - true_effect)
+        return float(np.mean(estimates - true_effect))
 
     def _calculate_mse(self, estimates: np.ndarray, true_effect: float) -> float:
         """
@@ -274,8 +418,8 @@ class BiasValidation:
         """
         Calculate confidence interval coverage rate using DML's actual CIs.
 
-        This is the CORRECT implementation - uses DML's own confidence intervals
-        from effect_interval(), not reconstructed from Monte Carlo standard error.
+        Each row contains the marginal ATE interval endpoints returned by
+        ``ate_interval()`` for one independent DML fit.
 
         Args:
             ci_bounds: CI bounds from DML (n_simulations, 2) where [:, 0] = lower, [:, 1] = upper
@@ -294,7 +438,7 @@ class BiasValidation:
         """
         Calculate bootstrap samples of bias.
 
-        Used for computing t-test for H₀: E[bias] = 0.
+        Used for the percentile confidence interval for mean simulation bias.
 
         Args:
             estimates: Treatment effect estimates
@@ -304,17 +448,18 @@ class BiasValidation:
         Returns:
             Array of bias samples from bootstrap resampling
         """
+        simulation_errors = estimates - true_effect
         bias_samples = np.zeros(n_bootstrap)
 
         for i in range(n_bootstrap):
-            sample = self._rng.choice(estimates, size=len(estimates), replace=True)
-            bias_samples[i] = np.mean(sample) - true_effect
+            sample = self._rng.choice(simulation_errors, size=len(simulation_errors), replace=True)
+            bias_samples[i] = np.mean(sample)
 
         return bias_samples
 
     def _determine_statistical_status(
         self,
-        bias_samples: np.ndarray,
+        simulation_errors: np.ndarray,
         coverage: float,
         n_simulations: int,
         ci_bounds: np.ndarray,
@@ -323,127 +468,47 @@ class BiasValidation:
         correction_method: Literal["bonferroni", "holm", "none"] = "bonferroni",
         practical_epsilon: float = 0.1,
     ) -> tuple[Literal["PASS", "FAIL", "WARNING"], float, float]:
-        """
-        Determine validation status using statistical hypothesis tests with practical significance.
+        """Return the overall verdict and raw bias/coverage p-values."""
+        verdicts, p_bias, p_coverage = self._assess_draws(
+            simulation_errors,
+            coverage,
+            n_simulations,
+            ci_bounds,
+            true_effect,
+            alpha_test,
+            correction_method,
+            practical_epsilon,
+        )
+        return verdicts.overall, p_bias, p_coverage
 
-        ⚠️ CRITICAL FIX (2025-11-14): Added multiple testing correction to control familywise error rate.
-        ⚠️ PHASE 0 FIX (2025-11-22): Added practical significance threshold to distinguish statistical
-        from practical significance (resolves C2 test failures after classifier fix).
-
-        **Statistical vs Practical Significance**:
-        - **Statistical**: Is bias detectably different from zero? (t-test p-value)
-        - **Practical**: Is bias large enough to matter? (|bias| > epsilon)
-
-        After C2 fix (using RandomForestClassifier for binary treatment), bias reduced by 86.5%.
-        Remaining bias (~0.004) is statistically significant but practically negligible.
-
-        **Status Determination Rules** (thresholds shown for the Bonferroni
-        default; rejection boundaries are inclusive, per statsmodels):
-        1. If |bias| > 0.15 → FAIL (unacceptably large bias)
-        2. If |bias| < practical_epsilon (default 0.1):
-           - If bias_p ≤ 0.025 or coverage_p ≤ 0.025 → WARNING (tiny bias, statistically detectable)
-           - Else → PASS (tiny bias, not significant)
-        3. If 0.1 <= |bias| <= 0.15:
-           - If bias_p ≤ 0.005 or coverage_p ≤ 0.005 → FAIL (moderate bias, highly significant)
-           - Elif bias_p ≤ 0.025 or coverage_p ≤ 0.025 → WARNING
-           - Else → PASS
-
-        **Multiple Testing Correction**: Controls familywise error rate ≤ 5%
-        (rejections delegated to ``statsmodels.stats.multitest.multipletests``)
-        - **bonferroni** (default): reject H_i if p_i ≤ α / k
-        - **holm** (step-down): reject sorted p_(i) while p_(i) ≤ α / (k - i + 1);
-          less conservative than Bonferroni per hypothesis. With k=2 and the
-          any-rejection status rule below, Holm and Bonferroni yield the SAME
-          status (Holm's first step is exactly the Bonferroni threshold) —
-          only per-hypothesis rejections differ.
-        - **none** (no correction): ONLY for single-method validation
-
-        Args:
-            bias_samples: Bootstrap samples of bias
-            coverage: Observed coverage rate
-            n_simulations: Number of simulations (for binomial test)
-            ci_bounds: CI bounds array (n_simulations, 2)
-            true_effect: True treatment effect
-            alpha_test: Significance level for hypothesis tests (default 0.05)
-            correction_method: Multiple testing correction ("bonferroni", "holm", "none")
-            practical_epsilon: Practical significance threshold (default 0.1 = 5% of typical effect)
-
-        Returns:
-            (status, bias_p_value, coverage_p_value)
-
-        Examples:
-            >>> # Tiny bias (-0.004) is statistically significant but practically negligible.
-            >>> # (Samples must carry variance: a zero-variance bootstrap now raises.)
-            >>> import numpy as np
-            >>> validator = BiasValidation(n_simulations=1000, random_state=42)
-            >>> ci_bounds = np.tile([1.9, 2.1], (1000, 1))
-            >>> status, p_bias, p_cov = validator._determine_statistical_status(
-            ...     bias_samples=-0.004 + np.linspace(-0.05, 0.05, 1000),
-            ...     coverage=1.0,
-            ...     n_simulations=1000,
-            ...     ci_bounds=ci_bounds,
-            ...     true_effect=2.0,
-            ...     practical_epsilon=0.1
-            ... )
-            >>> status  # "WARNING" (not "FAIL") because |bias| < 0.1
-            'WARNING'
-        """
-        # Calculate p-values for both tests
-        # Test 1: t-test for H₀: E[bias] = 0
-        mean_bias = np.mean(bias_samples)
-        se_bias = np.std(bias_samples) / np.sqrt(len(bias_samples))
-
-        # Zero bootstrap SE means every simulation produced an identical bias, so the
-        # bias t-test is undefined. Fabricating p=0 (or p=1) here would silently drive
-        # the PASS/WARNING/FAIL verdict from a degenerate input (the #7/#9 bug class).
-        if se_bias <= 0:
+    def _assess_draws(
+        self,
+        simulation_errors: np.ndarray,
+        coverage: float,
+        n_simulations: int,
+        ci_bounds: np.ndarray,
+        true_effect: float,
+        alpha_test: float = 0.05,
+        correction_method: Literal["bonferroni", "holm", "none"] = "bonferroni",
+        practical_epsilon: float = 0.1,
+    ) -> tuple[SimulationVerdicts, float, float]:
+        """Apply the bias test and exact binomial coverage test to independent draws."""
+        if simulation_errors.shape != (n_simulations,) or ci_bounds.shape != (n_simulations, 2):
             raise ValueError(
-                f"Degenerate bias bootstrap: zero variance across {len(bias_samples)} "
-                "resamples (every simulation returned an identical bias). The bias "
-                "t-test is undefined; refusing to fabricate a p-value. Check the "
-                "DGP/estimator for missing sampling variability."
+                "Expected one simulation error and one confidence interval per independent draw"
             )
-        t_stat = mean_bias / se_bias
-        df = len(bias_samples) - 1
-        bias_p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df=df))
-
-        # Test 2: Binomial test for H₀: coverage = 0.95
-        n_cover = np.sum((ci_bounds[:, 0] <= true_effect) & (true_effect <= ci_bounds[:, 1]))
-        # Use two-sided binomial test (scipy.stats.binomtest in newer scipy versions)
-        binom_result = stats.binomtest(n_cover, n_simulations, p=0.95, alternative="two-sided")
-        coverage_p_value = binom_result.pvalue
-
-        # Apply multiple testing correction (k=2 tests: bias t-test, coverage
-        # binomial). Per-hypothesis rejections delegate to statsmodels (#14);
-        # the tri-state status below only consumes "any rejection", under
-        # which Holm and Bonferroni coincide for k=2 — Holm's first step IS
-        # the Bonferroni threshold.
-        p_values = [bias_p_value, coverage_p_value]
-        significant = bool(_corrected_rejections(p_values, alpha_test, correction_method).any())
-        highly_significant = bool(_corrected_rejections(p_values, 0.01, correction_method).any())
-
-        # Determine status with PRACTICAL + STATISTICAL significance
-        abs_bias = abs(mean_bias)
-
-        # Rule 1: Unacceptably large bias always FAILS
-        if abs_bias > 0.15:
-            status: Literal["PASS", "FAIL", "WARNING"] = "FAIL"
-
-        # Rule 2: Tiny bias (< practical_epsilon) - distinguish statistical from practical
-        elif abs_bias < practical_epsilon:
-            if highly_significant or significant:
-                # Statistically detectable but practically negligible → WARNING
-                status = "WARNING"
-            else:
-                status = "PASS"
-
-        # Rule 3: Moderate bias (0.1 to 0.15) - stricter evaluation
-        else:
-            if highly_significant:
-                status = "FAIL"  # Moderate bias + highly significant = unacceptable
-            elif significant:
-                status = "WARNING"
-            else:
-                status = "PASS"
-
-        return status, bias_p_value, coverage_p_value
+        verdicts, p_bias, p_coverage = assess_simulation_draws(
+            simulation_errors,
+            ci_bounds,
+            true_effect,
+            1 - self.alpha,
+            alpha_test,
+            correction_method,
+            practical_epsilon,
+        )
+        covered = int(
+            np.count_nonzero((ci_bounds[:, 0] <= true_effect) & (true_effect <= ci_bounds[:, 1]))
+        )
+        if not np.isclose(coverage, covered / n_simulations, rtol=0, atol=1e-12):
+            raise ValueError("Reported coverage disagrees with the per-draw intervals")
+        return verdicts, p_bias, p_coverage
