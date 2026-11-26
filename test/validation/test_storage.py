@@ -1,7 +1,11 @@
 """Regression tests for archiving scientific outputs across workers."""
 
+import json
+import os
+import stat
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -81,6 +85,88 @@ def test_failed_index_update_discards_only_new_payload(tmp_path, monkeypatch):
         storage.save_result(sample_result(), metadata={"draw": 2})
     assert list(storage.results_dir.iterdir()) == [previous]
     assert [r.storage_metadata for r in storage.load_results()] == [{"draw": 1}]
+
+
+def test_an_error_after_the_index_update_keeps_the_payload(tmp_path, monkeypatch):
+    """Once the index names a payload, a later error must not delete that payload."""
+
+    class ReleaseFails:
+        def __init__(self, path):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            raise OSError("simulated failure releasing the lock")
+
+    storage = ResultStorage(tmp_path)
+    monkeypatch.setattr("dml_ts.validation.storage.FileLock", ReleaseFails)
+    with pytest.raises(OSError, match="releasing the lock"):
+        storage.save_result(sample_result(), metadata={"draw": 1})
+    monkeypatch.undo()
+    assert [r.storage_metadata for r in ResultStorage(tmp_path).load_results()] == [{"draw": 1}]
+
+
+def test_a_moved_store_still_loads_its_results(tmp_path):
+    """The index records where a payload was saved; a renamed project keeps it beside the index.
+
+    With absolute recorded paths and no fallback, ``load_results`` on the moved store
+    returned an empty list with no error while ``get_summary`` still counted the results.
+    """
+    original = ResultStorage(tmp_path / "project" / "store")
+    original.save_result(sample_result(), metadata={"draw": 1})
+    original.save_result(sample_result(), metadata={"draw": 2})
+    (tmp_path / "project").rename(tmp_path / "renamed")
+    moved = ResultStorage(tmp_path / "renamed" / "store")
+    assert moved.get_summary()["total_results"] == 2
+    assert sorted(r.storage_metadata["draw"] for r in moved.load_results()) == [1, 2]
+
+
+def test_a_relative_store_survives_a_change_of_directory(tmp_path, monkeypatch):
+    """The default ``base_dir`` is relative; the object must keep meaning the store it opened."""
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    monkeypatch.chdir(tmp_path / "a")
+    storage = ResultStorage(Path("store"))
+    storage.save_result(sample_result(), metadata={"draw": 1})
+    monkeypatch.chdir(tmp_path / "b")
+    assert len(storage.load_results()) == 1
+    storage.save_result(sample_result(), metadata={"draw": 2})
+    assert storage.get_summary()["total_results"] == 2
+    assert list((tmp_path / "b").iterdir()) == []
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits")
+def test_published_files_have_the_permissions_of_an_ordinary_file(tmp_path):
+    """``tempfile`` creates files only their owner can read, and a rename keeps that mode."""
+    storage = ResultStorage(tmp_path)
+    payload = storage.save_result(sample_result())
+    umask = os.umask(0)
+    os.umask(umask)
+    for published in (payload, storage.index_file):
+        assert stat.S_IMODE(published.stat().st_mode) == 0o666 & ~umask
+
+
+def test_an_interrupted_write_leaves_the_previous_file_and_no_temporary_one(tmp_path, monkeypatch):
+    """The content reaches its name only by a rename of a complete file."""
+    target = tmp_path / "document.json"
+    write_json_atomically(target, {"version": 1})
+
+    def crash(self, destination):
+        raise OSError("simulated crash before the rename")
+
+    monkeypatch.setattr(Path, "replace", crash)
+    with pytest.raises(OSError, match="before the rename"):
+        write_json_atomically(target, {"version": 2})
+    assert json.loads(target.read_text()) == {"version": 1}
+    assert [p.name for p in tmp_path.iterdir()] == ["document.json"]
+
+
+def test_a_document_that_cannot_be_serialized_creates_no_file(tmp_path):
+    with pytest.raises(TypeError):
+        write_json_atomically(tmp_path / "document.json", {"value": object()})
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_real_bias_validation_json_round_trip(tmp_path):

@@ -436,6 +436,43 @@ class TestDMLModelRegistry:
         assert registries[0].get_production().version_id == versions[2]
         assert registries[3].rollback() == versions[0]
 
+    def test_interrupted_registry_write_leaves_the_previous_document(self, tmp_path, monkeypatch):
+        """A promotion whose write fails must leave the registry as it was, and readable."""
+        registry = DMLModelRegistry(tmp_path)
+        version = registry.register(self._create_test_version())
+        before = (tmp_path / "registry.json").read_bytes()
+
+        def crash(self, destination):
+            raise OSError("simulated crash before the rename")
+
+        monkeypatch.setattr(Path, "replace", crash)
+        with pytest.raises(OSError, match="before the rename"):
+            registry.promote_to_staging(version)
+        monkeypatch.undo()
+        assert (tmp_path / "registry.json").read_bytes() == before
+        assert registry.staging_version is None
+        assert not [p.name for p in tmp_path.iterdir() if p.name.endswith(".tmp")]
+
+    def test_a_relative_registry_survives_a_change_of_directory(self, tmp_path, monkeypatch):
+        """The registry reads its state from disk on every call, so its path must not move.
+
+        The pipeline's default path is relative. After a change of directory the same object
+        reported no versions and no production model, and a registration wrote a second
+        registry under the new directory.
+        """
+        (tmp_path / "a").mkdir()
+        (tmp_path / "b").mkdir()
+        monkeypatch.chdir(tmp_path / "a")
+        registry = DMLModelRegistry("models/registry")
+        first = registry.register(self._create_test_version())
+        registry.promote_to_production(first)
+        monkeypatch.chdir(tmp_path / "b")
+        assert registry.production_version == first
+        assert registry.get_production().version_id == first
+        second = registry.register(self._create_test_version())
+        assert {v["version_id"] for v in registry.list_versions()} == {first, second}
+        assert list((tmp_path / "b").iterdir()) == []
+
     @pytest.mark.parametrize("seed", [6, 17])
     def test_registry_operations_against_deployment_history(self, tmp_path, seed):
         registry = DMLModelRegistry(tmp_path)

@@ -383,7 +383,9 @@ class DMLModelRegistry:
         Args:
             base_path: Root directory for model storage
         """
-        self.base_path = Path(base_path)
+        # Absolute, so that a later change of the working directory does not point this
+        # object at another (empty) registry: the state is read from disk on every call.
+        self.base_path = Path(base_path).absolute()
         self.base_path.mkdir(parents=True, exist_ok=True)
         self._registry_file = self.base_path / "registry.json"
 

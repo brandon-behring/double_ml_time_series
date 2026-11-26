@@ -29,14 +29,16 @@ from __future__ import annotations
 import hashlib
 import warnings
 from dataclasses import dataclass, field
+from http.client import HTTPException
 from io import BytesIO
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from urllib.request import urlopen
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
+
+from dml_ts._persistence import write_bytes_atomically
 
 OJ_DATASET_URL = (
     "https://raw.githubusercontent.com/gchoi/Dataset/"
@@ -236,6 +238,7 @@ class OJDataLoader:
         """Load raw dataframe from cache or download."""
         # Older releases reserialized the CSV. Refresh those files from the
         # pinned source, leaving the existing cache in place if the fetch fails.
+        rejected_cache = ""
         if self.cache_dir and not force_download:
             cache_path = self.cache_dir / "oj_large.csv"
             if cache_path.exists():
@@ -243,12 +246,19 @@ class OJDataLoader:
                 if hashlib.sha256(cached).hexdigest() == OJ_DATASET_HASH:
                     self._raw_df = pd.read_csv(BytesIO(cached))
                     return self._raw_df
+                rejected_cache = (
+                    f" The cached file {cache_path} does not match the pinned SHA-256 digest "
+                    "and was not used; it is left in place."
+                )
 
         try:
             with urlopen(OJ_DATASET_URL, timeout=60) as response:
                 source_bytes = response.read()
-        except OSError as e:
-            raise RuntimeError(f"Failed to download OJ dataset from {OJ_DATASET_URL}: {e}") from e
+        except (OSError, HTTPException) as e:
+            # An interrupted body (IncompleteRead) is an HTTPException, not an OSError.
+            raise RuntimeError(
+                f"Failed to download OJ dataset from {OJ_DATASET_URL}: {e!r}.{rejected_cache}"
+            ) from e
         if hashlib.sha256(source_bytes).hexdigest() != OJ_DATASET_HASH:
             raise RuntimeError("Downloaded OJ dataset differs from the pinned SHA-256 digest.")
         self._raw_df = pd.read_csv(BytesIO(source_bytes))
@@ -256,14 +266,7 @@ class OJDataLoader:
         # Cache if directory specified
         if self.cache_dir:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
-            tmp = NamedTemporaryFile(dir=self.cache_dir, delete=False)
-            pending = Path(tmp.name)
-            try:
-                with tmp:
-                    tmp.write(source_bytes)
-                pending.replace(self.cache_dir / "oj_large.csv")
-            finally:
-                pending.unlink(missing_ok=True)
+            write_bytes_atomically(self.cache_dir / "oj_large.csv", source_bytes)
 
         return self._raw_df
 

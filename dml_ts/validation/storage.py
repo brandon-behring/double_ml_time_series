@@ -65,7 +65,9 @@ class ResultStorage:
         Args:
             base_dir: Base directory for storing results
         """
-        self.base_dir = Path(base_dir)
+        # Absolute, so that a later change of the working directory does not point this
+        # object at another (empty) store.
+        self.base_dir = Path(base_dir).absolute()
         self.results_dir = self.base_dir / "results"
         self.dgp_cache_dir = self.base_dir / "dgp_cache"
         self.index_file = self.base_dir / "index.json"
@@ -104,6 +106,7 @@ class ResultStorage:
             result, storage_metadata=result.storage_metadata | (metadata or {})
         ).to_dict()
         write_json_atomically(filepath, data)
+        indexed = False
         try:
             with FileLock(self.base_dir / "index.lock"):
                 index = self.index
@@ -118,8 +121,12 @@ class ResultStorage:
                 )
                 index["last_updated"] = datetime.now().isoformat()
                 write_json_atomically(self.index_file, index)
+                indexed = True
         except Exception:
-            filepath.unlink()
+            # Once the index names the payload, an error (for example in releasing the
+            # lock) must not delete it: the index would point at a missing file.
+            if not indexed:
+                filepath.unlink()
             raise
 
         return filepath
@@ -175,11 +182,21 @@ class ResultStorage:
         # Load results
         results = []
         for entry in filtered_entries:
-            filepath = Path(entry["filepath"])
+            filepath = self._payload_path(entry)
             if filepath.exists():
                 results.append(self.load_result(filepath))
 
         return results
+
+    def _payload_path(self, entry: dict[str, Any]) -> Path:
+        """Where an indexed payload is now.
+
+        The index records the path a payload had when it was saved. A store that has been
+        moved or renamed keeps its payloads beside its index, so a recorded path that no
+        longer exists is looked up by name in this store's results directory.
+        """
+        recorded = Path(entry["filepath"])
+        return recorded if recorded.exists() else self.results_dir / recorded.name
 
     def cache_dgp(self, dgp_result: DGPResult, dgp_config: dict[str, Any]) -> str:
         """
