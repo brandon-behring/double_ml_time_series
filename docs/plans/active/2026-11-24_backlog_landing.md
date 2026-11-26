@@ -854,3 +854,53 @@ The plan above stands. Steps 1 to 7 of addendum 2 are done.
   give 2.0299 and 2.0383; with labels 50..349 against 0..299 `fwl_estimate` returns -0.1539,
   `robinson_estimator` -0.1535 and `double_ml` a `KeyError`; `TemporalPLRDML` returns 2.09 with a
   standard error of 0.12 for a treatment that is 1 on the first 60 of 400 rows.
+
+### Record of PR-1c's review (2026-11-25, night)
+
+Reviewed by a fresh Claude agent (diff and export, 78 tool calls, a reversed-diff copy as
+"before") and by Gemini in two calls. The agent's report said not to merge the first version
+(`19e5951`); its evidence was re-run and holds. The pull request was reworked.
+
+- **What the first version got wrong.** Addendum 3 prescribed `np.asarray(..., dtype=float)` for
+  `Y`, `T` and `X`. For `X` that was a regression: `robinson_estimator` had passed a DataFrame
+  or a sparse matrix to the nuisance model as given, and the conversion broke pipelines that
+  select columns by name or encode a string column, refused sparse controls in `double_ml`
+  too, and changed one categorical case silently (1.9905 to 2.0211). For `Y` and `T` it made
+  three kinds of input return a number that had raised before: timedeltas and datetimes
+  (slopes of 7.3e3, 7.3e6, 7.3e9 by storage unit), complex values (imaginary part dropped),
+  and masked arrays in `fwl_estimate`.
+- **What the rework does** (two departures from Addendum 3's wording, both to be confirmed at
+  the stop):
+  1. Only `Y` and `T` are read, by value, and a dtype that is not a number is refused with
+     the argument's name (datetime, timedelta, complex, text, masked entries). Two-dimensional
+     `X` is not converted; a list becomes an array and a one-dimensional `X` one column.
+  2. Two pandas inputs with different indexes are refused, where the addendum expected "the
+     positional slope": Gemini's case (`fwl_estimate(df.y, shuffled.t, X)` = 0.17 against
+     2.03) shows that pairing by position is wrong when the labels are the same units in
+     another order.
+- **Texts corrected.** Only `double_ml` indexed by label (shuffled 1.82, sorted 2.018, reversed
+  1.888 against 2.03 to 2.04; a filtered frame raised `KeyError`); `fwl_estimate` and
+  `robinson_estimator` were wrong only for different labels (-0.15). The slope of a treatment
+  constant on the scored rows is not meaningless: over 400 draws it is centered on the truth
+  with a standard error about 30% too small (coverage 0.845).
+- **Limits of the scored-rows check, measured and not repaired here.**
+  - It refuses numerical constancy only. Neighbouring designs are fitted with the same numbers
+    as before: a switch at row 71 (coverage 0.843), three treated rows (0.777), a switch at row
+    398 (0.292), one treated row (0.075). Filed as #81.
+  - `PanelDML`: the refusal reaches it only when the demeaned treatment is exactly constant
+    on the scored rows. A constant non-zero dose in every scored unit leaves rounding residue
+    (1.1e-16) and is fitted: 7.47 with a standard error of 3.48, and 4.52 with 1.13, for a
+    slope of 2.
+  - `RollingWindowDML`: a fit whose windows are all skipped returns empty arrays with a
+    warning (the open #42 item). One input that returned a single window before (2.06 with
+    0.35) now reaches it.
+- **Part II protocol, two required cases added:** a panel whose treatment varies only in units
+  that the split never scores, and a panel whose scored units each have one constant dose.
+  Each must raise or be estimated with a valid interval. The cause is unit-major rows handed
+  to a time-series split: the block that is trained on and never scored is the first units.
+- **Evidence for #77,** there before and unchanged: `cross_fit_predictions` and `theta_via_fwl`
+  still read labels when called directly (8.25 maximum difference; -0.034 against 1.954), and
+  the exported `fwl_residualize` returns a labelled `Series`.
+- **Mutation check:** 29 reversions, among them the four that survived the first version's
+  tests (the check only for `n_lags=0`, only for one split strategy, exact in place of
+  numerical constancy, integer treatments read as category codes); all 29 are caught.
