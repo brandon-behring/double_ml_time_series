@@ -91,11 +91,26 @@ def is_numerically_constant(values: NDArray[np.float64]) -> bool:
 
     The mean of a constant array need not equal the constant (``np.full(100, 0.1)``
     has a mean one ulp away), so the centered values are compared with the level
-    of the array and never with exact zero.
+    of the array and never with exact zero. The values are first divided by their
+    largest magnitude: a norm of values near 1e300 overflows, and one of values near
+    1e-300 underflows, and either would make a varying array look constant.
+
+    Examples:
+        >>> import numpy as np
+        >>> is_numerically_constant(np.full(100, 0.1))
+        True
+        >>> is_numerically_constant(1e300 * np.array([1.0, 2.0, 3.0]))
+        False
     """
     values = np.asarray(values, dtype=float)
-    spread = np.linalg.norm(values - values.mean())
-    return bool(spread <= np.linalg.norm(values) * values.size * _EPS)
+    scale = float(np.max(np.abs(values))) if values.size else 0.0
+    if not np.isfinite(scale):
+        return False
+    if scale == 0.0:
+        return True
+    scaled = values / scale
+    spread = np.linalg.norm(scaled - scaled.mean())
+    return bool(spread <= np.linalg.norm(scaled) * scaled.size * _EPS)
 
 
 def no_variation_tolerance(treatment: NDArray[np.float64]) -> float:
@@ -263,57 +278,111 @@ def cross_fit_predictions(
 
 
 def _read_as_floats(name: str, values: object) -> NDArray[np.float64]:
-    """Convert one argument to a float array, naming it when it cannot be read."""
+    """Read an outcome or a treatment as a float array, or say why it is not one.
+
+    Numbers (floats, integers, booleans, and objects such as ``Decimal``) are read by their
+    values, and a missing value becomes NaN. Anything whose conversion would change its
+    meaning is refused: a datetime or timedelta would become integer ticks in its storage
+    unit, a complex value would lose its imaginary part, a masked array would be read under
+    its mask, and text is a label even when it spells a number.
+
+    Examples:
+        >>> import numpy as np
+        >>> _read_as_floats("T", [0, 10, 50]).tolist()
+        [0.0, 10.0, 50.0]
+        >>> _read_as_floats("Y", np.array([1, 2], dtype="timedelta64[s]"))  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: Y has dtype timedelta64[s], which is not a number. ...
+    """
+    if isinstance(values, np.ma.MaskedArray) and np.ma.is_masked(values):
+        raise ValueError(
+            f"{name} is a masked array with masked entries. Its values would be read under "
+            "the mask; drop or fill those rows first."
+        )
     try:
-        return np.asarray(values, dtype=float)
+        array = np.asarray(values)
     except (TypeError, ValueError) as exc:
-        raise ValueError(f"{name} could not be read as a float array: {exc}") from exc
+        raise ValueError(f"{name} could not be read as an array: {exc}") from exc
+    if array.dtype.kind == "O":
+        text = next((v for v in array.ravel() if isinstance(v, (str, bytes))), None)
+        if text is not None:
+            raise ValueError(
+                f"{name} holds text (for example {text!r}), not numbers. "
+                "Convert it to floats first."
+            )
+        try:
+            # From the input, not from the object array: pandas turns the missing values
+            # of a nullable column into NaN.
+            array = np.asarray(values, dtype=float)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{name} could not be read as a float array: {exc}") from exc
+    if array.dtype.kind not in "fiub":
+        raise ValueError(
+            f"{name} has dtype {array.dtype}, which is not a number. Convert it to floats in "
+            "the unit you mean: a datetime or timedelta would be read as integer ticks, a "
+            "complex value would lose its imaginary part, and text is a label."
+        )
+    return array.astype(float)
 
 
 def as_validated_arrays(
-    Y: object, T: object, X: object
+    Y: object, T: object, X: NDArray[np.float64]
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
-    """Convert Y, T and X to float arrays, check their shapes, and make X two-dimensional.
+    """Read Y and T as float arrays, check the shapes, and make a flat X a column.
 
-    Rows are paired by position. A pandas ``Series`` is indexed by label and an array by
-    position: with a reordered index, ``Y[train_idx]`` picked other rows than
-    ``X[train_idx]``, and two ``Series`` with different labels were aligned by label when
-    multiplied; both gave a wrong slope with no error (#75). The conversion removes the
-    labels, as ``TemporalPLRDML.fit`` has always done.
+    Rows are paired by position. ``double_ml`` indexed a pandas ``Series`` by label where
+    it indexed the controls by position, and ``fwl_estimate`` and ``robinson_estimator``
+    multiplied two residual ``Series`` that pandas aligned by label; with a reordered frame
+    or with different labels the slope was wrong with no error (#75). Reading Y and T by
+    value removes the labels.
 
     Pairing by position is only right when the labels agree. Two pandas inputs whose
     indexes differ, in value or in order, are therefore refused: the same units in another
     order would be paired wrongly, and nothing in the numbers would show it.
 
+    A two-dimensional X is not converted. A DataFrame or a sparse matrix reaches the
+    nuisance model as it was given, with its column names and dtypes; only its row count is
+    checked. A list is read as an array, and a one-dimensional X becomes one column.
+
     Args:
-        Y: Outcome, anything ``np.asarray`` reads as a one-dimensional float array.
-        T: Treatment, likewise.
-        X: Controls, one- or two-dimensional; a one-dimensional X is one column.
+        Y: Outcome: a one-dimensional sequence of numbers.
+        T: Treatment: likewise.
+        X: Controls with one row per observation.
 
     Returns:
-        ``(Y, T, X)`` as float arrays, X of shape ``(n, p)``.
+        ``(Y, T, X)``: Y and T as float arrays; X as given, or as an array if it was a
+        list, or as one column if it was one-dimensional.
 
     Raises:
-        ValueError: If a value cannot be read as a float; if Y or T is not
-            one-dimensional or the lengths disagree (see ``validate_lengths``); or if two
-            of the inputs are pandas objects with different indexes.
+        ValueError: If Y or T is not numeric, is masked, or cannot be read; if Y or T is
+            not one-dimensional or the lengths disagree (see ``validate_lengths``); if X
+            has no rows to count; or if two of the inputs are pandas objects with
+            different indexes.
 
     Examples:
         >>> import numpy as np
         >>> import pandas as pd
         >>> y = pd.Series([1.0, 2.0, 3.0], index=[2, 0, 1])
-        >>> Y, T, X = as_validated_arrays(y, [0, 1, 0], [5.0, 6.0, 7.0])
+        >>> Y, T, X = as_validated_arrays(y, [0, 1, 0], np.array([5.0, 6.0, 7.0]))
         >>> Y.tolist(), T.tolist(), X.shape
         ([1.0, 2.0, 3.0], [0.0, 1.0, 0.0], (3, 1))
-        >>> as_validated_arrays(y, y.sort_index(), [5.0, 6.0, 7.0])  # doctest: +ELLIPSIS
+        >>> as_validated_arrays(y, y.sort_index(), X)  # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: Y and T carry different pandas indexes. ...
     """
     Y_arr = _read_as_floats("Y", Y)
     T_arr = _read_as_floats("T", T)
-    X_arr = _read_as_floats("X", X)
-    validate_lengths(Y_arr, T_arr, X_arr)
+    given = X
+    if not hasattr(X, "shape"):
+        X = np.asarray(X)
+    if len(X.shape) == 0:
+        raise ValueError(
+            f"X must hold the controls with one row per observation, got an object of type "
+            f"{type(given).__name__} without rows."
+        )
+    validate_lengths(Y_arr, T_arr, X)
     # A pandas Series or DataFrame is recognized by an index that can be compared;
     # a list also has an ``index`` attribute, which is a method.
     labelled = [
@@ -333,9 +402,9 @@ def as_validated_arrays(
                 "wrongly. Align the inputs first (for example with .loc or .reindex), or pass "
                 "arrays with .to_numpy() if the rows are already in the same order."
             )
-    if X_arr.ndim == 1:
-        X_arr = X_arr.reshape(-1, 1)
-    return Y_arr, T_arr, X_arr
+    if len(X.shape) == 1:
+        X = np.asarray(X).reshape(-1, 1)
+    return Y_arr, T_arr, X
 
 
 def validate_lengths(

@@ -506,17 +506,18 @@ class TemporalPLRDML:
         T_hat_used = T_hat[valid_oof_mask]
         n_used = len(Y_used)
 
-        # Only scored rows identify the effect. If the treatment varies in the first,
-        # train-only block alone, its "residual" on the scored rows is the error of the
-        # nuisance prediction and nothing else, and a slope computed from it means
-        # nothing (#76).
+        # Only scored rows carry out-of-fold treatment variation. If the treatment is
+        # constant on all of them, its "residual" there is the error of the nuisance
+        # prediction alone: the slope then rests on how the two nuisance fits err together
+        # and not on any held-out variation, and its standard error is too small (#76).
+        # This refuses exact constancy only; a treatment that varies on a few scored rows
+        # is fitted, and its interval can be far too short (#81).
         if is_numerically_constant(T_used):
             raise ValueError(
                 f"Treatment has no variation on the scored rows: the treatment is constant "
                 f"({T_used[0]:.6g}) on the {n_used} rows that have an out-of-fold prediction. "
-                f"The other {dropped_initial_rows} rows (the first block of the split, and any "
-                "gap) are trained on and not scored, so variation there does not identify the "
-                "effect."
+                f"The other {dropped_initial_rows} rows have none and are not scored, so "
+                "variation there does not identify the effect"
             )
 
         # Compute cross-validated R² on rows with valid OOF predictions.

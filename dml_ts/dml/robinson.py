@@ -49,7 +49,7 @@ from dataclasses import dataclass
 from typing import Literal, cast
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 from sklearn.base import BaseEstimator, clone
 from temporalcv import finite_se
 
@@ -119,8 +119,8 @@ class RobinsonResult(ResultBase):
 
 
 def robinson_estimator(
-    Y: NDArray[np.float64],
-    T: NDArray[np.float64],
+    Y: ArrayLike,
+    T: ArrayLike,
     X: NDArray[np.float64],
     model: BaseEstimator
     | Literal["ridge", "lasso", "random_forest", "gradient_boosting"]

@@ -54,7 +54,7 @@ from dataclasses import dataclass
 from typing import Literal, cast
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 from scipy import stats
 from sklearn.base import BaseEstimator, clone
 from sklearn.model_selection import KFold
@@ -213,8 +213,8 @@ def _influence_function_se(
 
 
 def double_ml(
-    Y: NDArray[np.float64],
-    T: NDArray[np.float64],
+    Y: ArrayLike,
+    T: ArrayLike,
     X: NDArray[np.float64],
     n_folds: int = 5,
     model: BaseEstimator

@@ -48,7 +48,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 from temporalcv import coverage_in_unit, finite_se
 
 from ._results import ResultBase
@@ -193,8 +193,8 @@ def fwl_residualize(
 
 
 def fwl_estimate(
-    Y: NDArray[np.float64],
-    T: NDArray[np.float64],
+    Y: ArrayLike,
+    T: ArrayLike,
     X: NDArray[np.float64],
     add_intercept: bool = True,
     method: Literal["ols", "qr"] = "qr",

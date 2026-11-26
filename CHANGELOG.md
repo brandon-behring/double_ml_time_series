@@ -107,22 +107,33 @@ are the compatibility contract).
   that only approximates a treatment the controls determine leaves residuals far above the
   bound, so for `T = 0.5 * x0` the ridge learner, the default random forest and gradient
   boosting still return an estimate. (#42)
-- `double_ml`, `robinson_estimator` and `fwl_estimate` read their inputs by position. They
-  indexed a pandas `Series` by label where they indexed the controls by position, so a frame
-  that had been shuffled, sorted or filtered gave a wrong slope with no error (`double_ml`: 1.82
-  where the arrays give 2.03), and an outcome and a treatment with different labels were paired
-  by label (`fwl_estimate` and `robinson_estimator`: -0.15 for a slope of 2). `Y`, `T` and `X`
-  are converted to float arrays at entry, as `TemporalPLRDML` does; lists are accepted. Two
-  pandas inputs whose indexes differ, in value or in order, are refused: read by position, the
-  same units in another order would be paired wrongly. Align them, or pass `.to_numpy()`. (#75)
+- `double_ml`, `robinson_estimator` and `fwl_estimate` read the outcome and the treatment by
+  value and pair rows by position. `double_ml` indexed a pandas `Series` by label where it
+  indexed the controls by position: a shuffled or sorted frame gave a wrong slope with no error
+  (1.82 where the arrays give 2.03), and a filtered one raised `KeyError`. `fwl_estimate` and
+  `robinson_estimator` multiplied two residual `Series`, which pandas aligns by label: an
+  outcome and a treatment with different labels gave -0.15 for a slope of 2. `Y` and `T` are
+  now read as float arrays at entry, so lists and tuples are accepted and the residuals on the
+  result are arrays. A value that is not a number is refused with the argument's name: a
+  datetime or timedelta (as floats it would be integer ticks in its storage unit), a complex
+  value, text, and a masked array with masked entries. Two-dimensional controls reach the
+  nuisance model as given, so a DataFrame keeps its column names and dtypes and a sparse matrix
+  stays sparse. Two pandas inputs whose indexes differ, in value or in order, are refused: read
+  by position, the same units in another order would be paired wrongly. Align them, or pass
+  `.to_numpy()`. (#75)
 - `TemporalPLRDML` raises when the treatment is constant on the rows it scores. The first block
-  of a time-series split is trained on and not scored; a treatment that varies only there left a
-  "residual" that was the error of the nuisance prediction, and the fit returned an estimate
-  with a small standard error (1.63 with 0.12 in one draw, for a slope of 2). `RollingWindowDML`
-  reports such a window as skipped, with this reason. `PanelDML` hands unit-major rows to the
-  same split, so its unscored block is the first units; a panel whose treatment varies only in
-  those units returned 17.2 with a standard error of 5.7 for a slope of 2 and is now refused.
-  (#76)
+  of a time-series split is trained on and not scored; for a treatment that varies only there,
+  the "residual" on the scored rows is the error of the nuisance prediction. Over 400 draws of
+  a switch at row 60 of 400 the fit returned estimates centered on the true slope with a
+  standard error about 30% too small (95% intervals covered it in 84.5% of draws). The check
+  refuses numerical constancy and nothing more: a treatment that varies on a few scored rows is
+  still fitted, and its interval can be far too short (one treated scored row: 7.5%; #81).
+  `RollingWindowDML` reports a window whose treatment varies only in the window's
+  own first block as skipped, with this reason, where it returned an estimate. `PanelDML` hands
+  unit-major rows to the same split, so its unscored block is the first units; a panel whose
+  treatment is exactly zero outside those units returned 17.2 with a standard error of 5.7 for
+  a slope of 2 and is now refused, but a constant non-zero dose leaves rounding residue after
+  demeaning and is still fitted. (#76)
 
 ## [1.1.4] - 2026-06-14
 
