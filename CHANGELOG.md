@@ -118,13 +118,15 @@ are the compatibility contract).
   datetime or timedelta (as floats it would be integer ticks in its storage unit), a complex
   value, text, and a masked array with masked entries. An object column is judged by its
   elements, because NumPy and pandas cast a timezone-aware datetime, and object arrays of
-  `np.timedelta64` or `np.complex128` scalars, to floats without an error. Two pandas inputs
-  whose indexes differ, in value, in order or in the names of their levels, are refused: read
-  by position, the same units in another order would be paired wrongly. This also refuses
-  calls that were paired correctly before, namely the same rows under other labels (controls
-  rebuilt from an array beside an outcome with a date index); pass `.to_numpy()` when the rows
-  are already in the same order. The next entry carries these rules to the other estimators
-  and says what happens to the controls. (#75)
+  `np.timedelta64` or `np.complex128` scalars, to floats without an error. Two pandas inputs whose indexes differ in value or in
+  order are refused, and so are two whose levels are named differently: read by position, the
+  same units in another order would be paired wrongly. The comparison cannot see an index
+  that was reset after its rows were reordered, rows permuted among repeated labels, or a
+  level that only one input names. It also refuses calls that were paired correctly before:
+  the same rows under other labels (controls rebuilt from an array beside an outcome with a
+  date index; the same instants in another time zone; the same values under another index
+  name). Pass `.to_numpy()` when the rows are already in the same order. The next entry carries
+  these rules to the other estimators and says what happens to the controls. (#75)
 - One input contract for the estimators. `fwl_estimate`, `fwl_residualize`,
   `fwl_vs_ols_comparison`, `robinson_estimator`, `double_ml`, `TemporalPLRDML`,
   `RollingWindowDML` and `DynamicGEstimationDML` read their inputs through one function
