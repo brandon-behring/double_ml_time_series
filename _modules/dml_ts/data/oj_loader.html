@@ -313,9 +313,8 @@
   <h1>Source code for dml_ts.data.oj_loader</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Dominick&#39;s Orange Juice Dataset Loader.</span>
 
-<span class="sd">Loads the OJ dataset from Microsoft Azure blob storage. This dataset contains</span>
-<span class="sd">store-level panel data on orange juice sales from Dominick&#39;s Finer Foods,</span>
-<span class="sd">a major Chicago-area supermarket chain.</span>
+<span class="sd">Loads a pinned extract of weekly orange juice sales by brand and store at</span>
+<span class="sd">Dominick&#39;s Finer Foods, a Chicago-area supermarket chain.</span>
 
 <span class="sd">The dataset is widely used for causal inference demonstrations, particularly</span>
 <span class="sd">for estimating price elasticity of demand with confounders like income and</span>
@@ -324,10 +323,10 @@
 <span class="sd">Data Source</span>
 <span class="sd">-----------</span>
 <span class="sd">University of Chicago Booth School of Business, Kilts Center for Marketing.</span>
-<span class="sd">https://research.chicagobooth.edu/kilts/marketing-databases/dominicks</span>
+<span class="sd">https://www.chicagobooth.edu/research/kilts/research-data/dominicks</span>
 
 <span class="sd">GitHub mirror (used here):</span>
-<span class="sd">https://github.com/gchoi/Dataset/raw/refs/heads/master/oj.csv</span>
+<span class="sd">https://github.com/gchoi/Dataset/blob/8e81d46872564218a78be95d53a9c6bd3b00b199/oj.csv</span>
 
 <span class="sd">References</span>
 <span class="sd">----------</span>
@@ -340,19 +339,25 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">http.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPException</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlopen</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 
-<span class="c1"># GitHub mirror URL for OJ dataset (Azure blob now private)</span>
-<span class="n">OJ_DATASET_URL</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/gchoi/Dataset/raw/refs/heads/master/oj.csv&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts._persistence</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_bytes_atomically</span>
 
-<span class="c1"># Expected SHA256 hash for data integrity verification</span>
-<span class="n">OJ_DATASET_HASH</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Will be set after first download verification</span>
+<span class="n">OJ_DATASET_URL</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;https://raw.githubusercontent.com/gchoi/Dataset/&quot;</span>
+    <span class="s2">&quot;8e81d46872564218a78be95d53a9c6bd3b00b199/oj.csv&quot;</span>
+<span class="p">)</span>
+<span class="n">OJ_DATASET_HASH</span> <span class="o">=</span> <span class="s2">&quot;01b8c698a0511231cf09424cf946fe849fb902639e4584023d6040955701c522&quot;</span>
 
 
 <div class="viewcode-block" id="OJDataset">
@@ -437,7 +442,6 @@
 <span class="s2">  Std:            </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span>
 <span class="s2">  Range:          [</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">]</span>
 
-<span class="s2">Expected elasticity: ~-2.5 to -3.5 (standard finding in literature)</span>
 <span class="s2">&quot;&quot;&quot;</span></div>
 </div>
 
@@ -559,23 +563,37 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load raw dataframe from cache or download.&quot;&quot;&quot;</span>
-        <span class="c1"># Check cache first</span>
+        <span class="c1"># Older releases reserialized the CSV. Refresh those files from the</span>
+        <span class="c1"># pinned source, leaving the existing cache in place if the fetch fails.</span>
+        <span class="n">rejected_cache</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_download</span><span class="p">:</span>
             <span class="n">cache_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;oj_large.csv&quot;</span>
             <span class="k">if</span> <span class="n">cache_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_raw_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_df</span>
+                <span class="n">cached</span> <span class="o">=</span> <span class="n">cache_path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">cached</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span> <span class="o">==</span> <span class="n">OJ_DATASET_HASH</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_raw_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">cached</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_df</span>
+                <span class="n">rejected_cache</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot; The cached file </span><span class="si">{</span><span class="n">cache_path</span><span class="si">}</span><span class="s2"> does not match the pinned SHA-256 digest &quot;</span>
+                    <span class="s2">&quot;and was not used; it is left in place.&quot;</span>
+                <span class="p">)</span>
 
-        <span class="c1"># Download from Azure</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_raw_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">OJ_DATASET_URL</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to download OJ dataset from </span><span class="si">{</span><span class="n">OJ_DATASET_URL</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">with</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">OJ_DATASET_URL</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+                <span class="n">source_bytes</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># An interrupted body (IncompleteRead) is an HTTPException, not an OSError.</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to download OJ dataset from </span><span class="si">{</span><span class="n">OJ_DATASET_URL</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">!r}</span><span class="s2">.</span><span class="si">{</span><span class="n">rejected_cache</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">if</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">source_bytes</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span> <span class="o">!=</span> <span class="n">OJ_DATASET_HASH</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Downloaded OJ dataset differs from the pinned SHA-256 digest.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">source_bytes</span><span class="p">))</span>
 
         <span class="c1"># Cache if directory specified</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_raw_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;oj_large.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">write_bytes_atomically</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;oj_large.csv&quot;</span><span class="p">,</span> <span class="n">source_bytes</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_df</span>
 

@@ -333,6 +333,8 @@
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.__init__"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.production_version"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.production_version</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.staging_version"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.staging_version</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.register"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.register()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.get"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.get()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.get_production"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.get_production()</span></code></a></li>
@@ -780,6 +782,16 @@ quantification, use the complete DML fit with bootstrap/HAC.</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dml_ts.production.model_registry.DMLModelRegistry.production_version">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">production_version</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#dml_ts.production.model_registry.DMLModelRegistry.production_version" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dml_ts.production.model_registry.DMLModelRegistry.staging_version">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">staging_version</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#dml_ts.production.model_registry.DMLModelRegistry.staging_version" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.production.model_registry.DMLModelRegistry.register">
@@ -1229,10 +1241,11 @@ effects may not transfer.</p>
 <dt class="sig sig-object py" id="dml_ts.production.causal_monitor.CausalMonitor.check_nuisance_degradation">
 <span class="sig-name descname"><span class="pre">check_nuisance_degradation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r2_propensity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2_outcome</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2_propensity_baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2_outcome_baseline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/production/causal_monitor.html#CausalMonitor.check_nuisance_degradation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.production.causal_monitor.CausalMonitor.check_nuisance_degradation" title="Link to this definition">#</a></dt>
 <dd><p>Check for nuisance model degradation.</p>
-<p>DML requires well-fitting nuisance models for valid inference.
-Poor nuisance fit leads to biased treatment effects.</p>
-<p>Note: This checks nuisance R², NOT treatment effect accuracy
-(which is fundamentally unknowable).</p>
+<p>Compares held-out R² with configurable predictive thresholds.
+A known randomized assignment can have an optimal propensity R²
+of zero. Choose thresholds appropriate to the assignment design.
+Details report the decrease in R² points. A relative decrease
+uses the absolute baseline magnitude and is undefined at zero.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1798,7 +1811,7 @@ as DML requires different handling than standard ML prediction.</p>
 <li><p><strong>n_jobs</strong> – Parallel jobs for estimation</p></li>
 <li><p><strong>random_state</strong> – Random seed for reproducibility</p></li>
 <li><p><strong>model_registry_path</strong> – Path for model versioning</p></li>
-<li><p><strong>propensity_model</strong> – Model for treatment propensity</p></li>
+<li><p><strong>propensity_model</strong> – Classifier for 0/1 treatment, or regressor for numeric dose</p></li>
 <li><p><strong>outcome_model</strong> – Model for outcome regression</p></li>
 <li><p><strong>use_hac</strong> – Use HAC standard errors for time series</p></li>
 <li><p><strong>hac_bandwidth</strong> – Bandwidth for HAC (None = Andrews data-driven selection)</p></li>
@@ -1806,7 +1819,7 @@ as DML requires different handling than standard ML prediction.</p>
 <li><p><strong>feature_columns</strong> – List of feature/covariate column names</p></li>
 <li><p><strong>treatment_column</strong> – Treatment variable name</p></li>
 <li><p><strong>outcome_column</strong> – Outcome variable name</p></li>
-<li><p><strong>time_column</strong> – Time index column name (for time series)</p></li>
+<li><p><strong>time_column</strong> – Enables forward splits on rows supplied in chronological order</p></li>
 <li><p><strong>entity_column</strong> – Entity/panel identifier (for panel data)</p></li>
 </ul>
 </dd>
@@ -1896,12 +1909,12 @@ as DML requires different handling than standard ML prediction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ate</strong> – Average Treatment Effect estimate</p></li>
+<li><p><strong>ate</strong> – Binary average treatment effect or continuous partially linear slope</p></li>
 <li><p><strong>ate_se</strong> – Standard error of ATE</p></li>
 <li><p><strong>ate_ci_lower</strong> – Lower bound of 95% CI</p></li>
 <li><p><strong>ate_ci_upper</strong> – Upper bound of 95% CI</p></li>
 <li><p><strong>cate</strong> – Conditional ATE (if computed)</p></li>
-<li><p><strong>nuisance_metrics</strong> – R² for propensity and outcome models</p></li>
+<li><p><strong>nuisance_metrics</strong> – Held-out R² for treatment and observed-arm outcome predictions</p></li>
 <li><p><strong>monitoring_results</strong> – Results from causal monitoring</p></li>
 <li><p><strong>model_version</strong> – Version ID of fitted model</p></li>
 <li><p><strong>fit_timestamp</strong> – When model was fitted</p></li>
@@ -1981,7 +1994,7 @@ as DML requires different handling than standard ML prediction.</p>
 <dt class="sig sig-object py" id="dml_ts.production.dml_pipeline.InsuranceDMLPipeline">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.production.dml_pipeline.</span></span><span class="sig-name descname"><span class="pre">InsuranceDMLPipeline</span></span><a class="reference internal" href="../_modules/dml_ts/production/dml_pipeline.html#InsuranceDMLPipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.production.dml_pipeline.InsuranceDMLPipeline" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Production DML pipeline for insurance/annuity pricing analysis.</p>
+<p>Research DML pipeline for insurance/annuity pricing analysis.</p>
 <p>Integrates:
 - Feature transformation (scaling, encoding)
 - DML estimation with time series cross-validation
@@ -2059,7 +2072,7 @@ as DML requires different handling than standard ML prediction.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.production.dml_pipeline.InsuranceDMLPipeline.predict_propensity">
 <span class="sig-name descname"><span class="pre">predict_propensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/production/dml_pipeline.html#InsuranceDMLPipeline.predict_propensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.production.dml_pipeline.InsuranceDMLPipeline.predict_propensity" title="Link to this definition">#</a></dt>
-<dd><p>Predict treatment propensity for new data.</p>
+<dd><p>Predict the probability of treatment or the conditional mean of a numeric dose.</p>
 <p>Uses averaged predictions across all cross-fitting folds.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2265,6 +2278,8 @@ as DML requires different handling than standard ML prediction.</p>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.__init__"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.__init__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.production_version"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.production_version</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.staging_version"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.staging_version</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.register"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.register()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.get"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.get()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.production.model_registry.DMLModelRegistry.get_production"><code class="docutils literal notranslate"><span class="pre">DMLModelRegistry.get_production()</span></code></a></li>

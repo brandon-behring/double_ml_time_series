@@ -310,9 +310,6 @@
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rosenbaum-bounds-dml-ts-sensitivity-rosenbaum">Rosenbaum Bounds (<code class="docutils literal notranslate"><span class="pre">dml_ts.sensitivity.rosenbaum</span></code>)</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#core-questions-answered">Core Questions Answered</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interpretation-guide">Interpretation Guide</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mathematical-foundation">Mathematical Foundation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult"><code class="docutils literal notranslate"><span class="pre">SensitivityResult</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.gamma_critical"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.gamma_critical</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.p_values_by_gamma"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.p_values_by_gamma</span></code></a></li>
@@ -321,6 +318,8 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.se"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.se</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.alpha"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.alpha</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.gamma_values"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.gamma_values</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.crossing_observed"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.crossing_observed</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.gamma_label"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.gamma_label</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.summary"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.summary()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.__init__"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.__init__()</span></code></a></li>
 </ul>
@@ -358,65 +357,28 @@ of identifying assumptions.</p>
 <hr class="docutils" />
 <section id="rosenbaum-bounds-dml-ts-sensitivity-rosenbaum">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Rosenbaum Bounds (<code class="docutils literal notranslate"><span class="pre">dml_ts.sensitivity.rosenbaum</span></code>)</a><a class="headerlink" href="#rosenbaum-bounds-dml-ts-sensitivity-rosenbaum" title="Link to this heading">#</a></h2>
-<p>Sensitivity analysis via Rosenbaum bounds — quantifies how strong
-unmeasured confounding would need to be to overturn causal conclusions.</p>
-<p id="module-dml_ts.sensitivity.rosenbaum">Rosenbaum Bounds Sensitivity Analysis.</p>
-<p>Implements sensitivity analysis for observational studies following
-Rosenbaum (2002). The key insight: if we cannot assume zero hidden bias,
-how much hidden bias would be required to qualitatively change our conclusions?</p>
-<p>The sensitivity parameter Γ (gamma) represents the odds ratio of treatment
-assignment between two units with the same observed covariates but possibly
-different unobserved confounders. Under randomization, Γ = 1. As Γ increases,
-we allow for greater hidden bias.</p>
-<section id="core-questions-answered">
-<h3>Core Questions Answered<a class="headerlink" href="#core-questions-answered" title="Link to this heading">#</a></h3>
-<ol class="arabic simple">
-<li><p>At what Γ does the treatment effect become statistically insignificant?</p></li>
-<li><p>Is the estimate “robust” (Γ_critical &gt; 2) or “fragile” (Γ_critical &lt; 1.2)?</p></li>
-</ol>
-</section>
-<section id="interpretation-guide">
-<h3>Interpretation Guide<a class="headerlink" href="#interpretation-guide" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p>Γ_critical &gt; 2.0: “Robust” - Requires strong unmeasured confounding to overturn</p></li>
-<li><p>Γ_critical ∈ [1.5, 2.0]: “Moderately robust”</p></li>
-<li><p>Γ_critical ∈ [1.2, 1.5]: “Sensitive” - Modest confounding could alter conclusions</p></li>
-<li><p>Γ_critical &lt; 1.2: “Fragile” - Very sensitive to hidden bias</p></li>
-</ul>
-</section>
-<section id="mathematical-foundation">
-<h3>Mathematical Foundation<a class="headerlink" href="#mathematical-foundation" title="Link to this heading">#</a></h3>
-<p>For a treatment effect estimate θ̂ with standard error SE, the bounds at Γ are:</p>
-<blockquote>
-<div><p>Upper p-value: P(Z &gt; z_upper) where z_upper = (θ̂ - Δ(Γ)) / SE
-Lower p-value: P(Z &gt; z_lower) where z_lower = (θ̂ + Δ(Γ)) / SE</p>
-</div></blockquote>
-<p>where Δ(Γ) is the maximum bias consistent with hidden confounding of magnitude Γ.</p>
-<p>For continuous treatments (DML context), we adapt this using the relationship:</p>
-<blockquote>
-<div><p>Δ(Γ) ≈ SE × √((Γ - 1)² / Γ) × adjustment_factor</p>
-</div></blockquote>
-<div class="admonition-references admonition">
-<p class="admonition-title">References</p>
-<p>Rosenbaum, P. R. (2002). Observational Studies (2nd ed.). Springer.</p>
-<p>Rosenbaum, P. R. (2010). Design of Observational Studies. Springer.</p>
-<p>Keele, L. (2010). An overview of rbounds: An R package for Rosenbaum bounds
-sensitivity analysis with matched data. Unpublished manuscript.</p>
-</div>
-</section>
+<p>The scalar diagnostic applies an assumed log-gamma bias to the estimate and its
+standard error. A matched-design Rosenbaum analysis requires assignment and
+matched-set information. Check crossing_observed before reporting a threshold.</p>
+<p id="module-dml_ts.sensitivity.rosenbaum">Illustrative sensitivity curve for a scalar estimate and standard error.</p>
+<p>The assumed bias equals SE × log(Γ) × (n_treated + n_control) /
+(2 × sqrt(n_treated × n_control)). Subtracting that bias from the absolute
+estimate gives an adjusted two-sided normal test. Formal Rosenbaum bounds
+require a specified assignment model and matched data.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dml_ts.sensitivity.rosenbaum.SensitivityResult">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.sensitivity.rosenbaum.</span></span><span class="sig-name descname"><span class="pre">SensitivityResult</span></span><a class="reference internal" href="../_modules/dml_ts/sensitivity/rosenbaum.html#SensitivityResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Result container for Rosenbaum bounds sensitivity analysis.</p>
+<p>Result of the illustrative sensitivity curve (not a formal Rosenbaum bound).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gamma_critical</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The smallest Γ at which the effect becomes statistically insignificant
-(p &gt; α). Higher values indicate more robust findings.</p></li>
-<li><p><strong>p_values_by_gamma</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict[float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float]</span></code>) – Upper-bound p-values at each tested Γ value.</p></li>
-<li><p><strong>interpretation</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Categorical interpretation: “Robust”, “Moderately Robust”,
-“Sensitive”, or “Fragile”.</p></li>
+(p &gt; α), or the upper grid endpoint if the crossing is right-censored.
+Use crossing_observed to distinguish these cases.</p></li>
+<li><p><strong>p_values_by_gamma</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict[float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float]</span></code>) – Adjusted normal-test p-values under the assumed bias curve.</p></li>
+<li><p><strong>interpretation</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – Descriptive category of the reported grid value. For a censored result
+this categorizes the endpoint, which is a lower bound on the threshold.</p></li>
 <li><p><strong>theta</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Original treatment effect estimate.</p></li>
 <li><p><strong>se</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Standard error of the estimate.</p></li>
 <li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – Significance level used (default 0.05).</p></li>
@@ -473,6 +435,18 @@ sensitivity analysis with matched data. Unpublished manuscript.</p>
 <span class="sig-name descname"><span class="pre">gamma_values</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5)"><span class="pre">dtype</span></a><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.gamma_values" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="dml_ts.sensitivity.rosenbaum.SensitivityResult.crossing_observed">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">crossing_observed</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.crossing_observed" title="Link to this definition">#</a></dt>
+<dd><p>Whether a tested p-value exceeded alpha, including at the endpoint.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dml_ts.sensitivity.rosenbaum.SensitivityResult.gamma_label">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gamma_label</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><a class="headerlink" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.gamma_label" title="Link to this definition">#</a></dt>
+<dd><p>Threshold or lower bound for display.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.sensitivity.rosenbaum.SensitivityResult.summary">
 <span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/sensitivity/rosenbaum.html#SensitivityResult.summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.summary" title="Link to this definition">#</a></dt>
@@ -495,10 +469,7 @@ sensitivity analysis with matched data. Unpublished manuscript.</p>
 <dt class="sig sig-object py" id="dml_ts.sensitivity.rosenbaum.RosenbaumBounds">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.sensitivity.rosenbaum.</span></span><span class="sig-name descname"><span class="pre">RosenbaumBounds</span></span><a class="reference internal" href="../_modules/dml_ts/sensitivity/rosenbaum.html#RosenbaumBounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.sensitivity.rosenbaum.RosenbaumBounds" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Rosenbaum bounds sensitivity analysis for continuous treatment DML.</p>
-<p>Computes bounds on treatment effect significance as a function of
-the hidden bias parameter Γ. This helps assess how robust findings
-are to violations of the unconfoundedness assumption.</p>
+<p>Illustrative sensitivity curve for a scalar DML coefficient.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -529,7 +500,7 @@ are to violations of the unconfoundedness assumption.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.sensitivity.rosenbaum.RosenbaumBounds.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/sensitivity/rosenbaum.html#RosenbaumBounds.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.sensitivity.rosenbaum.RosenbaumBounds.__init__" title="Link to this definition">#</a></dt>
-<dd><p>Initialize the Rosenbaum bounds analyzer.</p>
+<dd><p>Set the grid of Γ values and the significance level of the illustrative curve.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -590,7 +561,8 @@ are to violations of the unconfoundedness assumption.</p>
 <li><p><strong>theta</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – DML treatment effect estimate.</p></li>
 <li><p><strong>se</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Standard error from DML.</p></li>
 <li><p><strong>n_samples</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Total sample size.</p></li>
-<li><p><strong>treatment_r2</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – R² of treatment model (used to adjust effective sample size).</p></li>
+<li><p><strong>treatment_r2</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Retained for compatibility. Equal proxy group sizes cancel in the bias
+function, so treatment R² cannot calibrate this curve.</p></li>
 <li><p><strong>gamma_max</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Maximum Γ to test.</p></li>
 <li><p><strong>alpha</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Significance level.</p></li>
 </ul>
@@ -671,9 +643,6 @@ are to violations of the unconfoundedness assumption.</p>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rosenbaum-bounds-dml-ts-sensitivity-rosenbaum">Rosenbaum Bounds (<code class="docutils literal notranslate"><span class="pre">dml_ts.sensitivity.rosenbaum</span></code>)</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#core-questions-answered">Core Questions Answered</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interpretation-guide">Interpretation Guide</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mathematical-foundation">Mathematical Foundation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult"><code class="docutils literal notranslate"><span class="pre">SensitivityResult</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.gamma_critical"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.gamma_critical</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.p_values_by_gamma"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.p_values_by_gamma</span></code></a></li>
@@ -682,6 +651,8 @@ are to violations of the unconfoundedness assumption.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.se"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.se</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.alpha"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.alpha</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.gamma_values"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.gamma_values</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.crossing_observed"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.crossing_observed</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.gamma_label"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.gamma_label</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.summary"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.summary()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.sensitivity.rosenbaum.SensitivityResult.__init__"><code class="docutils literal notranslate"><span class="pre">SensitivityResult.__init__()</span></code></a></li>
 </ul>

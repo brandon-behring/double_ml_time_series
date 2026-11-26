@@ -414,7 +414,29 @@
     <span class="n">time_index</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]</span>
     <span class="n">product_index</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]</span>
     <span class="n">true_params</span><span class="p">:</span> <span class="n">InsuranceDGPParams</span>
-    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span></div>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+
+<div class="viewcode-block" id="InsuranceDGPResult.treatment_history">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.insurance_dgp.InsuranceDGPResult.treatment_history">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">treatment_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_lags</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">intp</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return row indices and T at the preceding months for the same product.</span>
+
+<span class="sd">        Rows without every requested calendar lag are excluded. Lag columns</span>
+<span class="sd">        run from most recent to oldest, in the returned rows&#39; input order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">n_lags</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_lags must be nonnegative&quot;</span><span class="p">)</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">product_index</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_index</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">by_key</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">by_key</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected one treatment per product and month&quot;</span><span class="p">)</span>
+        <span class="n">lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">),</span> <span class="n">n_lags</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="p">(</span><span class="n">product</span><span class="p">,</span> <span class="n">month</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">lag</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_lags</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">lags</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">lag</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">by_key</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">product</span><span class="p">,</span> <span class="n">month</span> <span class="o">-</span> <span class="n">lag</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="n">kept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lags</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">kept</span><span class="p">,</span> <span class="n">lags</span><span class="p">[</span><span class="n">kept</span><span class="p">]</span></div>
+</div>
 
 
 
@@ -629,7 +651,7 @@
         <span class="n">Y</span> <span class="o">+=</span> <span class="n">true_tau</span> <span class="o">*</span> <span class="n">T</span>
 
         <span class="c1"># Macro effects (stacked for all observations)</span>
-        <span class="n">X_macro_expanded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">X_macro</span><span class="p">,</span> <span class="p">(</span><span class="n">n_products</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">X_macro_expanded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">X_macro</span><span class="p">,</span> <span class="n">n_products</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">_key</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">beta_macro</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
             <span class="n">Y</span> <span class="o">+=</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">X_macro_expanded</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
 
@@ -839,7 +861,7 @@
 <span class="sd">        n_periods: Number of time periods (months recommended)</span>
 <span class="sd">        n_products: Number of product lines</span>
 <span class="sd">        true_tau: True treatment effect (competitor price -&gt; our sales)</span>
-<span class="sd">            Default -0.8: 1 bps competitor rate increase -&gt; 0.8 unit sales increase for us</span>
+<span class="sd">            The default slope of -0.8 means 0.8 fewer sales units per basis point.</span>
 <span class="sd">        seed: Random seed for reproducibility</span>
 
 <span class="sd">    Returns:</span>
@@ -873,15 +895,13 @@
     <span class="c1"># Generate firm-level controls</span>
     <span class="n">X_firm</span> <span class="o">=</span> <span class="n">_generate_firm_controls</span><span class="p">(</span><span class="n">n_periods</span><span class="p">,</span> <span class="n">n_products</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
 
-    <span class="c1"># Expand macro to match panel structure</span>
-    <span class="n">X_macro_expanded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">X_macro</span><span class="p">,</span> <span class="p">(</span><span class="n">n_products</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-
-    <span class="c1"># Combine all controls</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X_firm</span><span class="p">,</span> <span class="n">X_macro_expanded</span><span class="p">])</span>
-
-    <span class="c1"># Create indices</span>
+    <span class="c1"># The generators flatten (month, product) arrays. Return every variable</span>
+    <span class="c1"># in the public product-major order, including each month&#39;s common macros.</span>
     <span class="n">time_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_periods</span><span class="p">),</span> <span class="n">n_products</span><span class="p">)</span>
     <span class="n">product_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_products</span><span class="p">),</span> <span class="n">n_periods</span><span class="p">)</span>
+    <span class="n">source_rows</span> <span class="o">=</span> <span class="n">time_index</span> <span class="o">*</span> <span class="n">n_products</span> <span class="o">+</span> <span class="n">product_index</span>
+    <span class="n">X_macro_expanded</span> <span class="o">=</span> <span class="n">X_macro</span><span class="p">[</span><span class="n">time_index</span><span class="p">]</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X_firm</span><span class="p">[</span><span class="n">source_rows</span><span class="p">],</span> <span class="n">X_macro_expanded</span><span class="p">])</span>
 
     <span class="c1"># Description</span>
     <span class="n">desc_parts</span> <span class="o">=</span> <span class="p">[</span>
@@ -901,8 +921,8 @@
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">InsuranceDGPResult</span><span class="p">(</span>
-        <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span>
-        <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span>
+        <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">[</span><span class="n">source_rows</span><span class="p">],</span>
+        <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">[</span><span class="n">source_rows</span><span class="p">],</span>
         <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
         <span class="n">X_macro</span><span class="o">=</span><span class="n">X_macro_expanded</span><span class="p">,</span>
         <span class="n">time_index</span><span class="o">=</span><span class="n">time_index</span><span class="p">,</span>

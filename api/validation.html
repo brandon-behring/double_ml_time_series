@@ -421,6 +421,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.product_index"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.product_index</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.true_params"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.true_params</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.description"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.description</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.treatment_history"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.treatment_history()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.__init__"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.__init__()</span></code></a></li>
 </ul>
 </li>
@@ -717,6 +718,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.storage.ResultStorage.load_cached_dgp"><code class="docutils literal notranslate"><span class="pre">ResultStorage.load_cached_dgp()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.storage.ResultStorage.clear_cache"><code class="docutils literal notranslate"><span class="pre">ResultStorage.clear_cache()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.storage.ResultStorage.get_summary"><code class="docutils literal notranslate"><span class="pre">ResultStorage.get_summary()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.storage.ResultStorage.index"><code class="docutils literal notranslate"><span class="pre">ResultStorage.index</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1700,6 +1702,19 @@ before applying to real competitor pricing data.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="dml_ts.validation.insurance_dgp.InsuranceDGPResult.treatment_history">
+<span class="sig-name descname"><span class="pre">treatment_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_lags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/insurance_dgp.html#InsuranceDGPResult.treatment_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.treatment_history" title="Link to this definition">#</a></dt>
+<dd><p>Return row indices and T at the preceding months for the same product.</p>
+<p>Rows without every requested calendar lag are excluded. Lag columns
+run from most recent to oldest, in the returned rows’ input order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int_" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int_</span></code></a>]], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.double" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">double</span></code></a>]]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.insurance_dgp.InsuranceDGPResult.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_macro</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">product_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.__init__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
@@ -1723,7 +1738,7 @@ and the outcome is our sales volume/market share.</p>
 <li><p><strong>n_periods</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of time periods (months recommended)</p></li>
 <li><p><strong>n_products</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of product lines</p></li>
 <li><p><strong>true_tau</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – True treatment effect (competitor price -&gt; our sales)
-Default -0.8: 1 bps competitor rate increase -&gt; 0.8 unit sales increase for us</p></li>
+The default slope of -0.8 means 0.8 fewer sales units per basis point.</p></li>
 <li><p><strong>seed</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Random seed for reproducibility</p></li>
 </ul>
 </dd>
@@ -4552,6 +4567,12 @@ and simulation outputs.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="dml_ts.validation.storage.ResultStorage.index">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">index</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#dml_ts.validation.storage.ResultStorage.index" title="Link to this definition">#</a></dt>
+<dd><p>Read the last published index, including results saved by other workers.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -4849,6 +4870,7 @@ All functions use the same color scheme, fonts, and layout.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.product_index"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.product_index</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.true_params"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.true_params</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.description"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.description</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.treatment_history"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.treatment_history()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.insurance_dgp.InsuranceDGPResult.__init__"><code class="docutils literal notranslate"><span class="pre">InsuranceDGPResult.__init__()</span></code></a></li>
 </ul>
 </li>
@@ -5145,6 +5167,7 @@ All functions use the same color scheme, fonts, and layout.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.storage.ResultStorage.load_cached_dgp"><code class="docutils literal notranslate"><span class="pre">ResultStorage.load_cached_dgp()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.storage.ResultStorage.clear_cache"><code class="docutils literal notranslate"><span class="pre">ResultStorage.clear_cache()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.storage.ResultStorage.get_summary"><code class="docutils literal notranslate"><span class="pre">ResultStorage.get_summary()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.storage.ResultStorage.index"><code class="docutils literal notranslate"><span class="pre">ResultStorage.index</span></code></a></li>
 </ul>
 </li>
 </ul>

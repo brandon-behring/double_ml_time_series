@@ -872,7 +872,12 @@ to fully nonlinear with temporal dynamics.</p>
 
         <span class="c1"># True parameters</span>
         <span class="n">params</span> <span class="o">=</span> <span class="n">dgp_result</span><span class="o">.</span><span class="n">true_params</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  True τ:        </span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">tau</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">tau_by_product</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Contemporaneous slope: </span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">tau</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pre</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">tau_by_product</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Product 0 slope before month </span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">regime_shift_period</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">pre</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Product 0 slope afterward: </span><span class="si">{</span><span class="n">pre</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">params</span><span class="o">.</span><span class="n">regime_shift</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  AR coef:       </span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">ar_coef</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Seasonal amp:  </span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">seasonal_amplitude</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Regime shift:  </span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">regime_shift</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -896,24 +901,10 @@ to fully nonlinear with temporal dynamics.</p>
 <hr class="docutils" />
 <section id="sensitivity-analysis">
 <h2><a class="toc-backref" href="#id15" role="doc-backlink">Sensitivity Analysis</a><a class="headerlink" href="#sensitivity-analysis" title="Link to this heading">#</a></h2>
-<p>Rosenbaum bounds sensitivity analysis applied to DML results.</p>
+<p>An illustrative log-gamma bias curve for a DML estimate and standard error.</p>
 <div class="literal-block-wrapper docutils container" id="id7">
 <div class="code-block-caption"><span class="caption-text">examples/example_sensitivity.py</span><a class="headerlink" href="#id7" title="Link to this code">#</a></div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Rosenbaum Bounds Sensitivity Analysis.</span>
-
-<span class="sd">Demonstrates sensitivity analysis for DML treatment effect estimates.</span>
-<span class="sd">Quantifies how strong unmeasured confounding would need to be to</span>
-<span class="sd">overturn causal conclusions.</span>
-
-<span class="sd">Interpretation:</span>
-<span class="sd">    - Gamma &gt; 2.0: Robust — strong confounding needed to overturn</span>
-<span class="sd">    - Gamma 1.5-2.0: Moderately robust</span>
-<span class="sd">    - Gamma 1.2-1.5: Sensitive — modest confounding could alter results</span>
-<span class="sd">    - Gamma &lt; 1.2: Fragile — very sensitive to unmeasured confounding</span>
-
-<span class="sd">Usage:</span>
-<span class="sd">    python examples/example_sensitivity.py</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Illustrate an assumed log-gamma bias curve on a DML estimate.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
@@ -971,21 +962,6 @@ to fully nonlinear with temporal dynamics.</p>
 
     <span class="nb">print</span><span class="p">(</span><span class="n">sensitivity</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
     <span class="nb">print</span><span class="p">()</span>
-
-    <span class="c1"># ── Interpretation ───────────────────────────────────────────────────</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Interpretation&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-    <span class="n">gamma_crit</span> <span class="o">=</span> <span class="n">sensitivity</span><span class="o">.</span><span class="n">gamma_critical</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Critical Gamma: </span><span class="si">{</span><span class="n">gamma_crit</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">gamma_crit</span> <span class="o">&gt;</span> <span class="mf">2.0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  → ROBUST: Very strong unmeasured confounding needed to overturn&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">gamma_crit</span> <span class="o">&gt;</span> <span class="mf">1.5</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  → MODERATELY ROBUST: Moderate confounding could affect conclusions&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">gamma_crit</span> <span class="o">&gt;</span> <span class="mf">1.2</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  → SENSITIVE: Modest confounding could alter results&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  → FRAGILE: Very sensitive to unmeasured confounding&quot;</span><span class="p">)</span>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>

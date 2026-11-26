@@ -393,18 +393,17 @@
 <p>Dominick’s orange juice scanner data — a standard cross-sectional causal
 inference benchmark dataset.</p>
 <p id="module-dml_ts.data.oj_loader">Dominick’s Orange Juice Dataset Loader.</p>
-<p>Loads the OJ dataset from Microsoft Azure blob storage. This dataset contains
-store-level panel data on orange juice sales from Dominick’s Finer Foods,
-a major Chicago-area supermarket chain.</p>
+<p>Loads a pinned extract of weekly orange juice sales by brand and store at
+Dominick’s Finer Foods, a Chicago-area supermarket chain.</p>
 <p>The dataset is widely used for causal inference demonstrations, particularly
 for estimating price elasticity of demand with confounders like income and
 demographics.</p>
 <section id="data-source">
 <h3>Data Source<a class="headerlink" href="#data-source" title="Link to this heading">#</a></h3>
 <p>University of Chicago Booth School of Business, Kilts Center for Marketing.
-<a class="reference external" href="https://research.chicagobooth.edu/kilts/marketing-databases/dominicks">https://research.chicagobooth.edu/kilts/marketing-databases/dominicks</a></p>
+<a class="reference external" href="https://www.chicagobooth.edu/research/kilts/research-data/dominicks">https://www.chicagobooth.edu/research/kilts/research-data/dominicks</a></p>
 <p>GitHub mirror (used here):
-<a class="github reference external" href="https://github.com/gchoi/Dataset/raw/refs/heads/master/oj.csv">gchoi/Dataset</a></p>
+<a class="github reference external" href="https://github.com/gchoi/Dataset/blob/8e81d46872564218a78be95d53a9c6bd3b00b199/oj.csv">gchoi/Dataset</a></p>
 <div class="admonition-references admonition">
 <p class="admonition-title">References</p>
 <p>Chernozhukov, V., et al. (2018). Double/debiased machine learning for treatment
@@ -843,7 +842,9 @@ use as control variables in time series DML applications.</p>
 <li><p><strong>series_set</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Pre-defined set (“basic”, “comprehensive”, “financial”, etc.)</p></li>
 <li><p><strong>frequency</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'D'</span></code>, <code class="docutils literal notranslate"><span class="pre">'W'</span></code>, <code class="docutils literal notranslate"><span class="pre">'M'</span></code>, <code class="docutils literal notranslate"><span class="pre">'Q'</span></code>, <code class="docutils literal notranslate"><span class="pre">'A'</span></code>]</span>) – Target frequency (D/W/M/Q/A)</p></li>
 <li><p><strong>custom_series</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Additional series to include</p></li>
-<li><p><strong>transforms</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Dict of series_id -&gt; transform type</p></li>
+<li><p><strong>transforms</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Dict of series_id -&gt; transform type. Year-over-year
+growth compares daily calendar anniversaries, 52 weekly periods,
+or the same month, quarter or year one year earlier.</p></li>
 <li><p><strong>fill_method</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Method for filling missing values</p></li>
 </ul>
 </dd>

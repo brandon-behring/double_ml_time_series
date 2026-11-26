@@ -332,12 +332,17 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC</span><span class="p">,</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypedDict</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">filelock</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileLock</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts._persistence</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_json_atomically</span>
 
 
 <div class="viewcode-block" id="DMLModelVersion">
@@ -682,6 +687,13 @@
 
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">_RegistryState</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="n">versions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">production_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">staging_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">production_history</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+
 <div class="viewcode-block" id="DMLModelRegistry">
 <a class="viewcode-back" href="../../../api/production.html#dml_ts.production.model_registry.DMLModelRegistry">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DMLModelRegistry</span><span class="p">:</span>
@@ -709,34 +721,45 @@
 <span class="sd">        Args:</span>
 <span class="sd">            base_path: Root directory for model storage</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">base_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">base_path</span><span class="p">)</span>
+        <span class="c1"># Absolute, so that a later change of the working directory does not point this</span>
+        <span class="c1"># object at another (empty) registry: the state is read from disk on every call.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">base_path</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_registry_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_path</span> <span class="o">/</span> <span class="s2">&quot;registry.json&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_load_registry</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registry_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_path</span> <span class="o">/</span> <span class="s2">&quot;registry.json&quot;</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_load_registry</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load or initialize registry state.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_registry</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_RegistryState</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read one complete snapshot, including legacy registries without history.&quot;&quot;&quot;</span>
+        <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">state</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;production_version&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;staging_version&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;versions&quot;</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_save_registry</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Persist registry state.&quot;&quot;&quot;</span>
-        <span class="n">state</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;production_version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span><span class="p">,</span>
-            <span class="s2">&quot;staging_version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span><span class="p">,</span>
-            <span class="s2">&quot;versions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="p">,</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;production_version&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;versions&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;versions&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+            <span class="s2">&quot;production_version&quot;</span><span class="p">:</span> <span class="n">current</span><span class="p">,</span>
+            <span class="s2">&quot;staging_version&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;staging_version&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;production_history&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;production_history&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">current</span><span class="p">]</span> <span class="k">if</span> <span class="n">current</span> <span class="k">else</span> <span class="p">[]),</span>
         <span class="p">}</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="nd">@contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">_RegistryState</span><span class="p">]:</span>
+        <span class="k">with</span> <span class="n">FileLock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_path</span> <span class="o">/</span> <span class="s2">&quot;registry.lock&quot;</span><span class="p">):</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_registry</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="n">state</span>
+            <span class="n">write_json_atomically</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry_file</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">state</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">production_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_registry</span><span class="p">()[</span><span class="s2">&quot;production_version&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">staging_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_registry</span><span class="p">()[</span><span class="s2">&quot;staging_version&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_versions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_registry</span><span class="p">()[</span><span class="s2">&quot;versions&quot;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="DMLModelRegistry.register">
 <a class="viewcode-back" href="../../../api/production.html#dml_ts.production.model_registry.DMLModelRegistry.register">[docs]</a>
@@ -750,11 +773,10 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Version ID of registered model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_path</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">version_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">version_id</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_save_registry</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">()</span> <span class="k">as</span> <span class="n">state</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">version_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;versions&quot;</span><span class="p">]:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_path</span><span class="p">)</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">&quot;versions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">version_id</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">version_id</span></div>
 
@@ -785,18 +807,16 @@
 <a class="viewcode-back" href="../../../api/production.html#dml_ts.production.model_registry.DMLModelRegistry.get_production">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_production</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DMLModelVersion</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return current production model, or None if not set.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">production_version</span><span class="p">)</span></div>
+        <span class="n">current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="DMLModelRegistry.get_staging">
 <a class="viewcode-back" href="../../../api/production.html#dml_ts.production.model_registry.DMLModelRegistry.get_staging">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_staging</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DMLModelVersion</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return current staging model, or None if not set.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span><span class="p">)</span></div>
+        <span class="n">current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="DMLModelRegistry.promote_to_staging">
@@ -811,11 +831,10 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            KeyError: If version not found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">version_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Version </span><span class="si">{</span><span class="n">version_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span> <span class="o">=</span> <span class="n">version_id</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_save_registry</span><span class="p">()</span></div>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">()</span> <span class="k">as</span> <span class="n">state</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">version_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;versions&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Version </span><span class="si">{</span><span class="n">version_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">&quot;staging_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">version_id</span></div>
 
 
 <div class="viewcode-block" id="DMLModelRegistry.promote_to_production">
@@ -834,17 +853,17 @@
 <span class="sd">            ValueError: If no version specified and no staging version</span>
 <span class="sd">            KeyError: If specified version not found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No staging version to promote&quot;</span><span class="p">)</span>
-            <span class="n">version_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span>
-
-        <span class="k">if</span> <span class="n">version_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Version </span><span class="si">{</span><span class="n">version_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span> <span class="o">=</span> <span class="n">version_id</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_save_registry</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">()</span> <span class="k">as</span> <span class="n">state</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">version_id</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;staging_version&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">version_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No staging version to promote&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">version_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;versions&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Version </span><span class="si">{</span><span class="n">version_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;production_version&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">version_id</span><span class="p">:</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">&quot;production_history&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">version_id</span><span class="p">)</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">&quot;production_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">version_id</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">&quot;staging_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">return</span> <span class="n">version_id</span></div>
 
@@ -866,28 +885,24 @@
 <span class="sd">            ValueError: If no previous version available</span>
 <span class="sd">            KeyError: If specified version not found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">to_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">to_version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">()</span> <span class="k">as</span> <span class="n">state</span><span class="p">:</span>
+            <span class="n">history</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;production_history&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">to_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">history</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No production version to rollback from&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No previous version available in production history&quot;</span><span class="p">)</span>
+                <span class="n">history</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">to_version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;versions&quot;</span><span class="p">]:</span>
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Version </span><span class="si">{</span><span class="n">to_version</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span> <span class="o">=</span> <span class="n">to_version</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_save_registry</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">to_version</span>
-
-        <span class="c1"># Find previous version (simple: just go one back in list)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No production version to rollback from&quot;</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">current_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">production_version</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Production version not found in version list&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-        <span class="k">if</span> <span class="n">current_idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No previous version available&quot;</span><span class="p">)</span>
-        <span class="n">previous_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="p">[</span><span class="n">current_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span> <span class="o">=</span> <span class="n">previous_version</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_save_registry</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">previous_version</span></div>
+            <span class="k">elif</span> <span class="n">to_version</span> <span class="ow">in</span> <span class="n">history</span><span class="p">:</span>
+                <span class="k">while</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">to_version</span><span class="p">:</span>
+                    <span class="n">history</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># An explicit choice can deploy any registered version.</span>
+                <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to_version</span><span class="p">)</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">&quot;production_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="DMLModelRegistry.list_versions">
@@ -899,10 +914,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            List of dicts with version info (id, created_at, is_production, is_staging)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_registry</span><span class="p">()</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">version_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">version_id</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;versions&quot;</span><span class="p">]:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">version_id</span><span class="p">)</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">DMLModelVersion</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_path</span> <span class="o">/</span> <span class="n">version_id</span><span class="p">)</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="p">{</span>
                         <span class="s2">&quot;version_id&quot;</span><span class="p">:</span> <span class="n">version_id</span><span class="p">,</span>
@@ -910,8 +926,8 @@
                         <span class="s2">&quot;model_type&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">model_type</span><span class="p">,</span>
                         <span class="s2">&quot;n_folds&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
                         <span class="s2">&quot;metrics&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span>
-                        <span class="s2">&quot;is_production&quot;</span><span class="p">:</span> <span class="n">version_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span><span class="p">,</span>
-                        <span class="s2">&quot;is_staging&quot;</span><span class="p">:</span> <span class="n">version_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span><span class="p">,</span>
+                        <span class="s2">&quot;is_production&quot;</span><span class="p">:</span> <span class="n">version_id</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;production_version&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;is_staging&quot;</span><span class="p">:</span> <span class="n">version_id</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;staging_version&quot;</span><span class="p">],</span>
                     <span class="p">}</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -919,8 +935,8 @@
                     <span class="p">{</span>
                         <span class="s2">&quot;version_id&quot;</span><span class="p">:</span> <span class="n">version_id</span><span class="p">,</span>
                         <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
-                        <span class="s2">&quot;is_production&quot;</span><span class="p">:</span> <span class="n">version_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">production_version</span><span class="p">,</span>
-                        <span class="s2">&quot;is_staging&quot;</span><span class="p">:</span> <span class="n">version_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">staging_version</span><span class="p">,</span>
+                        <span class="s2">&quot;is_production&quot;</span><span class="p">:</span> <span class="n">version_id</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;production_version&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;is_staging&quot;</span><span class="p">:</span> <span class="n">version_id</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;staging_version&quot;</span><span class="p">],</span>
                     <span class="p">}</span>
                 <span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span></div>

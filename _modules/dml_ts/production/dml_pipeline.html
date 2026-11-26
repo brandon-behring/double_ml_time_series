@@ -336,10 +336,16 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTC</span><span class="p">,</span> <span class="n">datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">clone</span><span class="p">,</span> <span class="n">is_classifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span><span class="p">,</span> <span class="n">RidgeCV</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_r2</span><span class="p">,</span> <span class="n">theta_via_fwl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.double_ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">_influence_function_se</span>
 
 <span class="c1"># Import our DML components</span>
 <span class="k">try</span><span class="p">:</span>
@@ -348,16 +354,11 @@
         <span class="n">newey_west_se</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.double_ml</span><span class="w"> </span><span class="kn">import</span> <span class="n">double_ml</span>  <span class="c1"># noqa: F401</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.dml.temporal_plr_dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemporalPLRDML</span>  <span class="c1"># noqa: F401</span>
-
     <span class="n">DML_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">_import_error</span><span class="p">:</span>
     <span class="n">DML_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;DML/HAC components unavailable (</span><span class="si">{</span><span class="n">_import_error</span><span class="si">!r}</span><span class="s2">); the demo &quot;</span>
-        <span class="s2">&quot;pipeline will fall back to NAIVE iid standard errors, which &quot;</span>
-        <span class="s2">&quot;understate uncertainty under autocorrelation.&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;Temporal CV and HAC are unavailable (</span><span class="si">{</span><span class="n">_import_error</span><span class="si">!r}</span><span class="s2">).&quot;</span><span class="p">,</span>
         <span class="ne">RuntimeWarning</span><span class="p">,</span>
         <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="p">)</span>
@@ -380,7 +381,7 @@
 <span class="sd">        n_jobs: Parallel jobs for estimation</span>
 <span class="sd">        random_state: Random seed for reproducibility</span>
 <span class="sd">        model_registry_path: Path for model versioning</span>
-<span class="sd">        propensity_model: Model for treatment propensity</span>
+<span class="sd">        propensity_model: Classifier for 0/1 treatment, or regressor for numeric dose</span>
 <span class="sd">        outcome_model: Model for outcome regression</span>
 <span class="sd">        use_hac: Use HAC standard errors for time series</span>
 <span class="sd">        hac_bandwidth: Bandwidth for HAC (None = Andrews data-driven selection)</span>
@@ -388,7 +389,7 @@
 <span class="sd">        feature_columns: List of feature/covariate column names</span>
 <span class="sd">        treatment_column: Treatment variable name</span>
 <span class="sd">        outcome_column: Outcome variable name</span>
-<span class="sd">        time_column: Time index column name (for time series)</span>
+<span class="sd">        time_column: Enables forward splits on rows supplied in chronological order</span>
 <span class="sd">        entity_column: Entity/panel identifier (for panel data)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -417,12 +418,12 @@
 <span class="sd">    Result from a pipeline fit or predict operation.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        ate: Average Treatment Effect estimate</span>
+<span class="sd">        ate: Binary average treatment effect or continuous partially linear slope</span>
 <span class="sd">        ate_se: Standard error of ATE</span>
 <span class="sd">        ate_ci_lower: Lower bound of 95% CI</span>
 <span class="sd">        ate_ci_upper: Upper bound of 95% CI</span>
 <span class="sd">        cate: Conditional ATE (if computed)</span>
-<span class="sd">        nuisance_metrics: R² for propensity and outcome models</span>
+<span class="sd">        nuisance_metrics: Held-out R² for treatment and observed-arm outcome predictions</span>
 <span class="sd">        monitoring_results: Results from causal monitoring</span>
 <span class="sd">        model_version: Version ID of fitted model</span>
 <span class="sd">        fit_timestamp: When model was fitted</span>
@@ -463,7 +464,7 @@
 <a class="viewcode-back" href="../../../api/production.html#dml_ts.production.dml_pipeline.InsuranceDMLPipeline">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">InsuranceDMLPipeline</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Production DML pipeline for insurance/annuity pricing analysis.</span>
+<span class="sd">    Research DML pipeline for insurance/annuity pricing analysis.</span>
 
 <span class="sd">    Integrates:</span>
 <span class="sd">    - Feature transformation (scaling, encoding)</span>
@@ -511,7 +512,7 @@
         <span class="c1"># Initialize components</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="p">:</span> <span class="n">StandardScaler</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_propensity_scores</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_binary_treatment</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ate_se</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -526,52 +527,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span> <span class="o">=</span> <span class="n">RetrainScheduler</span><span class="p">(</span><span class="n">monitor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scheduler</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-        <span class="c1"># Set default models if not provided</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegressionCV</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span> <span class="o">=</span> <span class="n">LogisticRegressionCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">RidgeCV</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span></div>
-
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_data</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Prepare data for DML estimation.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            X: Covariate matrix (n_samples, n_features)</span>
-<span class="sd">            T: Treatment vector (n_samples,)</span>
-<span class="sd">            Y: Outcome vector (n_samples,)</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            Tuple of (X_scaled, T, Y) arrays</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-        <span class="c1"># Fit or transform with scaler</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
-            <span class="n">X_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">X_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">X_scaled</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Y</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_create_cross_validator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeSeriesCrossValidator</span> <span class="o">|</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -639,117 +596,111 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            PipelineResult with estimates and diagnostics</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Prepare data</span>
-        <span class="n">X_scaled</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;X, T and Y must have matching row counts.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">for</span> <span class="n">values</span> <span class="ow">in</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Y</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;X, T and Y must be finite.&quot;</span><span class="p">)</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">levels</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Treatment must vary across observations.&quot;</span><span class="p">)</span>
+        <span class="n">binary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;use_hac=True requires temporalcv HAC components.&quot;</span><span class="p">)</span>
+
+        <span class="n">treatment_learner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span>
+        <span class="k">if</span> <span class="n">treatment_learner</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">treatment_learner</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span> <span class="k">if</span> <span class="n">binary</span> <span class="k">else</span> <span class="n">RidgeCV</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">binary</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">treatment_learner</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The binary treatment model must provide predict_proba.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">binary</span> <span class="ow">and</span> <span class="n">is_classifier</span><span class="p">(</span><span class="n">treatment_learner</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A continuous treatment requires a regression model.&quot;</span><span class="p">)</span>
+        <span class="n">outcome_learner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span>
+        <span class="k">if</span> <span class="n">outcome_learner</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">outcome_learner</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">is_classifier</span><span class="p">(</span><span class="n">outcome_learner</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Use an outcome regressor to estimate conditional outcome means.&quot;</span><span class="p">)</span>
+
         <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
-
-        <span class="c1"># Create cross-validator</span>
-        <span class="n">cv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cross_validator</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
-
-        <span class="c1"># Fit nuisance models and compute orthogonalized residuals</span>
-        <span class="n">propensity_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
-        <span class="n">outcome_predictions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span> <span class="o">=</span> <span class="p">{}</span>
-
+        <span class="n">fold_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">treatment_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="n">outcome_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">binary</span> <span class="k">else</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">propensity_r2_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">outcome_r2_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cross_validator</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">fold</span><span class="p">,</span> <span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">binary</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">train</span><span class="p">])</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training fold </span><span class="si">{</span><span class="n">fold</span><span class="si">}</span><span class="s2"> needs observations in both treatment arms.&quot;</span><span class="p">)</span>
+            <span class="n">prop_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">clone</span><span class="p">(</span><span class="n">treatment_learner</span><span class="p">))</span>
+            <span class="n">prop_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">train</span><span class="p">],</span> <span class="n">T</span><span class="p">[</span><span class="n">train</span><span class="p">])</span>
+            <span class="n">treatment_hat</span><span class="p">[</span><span class="n">test</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_treatment</span><span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">test</span><span class="p">])</span>
 
-        <span class="k">for</span> <span class="n">fold_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">train_idx</span><span class="p">,</span> <span class="n">test_idx</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">)):</span>
-            <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span> <span class="o">=</span> <span class="n">X_scaled</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">X_scaled</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
-            <span class="n">T_train</span><span class="p">,</span> <span class="n">T_test</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">T</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
-            <span class="n">Y_train</span><span class="p">,</span> <span class="n">Y_test</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">train_idx</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+            <span class="n">outcome_models</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">outcome_hat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">rows</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">T</span><span class="p">[</span><span class="n">train</span><span class="p">]</span> <span class="o">==</span> <span class="n">column</span><span class="p">]</span> <span class="k">if</span> <span class="n">binary</span> <span class="k">else</span> <span class="n">train</span>
+                <span class="n">out_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">StandardScaler</span><span class="p">(),</span> <span class="n">clone</span><span class="p">(</span><span class="n">outcome_learner</span><span class="p">))</span>
+                <span class="n">out_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">rows</span><span class="p">],</span> <span class="n">Y</span><span class="p">[</span><span class="n">rows</span><span class="p">])</span>
+                <span class="n">outcome_hat</span><span class="p">[</span><span class="n">test</span><span class="p">,</span> <span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">test</span><span class="p">])</span>
+                <span class="n">outcome_models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_model</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">treatment_hat</span><span class="p">[</span><span class="n">test</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">outcome_hat</span><span class="p">[</span><span class="n">test</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Non-finite nuisance predictions in fold </span><span class="si">{</span><span class="n">fold</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="n">observed_hat</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">outcome_hat</span><span class="p">[</span><span class="n">test</span><span class="p">,</span> <span class="n">T</span><span class="p">[</span><span class="n">test</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)]</span> <span class="k">if</span> <span class="n">binary</span> <span class="k">else</span> <span class="n">outcome_hat</span><span class="p">[</span><span class="n">test</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">fold_ids</span><span class="p">[</span><span class="n">test</span><span class="p">]</span> <span class="o">=</span> <span class="n">fold</span>
+            <span class="n">propensity_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compute_r2</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="n">test</span><span class="p">],</span> <span class="n">treatment_hat</span><span class="p">[</span><span class="n">test</span><span class="p">]))</span>
+            <span class="n">outcome_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compute_r2</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">test</span><span class="p">],</span> <span class="n">observed_hat</span><span class="p">))</span>
+            <span class="n">models</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">outcome_models</span><span class="p">)</span> <span class="k">if</span> <span class="n">binary</span> <span class="k">else</span> <span class="n">outcome_models</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-            <span class="c1"># Clone and fit propensity model</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">clone</span>
-
-            <span class="n">prop_model</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span><span class="p">)</span>
-            <span class="n">out_model</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span><span class="p">)</span>
-
-            <span class="c1"># Fit propensity (treatment) model</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
-                <span class="n">prop_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">T_train</span><span class="p">)</span>
-                <span class="n">propensity_scores</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
-                <span class="c1"># Pseudo-R² for classification</span>
-                <span class="n">prop_r2</span> <span class="o">=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">T_test</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Continuous treatment</span>
-                <span class="n">prop_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">T_train</span><span class="p">)</span>
-                <span class="n">propensity_scores</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-                <span class="n">prop_r2</span> <span class="o">=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">T_test</span><span class="p">)</span>
-
-            <span class="c1"># Fit outcome model (on control or full sample depending on setup)</span>
-            <span class="n">out_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">)</span>
-            <span class="n">outcome_predictions</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-            <span class="n">out_r2</span> <span class="o">=</span> <span class="n">out_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">Y_test</span><span class="p">)</span>
-
-            <span class="n">propensity_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop_r2</span><span class="p">)</span>
-            <span class="n">outcome_r2_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_r2</span><span class="p">)</span>
-
-            <span class="c1"># Store fitted models</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">[</span><span class="n">fold_idx</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="n">out_model</span><span class="p">)</span>
-
-        <span class="c1"># Compute DML estimate</span>
-        <span class="c1"># Using simplified doubly-robust estimator</span>
-        <span class="c1"># theta = E[(Y - m(X)) / e(X) * T] + E[m(X)]</span>
-        <span class="c1"># For binary treatment:</span>
-        <span class="c1"># theta = mean((Y - Y_hat) * T / e_hat - (Y - Y_hat) * (1-T) / (1-e_hat))</span>
-
-        <span class="c1"># Clip propensity scores for stability</span>
-        <span class="n">e_clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">propensity_scores</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">)</span>
-
-        <span class="c1"># Residualized outcome</span>
-        <span class="n">Y_residual</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="n">outcome_predictions</span>
-
-        <span class="c1"># AIPW estimator for binary treatment</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="c1"># Binary treatment</span>
-            <span class="n">treated_term</span> <span class="o">=</span> <span class="n">Y_residual</span> <span class="o">*</span> <span class="n">T</span> <span class="o">/</span> <span class="n">e_clipped</span>
-            <span class="n">control_term</span> <span class="o">=</span> <span class="n">Y_residual</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e_clipped</span><span class="p">)</span>
-            <span class="n">psi</span> <span class="o">=</span> <span class="n">treated_term</span> <span class="o">-</span> <span class="n">control_term</span>
+        <span class="n">scored</span> <span class="o">=</span> <span class="n">fold_ids</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">treatment</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">scored</span><span class="p">],</span> <span class="n">T</span><span class="p">[</span><span class="n">scored</span><span class="p">],</span> <span class="n">treatment_hat</span><span class="p">[</span><span class="n">scored</span><span class="p">]</span>
+        <span class="n">n_used</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_used</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least two held-out observations are required for inference.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">binary</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">treatment</span><span class="p">)</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The scored sample must contain both treatment arms.&quot;</span><span class="p">)</span>
+            <span class="n">mu0</span><span class="p">,</span> <span class="n">mu1</span> <span class="o">=</span> <span class="n">outcome_hat</span><span class="p">[</span><span class="n">scored</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">)</span>
+            <span class="n">pseudo_outcome</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">mu1</span> <span class="o">-</span> <span class="n">mu0</span> <span class="o">+</span> <span class="n">treatment</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">mu1</span><span class="p">)</span> <span class="o">/</span> <span class="n">e</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">treatment</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">mu0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pseudo_outcome</span><span class="p">))</span>
+            <span class="n">psi</span> <span class="o">=</span> <span class="n">pseudo_outcome</span> <span class="o">-</span> <span class="n">ate</span>
+            <span class="n">se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_used</span><span class="p">))</span>
+            <span class="n">observed_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">treatment</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mu1</span><span class="p">,</span> <span class="n">mu0</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Continuous treatment - use partially linear model approach</span>
-            <span class="n">T_residual</span> <span class="o">=</span> <span class="n">T</span> <span class="o">-</span> <span class="n">propensity_scores</span>
-            <span class="c1"># Estimate coefficient via regression of Y_residual on T_residual</span>
-            <span class="n">ate_coefficient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y_residual</span> <span class="o">*</span> <span class="n">T_residual</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T_residual</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">psi</span> <span class="o">=</span> <span class="n">Y_residual</span> <span class="o">-</span> <span class="n">ate_coefficient</span> <span class="o">*</span> <span class="n">T_residual</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span> <span class="o">=</span> <span class="n">ate_coefficient</span>
+            <span class="n">observed_hat</span> <span class="o">=</span> <span class="n">outcome_hat</span><span class="p">[</span><span class="n">scored</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">y_residual</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">observed_hat</span>
+            <span class="n">t_residual</span> <span class="o">=</span> <span class="n">treatment</span> <span class="o">-</span> <span class="n">m</span>
+            <span class="n">ate</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">theta_via_fwl</span><span class="p">(</span>
+                <span class="n">y_residual</span><span class="p">,</span>
+                <span class="n">t_residual</span><span class="p">,</span>
+                <span class="n">treatment</span><span class="o">=</span><span class="n">treatment</span><span class="p">,</span>
+                <span class="n">no_variation_msg</span><span class="o">=</span><span class="s2">&quot;Continuous treatment has no residual variation on scored rows.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">se</span><span class="p">,</span> <span class="n">psi</span> <span class="o">=</span> <span class="n">_influence_function_se</span><span class="p">(</span><span class="n">y_residual</span><span class="p">,</span> <span class="n">t_residual</span><span class="p">,</span> <span class="n">ate</span><span class="p">)</span>
 
-        <span class="c1"># Compute ATE</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span>
-        <span class="n">ate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span>
-
-        <span class="c1"># Compute standard error</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span> <span class="ow">and</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
-            <span class="c1"># Historical quirk preserved: the retired dml_ts hac treated</span>
-            <span class="c1"># bandwidth=None as Andrews selection (an else-branch accident).</span>
-            <span class="c1"># temporalcv rejects None, so map it explicitly; note temporalcv&#39;s</span>
-            <span class="c1"># Andrews uses the literature alpha(1) constant for Bartlett</span>
-            <span class="c1"># (documented deviation from the old implementation).</span>
+        <span class="n">bandwidth</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span><span class="p">:</span>
             <span class="n">bw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hac_bandwidth</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hac_bandwidth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;andrews&quot;</span>
-            <span class="n">se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">newey_west_se</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="n">bw</span><span class="p">)</span><span class="o">.</span><span class="n">se</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">DML_AVAILABLE</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="s2">&quot;use_hac=True but HAC components are unavailable (the &quot;</span>
-                    <span class="s2">&quot;temporalcv/dml imports failed at module load — see the &quot;</span>
-                    <span class="s2">&quot;earlier RuntimeWarning). Refusing to silently report &quot;</span>
-                    <span class="s2">&quot;naive iid standard errors; set use_hac=False to opt &quot;</span>
-                    <span class="s2">&quot;into them explicitly.&quot;</span>
-                <span class="p">)</span>
-            <span class="n">se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ate_se</span> <span class="o">=</span> <span class="n">se</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_propensity_scores</span> <span class="o">=</span> <span class="n">propensity_scores</span>
-
-        <span class="c1"># Compute confidence interval</span>
+            <span class="n">hac</span> <span class="o">=</span> <span class="n">newey_west_se</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">bandwidth</span><span class="o">=</span><span class="n">bw</span><span class="p">)</span>
+            <span class="n">se</span><span class="p">,</span> <span class="n">bandwidth</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">hac</span><span class="o">.</span><span class="n">se</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">hac</span><span class="o">.</span><span class="n">bandwidth</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">se</span><span class="p">)</span> <span class="ow">or</span> <span class="n">se</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The score standard error must be finite and positive.&quot;</span><span class="p">)</span>
         <span class="n">ci_lower</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">-</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">se</span>
         <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">+</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">se</span>
-
-        <span class="c1"># Aggregate nuisance metrics</span>
         <span class="n">nuisance_metrics</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;r2_propensity&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">propensity_r2_list</span><span class="p">)),</span>
-            <span class="s2">&quot;r2_outcome&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outcome_r2_list</span><span class="p">)),</span>
+            <span class="s2">&quot;r2_propensity&quot;</span><span class="p">:</span> <span class="n">compute_r2</span><span class="p">(</span><span class="n">treatment</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span>
+            <span class="s2">&quot;r2_outcome&quot;</span><span class="p">:</span> <span class="n">compute_r2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">observed_hat</span><span class="p">),</span>
             <span class="s2">&quot;r2_propensity_min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">propensity_r2_list</span><span class="p">)),</span>
             <span class="s2">&quot;r2_outcome_min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">outcome_r2_list</span><span class="p">)),</span>
         <span class="p">}</span>
@@ -758,7 +709,7 @@
         <span class="n">monitoring_results</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">monitoring_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span><span class="o">.</span><span class="n">run_all_checks</span><span class="p">(</span>
-                <span class="n">propensity_scores</span><span class="o">=</span><span class="n">propensity_scores</span><span class="p">,</span>
+                <span class="n">propensity_scores</span><span class="o">=</span><span class="n">m</span> <span class="k">if</span> <span class="n">binary</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">r2_propensity</span><span class="o">=</span><span class="n">nuisance_metrics</span><span class="p">[</span><span class="s2">&quot;r2_propensity&quot;</span><span class="p">],</span>
                 <span class="n">r2_outcome</span><span class="o">=</span><span class="n">nuisance_metrics</span><span class="p">[</span><span class="s2">&quot;r2_outcome&quot;</span><span class="p">],</span>
                 <span class="n">current_effect</span><span class="o">=</span><span class="n">ate</span><span class="p">,</span>
@@ -772,30 +723,39 @@
             <span class="s2">&quot;n_folds&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
             <span class="s2">&quot;use_hac&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span><span class="p">,</span>
             <span class="s2">&quot;hac_bandwidth&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hac_bandwidth</span><span class="p">,</span>
-            <span class="s2">&quot;propensity_model&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
-            <span class="s2">&quot;outcome_model&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+            <span class="s2">&quot;propensity_model&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">treatment_learner</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s2">&quot;outcome_model&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">outcome_learner</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="n">feature_names</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">feature_columns</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">feature_columns</span>
-            <span class="k">else</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;X_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+            <span class="k">else</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;X_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span> <span class="o">=</span> <span class="n">DMLModelVersion</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">DMLModelVersion</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
             <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;double_ml&quot;</span><span class="p">,</span>
-            <span class="n">nuisance_models</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">,</span>
+            <span class="n">nuisance_models</span><span class="o">=</span><span class="n">models</span><span class="p">,</span>
             <span class="n">feature_names</span><span class="o">=</span><span class="n">feature_names</span><span class="p">,</span>
             <span class="n">treatment_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">treatment_column</span><span class="p">,</span>
             <span class="n">outcome_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_column</span><span class="p">,</span>
             <span class="n">hyperparameters</span><span class="o">=</span><span class="n">hyperparameters</span><span class="p">,</span>
             <span class="n">metrics</span><span class="o">=</span><span class="n">nuisance_metrics</span><span class="p">,</span>
-            <span class="n">feature_transformer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;binary_treatment&quot;</span><span class="p">:</span> <span class="n">binary</span><span class="p">,</span>
+                <span class="s2">&quot;fold_scaling&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;custom_treatment_model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;custom_outcome_model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">},</span>
         <span class="p">)</span>
 
         <span class="c1"># Register model</span>
-        <span class="n">version_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="p">)</span>
-
+        <span class="n">version_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span> <span class="o">=</span> <span class="n">version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span> <span class="o">=</span> <span class="n">models</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Legacy saves can contain a single external scaler.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ate_se</span> <span class="o">=</span> <span class="n">ate</span><span class="p">,</span> <span class="n">se</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_binary_treatment</span> <span class="o">=</span> <span class="n">binary</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">return</span> <span class="n">PipelineResult</span><span class="p">(</span>
@@ -808,17 +768,28 @@
             <span class="n">model_version</span><span class="o">=</span><span class="n">version_id</span><span class="p">,</span>
             <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
                 <span class="s2">&quot;n_samples&quot;</span><span class="p">:</span> <span class="n">n_samples</span><span class="p">,</span>
-                <span class="s2">&quot;n_features&quot;</span><span class="p">:</span> <span class="n">X_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;n_features&quot;</span><span class="p">:</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;n_used&quot;</span><span class="p">:</span> <span class="n">n_used</span><span class="p">,</span>
+                <span class="s2">&quot;n_unscored&quot;</span><span class="p">:</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="n">n_used</span><span class="p">,</span>
+                <span class="s2">&quot;estimand&quot;</span><span class="p">:</span> <span class="s2">&quot;binary_ate&quot;</span> <span class="k">if</span> <span class="n">binary</span> <span class="k">else</span> <span class="s2">&quot;continuous_plr_slope&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;hac_bandwidth&quot;</span><span class="p">:</span> <span class="n">bandwidth</span><span class="p">,</span>
                 <span class="s2">&quot;n_folds&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">)</span></div>
 
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_predict_treatment</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
+            <span class="p">(</span><span class="n">treated</span><span class="p">,)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">classes_</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">x</span><span class="p">))[:,</span> <span class="n">treated</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
 <div class="viewcode-block" id="InsuranceDMLPipeline.predict_propensity">
 <a class="viewcode-back" href="../../../api/production.html#dml_ts.production.dml_pipeline.InsuranceDMLPipeline.predict_propensity">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict_propensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Predict treatment propensity for new data.</span>
+<span class="sd">        Predict the probability of treatment or the conditional mean of a numeric dose.</span>
 
 <span class="sd">        Uses averaged predictions across all cross-fitting folds.</span>
 
@@ -838,16 +809,13 @@
         <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">X_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">X_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">X</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">)</span>
 
         <span class="c1"># Average across folds</span>
         <span class="n">propensity_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">_fold_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">):</span>
-                <span class="n">propensity_sum</span> <span class="o">+=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">propensity_sum</span> <span class="o">+=</span> <span class="n">prop_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">)</span>
+            <span class="n">propensity_sum</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_treatment</span><span class="p">(</span><span class="n">prop_model</span><span class="p">,</span> <span class="n">X_scaled</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">propensity_sum</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">)</span></div>
 
@@ -882,8 +850,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pipeline must be fitted before evaluation&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Predict propensity on new data</span>
-        <span class="n">propensity_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_propensity</span><span class="p">(</span><span class="n">X_new</span><span class="p">)</span>
+        <span class="c1"># A probability overlap check applies to a binary assignment.</span>
+        <span class="n">propensity_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_propensity</span><span class="p">(</span><span class="n">X_new</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binary_treatment</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="c1"># Get nuisance metrics</span>
         <span class="n">r2_prop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;r2_propensity&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
@@ -968,6 +936,7 @@
         <span class="c1"># Save configuration</span>
         <span class="n">config_data</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;n_folds&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_folds</span><span class="p">,</span>
+            <span class="s2">&quot;model_registry_path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model_registry_path</span><span class="p">),</span>
             <span class="s2">&quot;n_jobs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span>
             <span class="s2">&quot;random_state&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
             <span class="s2">&quot;use_hac&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_hac</span><span class="p">,</span>
@@ -990,6 +959,8 @@
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;scaler.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scaler</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_version</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="c1"># Save fitted state</span>
         <span class="n">state</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;fitted&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fitted</span><span class="p">,</span>
@@ -1030,12 +1001,6 @@
         <span class="n">config</span> <span class="o">=</span> <span class="n">PipelineConfig</span><span class="p">(</span><span class="o">**</span><span class="n">config_data</span><span class="p">)</span>
         <span class="n">pipeline</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 
-        <span class="c1"># Load scaler</span>
-        <span class="n">scaler_path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;scaler.pkl&quot;</span>
-        <span class="k">if</span> <span class="n">scaler_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">scaler_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">pipeline</span><span class="o">.</span><span class="n">_scaler</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
         <span class="c1"># Load state</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;state.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -1046,14 +1011,31 @@
 
         <span class="c1"># Load current version if available</span>
         <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_version_id&quot;</span><span class="p">]:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">pipeline</span><span class="o">.</span><span class="n">_current_version</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_version_id&quot;</span><span class="p">])</span>
-                <span class="c1"># Restore nuisance models</span>
-                <span class="n">models</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_current_version</span><span class="o">.</span><span class="n">get_nuisance_models</span><span class="p">()</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                    <span class="n">pipeline</span><span class="o">.</span><span class="n">_nuisance_models</span> <span class="o">=</span> <span class="n">models</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">pass</span>  <span class="c1"># Version not in registry</span>
+            <span class="n">version_id</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_version_id&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="n">version_id</span> <span class="o">/</span> <span class="s2">&quot;metadata.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">DMLModelVersion</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="n">version_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">version_id</span><span class="p">)</span>
+            <span class="n">pipeline</span><span class="o">.</span><span class="n">_current_version</span> <span class="o">=</span> <span class="n">version</span>
+            <span class="n">pipeline</span><span class="o">.</span><span class="n">_nuisance_models</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
+                <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">version</span><span class="o">.</span><span class="n">get_nuisance_models</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">first_treatment_model</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">pipeline</span><span class="o">.</span><span class="n">_binary_treatment</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;binary_treatment&quot;</span><span class="p">,</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">first_treatment_model</span><span class="p">,</span> <span class="s2">&quot;predict_proba&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">version</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custom_treatment_model&quot;</span><span class="p">):</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">propensity_model</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">first_treatment_model</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">version</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custom_outcome_model&quot;</span><span class="p">):</span>
+                <span class="n">stored_outcome</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_nuisance_models</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_binary_treatment</span><span class="p">:</span>
+                    <span class="n">stored_outcome</span> <span class="o">=</span> <span class="n">stored_outcome</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">outcome_model</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">stored_outcome</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">version</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fold_scaling&quot;</span><span class="p">):</span>
+                <span class="n">pipeline</span><span class="o">.</span><span class="n">_scaler</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">get_feature_transformer</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">_scaler</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;scaler.pkl&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span> <span class="o">/</span> <span class="s2">&quot;scaler.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="n">pipeline</span><span class="o">.</span><span class="n">_scaler</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pipeline</span></div>
 
