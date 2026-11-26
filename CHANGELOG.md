@@ -31,6 +31,27 @@ are the compatibility contract).
 - Docstrings of `double_ml` and `TemporalPLRDML` describe the estimate as the slope of the
   partially linear model. They called it the ATE; with a binary treatment and effects that vary
   with X the slope weights each effect by `Var(T|X)` and can differ from the ATE.
+- `dml_ts.sensitivity` describes its curve as what it is: an assumed log-gamma bias function
+  applied to a two-sided normal test of a scalar estimate. It is not the Rosenbaum bound for
+  matched pairs, and the docstrings, the example and the API page no longer call it one. The
+  result says whether the tested grid crossed the significance level and labels its threshold
+  as a threshold or as a lower bound. (#44)
+- `InsuranceDMLPipeline` fits nuisance preprocessing within folds and reports intervals from
+  held-out scores: the partially linear score for a continuous treatment, the augmented
+  inverse-probability score for a binary one. A binary treatment needs a model with
+  `predict_proba` and a continuous one a regressor; folds or scored samples without both
+  treatment arms raise. `CausalMonitor` compares held-out R² with configurable thresholds and
+  allows for an R² of zero under random assignment. (#60, #64)
+- `create_insurance_dgp` returns every variable in one product-major order, so an outcome, its
+  treatment and its controls belong to the same product and month, and
+  `InsuranceDGPResult.treatment_history(n_lags)` returns the treatment of the same product at
+  the preceding months. Results computed from the generator's earlier output change.
+- `OJDataLoader` checks its download against a pinned SHA-256 digest, and
+  `FREDLoader.get_macro_controls` computes year-over-year changes at the target frequency on
+  calendar anniversaries. (#62)
+- `DMLModelRegistry` and `ResultStorage` write complete JSON documents atomically under a file
+  lock; the registry keeps a deployment history, and a failed archive leaves the prior index and
+  payload in place. `filelock` is a declared dependency.
 
 ### Fixed
 
