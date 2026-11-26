@@ -9,7 +9,7 @@ description: "Regularization bias in ML nuisance estimation, Neyman orthogonalit
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_02.tex
-source_sha256: 712881fe8da89ffc3bed645d24e409ea26debbb3ac986a13c9be3b39494859d7
+source_sha256: ea8848280137d4bcf125429dd206d47a6affbde4fcd04260f0c2db9e1b914482
 provenance:
   ai_tools:
     - Claude Code
@@ -39,7 +39,7 @@ $$
 \end{aligned}
 $$
 
-This works perfectly when the conditional expectations $\mathbb{E}[T_i \mid X_i]$ and $\mathbb{E}[Y_i \mid X_i]$ can be estimated without bias — which is the case with linear regression when the true relationships are linear and low-dimensional.
+With full-rank linear controls, the finite-sample FWL identity reproduces the treatment coefficient from the joint least-squares regression. A causal reading additionally requires a justified assignment model, appropriate adjustment, and residual treatment variation.
 
 ### The regularization bias problem
 
@@ -49,15 +49,7 @@ However, modern causal inference often involves:
 - **Complex nonlinear relationships**: true conditional expectations are nonlinear
 - **Flexible machine learning models**: Lasso, Ridge, Random Forests, Gradient Boosting, Neural Networks
 
-When we use regularized estimators (Lasso, Ridge) or other ML methods to estimate $\mathbb{E}[T_i \mid X_i]$ and $\mathbb{E}[Y_i \mid X_i]$, we introduce **regularization bias**:
-
-$$
-\mathbb{E}[\hat{\mu}_0(X_i)] \neq \mu_0(X_i)
-$$
-
-where $\hat{\mu}_0$ is our regularized estimator and $\mu_0(X_i) = \mathbb{E}[Y_i \mid X_i]$ is the true conditional expectation.
-
-This bias in the first-stage nuisance functions propagates to our treatment effect estimate $\hat{\tau}$, making it inconsistent even as $n \to \infty$.
+Regularized prediction can shrink estimated conditional means toward simpler functions. In a score sensitive to first-order nuisance error, that shrinkage can overwhelm the variation used for ordinary root-$n$ inference. Whether the estimated slope converges to its target depends on the score, the size of those errors and the identifying assumptions.
 
 ### The Double Machine Learning solution
 
@@ -87,13 +79,11 @@ where:
 - $\eta_0$ represents nuisance functions we must estimate (e.g., $\mu_0(x) = \mathbb{E}[Y \mid X=x]$, $m_0(x) = \mathbb{E}[T \mid X=x]$)
 - $\psi$ is the score function
 
-In the FWL case, the score function is:
-
+In the partialling-out score, both conditional means enter as residuals:
 $$
-\psi(W_i; \tau, \eta_0) = (T_i - m_0(X_i)) \cdot (Y_i - \tau \cdot T_i - \mu_0(X_i))
+\psi(W;\tau,\mu,m)=(T-m(X))\{Y-\mu(X)-\tau(T-m(X))\}.
 $$
-
-where $\eta_0 = (\mu_0, m_0)$.
+Here $\mu_0(X)=\mathbb E[Y\mid X]$ and $m_0(X)=\mathbb E[T\mid X]$.
 
 **The problem**: if we estimate $\eta_0$ with bias, we get $\hat{\eta}$ such that $\hat{\eta} - \eta_0 = r_n$ (some estimation error). This error propagates to our estimate of $\tau$.
 
@@ -139,46 +129,22 @@ $$
 where:
 
 - $Y_i$ is the outcome, $T_i$ is treatment, $X_i$ are confounders
-- $g_0(X)$ is the direct effect of confounders on outcome
-- $m_0(X) = \mathbb{E}[T \mid X]$ is the propensity function
+- $g_0(X)$ is the outcome regression component at zero treatment
+- $m_0(X) = \mathbb{E}[T \mid X]$ is the conditional mean of treatment (the propensity for binary treatment)
 - $\mathbb{E}[\epsilon_i \mid T_i, X_i] = 0$ (exogeneity)
 - $\mathbb{E}[v_i \mid X_i] = 0$ (treatment residual is mean-zero)
 
 </Theorem>
 
-The **naive FWL score** is:
-
+There are two useful orthogonal scores in this model. The IV-type score uses the structural outcome component $g$:
 $$
-\psi_{\text{naive}}(W_i; \tau, \eta) = (T_i - m(X_i)) \cdot (Y_i - \tau \cdot T_i - g(X_i))
+\psi_{\mathrm{IV}}(W;\tau,g,m)=(T-m(X))(Y-\tau T-g(X)).
 $$
-
-where $\eta = (g, m)$.
-
-Let's check if this satisfies Neyman orthogonality.
-
-**Check orthogonality with respect to** $m$:
-
-$$
-\begin{aligned}
-\mathbb{E}[\psi_{\text{naive}}(W; \tau_0, \eta)]
-&= \mathbb{E}[(T - m(X)) \cdot (Y - \tau_0 T - g(X))] \\
-&= \mathbb{E}[(T - m(X)) \cdot (g_0(X) - g(X) + \epsilon)]
-\end{aligned}
-$$
-
-Taking the derivative with respect to $m$ (formally, the Gateaux derivative):
-
-$$
-\frac{\partial}{\partial m} \mathbb{E}[\psi_{\text{naive}}]
-= -\mathbb{E}[(g_0(X) - g(X) + \epsilon)]
-\neq 0 \text{ unless } g = g_0
-$$
-
-This is **not** orthogonal. Bias in $\hat{m}$ directly affects $\hat{\tau}$.
+Evaluate its directional derivatives at the true functions. For an arbitrary square-integrable perturbation $h_m(X)$ of $m$, the derivative is $-\mathbb E[h_m(X)\epsilon]=0$. For a perturbation $h_g(X)$ of $g$, the derivative is $-\mathbb E[h_g(X)(T-m_0(X))]=0$. The two conditional mean restrictions above give both equalities. Exercise 2.2 compares this with a genuinely nonorthogonal score.
 
 ### The orthogonal score: partialling out
 
-To achieve orthogonality, we need to **partial out** the nuisance functions from both $Y$ and $T$:
+The partialling-out score uses the two conditional means that can each be fitted as a prediction problem:
 
 $$
 \psi_{\text{DML}}(W_i; \tau, \eta) = (T_i - m(X_i)) \cdot (Y_i - \ell(X_i) - \tau \cdot (T_i - m(X_i)))
@@ -186,12 +152,12 @@ $$
 
 where $\eta = (\ell, m)$ and:
 
-- $\ell(X_i) = \mathbb{E}[Y_i \mid X_i]$ is the **reduced form** (total effect of $X$ on $Y$)
-- $m(X_i) = \mathbb{E}[T_i \mid X_i]$ is the **first stage** (effect of $X$ on $T$)
-
-Notice the key difference: we use $\ell(X_i)$ (the unconditional expectation of $Y$ given $X$) instead of $g(X_i)$ (the direct effect of $X$ on $Y$ controlling for $T$).
+- $\ell(X_i) = \mathbb{E}[Y_i \mid X_i]$ is the **reduced form**, the conditional mean of the outcome.
+- $m(X_i) = \mathbb{E}[T_i \mid X_i]$ is the **first stage**, the conditional mean of treatment.
 
 Under the model, $\ell_0(X) = \mathbb{E}[Y \mid X] = \tau_0 \cdot m_0(X) + g_0(X)$.
+
+With binary treatment, heterogeneous effects change the interpretation of the slope. Suppose two equally sized groups have treatment probabilities 0.1 and 0.5 and effects 0 and 2. The population average effect is 1. The partially linear score weights the groups by their conditional treatment variances, 0.09 and 0.25, and gives a slope of 1.470588 even with both population nuisance functions. An average effect requires a score targeting the population mean contrast.
 
 <Theorem kind="theorem" n="2.1" name="Neyman Orthogonality of DML Score" id="thm-dml-orthogonality">
 
@@ -242,53 +208,31 @@ $$
 
 by $\mathbb{E}[v \mid X] = 0$ and $\mathbb{E}[\epsilon \mid T, X] = 0$.
 
-Now take the derivative with respect to $\ell$:
+Consider any square-integrable changes $h(X)$ and $k(X)$ in the outcome and treatment nuisance functions. Along the path $\ell=\ell_0+\delta h$ and $m=m_0+\delta k$, the population score at the true slope equals
 
 $$
-\frac{\partial}{\partial \ell} \mathbb{E}[\psi_{\text{DML}}] = -\mathbb{E}[(T - m(X))]
+\mathbb{E}\big[(v-\delta k)(\epsilon+\delta(\tau_0 k-h))\big].
 $$
 
-At $\eta = \eta_0$, we have $m = m_0$, so:
-
-$$
-\left. \frac{\partial}{\partial \ell} \mathbb{E}[\psi_{\text{DML}}] \right|_{\eta = \eta_0} = -\mathbb{E}[T - m_0(X)] = -\mathbb{E}[v] = 0
-$$
-
-Similarly, we can verify $\left. \frac{\partial}{\partial m} \mathbb{E}[\psi_{\text{DML}}] \right|_{\eta = \eta_0} = 0$. Therefore, $\psi_{\text{DML}}$ is Neyman orthogonal.
+Its derivative at zero is $\mathbb{E}[v(\tau_0 k-h)-k\epsilon]=0$, since both $v$ and $\epsilon$ have conditional mean zero given $X$. The remaining term is $\delta^2\mathbb{E}[k(h-\tau_0 k)]$. In a balanced example with $\tau_0=2$, $h=k=X$, and $X$ equally likely to be $-1$ or $1$, the score error is exactly $-\delta^2$. Halving both nuisance errors quarters the score error.
 
 </Theorem>
 
 ### Why orthogonality enables machine learning
 
-The Neyman orthogonality condition is crucial because:
-
-1. **Regularization bias is first-order**: Lasso, Ridge, and other ML methods have bias of order $O(n^{-1/2})$ or $O(n^{-1/3})$.
-2. **Orthogonality kills first-order bias**: if $\psi$ is orthogonal, first-order bias in $\hat{\eta}$ doesn't affect $\hat{\tau}$.
-3. **Second-order bias is negligible**: as long as $\|\hat{\eta} - \eta_0\| = o_p(n^{-1/4})$, the second-order term $O(\|\hat{\eta} - \eta_0\|^2)$ is $o_p(n^{-1/2})$.
-
-**Convergence rate requirements.** For $\sqrt{n}$-consistency of $\hat{\tau}$:
-
-- **Non-orthogonal score**: need $\|\hat{\eta} - \eta_0\| = o_p(n^{-1/2})$ (very fast, often impossible with ML).
-- **Orthogonal score**: need $\|\hat{\eta} - \eta_0\| = o_p(n^{-1/4})$ (much slower, achievable with ML).
-
-Modern machine learning methods (Lasso, Random Forest, Neural Networks) typically achieve rates between $n^{-1/4}$ and $n^{-1/3}$, which satisfy the orthogonality requirement but **not** the non-orthogonal requirement.
+Regularization changes fitted nuisance functions. Their convergence rates depend on the model, features, dependence and training size. For the partialling-out score with held-out observations, write $a=\widehat m-m_0$ and $b=\widehat\ell-\ell_0$. Its population drift at the true slope is $\mathbb E[a(b-\tau_0a)]$. A sufficient condition for this error to be negligible on the root-$n$ scale is
+$$
+\|a\|_2(\|b\|_2+|\tau_0|\,\|a\|_2)=o_p(n^{-1/2}).
+$$
+Both errors being $o_p(n^{-1/4})$ suffices. Other combinations can also satisfy the product condition. No learner family alone guarantees a rate. Identification, variation in residual treatment, and control of the empirical score are additional requirements.
 
 ## The Double Machine Learning algorithm
 
-Neyman orthogonality is necessary but not sufficient for valid inference with machine learning. We also need to address **overfitting bias**.
+Orthogonality controls the drift of the population score. Flexible nuisance fits also require control of their dependence on the observations used to estimate the slope.
 
 ### The overfitting problem
 
-Suppose we use the same data to:
-
-1. Estimate nuisance functions $\hat{\ell}(x)$ and $\hat{m}(x)$.
-2. Solve the score equation $\frac{1}{n} \sum_{i=1}^n \psi(W_i; \hat{\tau}, \hat{\eta}) = 0$.
-
-Even with an orthogonal score, this creates **overfitting bias**:
-
-- $\hat{\ell}$ and $\hat{m}$ are optimized to fit the training data.
-- The score equation uses the same data, so $\hat{\tau}$ is biased toward values that make the fitted nuisances look good.
-- This bias does not vanish asymptotically with complex ML models.
+A highly adaptive nuisance fit can use an observation's own outcome when constructing its prediction for that same observation. A learner that interpolates both training responses makes their training residuals zero, leaving no slope to estimate. Held-out predictions remove that direct reuse. In simpler parametric settings, using the same observations can still give valid inference under appropriate regularity conditions.
 
 ### Sample splitting: the DML solution
 
@@ -298,35 +242,21 @@ Even with an orthogonal score, this creates **overfitting bias**:
 
 <MarginNote title="Why $K$-fold?">$K=5$ is the default. Larger $K$ uses more data for nuisance estimation but increases computation.</MarginNote>
 
-The DML cross-fitting procedure:
+On independent observations, divide the sample into a fixed number $K$ of folds. For each fold, fit both nuisance functions on the other folds and predict the held-out rows. Set $V_i=T_i-\widehat m^{(-k(i))}(X_i)$ and $U_i=Y_i-\widehat\ell^{(-k(i))}(X_i)$.
 
-1. **Split data** into $K$ roughly equal-sized folds: $I_1, \ldots, I_K$.
-2. **For each fold** $k = 1, \ldots, K$:
-   1. Estimate nuisance functions on the complement: $\hat{\ell}^{(-k)}$ and $\hat{m}^{(-k)}$ using $\bigcup_{j \neq k} I_j$.
-   2. Compute the fold-specific estimate $\hat{\tau}_k$ by solving $\frac{1}{|I_k|} \sum_{i \in I_k} \psi(W_i; \hat{\tau}_k, \hat{\eta}^{(-k)}) = 0$.
-3. **Aggregate** across folds: $\hat{\tau}_{\text{DML}} = \frac{1}{K} \sum_{k=1}^K \hat{\tau}_k$.
+The pooled-score estimator (DML2), used by the repository's ordinary PLR, is
+$$
+\widehat\tau=\frac{\sum_i V_i U_i}{\sum_i V_i^2}.
+$$
+DML1 first computes the slope within each fold, then averages those slopes. The pooled estimator weights each fold slope by its sum of squared treatment residuals, so the two estimates can differ in finite samples.
 
 </Theorem>
 
-<MarginNote title="Essential">Without sample splitting, overfitting in nuisance estimation contaminates $\hat{\tau}$ — even with orthogonality.</MarginNote>
-
-**Key property**: for each observation $i \in I_k$, the nuisance functions $\hat{\eta}^{(-k)}$ were estimated on **different data** (not including $i$). This breaks the overfitting bias.
+For independent observations, each held-out outcome is excluded from the fit that predicts it. Shared households, panels or serial dependence require a split and uncertainty calculation suited to their sampling and assignment structure.
 
 ### Why K-fold? Why not just 2-fold?
 
-**Theoretical considerations**:
-
-- **2-fold** ($K=2$): simple, uses 50% of data for each nuisance estimation.
-- **K-fold** ($K \geq 2$): uses more data ($(K-1)/K$ fraction) for nuisance estimation, improving accuracy.
-
-**Practical recommendations**:
-
-- $K=2$: fast, sufficient for large datasets ($n > 5000$).
-- $K=5$: good balance between computation and accuracy (most common).
-- $K=10$: better nuisance function estimates, more computation.
-- **Leave-one-out** ($K=n$): optimal nuisance estimates, but computationally expensive.
-
-The original DML paper (Chernozhukov et al., 2018) proves that any $K \geq 2$ yields $\sqrt{n}$-consistent, asymptotically normal estimates.
+With $K$ equal-sized folds, each nuisance fit uses about $(K-1)n/K$ observations. Two folds require fewer fits, while five folds give each learner about four fifths of the sample for training. Optimizing computation and predictive performance depends on the application. The usual fixed-$K$ DML argument allows any fixed integer $K\ge2$ under its regularity conditions. Leave-one-out cross-fitting has $K=n$ and requires a different argument. For a dated deployment question, training information must also be available at the prediction origin.
 
 ### Variance estimation and inference
 
@@ -334,9 +264,9 @@ After obtaining $\hat{\tau}_{\text{DML}}$, we need the standard error for confid
 
 <Theorem kind="theorem" n="2.2" name="Asymptotic Normality of DML" id="thm-dml-asymptotic-normality">
 
-<MarginNote title="Inference">This theorem guarantees valid confidence intervals even with ML nuisance estimation.</MarginNote>
+<MarginNote title="Inference">The theorem gives asymptotic coverage under its sampling and nuisance-rate conditions.</MarginNote>
 
-Under regularity conditions (smoothness, overlap, bounded moments), the DML estimator satisfies:
+For independent observations, fixed-fold cross-fitting, the nuisance product rate above, positive residual treatment variation and suitable moment bounds, the DML estimator satisfies:
 
 $$
 \sqrt{n}(\hat{\tau}_{\text{DML}} - \tau_0) \xrightarrow{d} N(0, \Sigma)
@@ -401,43 +331,39 @@ dml = LinearDML(
     model_t=RandomForestRegressor(n_estimators=100, max_depth=5,
                                    min_samples_leaf=20, random_state=42),
     discrete_treatment=False,
-    linear_first_stages=False,
     cv=5,  # 5-fold cross-fitting
     random_state=42
 )
 # Fit DML estimator
 dml.fit(Y, T, X=X, W=None)
 # Get treatment effect estimate
-tau_dml = dml.effect(X).mean()
+tau_dml = dml.ate(X=X)
 print(f"True ATE: 2.50")
 print(f"DML Estimate: {tau_dml:.3f}")
 # Confidence interval
-tau_interval = dml.effect_interval(X, alpha=0.05)
-ci_lower = tau_interval[0].mean()
-ci_upper = tau_interval[1].mean()
+ci_lower, ci_upper = dml.ate_interval(X=X, alpha=0.05)
 print(f"95% CI: [{ci_lower:.3f}, {ci_upper:.3f}]")
-# Compare to naive OLS (biased due to nonlinearity)
+# Compare to OLS adjusted for the same 20 covariates
 from sklearn.linear_model import LinearRegression
 X_T = np.column_stack([T, X])
-naive_ols = LinearRegression().fit(X_T, Y)
-tau_naive = naive_ols.coef_[0]
-print(f"Naive OLS: {tau_naive:.3f}")
+adjusted_ols = LinearRegression().fit(X_T, Y)
+tau_adjusted = adjusted_ols.coef_[0]
+print(f"Adjusted OLS: {tau_adjusted:.3f}")
 ```
 
-**Expected output**:
+**Measured output with EconML 0.16.0**
 
 ```
 True ATE: 2.50
-DML Estimate: 2.487
-95% CI: [2.398, 2.576]
-Naive OLS: 2.134
+DML Estimate: 2.407
+95% CI: [2.343, 2.471]
+Adjusted OLS: 2.501
 ```
 
-**Observations**:
-
-- **DML**: accurately recovers $\tau = 2.5$ with a valid confidence interval.
-- **Naive OLS**: severely biased (2.134) due to nonlinearity in confounders.
-- **Confidence interval**: covers the true value, validating asymptotic normality.
+The true slope is 2.5. The forest estimate misses it by 0.093 and
+its interval excludes it. OLS adjusts for the same 20 covariates and
+gives 2.501 on these observations. A single dataset supplies an estimation
+error. Bias and coverage require repeated draws.
 
 ### Comparing ML methods for nuisance functions
 
@@ -473,22 +399,20 @@ for name, model in ml_methods.items():
         random_state=42
     )
     dml.fit(Y, T, X=X, W=None)
-    tau = dml.effect(X).mean()
-    tau_interval = dml.effect_interval(X, alpha=0.05)
-    ci_lower = tau_interval[0].mean()
-    ci_upper = tau_interval[1].mean()
+    tau = dml.ate(X=X)
+    ci_lower, ci_upper = dml.ate_interval(X=X, alpha=0.05)
     results.append({
         'Method': name,
         'Estimate': tau,
         'CI_Lower': ci_lower,
         'CI_Upper': ci_upper,
-        'Bias': abs(tau - 2.5),
+        'Absolute_Error': abs(tau - 2.5),
         'CI_Width': ci_upper - ci_lower
     })
 # Display results
 import pandas as pd
 df_results = pd.DataFrame(results)
-print(df_results.to_string(index=False))
+print(df_results.to_string(index=False, float_format=lambda x: f'{x:.3f}'))
 # Visualize
 fig, ax = plt.subplots(figsize=(10, 6))
 methods = df_results['Method']
@@ -506,30 +430,29 @@ ax.set_title('DML Estimates with Different ML Methods')
 ax.legend()
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('../../output/dml_ml_comparison.png', dpi=300, bbox_inches='tight')
+from pathlib import Path
+Path('output').mkdir(exist_ok=True)
+plt.savefig('output/dml_ml_comparison.png', dpi=300, bbox_inches='tight')
 print("\nPlot saved to output/dml_ml_comparison.png")
 ```
 
-**Expected output**:
+**Measured output with EconML 0.16.0**
 
 ```
-          Method  Estimate  CI_Lower  CI_Upper   Bias  CI_Width
-           Lasso     2.623     2.531     2.715  0.123     0.184
-           Ridge     2.578     2.487     2.669  0.078     0.182
-   Random Forest     2.487     2.398     2.576  0.013     0.178
-Gradient Boosting     2.501     2.412     2.590  0.001     0.178
+Method  Estimate  CI_Lower  CI_Upper  Absolute_Error  CI_Width
+            Lasso     2.499     2.462     2.535           0.001     0.073
+            Ridge     2.498     2.464     2.532           0.002     0.068
+    Random Forest     2.407     2.343     2.471           0.093     0.128
+Gradient Boosting     2.272     2.216     2.328           0.228     0.112
+
+Plot saved to output/dml_ml_comparison.png
 ```
 
-**Key insights**:
-
-1. **Lasso**: largest bias (0.123) due to feature selection removing relevant nonlinear terms.
-2. **Ridge**: better than Lasso (0.078 bias) as it shrinks but doesn't eliminate features.
-3. **Random Forest**: excellent performance (0.013 bias), handles nonlinearity well.
-4. **Gradient Boosting**: best performance (0.001 bias), most flexible.
-
-<MarginNote title="Default choice">Random Forest is a good default for DML. Use Gradient Boosting when maximum accuracy is critical.</MarginNote>
-
-**Recommendation**: for complex nonlinear confounding, tree-based methods (Random Forest, Gradient Boosting) outperform linear methods (Lasso, Ridge).
+With these data and settings, lasso and ridge have the smallest absolute
+errors. Both of their intervals contain 2.5. The forest and boosting
+intervals miss 2.5. A single realization can reverse an ordering seen in
+another design. Compare methods over repeated datasets and report both
+effect error and interval calibration.
 
 ### Inspecting first-stage fit quality
 
@@ -570,59 +493,43 @@ for train_idx, test_idx in kfold.split(X):
 print("First-Stage Diagnostics:")
 print(f"E[T|X] R^2: {np.mean(first_stage_T_r2):.3f} (+/-{np.std(first_stage_T_r2):.3f})")
 print(f"E[Y|X] R^2: {np.mean(first_stage_Y_r2):.3f} (+/-{np.std(first_stage_Y_r2):.3f})")
-# Rule of thumb: R^2 > 0.1 is usually sufficient for good DML performance
-if np.mean(first_stage_T_r2) < 0.1:
-    print("\nWARNING: Low first-stage R^2 for T. Consider:")
-    print("   - Adding more confounders")
-    print("   - Using more flexible ML model")
-    print("   - Checking for weak instruments (if using IV-DML)")
+# Compare both losses with a baseline on the same held-out folds.
 ```
 
-**Expected output**:
+**Measured output with EconML 0.16.0**
 
 ```
 First-Stage Diagnostics:
-E[T|X] R²: 0.723 (±0.018)
-E[Y|X] R²: 0.891 (±0.009)
+E[T|X] R^2: 0.611 (+/-0.025)
+E[Y|X] R^2: 0.577 (+/-0.018)
 ```
 
-<MarginNote title="Diagnostic">$R^2 < 0.1$ is a red flag. Either confounding is weak (good) or you're missing important confounders (bad).</MarginNote>
-
-**Interpretation**:
-
-- $R^2 > 0.1$: first stages are strong, DML will perform well.
-- $R^2 < 0.1$: weak first stages, consider improving models or adding confounders.
-- Higher $R^2$ for $Y$ than $T$: common, as $Y$ depends on both $T$ and $X$.
+The fold scores summarize prediction of observed treatments and outcomes.
+The displayed spread is the standard deviation across the five folds.
+Neither score identifies omitted confounding or establishes causal interval
+coverage. For an independently randomized fair coin, the optimal treatment
+prediction is 0.5 and its population $R^2$ is zero. For observational
+treatments also examine residual variation and overlap across covariate strata.
 
 ## When DML outperforms classical methods
 
-DML is not always necessary. Here's a decision framework.
+First choose the intervention, identifying design and target population. In a
+randomized trial, report the design-based estimate and compare adjustment
+methods on the same eligible units. For a plausibly linear observational
+model, compare the residualized estimate with adjusted OLS. For an IV
+effect, report the first stage and reduced form on the same sample.
 
-**Use classical linear regression** (OLS, 2SLS) when:
-
-- Confounders are low-dimensional ($p < n/10$).
-- Relationships are approximately linear.
-- Computational speed is critical.
-- Interpretability of confounder effects matters.
-
-**Use Double Machine Learning** when:
-
-- High-dimensional confounders ($p > n/10$).
-- Strong evidence of nonlinearity.
-- Complex interactions between confounders.
-- You need robust estimates with fewer assumptions.
-- Computational resources are available.
-
-**Warning signs favoring DML**:
-
-- Low $R^2$ in linear first stages (below 0.3).
-- Large differences between linear and nonlinear first-stage predictions.
-- Residual plots showing clear patterns.
-- Domain knowledge suggesting nonlinearity.
+Flexible nuisance regressions are worth testing when substantive knowledge
+suggests nonlinearities or interactions and there are enough informative
+assignment units. Compare them with a simpler specification on matched folds.
+Use held-out prediction losses for the two nuisance roles, residual treatment
+variation for support, and paired effect error and interval coverage when
+truth is available. Identification assumptions about assignment, observation
+and timing are still required.
 
 ## Heterogeneous treatment effects with DML
 
-So far, we've focused on the **Average Treatment Effect** (ATE): $\tau = \mathbb{E}[Y_i(1) - Y_i(0)]$. But treatment effects often vary across individuals based on observable characteristics.
+Under a constant identified effect the PLR slope equals the **average treatment effect** (ATE): $\tau = \mathbb{E}[Y_i(1) - Y_i(0)]$. But treatment effects often vary across individuals based on observable characteristics.
 
 ### Conditional Average Treatment Effect (CATE)
 
@@ -653,20 +560,20 @@ where $\tau(X)$ is the CATE function we want to estimate.
 **Simplest case**: linear heterogeneity
 
 $$
-\tau(X_i) = \theta_0 + \theta_1 X_{i,1} + \cdots + \theta_p X_{i,p} = X_i'\theta
+\tau(X_i) = \theta_0 + \theta_1 X_{i,1} + \cdots + \theta_p X_{i,p} = (1,X_i')\theta
 $$
 
 Then:
 
 $$
-Y_i = (X_i' \theta) \cdot T_i + g_0(X_i) + \epsilon_i
+Y_i = ((1,X_i')\theta) \cdot T_i + g_0(X_i) + \epsilon_i
 $$
 
 **DML for CATE**:
 
 1. **Partial out confounders** from $Y$, $T$, and each interaction $X_j \cdot T$.
 2. **Regress** partialled-out $Y$ on partialled-out interactions.
-3. **Inference**: valid standard errors via sample splitting.
+3. **Inference**: use the covariance of the fitted interaction scores under the sampling design.
 
 ### Python implementation: CATE with EconML
 
@@ -714,37 +621,32 @@ for i, age in enumerate(age_grid):
     print()
 ```
 
-**Expected output**:
+**Measured output**
 
-```
+```text
 Heterogeneous Treatment Effects by Age:
 ============================================================
 Age 30:
   True CATE:     2.600
-  Estimated:     2.587
-  95% CI:        [2.314, 2.860]
+  Estimated:     2.047
+  95% CI:        [1.904, 2.190]
 
 Age 45:
   True CATE:     1.400
-  Estimated:     1.412
-  95% CI:        [1.139, 1.685]
+  Estimated:     1.198
+  95% CI:        [1.099, 1.297]
 
 Age 60:
   True CATE:     0.200
-  Estimated:     0.237
-  95% CI:        [-0.036, 0.510]
+  Estimated:     0.349
+  95% CI:        [0.254, 0.444]
 ```
 
-**Observations**:
-
-- **Age 30**: large positive effect (2.6) — young customers very price-sensitive.
-- **Age 45**: moderate effect (1.4) — middle-aged customers moderately sensitive.
-- **Age 60**: near-zero effect (0.2) — older customers less price-sensitive.
-- **Confidence intervals**: wider for smaller/larger ages (fewer observations), narrower for middle ages.
+The fitted effects decline with age on these three profiles. At the fixed income of 50,000, each pointwise interval misses its planted one-unit effect in this draw. The interval widths are 0.286, 0.198 and 0.190. Three misses in one training sample illustrate a limitation of this fit. Repeated independent samples would be needed to estimate coverage.
 
 ### Interpreting heterogeneity
 
-**Statistical significance of heterogeneity.** Test $H_0: \theta_1 = \theta_2 = \cdots = \theta_p = 0$ (no heterogeneity). If rejected, treatment effects genuinely vary across $X$.
+**Statistical significance of heterogeneity.** Test $H_0: \theta_1 = \theta_2 = \cdots = \theta_p = 0$ (no heterogeneity). Rejection is evidence of effect variation in the tested directions, subject to the model, sampling design and nominal test size.
 
 **Practical significance**:
 
@@ -760,47 +662,23 @@ Age 60:
 
 ## Sensitivity analysis
 
-DML relies on **unconfoundedness**: $\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i$. But what if this fails?
+The observational treatment-effect interpretation here relies on **unconfoundedness**: $\{Y_i(0), Y_i(1)\} \perp\!\!\!\perp T_i \mid X_i$. But what if this fails?
 
 ### Omitted variable bias
 
-Suppose there's an unobserved confounder $U_i$ such that:
-
+Suppose $T=m_0(X)+\gamma U+v$ and $Y=\tau T+g_0(X)+\delta U+\epsilon$, with $U,v,\epsilon$ independent of one another and of $X$, centered, and with finite variances. Omitting $U$ leaves residual treatment $V=\gamma U+v$. The population slope after partialling out $X$ is
 $$
-\begin{aligned}
-T_i &= m_0(X_i) + \gamma U_i + v_i \\
-Y_i &= \tau T_i + g_0(X_i) + \delta U_i + \epsilon_i
-\end{aligned}
+\tau_X=\tau+\delta\frac{\mathbb E[VU]}{\mathbb E[V^2]}
+      =\tau+\frac{\delta\gamma\operatorname{Var}(U)}
+                   {\gamma^2\operatorname{Var}(U)+\operatorname{Var}(v)}.
 $$
-
-Then our DML estimate $\hat{\tau}_{\text{DML}}$ is biased:
-
-$$
-\operatorname*{plim}_{n \to \infty} \hat{\tau}_{\text{DML}} = \tau + \frac{\delta \gamma \, \text{Var}(U)}{\text{Var}(v)}
-$$
-
-The bias depends on:
-
-- $\delta$: effect of $U$ on $Y$.
-- $\gamma$: effect of $U$ on $T$.
-- Correlation between $U$ and treatment residuals.
+In the example below, $\delta=0.8$, $\gamma=0.5$ and both variances are one. The omitted-variable shift is $0.32$, giving a population slope of $2.32$ when the causal slope is $2$. The shift in a single pair of fitted estimates also contains sampling and learner error.
 
 ### Sensitivity bound analysis
 
-**Question**: how strong would an omitted confounder need to be to invalidate our findings?
+Cinelli and Hazlett's robustness value for a linear regression expresses a change in the fitted coefficient in terms of two partial $R^2$ values. One measures the association of an omitted variable with treatment given the observed controls. The other measures its association with outcome given treatment and controls. For a chosen fractional reduction $q$, the robustness value is the tipping-point strength when **both** partial $R^2$ values equal the same value and bias acts in the adverse direction. A significance-based calculation also specifies a significance level and accounts for the change in the standard error.
 
-**Cinelli & Hazlett (2020) approach.** Compute the **Robustness Value** (RV):
-
-$$
-\text{RV}_{\alpha} = \min_{U} \{R^2_{Y \sim U \mid T, X}, \; R^2_{T \sim U \mid X}\}
-$$
-
-such that adding $U$ would change the point estimate by $\alpha$ or make it statistically insignificant.
-
-**Interpretation**:
-
-- $\text{RV}_{0.5} = 0.15$: an unobserved confounder would need to explain 15% of the residual variance in both $Y$ and $T$ to reduce $\hat{\tau}$ by 50%.
-- $\text{RV}_{\text{sig}} = 0.05$: a confounder explaining just 5% of variance in both could make the result non-significant — **fragile**.
+For example, an RV of 0.15 for a 50% reduction means that equal strengths of 0.15 suffice under that regression calculation. Unequal strengths can also produce the same reduction. Comparing them with observed covariates requires an explicit benchmarking assumption. The following simulation directly reveals the consequence of omitting its known $U$.
 
 ### Python implementation: sensitivity analysis
 
@@ -823,9 +701,9 @@ dml_biased = LinearDML(
     cv=5,
     random_state=42
 )
-dml_biased.fit(Y, T, X=X, W=None)
-tau_biased = dml_biased.effect(X).mean()
-# DML with U observed (correct estimate)
+dml_biased.fit(Y, T, W=X)
+tau_biased = float(dml_biased.ate())
+# The same scalar score with the additional confounder
 X_with_U = np.column_stack([X, U])
 dml_correct = LinearDML(
     model_y=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
@@ -833,46 +711,27 @@ dml_correct = LinearDML(
     cv=5,
     random_state=42
 )
-dml_correct.fit(Y, T, X=X_with_U, W=None)
-tau_correct = dml_correct.effect(X_with_U).mean()
-# Sensitivity analysis: how much does U matter?
-bias = abs(tau_biased - tau_correct)
-rel_bias_pct = 100 * bias / 2.0
-print("Sensitivity Analysis:")
-print("=" * 50)
-print(f"True ATE: 2.000")
-print(f"DML without U: {tau_biased:.3f} (biased)")
-print(f"DML with U:    {tau_correct:.3f} (correct)")
-print(f"Absolute Bias: {bias:.3f}")
-print(f"Relative Bias: {rel_bias_pct:.1f}%")
-print()
-print("Interpretation:")
-print(f"  Omitting confounder U changed estimate by {rel_bias_pct:.1f}%")
-print(f"  This shows sensitivity to unconfoundedness violations")
+dml_correct.fit(Y, T, W=X_with_U)
+tau_correct = float(dml_correct.ate())
+delta_fit = tau_biased - tau_correct
+print(f"True one-unit effect: {2.0:.3f}")
+print(f"Fit omitting U: {tau_biased:.3f}")
+print(f"Fit including U: {tau_correct:.3f}")
+print(f"Change between fits: {delta_fit:+.3f}")
+print(f"Change as percent of true effect: {100 * delta_fit / 2.0:+.1f}%")
 ```
 
-**Expected output**:
+**Measured output**
 
-```
-Sensitivity Analysis:
-==================================================
-True ATE: 2.000
-DML without U: 2.234 (biased)
-DML with U:    1.987 (correct)
-Absolute Bias: 0.247
-Relative Bias: 12.4%
-
-Interpretation:
-  Omitting confounder U changed estimate by 12.4%
-  This shows sensitivity to unconfoundedness violations
+```text
+True one-unit effect: 2.000
+Fit omitting U: 2.242
+Fit including U: 1.951
+Change between fits: +0.290
+Change as percent of true effect: +14.5%
 ```
 
-**Key lessons**:
-
-1. **Unconfoundedness is untestable** — we can never prove all confounders are observed.
-2. **Sensitivity analysis quantifies robustness** — it shows how fragile estimates are to violations.
-3. **Domain knowledge is critical** — think hard about plausible unobserved confounders.
-4. **Compare to benchmark confounders** — if $\text{RV} > R^2_{\text{strongest observed}}$, the result is robust.
+The difference between these two fits measures the change on this simulated dataset. Its population counterpart is the omitted-variable shift derived above. In observed data an analyst can compare tipping-point strengths with substantively credible confounders. A benchmark covariate alone cannot establish that stronger confounding is absent.
 
 ## Influence functions and asymptotic theory
 
@@ -914,51 +773,20 @@ This orthogonality property makes DML robust to first-order bias in $\hat{\ell}$
 
 ### Von Mises expansion
 
-The **von Mises expansion** links the finite-sample error to the influence function:
-
+For the unnormalized partialling-out score $s=(T-m)(Y-\ell-\tau(T-m))$, an expansion at the true nuisance functions separates population and sampling errors. Define $V=T-m_0(X)$, $U=Y-\ell_0(X)-\tau_0V$, $a=\widehat m-m_0$ and $b=\widehat\ell-\ell_0$. On a held-out fold, condition on its nuisance training sample. The change in the score at $\tau_0$ is
 $$
-\hat{\tau} - \tau_0 = \frac{1}{n} \sum_{i=1}^n \psi(W_i; \tau_0, \eta_0)
-+ \frac{1}{n} \sum_{i=1}^n \left[ \psi(W_i; \tau_0, \hat{\eta}) - \psi(W_i; \tau_0, \eta_0) \right]
-+ R_n
+V(-b+\tau_0a)-aU+a(b-\tau_0a).
 $$
-
-where $R_n$ is a higher-order remainder term.
-
-**Without orthogonality**, the second term (nuisance estimation error) is $O_p(n^{-1/2})$ if $\|\hat{\eta} - \eta_0\| = O_p(n^{-1/2})$, which contaminates the first term.
-
-**With orthogonality**, the second term is $O_p(n^{-1/2} \cdot \|\hat{\eta} - \eta_0\|^2)$ (second-order), which vanishes if $\|\hat{\eta} - \eta_0\| = o_p(n^{-1/4})$.
-
-This is why DML works with slower-converging ML methods.
+The first two terms have mean zero under the conditional mean restrictions. The remaining population drift is $\mathbb E[a(b-\tau_0a)]$. With independent evaluation observations and suitable moment bounds, the centered empirical fluctuation of the score difference is $o_p(n^{-1/2})$ as its $L_2$ norm vanishes. The population drift itself must also be $o_p(n^{-1/2})$. To convert score errors to slope errors, divide by the empirical mean squared treatment residual, which converges to $\mathbb E[V^2]>0$.
 
 ### Asymptotic normality proof sketch
 
-Under regularity conditions:
-
-1. **Overlap**: $0 < c \leq \text{Var}(T_i \mid X_i) \leq C < \infty$.
-2. **Smoothness**: $m_0, \ell_0 \in C^2$ (twice continuously differentiable).
-3. **Moment bounds**: $\mathbb{E}[Y_i^4], \mathbb{E}[T_i^4] < \infty$.
-4. **Nuisance convergence**: $\|\hat{\ell} - \ell_0\|_2, \|\hat{m} - m_0\|_2 = o_p(n^{-1/4})$.
-
-Then:
-
+For independent observations, assume the preceding product-rate and score-moment conditions, cross-fitting with fixed $K$, and positive finite residual treatment variation. Write $\phi=VU/\mathbb E[V^2]$ for the influence contribution and assume it has positive finite variance. The score expansion gives
 $$
-\sqrt{n}(\hat{\tau}_{\text{DML}} - \tau_0) \xrightarrow{d} N(0, \Sigma)
+\sqrt{n}(\widehat\tau-\tau_0)=n^{-1/2}\sum_{i=1}^n\phi_i+o_p(1)
+\quad\Longrightarrow\quad N(0,\mathbb E[\phi^2]).
 $$
-
-where:
-
-$$
-\Sigma = \mathbb{E}\left[\frac{(T_i - m_0(X_i))^2 (Y_i - \tau_0 T_i - \ell_0(X_i) + \tau_0 m_0(X_i))^2}{(\mathbb{E}[(T_i - m_0(X_i))^2])^2}\right]
-$$
-
-**Proof sketch**:
-
-1. **Expand** $\hat{\tau} - \tau_0$ using the von Mises expansion.
-2. **Apply the CLT** to $\frac{1}{\sqrt{n}} \sum_{i=1}^n \psi(W_i; \tau_0, \eta_0)$ (first-order term).
-3. **Show** the second-order term is $o_p(n^{-1/2})$ using orthogonality plus the $o_p(n^{-1/4})$ nuisance rate.
-4. **Conclude** asymptotic normality with variance $\Sigma$.
-
-**Importance**: this theorem guarantees that confidence intervals have correct coverage even with ML nuisance estimates.
+The central limit theorem applies to the leading mean-zero sum. A consistent estimate of its variance yields asymptotically nominal intervals. In a dependent series the leading variance can include lagged score covariances and the empirical-process argument requires dependence assumptions. Chapter 5 measures how finite-sample coverage changes under serial dependence.
 
 ## Practical tips for DML implementation
 
@@ -996,16 +824,15 @@ Based on extensive simulation studies and real-world applications, here are best
 
 ### Hyperparameter tuning strategy
 
-**Critical consideration**: hyperparameters should be tuned for **prediction accuracy**, not treatment effect accuracy.
-
-**Recommended approach**:
-
-1. **Split data** into a tuning set (20%) and a main set (80%).
-2. **Tune on the tuning set**: optimize $R^2$ for predicting $Y$ and $T$ separately.
-3. **Apply tuned hyperparameters** to the main set for DML estimation.
-4. **Never** tune hyperparameters to maximize $\hat{\tau}$ — this invalidates inference.
-
-**Cross-validation within DML.** EconML's `cv=5` parameter performs 5-fold cross-fitting, where each fold uses the complement's data. Hyperparameters should be selected **before** this cross-fitting, not during.
+Choose the criterion separately for each nuisance. Use held-out squared
+error for a conditional mean or a proper probability loss for an assignment
+probability. Freeze the settings on independent tuning data or use inner
+folds within each outer training set. For a deployment claim, this includes
+preprocessing and uses only information available at the forecast origin.
+Report the selection rule before evaluating effect error or interval
+coverage on independent data or known-truth simulations. Selecting the
+largest observed effect on the reporting sample invalidates its ordinary
+interval interpretation.
 
 ### Diagnosing DML estimates
 
@@ -1014,9 +841,8 @@ After obtaining $\hat{\tau}_{\text{DML}}$, always check the following.
 **1. First-stage fit quality**
 
 ```python
-# Good: R^2 > 0.1 for both T and Y
-# Warning: R^2 < 0.1 suggests weak confounding (check overlap assumption)
-# Critical: R^2 ~ 0 means no confounding (maybe RCT? Or missing confounders?)
+# Report held-out loss for each nuisance and its design-specific baseline.
+# Inspect residual treatment variation and overlap on the scored units.
 ```
 
 **2. Residual patterns**
@@ -1079,29 +905,14 @@ plt.tight_layout()
 ### When to use DML vs. alternatives
 
 ```
-Is treatment randomized (RCT)?
-+- YES -> Use simple difference-in-means (no need for DML)
-+- NO  -> Continue
-
-Are confounders observed?
-+- NO  -> Use instrumental variables or RDD (DML won't help)
-+- YES -> Continue
-
-Are confounders high-dimensional (p > n/10) or nonlinear?
-+- NO  -> Use standard OLS regression (DML not needed)
-+- YES -> Continue
-
-Do you have sufficient sample size (n > 500)?
-+- NO  -> Use regularized regression with caution (DML needs larger n)
-+- YES -> Use DML
-
-Is treatment continuous or binary?
-+- Continuous -> LinearDML
-+- Binary     -> LinearDML (same class handles both)
-
-Do you expect heterogeneous effects?
-+- YES -> Use CATE estimation (LinearDML with featurizer)
-+- NO  -> Use ATE estimation (LinearDML with featurizer=None)
+1. Define the intervention, target population, units and horizon.
+2. Identify assignment. For randomization, start with the design contrast.
+   Use an IV or discontinuity only with a credible instrument or threshold.
+3. Compare adjusted OLS or ANCOVA with cross-fitted nuisance adjustment
+   on the same rows. For dynamic effects, define exposure histories.
+4. Evaluate nuisance losses, residual treatment variation and uncertainty.
+   Count independent assigning units and eligible future periods.
+5. Evaluate heterogeneity or a policy on held-out outcome-based contrasts.
 ```
 
 ## Summary
@@ -1111,7 +922,7 @@ This chapter developed the theoretical foundation for Double Machine Learning.
 <ResultBox>
 
 1. **Neyman orthogonality**: structure estimation to be robust to first-order bias in nuisance functions.
-2. **Sample splitting**: use cross-fitting to eliminate overfitting bias.
+2. **Sample splitting**: use held-out predictions to limit own-observation overfitting.
 3. **Asymptotic properties**: DML achieves $\sqrt{n}$-consistency and asymptotic normality with flexible ML.
 4. **Implementation**: EconML provides established tools with automatic inference.
 5. **Diagnostics**: check first-stage fit quality and compare ML methods.
@@ -1121,9 +932,9 @@ This chapter developed the theoretical foundation for Double Machine Learning.
 **Key takeaways**:
 
 - Orthogonality allows ML methods with regularization bias (Lasso, Ridge) to be used.
-- Cross-fitting prevents overfitting from contaminating treatment effect estimates.
-- Tree-based methods (Random Forest, Gradient Boosting) handle nonlinearity best.
-- First-stage $R^2 > 0.1$ is usually sufficient for good DML performance.
+- Cross-fitting scores each observation using nuisance fits from other folds.
+- Trees can represent nonlinearities and interactions. Compare them with simpler learners on matched data.
+- First-stage $R^2$ describes prediction. Assess treatment support and effect uncertainty separately.
 
 ## Roadmap to Chapter 3
 
@@ -1133,209 +944,108 @@ Chapter 3 develops a **comprehensive validation battery** to verify that our DML
 2. **Synthetic Monte Carlo**: 1,000 runs with known true $\tau$, check 95% coverage.
 3. **Cross-implementation**: compare manual DML vs. EconML vs. R DoubleML.
 4. **Diagnostics**: first-stage fit, residual analysis, sensitivity checks.
-5. **Real-world benchmarks**: public datasets with known treatment effects.
+5. **Real-world benchmarks**: public datasets with a published comparison or randomized assignment.
 6. **DGP generator**: parametric data generator with unit tests.
-7. **Confidence interval coverage**: verify asymptotic normality empirically.
+7. **Confidence interval coverage**: measure coverage of nominal intervals across independent draws.
 
-This validation ensures we can trust our DML estimates before applying them to real insurance pricing problems.
+These checks evaluate the stated estimators and data-generating processes. A real pricing analysis also needs its own assignment, timing and support evidence.
 
 ## Exercises
 
 ### Exercise 2.1: Verifying orthogonality (conceptual)
 
-Consider the average treatment effect (ATE) in a randomized experiment where $T_i \perp X_i$:
+Consider independent Bernoulli assignment with known constant probability $0<e<1$, independent of both potential outcomes. Which observable score identifies the ATE? What changes when its weights use a different number?
 
+**Solution.** Consistency gives $Y=TY(1)+(1-T)Y(0)$. Define the Horvitz–Thompson signal
 $$
-\psi_{\text{RCT}}(W_i; \tau) = Y_i(1) - Y_i(0) - \tau = (T_i Y_i / e) - ((1 - T_i) Y_i / (1 - e)) - \tau
+Z=TY/e-(1-T)Y/(1-e).
 $$
+Conditional on both potential outcomes, averaging over assignment gives $\mathbb E[Z\mid Y(1),Y(0)]=Y(1)-Y(0)$. The realized $Z$ uses one observed outcome. The equation $\mathbb E[Z-\tau]=0$ therefore identifies the ATE using only quantities known by design or observed. Optional outcome adjustment introduces nuisance functions and requires its own inference argument.
 
-where $e = P(T_i = 1)$ is known.
-
-**(a)** Does this score involve any nuisance functions?
-
-**(b)** Why doesn't RCT estimation require Neyman orthogonality or sample splitting?
-
-**(c)** What happens if we incorrectly estimate $e$ as $\hat{e} \neq e$?
-
-**Solution 2.1.**
-
-**(a)** Yes, the propensity score $e$ is technically a nuisance parameter, but it's **known** by design in an RCT (e.g., $e = 0.5$ for balanced randomization).
-
-**(b)** In RCTs: no confounding, $T_i \perp (Y_i(0), Y_i(1))$; no need to estimate conditional expectations $\mathbb{E}[Y \mid X]$ or $\mathbb{E}[T \mid X]$; the propensity score $e$ is known, not estimated. Therefore there is no nuisance estimation error and no need for orthogonality.
-
-**(c)** If we estimate $e$ incorrectly: bias in $\hat{\tau}$, $\mathbb{E}[\hat{\tau}] \neq \tau_0$; variance inflation, since IPW weights $1/\hat{e}$ become unstable. But in practice, $e$ is known from the randomization protocol.
-
-**Insight**: randomization eliminates confounding, which eliminates the need for complex orthogonal estimation strategies. This is why RCTs are the "gold standard."
+Substituting an incorrect fixed $q$ into the weights gives expectation $(e/q)\mathbb E[Y(1)]-[(1-e)/(1-q)]\mathbb E[Y(0)]$. This generally changes the target. Substituting the realized treatment fraction instead yields the usual difference in arm means when both arms are present. Conditional on their sizes, randomization makes that difference unbiased in the stated design.
 
 ### Exercise 2.2: Non-orthogonal score bias (mathematical)
 
-Consider the naive FWL score:
-
+For $Y=\tau_0T+g_0(X)+\epsilon$ with $\mathbb E[\epsilon\mid T,X]=0$, compare the two population moments
 $$
-\psi_{\text{naive}}(W_i; \tau, \eta) = (T_i - m(X_i)) \cdot (Y_i - \tau \cdot T_i - g(X_i))
+\mathbb E[T(Y-\tau T-g(X))],\qquad
+\mathbb E[(T-m(X))(Y-\tau T-g(X))].
 $$
+How does a perturbation $g=g_0+b$ affect each score?
 
-Suppose we estimate $m(X)$ with bias $\hat{m}(X) - m_0(X) = b_n(X)$ where $\mathbb{E}[b_n(X)^2] = O(n^{-1})$.
+**Solution.** At the true slope, the first moment changes by $-\mathbb E[Tb(X)]$. If $\mathbb E[T^2]>0$, its population root at the fitted $g$ shifts by $-\mathbb E[Tb(X)]/\mathbb E[T^2]$. A perturbation of order $n^{-1/2}$ can leave a nonzero shift on the root-$n$ scale. A shifted limiting distribution can invalidate a confidence interval centered as if there were no bias, even when the estimator remains root-$n$ consistent.
 
-**(a)** Show that the bias in $\hat{\tau}$ is first-order: $O(n^{-1/2})$.
-
-**(b)** Explain why this violates $\sqrt{n}$-consistency.
-
-**Solution 2.2.**
-
-**(a)** The estimating equation is:
-
-$$
-\frac{1}{n} \sum_{i=1}^n \psi_{\text{naive}}(W_i; \hat{\tau}, \hat{\eta}) = 0
-$$
-
-Expand around the true values:
-
-$$
-0 = \frac{1}{n} \sum_{i=1}^n (T_i - \hat{m}(X_i)) (Y_i - \hat{\tau} T_i - \hat{g}(X_i))
-$$
-
-Substitute $\hat{m} = m_0 + b_n$:
-
-$$
-0 = \frac{1}{n} \sum_{i=1}^n (T_i - m_0(X_i) - b_n(X_i)) (Y_i - \hat{\tau} T_i - \hat{g}(X_i))
-$$
-
-The bias term $b_n(X_i)$ creates:
-
-$$
--\frac{1}{n} \sum_{i=1}^n b_n(X_i) (Y_i - \hat{\tau} T_i - \hat{g}(X_i))
-\approx -\mathbb{E}[b_n(X) \cdot (g_0(X) - \hat{g}(X) + \epsilon)]
-$$
-
-If $\hat{g}$ also has bias, this is $O(n^{-1})$. Solving for $\hat{\tau}$, the bias propagates as:
-
-$$
-\hat{\tau} - \tau_0 \approx \frac{\mathbb{E}[b_n(X) \cdot (\ldots)]}{\mathbb{E}[(T - m_0(X))^2]} = O(n^{-1})
-$$
-
-Therefore, $\mathbb{E}[\hat{\tau} - \tau_0] = O(n^{-1})$, which means:
-
-$$
-\sqrt{n}(\hat{\tau} - \tau_0) = O(\sqrt{n} \cdot n^{-1}) = O(n^{-1/2}) \not\to 0
-$$
-
-**(b)** For $\sqrt{n}$-consistency, we need $\sqrt{n}(\hat{\tau} - \tau_0) = O_p(1)$ (bounded in probability). But here the bias dominates: $\sqrt{n}\,\mathbb{E}[\hat{\tau} - \tau_0] = O(n^{-1/2})$, which does not vanish. The estimator is **inconsistent**.
+In the second moment write $m=m_0+a$, with $m_0(X)=\mathbb E[T\mid X]$. At $\tau_0$ the drift is $\mathbb E[a(X)b(X)]$, since $\mathbb E[(T-m_0)b]=\mathbb E[a\epsilon]=0$. If either nuisance is exactly known, that drift vanishes. If both errors have $L_2$ norm $O_p(n^{-1/2})$, it is $O_p(n^{-1})$. Multiplying that term by $\sqrt{n}$ makes it vanish. This is the IV-type orthogonal score.
 
 ### Exercise 2.3: Sample splitting necessity (computational)
 
-Implement DML **without** sample splitting (use the same data for both stages) and compare to proper DML.
+Compare a scalar PLR fitted with cross-fitted predictions with the same score using predictions from the training observations. Use identical learner settings and the same generated data.
 
 ```python
 import numpy as np
-from econml.dml import LinearDML
 from sklearn.ensemble import RandomForestRegressor
+from dml_ts.dml import double_ml
+
 np.random.seed(123)
 n = 1000
 X = np.random.randn(n, 10)
 T = X[:, 0]**2 + X[:, 1] + np.random.randn(n)
 Y = 3.0 * T + X[:, 0]**2 + X[:, 1]**3 + np.random.randn(n)
-# Proper DML with cross-fitting
-dml_proper = LinearDML(
-    model_y=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
-    model_t=RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42),
-    cv=5,
-    random_state=42
-)
-dml_proper.fit(Y, T, X=X, W=None)
-tau_proper = dml_proper.effect(X).mean()
-# TODO: Implement "naive DML" without sample splitting
-# Hints:
-#   1. Fit model_T on full data, predict T_hat
-#   2. Fit model_Y on full data, predict Y_hat
-#   3. Compute residuals T_resid, Y_resid
-#   4. Regress Y_resid on T_resid (final stage)
-#   5. Compare tau_naive to tau_proper
-# YOUR CODE HERE
-print(f"True ATE: 3.00")
-print(f"Proper DML: {tau_proper:.3f}")
-print(f"Naive DML: {tau_naive:.3f}")
-print(f"Bias (Naive): {abs(tau_naive - 3.0):.3f}")
-print(f"Bias (Proper): {abs(tau_proper - 3.0):.3f}")
+
+forest = RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42)
+crossfit = double_ml(Y, T, X, outcome_model=forest, treatment_model=forest,
+                     n_folds=5, random_state=42)
 ```
 
-**Solution 2.3.**
+**Solution.** Fit each learner on all observations and use the same through-origin residual slope.
 
 ```python
-# Naive DML without sample splitting
-model_T = RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42)
-model_Y = RandomForestRegressor(n_estimators=50, max_depth=5, random_state=42)
-# Fit on SAME data (overfitting)
-model_T.fit(X, T)
-model_Y.fit(X, Y)
-T_hat = model_T.predict(X)
-Y_hat = model_Y.predict(X)
-T_resid = T - T_hat
-Y_resid = Y - Y_hat
-# Final stage
-from sklearn.linear_model import LinearRegression
-final_stage = LinearRegression().fit(T_resid.reshape(-1, 1), Y_resid)
-tau_naive = final_stage.coef_[0]
-print(f"True ATE: 3.00")
-print(f"Proper DML: {tau_proper:.3f}")
-print(f"Naive DML: {tau_naive:.3f}")
-print(f"Bias (Naive): {abs(tau_naive - 3.0):.3f}")
-print(f"Bias (Proper): {abs(tau_proper - 3.0):.3f}")
+from sklearn.base import clone
+
+t_hat = clone(forest).fit(X, T).predict(X)
+y_hat = clone(forest).fit(X, Y).predict(X)
+v = T - t_hat
+same_sample = np.dot(v, Y - y_hat) / np.dot(v, v)
+for label, est in [("Cross-fitted", crossfit.theta), ("Same sample", same_sample)]:
+    print(f"{label}: {est:.3f} (absolute error {abs(est - 3.0):.3f})")
 ```
 
-**Expected output**:
+**Measured output**
 
-```
-True ATE: 3.00
-Proper DML: 2.987
-Naive DML: 2.764
-Bias (Naive): 0.236
-Bias (Proper): 0.013
+```text
+Cross-fitted: 3.174 (absolute error 0.174)
+Same sample: 3.177 (absolute error 0.177)
 ```
 
-**Insight**: without sample splitting, the naive DML is biased by ~0.24 (8% relative error). Proper cross-fitting reduces bias to ~0.01 (below 0.5% error). **Sample splitting is essential for valid inference.**
+These are absolute errors on one dataset. Cross-fitting removes direct reuse of a scored observation in its nuisance fit. It carries no guarantee that every single estimate lies closer to the truth. A bias or coverage comparison needs repeated independent datasets.
 
 ### Exercise 2.4: First-stage importance (computational)
 
-How does first-stage model complexity affect DML estimates? Test DML with a linear model (Ridge), a shallow tree (`max_depth=2`), a deep tree (`max_depth=10`), and a Random Forest (`n_estimators=100`). Use the same nonlinear DGP from Exercise 2.3. Which performs best? Why?
+Using the data from Exercise 2.3, change both nuisance learners while keeping all five folds, scored rows and the common slope fixed. Which fitted effect is closest to three in this draw?
 
 ```python
 from sklearn.linear_model import Ridge
 from sklearn.tree import DecisionTreeRegressor
-from econml.dml import LinearDML
-models_to_test = {
-    'Ridge': Ridge(),
-    'Shallow Tree': DecisionTreeRegressor(max_depth=2, random_state=42),
-    'Deep Tree': DecisionTreeRegressor(max_depth=10, random_state=42),
-    'Random Forest': RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42)
+
+learners = {
+    "Ridge": Ridge(),
+    "Shallow tree": DecisionTreeRegressor(max_depth=2, random_state=42),
+    "Deep tree": DecisionTreeRegressor(max_depth=10, random_state=42),
+    "Random forest": RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42),
 }
-results = []
-for name, model in models_to_test.items():
-    dml = LinearDML(model_y=model, model_t=model, cv=5, random_state=42)
-    dml.fit(Y, T, X=X, W=None)
-    tau = dml.effect(X).mean()
-    bias = abs(tau - 3.0)
-    results.append({'Model': name, 'Estimate': tau, 'Bias': bias})
-import pandas as pd
-df = pd.DataFrame(results)
-print(df.to_string(index=False))
+for name, learner in learners.items():
+    result = double_ml(Y, T, X, outcome_model=learner, treatment_model=learner,
+                       n_folds=5, random_state=42)
+    print(f"{name}: {result.theta:.3f} (absolute error {abs(result.theta - 3.0):.3f})")
 ```
 
-**Expected output**:
+**Measured output**
 
+```text
+Ridge: 3.619 (absolute error 0.619)
+Shallow tree: 2.940 (absolute error 0.060)
+Deep tree: 1.877 (absolute error 1.123)
+Random forest: 3.180 (absolute error 0.180)
 ```
-          Model  Estimate   Bias
-          Ridge     2.612  0.388
-   Shallow Tree     2.831  0.169
-      Deep Tree     2.956  0.044
-  Random Forest     2.987  0.013
-```
 
-**Interpretation**:
-
-- **Ridge**: largest bias (0.388) — the linear model cannot capture the $X^2$ and $X^3$ terms.
-- **Shallow Tree**: better (0.169) — captures some nonlinearity but limited splits.
-- **Deep Tree**: good (0.044) — more flexible, but may overfit.
-- **Random Forest**: best (0.013) — averages many trees, reduces overfitting.
-
-**Lesson**: first-stage flexibility matters, but overfitting control (via ensembles, cross-validation) is crucial.
+The shallow tree had the smallest absolute error here. The ranking refers to this realized dataset. Repeating the comparison on common independent draws allows separate assessment of signed bias, RMSE and interval coverage. Changing one learner at a time can distinguish the contribution of each nuisance.

@@ -36,25 +36,16 @@ Consider estimating the effect of a policy intervention $T_t$ on an outcome $Y_t
 Y_t = \tau \cdot T_t + g(X_t, T_{t-1}, \ldots, T_{t-L}) + \varepsilon_t
 \end{equation}
 
-Two challenges arise that standard DML cannot handle:
+Temporal ordering raises two questions for this estimator.
 
 \begin{enumerate}
-    \item \textbf{Data leakage in cross-validation}: Random K-fold splits allow future information to ``leak'' into the training set, creating unrealistic advantage
+    \item \textbf{Which observations train the nuisance models?} A random fold can use future observations to predict an earlier outcome or treatment. Forward splits reproduce the information available at each prediction date.
 
-    \item \textbf{Invalid standard errors}: Influence function-based SEs assume i.i.d.\ observations; autocorrelation in $\varepsilon_t$ invalidates this assumption
+    \item \textbf{Which observations contribute to uncertainty?} Each scored date contributes an influence score to the effect estimate. Covariance between scores at different dates enters its sampling variance.
 \end{enumerate}
 
 \insight{
-\textbf{Why Time Series DML Matters}
-
-Standard DML with random K-fold splitting achieves:
-\begin{itemize}
-    \item Correct point estimates (under regularity conditions)
-    \item \textbf{Incorrect standard errors} when $\Cov(\varepsilon_t, \varepsilon_{t-k}) \neq 0$
-    \item \textbf{Overly optimistic} nuisance model performance (future leakage)
-\end{itemize}
-
-TemporalPLRDML addresses these two engineering issues through temporal cross-validation and HAC inference.
+An outcome can remain persistent even when the influence scores are uncorrelated across dates. In \cref{sec:monte_carlo_validation}, two simulations show how the residual treatment and the outcome error jointly determine the uncertainty in the estimated effect.
 }
 
 \subsection{Chapter Roadmap}
@@ -63,7 +54,7 @@ TemporalPLRDML addresses these two engineering issues through temporal cross-val
     \item \textbf{Section 5.2}: Time Series Cross-Validation---purging, blocking, and embargo
     \item \textbf{Section 5.3}: HAC Standard Errors---Newey-West estimation for autocorrelation
     \item \textbf{Section 5.4}: TemporalPLRDML Framework---combining the components
-    \item \textbf{Section 5.5}: Monte Carlo Validation---verifying coverage and unbiasedness
+    \item \textbf{Section 5.5}: Monte Carlo Validation---measuring interval coverage under two dependence structures
     \item \textbf{Section 5.6}: Practical Recommendations
     \item \textbf{Section 5.7}: Exercises
 \end{itemize}
@@ -187,11 +178,11 @@ The \texttt{gap} parameter is critical for applications where predictions take t
 
 \subsection{The Autocorrelation Problem}
 
-Even with correct point estimates, standard errors require adjustment for serial correlation. The DML influence function:
+Let $v_t$ be the treatment residual after subtracting its true conditional mean given the controls. At the true effect, the PLR influence score is
 \[
-\psi_t = \frac{(\tilde{Y}_t - \hat{\tau} \tilde{T}_t) \tilde{T}_t}{\E[\tilde{T}^2]}
+\psi_t = \frac{v_t\varepsilon_t}{\E[v_t^2]}.
 \]
-has $\E[\psi_t] = 0$ but $\Cov(\psi_t, \psi_{t-k}) \neq 0$ when outcomes are autocorrelated.
+An estimate of the effect averages contributions from many dates. Even when $\E[\psi_t]=0$, covariance between $\psi_t$ and $\psi_{t-k}$ affects how much this average varies across samples.
 
 \begin{theorem}[HAC Variance of DML Estimator]
 \label{thm:hac_variance}
@@ -206,6 +197,8 @@ where $\Omega$ is the \textbf{long-run variance}:
 with $\gamma_k = \Cov(\psi_t, \psi_{t-k})$ the autocovariance at lag $k$.
 \end{theorem}
 
+The lag-zero standard error uses only $\gamma_0$. A positive sum of lagged score autocovariances raises the long-run variance above $\gamma_0$. A negative sum lowers it. When the sum is zero, the lag-zero variance suffices for this part of inference. Autocorrelation in $Y_t$ or $\varepsilon_t$ alone does not determine the sign or size of the adjustment.
+
 \subsection{Newey-West Estimation}
 
 We cannot sum to infinity, so we truncate with a kernel weighting scheme:
@@ -218,8 +211,8 @@ The HAC variance estimator is:
 \end{equation}
 where:
 \begin{itemize}
-    \item $\hat{\gamma}_k = \frac{1}{n}\sum_{t=k+1}^{n} \psi_t \psi_{t-k}$ is the sample autocovariance
-    \item $w_k = K(k/B)$ is a kernel weight
+    \item $\hat{\gamma}_k = \frac{1}{n}\sum_{t=k+1}^{n} (\hat{\psi}_t-\bar{\psi})(\hat{\psi}_{t-k}-\bar{\psi})$ uses the fitted scores in time order, with $n$ the number of scored dates
+    \item $w_k$ is a kernel weight. The implementation uses $w_k=1-k/(B+1)$ for Bartlett at lags $1,\ldots,B$
     \item $B$ is the bandwidth (truncation parameter)
 \end{itemize}
 \end{definition}
@@ -271,25 +264,21 @@ The bandwidth $B$ controls bias-variance tradeoff:
     \item $B$ too large: Includes noise from distant lags (variance)
 \end{itemize}
 
-\begin{definition}[Optimal Bandwidth Rule]
+\begin{definition}[Default Bartlett Bandwidth]
 \label{def:optimal_bandwidth}
-The rule-of-thumb bandwidth for the Bartlett kernel, as implemented in
-\texttt{temporalcv}:
+With $n$ scored dates, the automatic bandwidth in \texttt{temporalcv} is
 \begin{equation}
-B^* = \left\lfloor n^{1/3} \right\rfloor
+B_{\mathrm{auto}} = \left\lfloor n^{1/3} \right\rfloor .
 \end{equation}
-
-For $n=500$: $B^* = 7$ lags. Constant factors vary across texts and
-implementations (Newey \& West's (1994) own rule of thumb is
-$4(n/100)^{2/9}$); the growth rate $n^{1/3}$ is what matters for the
-Bartlett kernel's consistency.
+This heuristic uses only the number of scores. It gives seven lags for the 415 scored dates in the forward simulations.
 \end{definition}
 
-Data-driven selection (Andrews 1991) adapts based on estimated autocorrelation:
+The Andrews (1991) AR(1) plug-in uses the sample lag-one correlation of the influence scores, $\hat\rho$. For the Bartlett kernel, its bandwidth is
 \begin{equation}
-B_{\text{Andrews}} = 1.1447 \left( \frac{\hat{\rho}^2 n}{(1-\hat{\rho})^4} \right)^{1/3}
+    \hat\alpha_1 = \frac{4\hat\rho^2}{(1-\hat\rho^2)^2},
+    \qquad B_{\mathrm{Andrews}} = \left\lfloor 1.1447\,(\hat\alpha_1 n)^{1/3} \right\rfloor .
 \end{equation}
-where $\hat{\rho}$ is the AR(1) coefficient of the influence scores.
+The implementation clips $\hat\rho$ to $[-0.99,0.99]$ and caps the bandwidth at $n-1$. Comparing standard errors across bandwidths on the same scores shows how the estimated uncertainty depends on the lags included and their weights.
 
 \subsection{Python Implementation}
 
@@ -298,7 +287,7 @@ from temporalcv import newey_west_se
 
 result = newey_west_se(
     influence_scores,
-    bandwidth="auto",   # floor(n^(1/3)) Newey-West rule
+    bandwidth="auto",   # floor(n^(1/3)), with n scored dates
     kernel="bartlett",
 )
 
@@ -344,9 +333,9 @@ TemporalPLRDML combines time series cross-validation with HAC inference:
 \STATE \textbf{Exclude uncovered early rows}: drop observations without valid temporal out-of-fold predictions
 \STATE \textbf{Compute residuals}: $\tilde{Y}_t = Y_t - \hat{Y}^{(-t)}_t$, $\tilde{T}_t = T_t - \hat{T}^{(-t)}_t$
 \STATE \textbf{Estimate $\tau$}: $\hat{\tau} = \frac{\sum_t \tilde{Y}_t \tilde{T}_t}{\sum_t \tilde{T}_t^2}$
-\STATE \textbf{Compute influence scores}: $\psi_t = \frac{(\tilde{Y}_t - \hat{\tau}\tilde{T}_t)\tilde{T}_t}{\bar{T}^2}$
+\STATE \textbf{Compute influence scores}: $\hat{\psi}_t = \frac{(\tilde{Y}_t - \hat{\tau}\tilde{T}_t)\tilde{T}_t}{n_{\mathrm{used}}^{-1}\sum_s\tilde{T}_s^2}$ over the scored dates
 \STATE \textbf{HAC variance}: $\hat{\Omega} = \hat{\gamma}_0 + 2\sum_{k=1}^{B} w_k \hat{\gamma}_k$
-\STATE \textbf{Standard error}: $\widehat{SE}(\hat{\tau}) = \sqrt{\hat{\Omega}/n}$
+\STATE \textbf{Standard error}: $\widehat{SE}(\hat{\tau}) = \sqrt{\hat{\Omega}/n_{\mathrm{used}}}$
 
 \RETURN $\hat{\tau}$, $\widehat{SE}(\hat{\tau})$
 \end{algorithmic}
@@ -427,12 +416,7 @@ The HAC bandwidth of 7 was automatically selected by the $\lfloor n_{\text{used}
 \section{Monte Carlo Validation}\label{sec:monte_carlo_validation}
 % ============================================================================
 
-We validate TemporalPLRDML through simulation studies examining:
-\begin{enumerate}
-    \item \textbf{Unbiasedness}: $\E[\hat{\tau}] \approx \tau_0$
-    \item \textbf{Coverage}: 95\% CI covers $\tau_0$ in $\approx$ 95\% of simulations
-    \item \textbf{SE Calibration}: Reported SE matches empirical standard deviation
-\end{enumerate}
+How often does a nominal 95\% interval contain the true effect? We simulate two processes with $\tau_0=2$ and 500 observations, using 200 independent repetitions per process. In each forward fit, we compute both standard errors from the same out-of-fold scores. This holds the estimated effect fixed while changing the variance calculation.
 
 \subsection{Data Generating Process}
 
@@ -480,31 +464,51 @@ def generate_ts_dgp(n, tau=2.0, rho_T=0.3, rho_eps=0.2, seed=None):
     return Y, T, X, time
 \end{minted}
 
+\subsection{A Positive Control with Persistent Scores}
+
+In the generator above, conditioning on $X_t$ and $T_{t-1}$ leaves a fresh treatment innovation $v_t$. With true nuisance functions, the score is proportional to $v_t\varepsilon_t$. For $k>0$, $v_t$ is mean zero and independent of $v_{t-k}$ and the entire error process. Consequently $\E[v_t v_{t-k}\varepsilon_t\varepsilon_{t-k}]=0$ even though the outcome errors are serially correlated.
+
+For a second design, let $u_t$ and $e_t$ be independent, stationary Gaussian AR(1) processes with mean zero and variance one. Each has coefficient 0.8 and innovation standard deviation 0.6. Draw two independent standard normal covariates per date, independent of both processes, and set
+\[
+    T_t=X_{1t}+u_t, \qquad Y_t=2T_t+X_{2t}+e_t.
+\]
+Use the current covariates as controls. The oracle score is $u_t e_t$, with lag-$k$ correlation $0.8^k\,0.8^k=0.64^k$. Summing the geometric series gives $\Omega/\gamma_0=(1+0.64)/(1-0.64)\approx 4.56$. This is a variance multiplier, so the asymptotic standard error is about $2.13$ times the lag-zero value.
+
 \subsection{Simulation Results}
+
+For the chapter generator (seeds 0--199), the shuffled fivefold fit uses three current covariates. The forward fit adds one treatment lag. Both use 100-tree random forests with learner seed 42. The positive control (seeds 10000--10199) uses forward ridge regressions with no treatment lags. Each forward fit has five expanding splits, a gap of zero, and 415 scored dates. Automatic Bartlett inference therefore uses $B=\lfloor 415^{1/3}\rfloor=7$.
 
 \begin{table}[htbp]
 \centering
-\caption{TemporalPLRDML Monte Carlo Results ($n=500$, 200 simulations)}
+\caption{Measured coverage of nominal 95\% PLR intervals ($n=500$, 200 repetitions per design). MCSE is the Monte Carlo standard error of coverage in percentage points.}
 \label{tab:monte_carlo}
-\begin{tabular}{lcccc}
-\hline
-\textbf{Method} & \textbf{Bias} & \textbf{Emp. SE} & \textbf{Avg. SE} & \textbf{Coverage} \\
-\hline
-DML (i.i.d. SE) & 0.02 & 0.12 & 0.08 & 78\% \\
-TemporalPLRDML (HAC SE) & 0.02 & 0.12 & 0.11 & 93\% \\
-\hline
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Fit and SE & Scored & Bias & Emp.\ SD & Mean SE & Coverage & MCSE \\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Chapter generator, random forests}} \\
+Shuffled, i.i.d. & 500 & $-0.0292$ & 0.0567 & 0.0507 & 87.5\% & 2.34 \\
+Forward, lag zero & 415 & $-0.0457$ & 0.0714 & 0.0694 & 89.5\% & 2.17 \\
+Forward, HAC & 415 & $-0.0457$ & 0.0714 & 0.0689 & 88.5\% & 2.26 \\
+\addlinespace
+\multicolumn{7}{@{}l}{\textit{Persistent scores, ridge regressions}} \\
+Forward, lag zero & 415 & $+0.0008$ & 0.1076 & 0.0484 & 60.5\% & 3.46 \\
+Forward, HAC & 415 & $+0.0008$ & 0.1076 & 0.0872 & 89.0\% & 2.21 \\
+\bottomrule
 \end{tabular}
 \end{table}
 
-\insight{
-\textbf{Key Finding}: Both methods produce nearly unbiased estimates (Bias $\approx$ 0.02). However:
-\begin{itemize}
-    \item \textbf{i.i.d.\ SE underestimates} true variability (0.08 vs.\ 0.12), causing \textbf{under-coverage} (78\%)
-    \item \textbf{HAC SE is correctly calibrated} (0.11 vs.\ 0.12), achieving near-nominal \textbf{coverage} (93\%)
-\end{itemize}
+In \cref{tab:monte_carlo}, bias is the mean of $\hat{\tau}-2$, empirical SD is the standard deviation of $\hat{\tau}$ across repetitions, and mean SE averages the reported standard errors. Coverage $\hat p$ counts the fraction of intervals $\hat{\tau}\pm 1.96\,\widehat{SE}$ containing 2. Each row's MCSE is $100\sqrt{\hat p(1-\hat p)/200}$ percentage points. The two forward rows in each design use paired draws.
 
-The difference becomes more severe with stronger autocorrelation ($\rho > 0.5$).
-}
+With the chapter generator, the fitted forward scores had mean lag-one correlation 0.008. Moving from lag zero to HAC lowered the mean SE from 0.0694 to 0.0689 and coverage from 89.5\% to 88.5\%. One interval gained coverage and three lost it, a paired change of $-1.0$ percentage point (MCSE 1.0 point). The forward estimates had mean bias $-0.0457$ under both calculations. Comparing the shuffled and forward fits also changes the folds, controls, and dates scored, so that comparison cannot isolate the effect of HAC.
+
+With persistent scores, mean fitted lag-one correlation was 0.621. The lag-zero SE averaged 0.0484 against an empirical SD of 0.1076. Including lagged covariances raised the mean SE to 0.0872 and coverage from 60.5\% to 89.0\%. Fifty-seven intervals gained coverage and none lost it, a paired gain of 28.5 percentage points (MCSE 3.2 points). Coverage still fell short of 95\%. Bartlett weighting through lag seven gives a variance multiplier of 3.36 even with the true autocovariances. It downweights the first seven lags and omits the positive contributions from later lags.
+
+The companion simulation driver reproduces both designs and the table.
+
+\noindent{\footnotesize\nolinkurl{docs/audits/2026-11-19_time_series_dml/chapter5_check.py}}
 
 % ============================================================================
 \section{Practical Recommendations}\label{sec:recommendations}
@@ -514,7 +518,7 @@ The difference becomes more severe with stronger autocorrelation ($\rho > 0.5$).
 
 \begin{enumerate}
     \item \textbf{Time series data}: Any setting with temporal ordering
-    \item \textbf{Autocorrelated outcomes}: Check with Durbin-Watson or Ljung-Box tests
+    \item \textbf{Score dependence}. Inspect fitted scores in time order.
     \item \textbf{Lagged treatment controls}: When prior treatments are confounders or state variables for the current scalar effect
     \item \textbf{Macro/finance applications}: Interest rates, prices, policies over time
 \end{enumerate}
@@ -545,7 +549,7 @@ Before reporting results, verify:
 \begin{enumerate}
     \item \textbf{Nuisance model fit}: Check cross-validated $R^2$ for both outcome and treatment models. Poor fit ($R^2 < 0.1$) suggests missing confounders or model misspecification.
 
-    \item \textbf{Residual autocorrelation}: Plot autocorrelation function of influence scores. Significant spikes beyond the HAC bandwidth indicate potential issues.
+    \item \textbf{Score autocorrelation}. Plot the autocorrelation function of the out-of-fold influence scores. Persistence beyond the bandwidth suggests the variance calculation may omit relevant lags.
 
     \item \textbf{Bandwidth sensitivity}: Re-estimate with bandwidth $\pm 50\%$. Large SE changes suggest autocorrelation structure uncertainty.
 \end{enumerate}
@@ -582,23 +586,23 @@ Consider a dataset with $n=100$ observations indexed $t=1,\ldots,100$. You want 
 
 \begin{exercise}[HAC Bandwidth Selection]
 \label{ex:hac_bandwidth}
-You estimate a treatment effect with $n=1000$ observations and observe AR(1) autocorrelation $\hat{\rho} = 0.4$ in the influence scores.
+Suppose a forward fit yields 415 scored dates and a lag-one score correlation of $\hat\rho=0.4$.
 
 \begin{enumerate}
-    \item[(a)] Calculate the rule-of-thumb bandwidth $B^* = \lfloor n^{1/3} \rfloor$
-    \item[(b)] Calculate the Andrews data-driven bandwidth
-    \item[(c)] Which would you recommend and why?
+    \item[(a)] Calculate the automatic bandwidth.
+    \item[(b)] Calculate the Andrews plug-in bandwidth for Bartlett weights.
+    \item[(c)] How would you assess sensitivity to this choice?
 \end{enumerate}
 \end{exercise}
 
 \textbf{Solution to Exercise~\ref{ex:hac_bandwidth}:}
 
 \begin{enumerate}
-    \item[(a)] $B^* = \lfloor 1000^{1/3} \rfloor = \lfloor 10 \rfloor = 10$
+    \item[(a)] $B_{\mathrm{auto}}=\lfloor 415^{1/3}\rfloor=\lfloor 7.46\rfloor=7$.
 
-    \item[(b)] $B_{\text{Andrews}} = 1.1447 \left( \frac{0.4^2 \times 1000}{(1-0.4)^4} \right)^{1/3} = 1.1447 \times \left( \frac{160}{0.1296} \right)^{1/3} \approx 12$
+    \item[(b)] $\hat\alpha_1=4(0.4)^2/(1-0.4^2)^2\approx 0.9070$. The plug-in gives $B_{\mathrm{Andrews}}=\lfloor 1.1447(0.9070\times415)^{1/3}\rfloor=8$.
 
-    \item[(c)] Both suggest similar bandwidths ($\approx 12$-$13$). The Andrews method is preferred when you have a reliable AR(1) estimate, as it adapts to the actual autocorrelation structure.
+    \item[(c)] Compute both standard errors on the same ordered scores. A large difference would make the reported interval sensitive even to a change from seven to eight lags.
 \end{enumerate}
 
 \begin{exercise}[Comparing Standard Errors]
@@ -625,9 +629,9 @@ A researcher estimates $\hat{\tau} = 1.5$ using DML and reports two standard err
         \item HAC: $1.5 \pm 1.96 \times 0.18 = [1.15, 1.85]$
     \end{itemize}
 
-    \item[(b)] The HAC SE being nearly twice the i.i.d.\ SE indicates substantial positive autocorrelation in the influence scores. The i.i.d.\ assumption severely understates uncertainty.
+    \item[(b)] With the fit and scores held fixed, the larger HAC SE means the estimated weighted sum of lagged score autocovariances is positive at the chosen bandwidth.
 
-    \item[(c)] The HAC confidence interval $[1.15, 1.85]$ should be reported. Using the narrower i.i.d.\ interval would claim false precision.
+    \item[(c)] If the dependence assumptions and bandwidth are appropriate, report the HAC interval $[1.15, 1.85]$ and its bandwidth. Check how much the interval changes across plausible bandwidths.
 \end{enumerate}
 
 % ============================================================================
@@ -639,7 +643,7 @@ This chapter extended DML to time series settings through three key innovations:
 \begin{enumerate}
     \item \textbf{Time Series Cross-Validation}: Expanding/sliding windows with purging prevent data leakage while maintaining temporal ordering
 
-    \item \textbf{HAC Standard Errors}: Newey-West estimation accounts for autocorrelation in influence scores, providing correctly-sized confidence intervals
+    \item \textbf{HAC standard errors} estimate the long-run variance from lagged influence-score covariances. Interval coverage also depends on estimator bias, bandwidth, and sample size.
 
     \item \textbf{TemporalPLRDML Framework}: Integrates lagged controls, temporal CV, and HAC inference into a scalar PLR estimation procedure
 \end{enumerate}
@@ -648,7 +652,7 @@ This chapter extended DML to time series settings through three key innovations:
 \begin{itemize}
     \item Standard random-fold DML can create future-data leakage and misleading uncertainty for ordered data
     \item Time series CV with gaps prevents future information leakage
-    \item HAC SEs with bandwidth $B \approx n^{1/3}$ correct for autocorrelation
+    \item Compare lag-zero and HAC standard errors on the same ordered scores to measure the contribution of lagged covariances
     \item TemporalPLRDML reports lag rows and temporal-CV rows dropped before final residual regression
 \end{itemize}
 
