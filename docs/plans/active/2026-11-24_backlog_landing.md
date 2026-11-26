@@ -904,3 +904,38 @@ Reviewed by a fresh Claude agent (diff and export, 78 tool calls, a reversed-dif
 - **Mutation check:** 29 reversions, among them the four that survived the first version's
   tests (the check only for `n_lags=0`, only for one split strategy, exact in place of
   numerical constancy, integer treatments read as category codes); all 29 are caught.
+
+### Record of PR-3 and its review (2026-11-25 and 26)
+
+PR-3 (`fix/applications-pipeline`, #80) was sliced as Addendum 3 describes: 31 files whole,
+`insurance_dgp.py` by hunk (1, 3, 4, 5, 6 of 9), `ASSUMPTIONS.md` hunk 1, `uv.lock` made with
+`uv lock` in two commits. Chapter listings were run on the slice before the chapters were taken.
+The stored check of #60 passes on the branch; #44, #62 and #64 stay open.
+
+Reviewed by Gemini in four calls (21 findings, 4 false on re-run) and by a fresh Claude agent
+(15 groups of findings, all re-run, all hold; it found the core numerics correct).
+
+- **Repaired on the branch, each with a test that a mutation check shows to bite (15 of 15):**
+  a moved or renamed `ResultStorage` returned no results and no error; a store or registry opened
+  with a relative path pointed at another directory after `os.chdir`; published files were mode
+  0600; an error after the index update could delete an indexed payload; `frequency="MS"` or
+  `"ME"` with a year-over-year transform raised `KeyError`; an interrupted OJ download propagated
+  unwrapped; the changelog claimed more relabelling of the sensitivity module than the backlog did.
+- **Not repaired, recorded on issues:** the monitor's alerts (#64), the loader's stale rows for
+  business-day series requested daily (#62), degenerate designs that the pipeline fits and the
+  two-step promotion (#41), tests that cannot fail (#56, #66).
+- **Two decisions raised at the stop.**
+  1. Chapter 8 on the aligned generator rows. Its `PanelDML` listing prints -0.8553 with a
+     standard error of 0.0330 (reproduced on `main`); on the branch the same call gives -0.8531
+     with 0.0175 and an interval that excludes the true -0.8. Its exercise covers the truth in 21%
+     of 100 draws on the branch and 56% on `main`; the chapter prints 93.0%. On `main` the
+     generator pairs one product's outcome with another's index, so the printed numbers come from
+     misaligned rows.
+  2. Through the pipeline a randomized binary treatment is reported as critical, where it was
+     "ok" or "warning": the branch hands the monitor an R² where it handed accuracy, and the
+     thresholds (0.50 and 0.30) are `main`'s.
+- **For Part III:** Chapter 8 is recomputed there; `validate_dgp_recovery`'s docstring promises 93
+  to 97% coverage and its tests assert only `abs(bias) < 1.0`.
+- **Lessons.** A fix the plan prescribes can regress valid inputs (PR-1c converted `X`); compare
+  before and after on a matrix of input kinds. A mutation list should hold the conditions a guard
+  must not depend on. A held chapter can stop reproducing when a generator it reads is repaired.
