@@ -66,6 +66,7 @@ from ._utils import (
     no_variation_tolerance,
     predict_conditional_mean,
     read_controls_as_floats,
+    refuse_masked_entries,
     theta_via_fwl,
 )
 
@@ -438,10 +439,11 @@ class DynamicGEstimationDML:
                 missing ``groups`` for the panel mode; when a treatment (a panel
                 period or a series lag) has no residual variation; and in series
                 mode when the residualized lags are linearly dependent. Also if Y or
-                T is not one-dimensional (a column vector is refused, not flattened);
-                if Y, T, X or W holds a datetime, a timedelta, a complex value, text or
-                a masked entry, or X or W is a sparse matrix; or if two of Y, T, X, W
-                and ``groups`` are pandas objects with different indexes (pass
+                T is not one-dimensional (a column vector or a matrix is refused, not
+                flattened); if Y, T, X or W holds a datetime, a timedelta, a complex
+                value, text or a masked entry, or X or W is a sparse matrix; if
+                ``groups`` has masked entries or not one id per row; or if two of Y, T,
+                X, W and ``groups`` are pandas objects with different indexes (pass
                 ``.to_numpy()`` when the rows are already in the same order).
         """
         # The one input boundary: Y and T by value, X and W as float arrays, rows by
@@ -462,7 +464,15 @@ class DynamicGEstimationDML:
         if resolved_mode == "panel":
             if groups is None:
                 raise ValueError("mode='panel' requires groups (unit ids per row).")
-            result = self._fit_panel(Y, T, X, np.asarray(groups), alpha)
+            # Identifiers are compared as given, never cast; a masked one is not read.
+            refuse_masked_entries("groups", groups)
+            unit_ids = np.asarray(groups)
+            if unit_ids.shape != (len(Y),):
+                raise ValueError(
+                    f"groups must hold one unit id per row: got shape {unit_ids.shape} "
+                    f"for {len(Y)} rows."
+                )
+            result = self._fit_panel(Y, T, X, unit_ids, alpha)
         else:
             result = self._fit_series(Y, T, X, alpha)
         self.result_ = result

@@ -431,7 +431,8 @@ class TemporalPLRDML:
             T: Treatment variable (n_samples,)
             X: Confounders (n_samples, n_features). Converted to a float array.
             time_index: Accepted for API compatibility and length-validated;
-                splitting is positional (row order), so the values are not used
+                splitting is positional (row order), so the values are not used.
+                A labelled time_index takes part in the index comparison
             alpha: Significance level for confidence intervals (default 0.05)
 
         Returns:
@@ -440,13 +441,15 @@ class TemporalPLRDML:
         Raises:
             ValueError: If the inputs have incompatible shapes; if Y or T is not
                 one-dimensional; if Y, T or X holds a datetime, a timedelta, a complex
-                value, text or a masked entry, or X is a sparse matrix; if two of Y, T
-                and X are pandas objects with different indexes (pass ``.to_numpy()``
-                when the rows are already in the same order); or if the treatment has
-                no variation on the scored rows.
+                value, text or a masked entry, or X is a sparse matrix; if two of Y, T,
+                X and time_index are pandas objects with different indexes (pass
+                ``.to_numpy()`` when the rows are already in the same order); or if the
+                treatment has no variation on the scored rows.
         """
         # The one input boundary: Y and T by value, X as a float array, rows by position.
-        Y, T, X = as_validated_arrays(Y, T, X, numeric_controls=True)
+        Y, T, X = as_validated_arrays(
+            Y, T, X, numeric_controls=True, also_labelled={"time_index": time_index}
+        )
         n_samples = len(Y)
         if not 0 < alpha < 1:
             raise ValueError(f"alpha must be in (0, 1), got {alpha!r}")
@@ -793,11 +796,13 @@ class RollingWindowDML:
             ValueError: If the inputs have incompatible shapes; if Y or T is not
                 one-dimensional; if Y, T or X holds a datetime, a timedelta, a complex
                 value, text or a masked entry, or X is a sparse matrix; or if two of Y,
-                T and X are pandas objects with different indexes (pass ``.to_numpy()``
-                when the rows are already in the same order).
+                T, X and time_index are pandas objects with different indexes (pass
+                ``.to_numpy()`` when the rows are already in the same order).
         """
         # The one input boundary: Y and T by value, X as a float array, rows by position.
-        Y, T, X = as_validated_arrays(Y, T, X, numeric_controls=True)
+        Y, T, X = as_validated_arrays(
+            Y, T, X, numeric_controls=True, also_labelled={"time_index": time_index}
+        )
         n_samples = len(Y)
         if time_index is not None and len(time_index) != n_samples:
             raise ValueError("time_index length must match Y length")

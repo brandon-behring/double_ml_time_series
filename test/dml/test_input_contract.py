@@ -1,15 +1,23 @@
 """The input contract of the estimators, as one matrix (#77).
 
-Every public callable of ``dml_ts.dml`` that reads data, except ``PanelDML`` (held for its
-redesign), against every kind of input. A cell expects one of two things: the result that
-plain float arrays of the same values give, or a ``ValueError`` that names the argument at
-fault. No estimator is left out of a parametrization. Where estimators differ by design, the
-difference is written in the case as an expectation:
+The public callables of ``dml_ts.dml`` that read data against the kinds of input, with two
+left out by name and reason below (``PanelDML`` and the EconML cross-check). A cell expects
+one of three things:
 
-- ``robinson_estimator`` and ``double_ml`` hand the controls to the nuisance model as given,
-  so what the model does with them is the model's affair;
-- the others compute on the controls and convert them to floats under the refusals that
-  hold for the outcome and the treatment.
+- the result that plain float arrays of the same values give;
+- a ``ValueError`` that names the argument at fault;
+- for ``robinson_estimator`` and ``double_ml`` with controls their model cannot read, the
+  model's own error. These two hand the controls to the nuisance model as given, so what the
+  model does with them is the model's affair, and that error does not name the argument.
+
+No estimator is left out of a parametrization: where they differ by design, the difference is
+written in the case. The other estimators compute on the controls and convert them to floats
+under the refusals that hold for the outcome and the treatment.
+
+What the matrix does not show. The learner is ridge throughout: the default forest reads a
+datetime or timedelta column of controls as ticks where ridge raises. An agreement between
+the two sides of a cell says that the container made no difference, not that the estimator
+is right; the arrays' results are checked elsewhere (golden parity, the formula contracts).
 
 The contract itself is stated in ``dml_ts.dml._utils.as_validated_arrays``.
 """
@@ -42,7 +50,7 @@ from dml_ts.dml import (
     fwl_vs_ols_comparison,
     robinson_estimator,
 )
-from dml_ts.dml._utils import take_rows
+from dml_ts.dml._utils import read_controls_as_floats, take_rows
 
 pytestmark = pytest.mark.tier2
 
@@ -101,8 +109,24 @@ def _double_ml(Y, T, X):
     return _flat(fit.theta, fit.se)
 
 
+def _fwl_ols(Y, T, X):
+    fit = fwl_estimate(Y, T, X, add_intercept=False, method="ols")
+    return _flat(fit.theta, fit.se)
+
+
+def _fwl_residualize_ols(Y, T, X):
+    residuals, r_squared = fwl_residualize(Y, X, method="ols")
+    assert type(residuals) is np.ndarray
+    return _flat(residuals, r_squared)
+
+
 def _temporal(Y, T, X):
     fit = TemporalPLRDML(n_lags=1, model_y="ridge", model_t="ridge", random_state=0).fit(Y, T, X)
+    return _flat(fit.theta, fit.se)
+
+
+def _temporal_without_lags(Y, T, X):
+    fit = TemporalPLRDML(n_lags=0, model_y="ridge", model_t="ridge", random_state=0).fit(Y, T, X)
     return _flat(fit.theta, fit.se)
 
 
@@ -143,10 +167,18 @@ class Entry:
 ENTRIES = (
     Entry("fwl_estimate", _fwl, computes_on_controls=True),
     Entry("fwl_vs_ols_comparison", _fwl_vs_ols, computes_on_controls=True),
+    Entry("fwl_estimate[ols, no intercept]", _fwl_ols, computes_on_controls=True),
     Entry("fwl_residualize", _fwl_residualize, computes_on_controls=True, reads_treatment=False),
+    Entry(
+        "fwl_residualize[ols]",
+        _fwl_residualize_ols,
+        computes_on_controls=True,
+        reads_treatment=False,
+    ),
     Entry("robinson_estimator", _robinson, computes_on_controls=False),
     Entry("double_ml", _double_ml, computes_on_controls=False),
     Entry("TemporalPLRDML", _temporal, computes_on_controls=True),
+    Entry("TemporalPLRDML[n_lags=0]", _temporal_without_lags, computes_on_controls=True),
     Entry("RollingWindowDML", _rolling, computes_on_controls=True),
     Entry("DynamicGEstimationDML[panel]", _g_panel, computes_on_controls=True),
     Entry("DynamicGEstimationDML[series]", _g_series, computes_on_controls=True),
@@ -155,7 +187,10 @@ ENTRIES = (
 # Public names of the package that the matrix does not cover, each with its reason.
 NOT_IN_THE_MATRIX = {
     "PanelDML": "held for its redesign; its identifiers are part of that work (#77)",
-    "fit_econml_reference": "hands its arguments to EconML, which pairs rows by position (#42)",
+    "fit_econml_reference": (
+        "the EconML cross-check converts its arguments itself, with np.asarray and ravel, "
+        "and is outside this change (#42)"
+    ),
     "create_time_series_cv": "builds a splitter and reads no data",
     "econml_available": "reads no data",
     "DMLResult": "a result type",
@@ -190,7 +225,8 @@ class Case:
     that reads the argument at fault. ``refused_where_computed`` holds only for the estimators
     that compute on the controls; the estimators that hand the controls to the nuisance model
     then either give the arrays' result or, with ``the_model_raises``, fail inside the model
-    (ridge here) with that exception type and message.
+    (ridge here) with that exception type and message. ``rtol`` is looser where a learner
+    takes another numerical path for the same values.
     """
 
     name: str
@@ -199,6 +235,7 @@ class Case:
     refused: Refusal | None = None
     refused_where_computed: Refusal | None = None
     the_model_raises: tuple[type[Exception], str] | None = None
+    rtol: float = RTOL
 
     def __str__(self) -> str:
         return self.name
@@ -223,6 +260,7 @@ def _shuffled():
     return frame.sample(frac=1, random_state=1)
 
 
+X5 = np.column_stack([X0, np.random.default_rng(11).standard_normal((N, 3))])
 TEXT_FRAME = _frame().assign(region=["a", "b", "c"] * (N // 3))
 DATE_FRAME = _frame().assign(day=DATES)
 DIFFERENT_INDEXES = r"carry different pandas indexes.*\.to_numpy\(\)"
@@ -377,6 +415,11 @@ REFUSED_EVERYWHERE = (
         refused=Refusal("X", r"Y and X " + DIFFERENT_INDEXES),
     ),
     Case(
+        "treatment and controls with other labels beside an unlabelled outcome",
+        lambda: (Y0, _series(T0, DATES), _frame()),
+        refused=Refusal("T", r"T and X " + DIFFERENT_INDEXES),
+    ),
+    Case(
         "treatment shorter than the outcome",
         lambda: (Y0, T0[:-1], X0),
         refused=Refusal("T", r"T length \(299\) must match Y length \(300\)"),
@@ -394,15 +437,26 @@ REFUSED_EVERYWHERE = (
 )
 
 CONTROLS_THAT_SPLIT_THE_ESTIMATORS = (
+    # Ridge solves a sparse system iteratively: it agrees with the dense solution to about
+    # 1e-6 with several columns (to rounding with these two), so the cells are compared at 1e-4.
     Case(
         "sparse CSR controls",
         lambda: (Y0, T0, sparse.csr_matrix(X0)),
         refused_where_computed=Refusal("X", r"X is a sparse matrix.*X\.toarray\(\)"),
+        rtol=1e-4,
     ),
     Case(
         "sparse COO controls",
         lambda: (Y0, T0, sparse.coo_matrix(X0)),
         refused_where_computed=Refusal("X", r"X is a sparse matrix.*X\.toarray\(\)"),
+        rtol=1e-4,
+    ),
+    Case(
+        "sparse CSR controls with five columns",
+        lambda: (Y0, T0, sparse.csr_matrix(X5)),
+        lambda: (Y0, T0, X5),
+        refused_where_computed=Refusal("X", r"X is a sparse matrix.*X\.toarray\(\)"),
+        rtol=1e-4,
     ),
     Case(
         "frame of controls with a text column",
@@ -465,7 +519,7 @@ def test_every_cell_gives_the_arrays_result_or_refuses_by_name(entry: Entry, cas
         return
 
     result = entry.fit(*case.given())
-    assert_allclose(result, _from_arrays(entry, case), rtol=RTOL, atol=0)
+    assert_allclose(result, _from_arrays(entry, case), rtol=case.rtol, atol=0)
 
 
 def test_the_matrix_separates_right_pairing_from_wrong():
@@ -473,7 +527,8 @@ def test_the_matrix_separates_right_pairing_from_wrong():
     for entry in ENTRIES:
         right = np.array(entry.fit(Y0, T0, X0))
         wrong = np.array(entry.fit(Y0, T0, X0[PERM]))
-        assert np.max(np.abs(wrong - right) / np.abs(right)) > 1e-3, entry.name
+        relative = np.abs(wrong - right) / np.maximum(np.abs(right), 1e-12)
+        assert np.max(relative) > 1e-3, entry.name
 
 
 # ------------------------------------------------- controls handed to the model as they are
@@ -523,6 +578,28 @@ def test_take_rows_selects_positions_in_every_container():
     # Integer column labels: ``frame[rows]`` would select columns 4, 0 and 2 by label.
     wide = pd.DataFrame(np.arange(50.0).reshape(5, 10))
     assert_allclose(take_rows(wide, rows).to_numpy(), wide.to_numpy()[rows])
+    # Repeated row labels: selecting the labels found at these positions returns more rows.
+    repeated = _frame(index=np.arange(N) % 7)
+    assert take_rows(repeated, rows).shape == (3, 2)
+    assert_allclose(take_rows(repeated, rows).to_numpy(), X0[rows])
+
+
+def test_double_ml_takes_fold_rows_by_position_under_repeated_row_labels():
+    repeated = np.arange(N) % 7
+    with_frame = double_ml(
+        _series(Y0, repeated), _series(T0, repeated), _frame(index=repeated), model="ridge"
+    )
+    assert_allclose(with_frame.theta, double_ml(Y0, T0, X0, model="ridge").theta, rtol=RTOL)
+
+
+def test_a_frame_of_controls_with_a_missing_value_is_read_as_nan():
+    """pandas converts its own missing values; NumPy cannot cast ``pd.NA`` among objects."""
+    frame = pd.DataFrame(
+        {"a": pd.array([1.0, None, 3.0], dtype="Float64"), "b": pd.array([4, 5, 6], dtype="Int64")}
+    )
+    read = read_controls_as_floats("X", frame)
+    assert np.isnan(read[1, 0])
+    assert_allclose(np.delete(read.ravel(), 2), [1.0, 4.0, 5.0, 3.0, 6.0])
 
 
 # ------------------------------------- further arguments of the dynamic g-estimator: W, groups
@@ -579,6 +656,46 @@ def test_labelled_groups_join_the_index_comparison():
         _g_with(groups=labelled.sample(frac=1, random_state=3), Y=_series(Y0, DATES))
 
 
+def _g_series_with(W=None, Y=Y0, T=T0, X=X0):
+    model = DynamicGEstimationDML(
+        n_periods=2, model_y="ridge", model_t="ridge", n_folds=3, random_state=0
+    )
+    return model.fit(Y, T, X, W=W, mode="series").theta_t
+
+
+def test_further_controls_follow_the_same_rules_in_series_mode():
+    """``W`` is read in ``fit`` before the modes part; a test in one mode alone would not show it."""
+    with_w = _g_series_with(W=W0)
+    assert not np.allclose(with_w, _g_series_with(W=None), rtol=1e-6)
+    assert_allclose(_g_series_with(W=pd.DataFrame(W0, columns=["w"])), with_w, rtol=RTOL)
+    assert_allclose(_g_series_with(W=W0[:, 0].tolist()), with_w, rtol=RTOL)
+    with pytest.raises(ValueError, match=r"W holds text"):
+        _g_series_with(W=pd.DataFrame({"w": ["a", "b", "c"] * (N // 3)}))
+    with pytest.raises(ValueError, match=r"Y and W " + DIFFERENT_INDEXES):
+        _g_series_with(W=pd.DataFrame(W0, index=DATES), Y=_series(Y0))
+    with pytest.raises(ValueError, match=r"W rows \(299\) must match Y length \(300\)"):
+        _g_series_with(W=W0[:-1])
+
+
+def test_group_identifiers_are_one_per_row_and_never_read_under_a_mask():
+    masked = np.ma.array(GROUPS, mask=np.arange(N) < 3)
+    with pytest.raises(ValueError, match=r"^groups is a masked array with masked entries"):
+        _g_with(groups=masked)
+    assert_allclose(_g_with(groups=np.ma.array(GROUPS)), _g_with(), rtol=RTOL)
+    with pytest.raises(
+        ValueError, match=r"^groups must hold one unit id per row: got shape \(297,\)"
+    ):
+        _g_with(groups=GROUPS[:-3])
+    with pytest.raises(
+        ValueError, match=r"^groups must hold one unit id per row: got shape \(300, 1\)"
+    ):
+        _g_with(groups=GROUPS[:, None])
+    # Identifiers are compared as given: text labels in unit-major order are the same panel.
+    assert_allclose(
+        _g_with(groups=np.array([f"unit {g:03d}" for g in GROUPS])), _g_with(), rtol=RTOL
+    )
+
+
 @pytest.mark.parametrize("mode", ["panel", "series"])
 def test_the_dynamic_estimator_no_longer_flattens_a_matrix(mode):
     """A (periods, units) matrix flattened in the wrong order gave other numbers (#77)."""
@@ -587,9 +704,51 @@ def test_the_dynamic_estimator_no_longer_flattens_a_matrix(mode):
         n_periods=2, model_y="ridge", model_t="ridge", n_folds=3, random_state=0
     )
     kwargs = {"groups": GROUPS} if mode == "panel" else {"mode": "series"}
-    for Y, T, name in ((wide_y, T0, "Y"), (Y0, wide_t, "T"), (wide_y.T, wide_t.T, "Y")):
-        with pytest.raises(ValueError, match=rf"{name} must be one-dimensional"):
+    cases = (
+        (wide_y, T0, "Y"),
+        (Y0, wide_t, "T"),
+        (Y0, wide_t.T.copy(), "T"),
+        (wide_y.T.copy(), wide_t.T.copy(), "Y"),
+    )
+    for Y, T, name in cases:
+        with pytest.raises(ValueError, match=rf"{name} must be one-dimensional") as refusal:
             model.fit(Y, T, X0, **kwargs)
+        # Flattening is how a matrix in the wrong order was misread; the refusal must not
+        # recommend it.
+        assert "ravel" not in str(refusal.value)
+        assert "not flattened for you" in str(refusal.value)
+    with pytest.raises(ValueError, match=r"np\.asarray\(Y\)\.ravel\(\)"):
+        model.fit(Y0[:, None], T0, X0, **kwargs)
+
+
+# --------------------------------------------------------------------------- the time index
+
+
+@pytest.mark.parametrize(
+    "fit",
+    [
+        lambda Y, T, X, index: (
+            TemporalPLRDML(n_lags=1, model_y="ridge", model_t="ridge", random_state=0)
+            .fit(Y, T, X, time_index=index)
+            .theta
+        ),
+        lambda Y, T, X, index: (
+            RollingWindowDML(window_size=100, step_size=100, model_y="ridge", model_t="ridge")
+            .fit(Y, T, X, time_index=index)
+            .get_effects()[1]
+        ),
+    ],
+    ids=["TemporalPLRDML", "RollingWindowDML"],
+)
+def test_a_labelled_time_index_joins_the_index_comparison(fit):
+    """Its values are not used, but a labelled one in another order says the rows are too."""
+    outcome = _series(Y0, DATES)
+    stamps = pd.Series(DATES, index=DATES)
+    reference = fit(Y0, T0, X0, None)
+    assert_allclose(fit(outcome, T0, X0, stamps), reference, rtol=RTOL)
+    assert_allclose(fit(outcome, T0, X0, DATES), reference, rtol=RTOL)  # an index has no labels
+    with pytest.raises(ValueError, match=r"Y and time_index " + DIFFERENT_INDEXES):
+        fit(outcome, T0, X0, stamps.sample(frac=1, random_state=4))
 
 
 # ------------------------------------------------------------------------- fwl_residualize
