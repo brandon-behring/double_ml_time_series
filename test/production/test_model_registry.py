@@ -8,7 +8,9 @@ Tests cover:
 - Persistence (save/load)
 """
 
+import json
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -419,6 +421,72 @@ class TestDMLModelRegistry:
 
             with pytest.raises(ValueError, match="No previous version"):
                 registry.rollback()
+
+    def test_concurrent_registration_and_skipped_deployments(self, tmp_path):
+        models = [self._create_test_version() for _ in range(6)]
+        registries = [DMLModelRegistry(tmp_path) for _ in models]
+        with ThreadPoolExecutor(max_workers=len(models)) as pool:
+            versions = list(
+                pool.map(lambda pair: pair[0].register(pair[1]), zip(registries, models))
+            )
+        assert {v["version_id"] for v in registries[0].list_versions()} == set(versions)
+        registries[0].promote_to_production(versions[0])
+        registries[2].promote_to_staging(versions[2])
+        registries[1].promote_to_production()
+        assert registries[0].get_production().version_id == versions[2]
+        assert registries[3].rollback() == versions[0]
+
+    @pytest.mark.parametrize("seed", [6, 17])
+    def test_registry_operations_against_deployment_history(self, tmp_path, seed):
+        registry = DMLModelRegistry(tmp_path)
+        versions = [registry.register(self._create_test_version()) for _ in range(4)]
+        rng = np.random.default_rng(seed)
+        history = []
+        staging = None
+        for _ in range(40):
+            action = rng.choice(["stage", "deploy", "promote_staged", "rollback", "restore"])
+            version = versions[rng.integers(len(versions))]
+            if action == "stage":
+                registry.promote_to_staging(version)
+                staging = version
+            elif action in ("deploy", "promote_staged"):
+                candidate = version if action == "deploy" else staging
+                if candidate is None:
+                    with pytest.raises(ValueError, match="No staging version"):
+                        registry.promote_to_production()
+                else:
+                    registry.promote_to_production(version if action == "deploy" else None)
+                    if not history or history[-1] != candidate:
+                        history.append(candidate)
+                    staging = None
+            elif action == "restore":
+                registry.rollback(version)
+                if version in history:
+                    history = history[: len(history) - history[::-1].index(version)]
+                else:
+                    history.append(version)
+            elif len(history) < 2:
+                with pytest.raises(ValueError):
+                    registry.rollback()
+            else:
+                history.pop()
+                assert registry.rollback() == history[-1]
+            registry = DMLModelRegistry(tmp_path)
+            assert registry.production_version == (history[-1] if history else None)
+            assert registry.staging_version == staging
+
+    def test_legacy_registry_recovers_only_recorded_production(self, tmp_path):
+        registry = DMLModelRegistry(tmp_path)
+        versions = [registry.register(self._create_test_version()) for _ in range(3)]
+        registry.promote_to_production(versions[1])
+        index = tmp_path / "registry.json"
+        legacy = json.loads(index.read_text())
+        del legacy["production_history"]
+        index.write_text(json.dumps(legacy))
+        with pytest.raises(ValueError, match="No previous version"):
+            registry.rollback()
+        registry.promote_to_production(versions[2])
+        assert registry.rollback() == versions[1]
 
     def test_list_versions(self):
         """Test listing all versions."""
