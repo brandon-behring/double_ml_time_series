@@ -24,9 +24,11 @@ Not every file these folders refer to is in the repository, and the reports desc
 November working copy, not `main`. Twenty-eight files of these folders that depend on the
 pending redesign of `PanelDML` are held and are listed in
 [`docs/CURRENT_STATUS.md`](../CURRENT_STATUS.md), which also says what the reports claim about
-Chapters 6 and 8 that `main` does not yet hold. Seven files that reproduce a provider's rows
+Chapters 6 and 8 that `main` does not yet hold. Three files that reproduce a provider's rows
 without a licence that grants redistribution are held and are listed, with the licences and
-attributions of the files that are here, in [`DATA_SOURCES.md`](DATA_SOURCES.md).
+attributions of the files that are here, in [`DATA_SOURCES.md`](DATA_SOURCES.md). That note
+also names four files that are here by the owner's decision although their sources state no
+licence that grants redistribution.
 
 ## Empirical and simulation checks
 

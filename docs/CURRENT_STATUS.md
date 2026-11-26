@@ -58,8 +58,12 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
   - Artifacts: `panel-draws.csv`, `insurance-panel-draws.csv`, `insurance-panel-summary.csv`, `insurance-rolling.csv`, `stress-draws.csv.gz`, `stress-summary.csv`, `retail-results.csv`, `retail-folds.csv`, `retail-baselines.json`, `adversarial/failures.json`, `adversarial/empirical.json`, `classical/results.json`, `external/turnout/household_counts.csv`.
   - Reports: `09-panel-retail-insurance.md`, `panel-inference.md`, `10-property-tests-and-falsification.md`, `adversarial/failures.md`, `adversarial/empirical.md`, `questions/minimum-wage.md`.
   - Of `audits/2026-11-21_evaluation_methods/`: `reproduction/design_probes.py`, `reproduction/design-probes.json`.
-- **7 further files are held for their licence**; see
-  [`docs/audits/DATA_SOURCES.md`](audits/DATA_SOURCES.md).
+- **3 further files are held for their licence**: the rows of the Survey of Professional
+  Forecasters and two receipts that embed them; see
+  [`docs/audits/DATA_SOURCES.md`](audits/DATA_SOURCES.md). Four files whose sources state no
+  licence that grants redistribution were held with them and landed by the owner's decision
+  of 2026-11-26: three result files of the ACIC study, which carry the organizers' true
+  effect for each contest file, and six announced cricket fixtures.
 - **Not landed either:** the end-to-end review of 2026-11-22 and the second audit it reviews
   (their folders and tests), nine test files that need a held file, among them the test that
   checks the numbers printed in the chapters, two tests that replay the cricket forecast (see
