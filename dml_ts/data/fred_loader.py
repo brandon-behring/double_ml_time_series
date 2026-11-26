@@ -55,6 +55,15 @@ except ImportError:
 # Type aliases
 FrequencyType = Literal["D", "W", "M", "Q", "A"]
 
+# Rows per year after resampling, for a year-over-year change. The pandas aliases for
+# month, quarter and year starts and ends pass through the resampling step unchanged.
+_PERIODS_PER_YEAR: dict[str, int] = {
+    "W": 52,
+    **dict.fromkeys(("M", "MS", "ME"), 12),
+    **dict.fromkeys(("Q", "QS", "QE"), 4),
+    **dict.fromkeys(("A", "Y", "YS", "YE"), 1),
+}
+
 
 @dataclass
 class FREDSeries:
@@ -464,7 +473,13 @@ class FREDLoader:
                 previous_dates = series.index - pd.DateOffset(years=1)
                 previous = series.reindex(previous_dates).set_axis(series.index)
                 return (series / previous - 1) * 100
-            periods = {"W": 52, "M": 12, "Q": 4, "A": 1}[frequency]
+            if frequency not in _PERIODS_PER_YEAR:
+                raise ValueError(
+                    f"pct_change_yoy needs a frequency with a fixed number of periods per "
+                    f"year (D, W, M, Q, A, or a month, quarter or year start or end alias), "
+                    f"got {frequency!r}. Use transform='pct_change' or 'level' there."
+                )
+            periods = _PERIODS_PER_YEAR[frequency]
             return series.pct_change(periods=periods, fill_method=None) * 100
         elif transform == "diff":
             return series.diff()
