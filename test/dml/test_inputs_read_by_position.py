@@ -191,6 +191,38 @@ def test_equal_values_under_other_level_names_are_refused(name):
     assert_allclose(SLOPES[name](pd.Series(y).rename_axis("row"), pd.Series(t), x), reference)
 
 
+@pytest.mark.tier2
+@pytest.mark.parametrize("name", sorted(SLOPES))
+def test_level_names_are_compared_for_every_pair_of_labelled_inputs(name):
+    """An outcome with unnamed levels agrees with both names and must not hide their clash.
+
+    The names were compared with the first labelled input only: with a treatment indexed
+    (unit, period) and controls indexed (period, unit), ``fwl_estimate`` returned 2.10 where
+    the aligned arrays give 1.96, as soon as the outcome carried the same tuples without names.
+    """
+    rng = np.random.default_rng(8)
+    units = periods = 12
+    unit, period = np.repeat(np.arange(units), periods), np.tile(np.arange(periods), units)
+    x = rng.normal(size=(units * periods, 2))
+    t = x[:, 0] + rng.normal(size=units * periods)
+    y = 2 * t + x[:, 1] + rng.normal(size=units * periods)
+    by_unit = pd.MultiIndex.from_arrays([unit, period], names=["unit", "period"])
+    treatment = pd.Series(t, index=by_unit)
+    controls = pd.DataFrame(x, index=by_unit).swaplevel().sort_index()
+    unnamed = pd.Series(y, index=by_unit.set_names([None, None]))
+    assert unnamed.index.equals(treatment.index) and treatment.index.equals(controls.index)
+    with pytest.raises(ValueError, match=r"T and X carry different pandas indexes: .* named"):
+        SLOPES[name](unnamed, treatment, controls)
+    with pytest.raises(ValueError, match=r"T and X carry different pandas indexes: .* named"):
+        SLOPES[name](y, treatment, controls)
+    # One clashing level of two is a clash.
+    half = pd.Series(t, index=by_unit.set_names(["unit", "week"]))
+    with pytest.raises(
+        ValueError, match=r"levels are named \['unit', 'period'\] and \['unit', 'week'\]"
+    ):
+        SLOPES[name](pd.Series(y, index=by_unit), half, x)
+
+
 class _LabelsLikePandas:
     """The index of a container that follows pandas without being pandas."""
 
@@ -397,6 +429,23 @@ def test_real_numbers_in_an_object_column_are_read():
 
 
 @pytest.mark.tier1
+def test_zero_dimensional_arrays_of_numbers_are_numbers_and_examples_are_short():
+    """An object array of 0-d arrays is what a list of NumPy scalars' arrays becomes."""
+    wrapped = np.empty(3, dtype=object)
+    wrapped[:] = [np.array(1.5), np.array(2), np.array(True)]
+    assert _read_as_floats("Y", wrapped).tolist() == [1.5, 2.0, 1.0]
+    nested = np.empty(1, dtype=object)
+    nested[0] = np.arange(3.0)
+    with pytest.raises(ValueError, match="^Y holds ndarray values"):
+        _read_as_floats("Y", nested)
+    huge = np.empty(1, dtype=object)
+    huge[0] = {f"column {i}": list(range(300)) for i in range(50)}
+    with pytest.raises(ValueError, match="^X holds dict values") as refusal:
+        _read_as_floats("X", huge)
+    assert len(str(refusal.value)) < 400
+
+
+@pytest.mark.tier1
 def test_text_is_refused_wherever_it_stands_and_whatever_its_type():
     with pytest.raises(ValueError, match=r"^Y holds text \(for example 'b'\)"):
         _read_as_floats("Y", np.array([1.0, 2.0, "b", 4.0], dtype=object))
@@ -412,7 +461,9 @@ def test_inputs_that_cannot_be_read_are_refused_by_name():
     with pytest.raises(ValueError, match="^T could not be read as a float array"):
         _read_as_floats("T", [1.0, pd.NA])
     with pytest.raises(ValueError, match="^T could not be read as a float array"):
-        _read_as_floats("T", pd.Series([1.0, pd.NA], dtype=object))
+        _read_as_floats("T", np.array([1.0, pd.NA], dtype=object))
+    # A pandas column knows its missing values, whatever its dtype.
+    assert np.isnan(_read_as_floats("T", pd.Series([1.0, pd.NA], dtype=object))[1])
     with pytest.raises(ValueError, match="^Y could not be read as a float array"):
         _read_as_floats("Y", [10**400, 1])
     assert np.isnan(_read_as_floats("Y", [1.0, None])[1])
@@ -496,6 +547,21 @@ def test_sparse_controls_give_the_dense_result(name):
     x = df[["x0", "x1"]].to_numpy()
     y, t = df["y"].to_numpy(), df["t"].to_numpy()
     assert_allclose(SLOPES[name](y, t, sparse.csr_matrix(x)), SLOPES[name](y, t, x), rtol=1e-9)
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("name", ["double_ml", "robinson_estimator"])
+def test_a_one_dimensional_sparse_array_of_controls_is_one_column(name):
+    """``np.asarray`` of a sparse array is a zero-dimensional object; it must be reshaped as sparse.
+
+    A second version of this change turned such controls into a (1, 1) object array, and the
+    two functions failed where they had returned the dense result.
+    """
+    df = frame()
+    y, t, column = df["y"].to_numpy(), df["t"].to_numpy(), df["x0"].to_numpy()
+    dense = SLOPES[name](y, t, column.reshape(-1, 1))
+    assert_allclose(SLOPES[name](y, t, sparse.coo_array(column)), dense, rtol=1e-6)
+    assert_allclose(SLOPES[name](y, t, sparse.csr_array(column)), dense, rtol=1e-6)
 
 
 @pytest.mark.tier2

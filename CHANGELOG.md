@@ -123,11 +123,14 @@ are the compatibility contract).
   unchanged: `robinson_estimator` hands a DataFrame or a sparse matrix to the nuisance model as
   given; `double_ml` selects fold rows with `X[rows]`, so it takes arrays and CSR or CSC
   matrices and raises `KeyError` for a DataFrame; `fwl_estimate` builds a dense design from an
-  array or a DataFrame of numbers. Two pandas inputs whose indexes differ, in value, in order
-  or in the names of their levels, are refused: read by position, the same units in another
-  order would be paired wrongly. This also refuses calls that were paired correctly before,
-  namely the same rows under other labels (controls rebuilt from an array beside an outcome
-  with a date index); pass `.to_numpy()` when the rows are already in the same order. (#75)
+  array or a DataFrame of numbers. Two pandas inputs whose indexes differ in value or in
+  order are refused, and so are two whose levels are named differently: read by position, the
+  same units in another order would be paired wrongly. The comparison cannot see an index
+  that was reset after its rows were reordered, rows permuted among repeated labels, or a
+  level that only one input names. It also refuses calls that were paired correctly before:
+  the same rows under other labels (controls rebuilt from an array beside an outcome with a
+  date index; the same instants in another time zone; the same values under another index
+  name). Pass `.to_numpy()` when the rows are already in the same order. (#75)
 - `TemporalPLRDML` raises when the treatment is constant on the rows it scores. The first block
   of a time-series split is trained on and not scored; for a treatment that varies only there,
   the "residual" on the scored rows is the error of the nuisance prediction. Over 400 draws of
