@@ -15,11 +15,93 @@ from dml_ts.data.fred_loader import (
     MACRO_CONTROL_SETS,
     STANDARD_MACRO_SERIES,
     FREDLoader,
+    FREDSeries,
     MacroControlsResult,
     create_synthetic_fred_data,
 )
 
 pytestmark = pytest.mark.tier2
+
+
+@pytest.mark.parametrize(
+    ("frequency", "offset", "year_periods"),
+    [("W", "W", 52), ("M", "ME", 12), ("Q", "QE", 4), ("A", "YE", 1)],
+)
+def test_macro_controls_year_over_year_uses_target_frequency(
+    tmp_path, monkeypatch, frequency, offset, year_periods
+):
+    dates = pd.date_range("2019-01-01", periods=year_periods + 5, freq=offset)
+    levels = pd.Series(100 * 1.01 ** np.arange(len(dates)), index=dates)
+    source = FREDSeries("GDP", "test", "", frequency, "index", levels)
+    loader = FREDLoader(cache_dir=tmp_path)
+    monkeypatch.setattr(loader, "get_multiple_series", lambda *args: {"GDP": source})
+    result = loader.get_macro_controls(
+        str(dates[0].date()),
+        str(dates[-1].date()),
+        frequency=frequency,
+        transforms={"GDP": "pct_change_yoy"},
+    )
+    assert result.data.index.equals(dates[year_periods:])
+    np.testing.assert_allclose(result.data["GDP"], 100 * (1.01**year_periods - 1))
+
+
+@pytest.mark.parametrize(
+    ("alias", "year_periods"), [("MS", 12), ("ME", 12), ("QS", 4), ("QE", 4), ("YS", 1), ("YE", 1)]
+)
+def test_year_over_year_accepts_the_start_and_end_aliases(
+    tmp_path, monkeypatch, alias, year_periods
+):
+    """These aliases pass through the resampling step and were served before the change.
+
+    The first version of the calendar-anniversary change looked the frequency up in a table
+    of four letters and raised ``KeyError('MS')``.
+    """
+    dates = pd.date_range("2019-01-01", periods=year_periods + 5, freq=alias)
+    levels = pd.Series(100 * 1.01 ** np.arange(len(dates)), index=dates)
+    source = FREDSeries("GDP", "test", "", alias, "index", levels)
+    loader = FREDLoader(cache_dir=tmp_path)
+    monkeypatch.setattr(loader, "get_multiple_series", lambda *args: {"GDP": source})
+    result = loader.get_macro_controls(
+        str(dates[0].date()),
+        str(dates[-1].date()),
+        frequency=alias,
+        transforms={"GDP": "pct_change_yoy"},
+    )
+    assert result.data.index.equals(dates[year_periods:])
+    np.testing.assert_allclose(result.data["GDP"], 100 * (1.01**year_periods - 1))
+
+
+@pytest.mark.parametrize("frequency", ["B", "2W"])
+def test_year_over_year_refuses_a_frequency_without_a_year_length(tmp_path, monkeypatch, frequency):
+    """Twelve rows back is not a year for business days; the level transform still works."""
+    dates = pd.date_range("2019-01-01", "2021-03-01", freq="D")
+    levels = pd.Series(np.arange(len(dates)) + 100.0, index=dates)
+    source = FREDSeries("GDP", "test", "", "D", "index", levels)
+    loader = FREDLoader(cache_dir=tmp_path)
+    monkeypatch.setattr(loader, "get_multiple_series", lambda *args: {"GDP": source})
+    with pytest.raises(ValueError, match=f"pct_change_yoy needs a frequency .* got '{frequency}'"):
+        loader.get_macro_controls(
+            "2019-01-01", "2021-03-01", frequency=frequency, transforms={"GDP": "pct_change_yoy"}
+        )
+    levels_only = loader.get_macro_controls(
+        "2019-01-01", "2021-03-01", frequency=frequency, transforms={"GDP": "level"}
+    )
+    assert len(levels_only.data) > 50
+
+
+def test_daily_year_over_year_follows_calendar_across_leap_year(tmp_path, monkeypatch):
+    dates = pd.date_range("2019-01-01", "2021-03-01", freq="D")
+    levels = pd.Series(np.arange(len(dates)) + 100.0, index=dates)
+    source = FREDSeries("GDP", "test", "", "D", "index", levels)
+    loader = FREDLoader(cache_dir=tmp_path)
+    monkeypatch.setattr(loader, "get_multiple_series", lambda *args: {"GDP": source})
+    result = loader.get_macro_controls(
+        "2019-01-01", "2021-03-01", frequency="D", transforms={"GDP": "pct_change_yoy"}
+    )
+    for today, anniversary in [("2020-02-29", "2019-02-28"), ("2021-02-28", "2020-02-28")]:
+        assert result.data.loc[today, "GDP"] == pytest.approx(
+            100 * (levels[today] / levels[anniversary] - 1)
+        )
 
 
 # ============================================================================

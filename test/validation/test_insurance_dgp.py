@@ -218,6 +218,51 @@ class TestInsuranceDGPReproducibility:
 class TestInsuranceDGPDataProperties:
     """Sanity checks on generated data values."""
 
+    @pytest.mark.parametrize("realism,n_lags", [("simple", 0), ("moderate", 1), ("full", 3)])
+    def test_product_month_keys_match_structural_response(self, realism, n_lags):
+        base = create_insurance_dgp(realism, n_periods=80, n_products=4, true_tau=-0.8, seed=42)
+        shifted = create_insurance_dgp(realism, n_periods=80, n_products=4, true_tau=0.2, seed=42)
+        np.testing.assert_array_equal(shifted.T, base.T)
+        firm = base.X[:, :4].reshape(4, 80, 4)
+        assert_allclose(np.diff(firm[:, :, 0], axis=1), 1 / 12)
+        assert_allclose(np.diff(firm[:, :, 2:], axis=1), 0)
+        macros = base.X_macro.reshape(4, 80, 5)
+        assert_allclose(macros[1:], np.repeat(macros[:1], 3, axis=0))
+        kept, history = base.treatment_history(n_lags)
+        derivative = base.T[kept].copy()
+        if realism == "moderate":
+            derivative += 0.3 * history[:, 0]
+        if realism == "full":
+            derivative += history @ np.array([0.5, 0.25, 0.125])
+            derivative[base.time_index[kept] >= base.true_params.regime_shift_period] *= 0.8
+        assert_allclose(shifted.Y[kept] - base.Y[kept], derivative, atol=1e-12)
+
+    def test_simple_outcome_uses_same_month_macro(self):
+        from dml_ts.validation.insurance_dgp import _generate_outcome
+
+        macro = np.arange(25).reshape(5, 5)
+        y, params = _generate_outcome(
+            np.zeros(15), macro, 5, 3, 0.0, "simple", np.random.default_rng(5)
+        )
+        expected = macro @ np.array(list(params.beta_macro.values()))
+        noise = np.random.default_rng(5).normal(0, 5, 15)
+        assert_allclose(y, np.repeat(expected, 3) + noise)
+
+    def test_history_uses_keys_on_shuffled_ragged_panel(self):
+        from dataclasses import replace
+
+        data = create_insurance_dgp("moderate", n_periods=6, n_products=2, seed=42)
+        order = [11, 2, 0, 10, 6, 1, 3]
+        data = replace(
+            data,
+            product_index=data.product_index[order],
+            time_index=data.time_index[order],
+            T=np.array(order, dtype=float),
+        )
+        kept, history = data.treatment_history(2)
+        np.testing.assert_array_equal(kept, [1, 6])
+        np.testing.assert_array_equal(history, [[1, 0], [2, 1]])
+
     @pytest.mark.parametrize("realism", ["simple", "moderate", "full"])
     def test_no_nan_in_output(self, realism: str) -> None:
         """No NaN values in any output array."""

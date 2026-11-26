@@ -48,7 +48,12 @@ def main() -> None:
 
         # True parameters
         params = dgp_result.true_params
-        print(f"  True τ:        {params.tau:.2f}")
+        if params.tau_by_product is None:
+            print(f"  Contemporaneous slope: {params.tau:.2f}")
+        else:
+            pre = params.tau_by_product[0]
+            print(f"  Product 0 slope before month {params.regime_shift_period}: {pre:.3f}")
+            print(f"  Product 0 slope afterward: {pre * (1 + params.regime_shift):.3f}")
         print(f"  AR coef:       {params.ar_coef:.2f}")
         print(f"  Seasonal amp:  {params.seasonal_amplitude:.2f}")
         print(f"  Regime shift:  {params.regime_shift:.2f}")

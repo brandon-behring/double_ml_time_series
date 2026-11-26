@@ -4,13 +4,88 @@ Tests the OJDataLoader class to ensure correct data loading,
 preprocessing, and validation for DML price elasticity analysis.
 """
 
+import hashlib
+import os
+import stat
 import tempfile
+from http.client import IncompleteRead
+from io import BytesIO
 from pathlib import Path
+from urllib.error import URLError
 
 import numpy as np
 import pytest
 
-from dml_ts.data.oj_loader import OJDataLoader, OJDataset
+from dml_ts.data.oj_loader import OJ_DATASET_HASH, OJDataLoader, OJDataset
+
+
+@pytest.mark.tier1
+@pytest.mark.parametrize("force", [False, True])
+def test_changed_download_preserves_cached_file(tmp_path, monkeypatch, force):
+    from dml_ts.data import oj_loader
+
+    cache = tmp_path / "oj_large.csv"
+    cache.write_bytes(b"previous cached data")
+    monkeypatch.setattr(oj_loader, "urlopen", lambda *args, **kwargs: BytesIO(b"unexpected bytes"))
+    with pytest.raises(RuntimeError, match="SHA-256"):
+        OJDataLoader(cache_dir=tmp_path).load(force_download=force)
+    assert cache.read_bytes() == b"previous cached data"
+
+
+@pytest.mark.tier1
+@pytest.mark.parametrize("failure", [IncompleteRead(b"store,we"), URLError("no route to host")])
+def test_failed_download_names_the_cached_file_it_did_not_use(tmp_path, monkeypatch, failure):
+    """An interrupted body is an ``HTTPException``, not an ``OSError``; both are reported.
+
+    A cached file that is not the pinned dataset is not served. The error says so, because
+    "failed to download" alone does not explain why the local copy was ignored.
+    """
+    from dml_ts.data import oj_loader
+
+    def fail(*args, **kwargs):
+        raise failure
+
+    cache = tmp_path / "oj_large.csv"
+    cache.write_bytes(b"store,week\n1,40\n")
+    monkeypatch.setattr(oj_loader, "urlopen", fail)
+    with pytest.raises(RuntimeError, match="Failed to download OJ dataset") as caught:
+        OJDataLoader(cache_dir=tmp_path).load()
+    assert f"The cached file {cache} does not match the pinned SHA-256 digest" in str(caught.value)
+    assert cache.read_bytes() == b"store,week\n1,40\n"
+    with pytest.raises(RuntimeError, match="Failed to download OJ dataset") as caught:
+        OJDataLoader(cache_dir=tmp_path / "empty").load()
+    assert "cached file" not in str(caught.value)
+
+
+@pytest.mark.tier1
+@pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits")
+def test_cache_file_is_created_like_an_ordinary_file(tmp_path, monkeypatch):
+    """``tempfile`` creates files only their owner can read; the cache is not a secret."""
+    from dml_ts.data import oj_loader
+
+    source = b"store,week\n2,40\n"
+    monkeypatch.setattr(oj_loader, "OJ_DATASET_HASH", hashlib.sha256(source).hexdigest())
+    monkeypatch.setattr(oj_loader, "urlopen", lambda *args, **kwargs: BytesIO(source))
+    OJDataLoader(tmp_path)._load_raw()
+    umask = os.umask(0)
+    os.umask(umask)
+    assert stat.S_IMODE((tmp_path / "oj_large.csv").stat().st_mode) == 0o666 & ~umask
+    assert [p.name for p in tmp_path.iterdir()] == ["oj_large.csv"]
+
+
+@pytest.mark.tier1
+def test_legacy_cache_is_refreshed_once_from_pinned_source(tmp_path, monkeypatch):
+    from dml_ts.data import oj_loader
+
+    source = b"store,week\n2,40\n"
+    cache = tmp_path / "oj_large.csv"
+    cache.write_bytes(b"store,week\n1,40\n")
+    monkeypatch.setattr(oj_loader, "OJ_DATASET_HASH", hashlib.sha256(source).hexdigest())
+    monkeypatch.setattr(oj_loader, "urlopen", lambda *args, **kwargs: BytesIO(source))
+    assert OJDataLoader(tmp_path)._load_raw()["store"].tolist() == [2]
+    assert cache.read_bytes() == source
+    monkeypatch.setattr(oj_loader, "urlopen", lambda *a, **kw: pytest.fail("cache hit expected"))
+    assert OJDataLoader(tmp_path)._load_raw()["store"].tolist() == [2]
 
 
 @pytest.mark.tier2
@@ -141,7 +216,7 @@ class TestOJDataLoader:
 
             # Cache file should exist
             cache_file = cache_dir / "oj_large.csv"
-            assert cache_file.exists()
+            assert hashlib.sha256(cache_file.read_bytes()).hexdigest() == OJ_DATASET_HASH
 
             # Second load - from cache
             loader2 = OJDataLoader(cache_dir=cache_dir)

@@ -19,12 +19,17 @@ from __future__ import annotations
 import hashlib
 import json
 import pickle
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 import numpy as np
+from filelock import FileLock
+
+from dml_ts._persistence import write_json_atomically
 
 
 @dataclass
@@ -348,6 +353,13 @@ class DMLModelVersion:
         )
 
 
+class _RegistryState(TypedDict):
+    versions: list[str]
+    production_version: str | None
+    staging_version: str | None
+    production_history: list[str]
+
+
 class DMLModelRegistry:
     """
     Registry for managing multiple DML model versions.
@@ -371,33 +383,44 @@ class DMLModelRegistry:
         Args:
             base_path: Root directory for model storage
         """
-        self.base_path = Path(base_path)
+        # Absolute, so that a later change of the working directory does not point this
+        # object at another (empty) registry: the state is read from disk on every call.
+        self.base_path = Path(base_path).absolute()
         self.base_path.mkdir(parents=True, exist_ok=True)
         self._registry_file = self.base_path / "registry.json"
-        self._load_registry()
 
-    def _load_registry(self) -> None:
-        """Load or initialize registry state."""
+    def _load_registry(self) -> _RegistryState:
+        """Read one complete snapshot, including legacy registries without history."""
+        state: dict[str, Any] = {}
         if self._registry_file.exists():
             with open(self._registry_file) as f:
                 state = json.load(f)
-            self.production_version: str | None = state.get("production_version")
-            self.staging_version: str | None = state.get("staging_version")
-            self._versions: list[str] = state.get("versions", [])
-        else:
-            self.production_version = None
-            self.staging_version = None
-            self._versions = []
-
-    def _save_registry(self) -> None:
-        """Persist registry state."""
-        state = {
-            "production_version": self.production_version,
-            "staging_version": self.staging_version,
-            "versions": self._versions,
+        current = state.get("production_version")
+        return {
+            "versions": state.get("versions", []),
+            "production_version": current,
+            "staging_version": state.get("staging_version"),
+            "production_history": state.get("production_history", [current] if current else []),
         }
-        with open(self._registry_file, "w") as f:
-            json.dump(state, f, indent=2)
+
+    @contextmanager
+    def _update(self) -> Iterator[_RegistryState]:
+        with FileLock(self.base_path / "registry.lock"):
+            state = self._load_registry()
+            yield state
+            write_json_atomically(self._registry_file, dict(state))
+
+    @property
+    def production_version(self) -> str | None:
+        return self._load_registry()["production_version"]
+
+    @property
+    def staging_version(self) -> str | None:
+        return self._load_registry()["staging_version"]
+
+    @property
+    def _versions(self) -> list[str]:
+        return self._load_registry()["versions"]
 
     def register(self, model: DMLModelVersion) -> str:
         """
@@ -409,11 +432,10 @@ class DMLModelRegistry:
         Returns:
             Version ID of registered model
         """
-        model.save(self.base_path)
-
-        if model.version_id not in self._versions:
-            self._versions.append(model.version_id)
-            self._save_registry()
+        with self._update() as state:
+            if model.version_id not in state["versions"]:
+                model.save(self.base_path)
+                state["versions"].append(model.version_id)
 
         return model.version_id
 
@@ -438,15 +460,13 @@ class DMLModelRegistry:
 
     def get_production(self) -> DMLModelVersion | None:
         """Return current production model, or None if not set."""
-        if self.production_version is None:
-            return None
-        return self.get(self.production_version)
+        current = self.production_version
+        return self.get(current) if current is not None else None
 
     def get_staging(self) -> DMLModelVersion | None:
         """Return current staging model, or None if not set."""
-        if self.staging_version is None:
-            return None
-        return self.get(self.staging_version)
+        current = self.staging_version
+        return self.get(current) if current is not None else None
 
     def promote_to_staging(self, version_id: str) -> None:
         """
@@ -458,11 +478,10 @@ class DMLModelRegistry:
         Raises:
             KeyError: If version not found
         """
-        if version_id not in self._versions:
-            raise KeyError(f"Version {version_id} not found")
-
-        self.staging_version = version_id
-        self._save_registry()
+        with self._update() as state:
+            if version_id not in state["versions"]:
+                raise KeyError(f"Version {version_id} not found")
+            state["staging_version"] = version_id
 
     def promote_to_production(self, version_id: str | None = None) -> str:
         """
@@ -478,17 +497,17 @@ class DMLModelRegistry:
             ValueError: If no version specified and no staging version
             KeyError: If specified version not found
         """
-        if version_id is None:
-            if self.staging_version is None:
-                raise ValueError("No staging version to promote")
-            version_id = self.staging_version
-
-        if version_id not in self._versions:
-            raise KeyError(f"Version {version_id} not found")
-
-        self.production_version = version_id
-        self.staging_version = None
-        self._save_registry()
+        with self._update() as state:
+            if version_id is None:
+                version_id = state["staging_version"]
+                if version_id is None:
+                    raise ValueError("No staging version to promote")
+            if version_id not in state["versions"]:
+                raise KeyError(f"Version {version_id} not found")
+            if state["production_version"] != version_id:
+                state["production_history"].append(version_id)
+            state["production_version"] = version_id
+            state["staging_version"] = None
 
         return version_id
 
@@ -507,28 +526,24 @@ class DMLModelRegistry:
             ValueError: If no previous version available
             KeyError: If specified version not found
         """
-        if to_version is not None:
-            if to_version not in self._versions:
+        with self._update() as state:
+            history = state["production_history"]
+            if to_version is None:
+                if not history:
+                    raise ValueError("No production version to rollback from")
+                if len(history) == 1:
+                    raise ValueError("No previous version available in production history")
+                history.pop()
+            elif to_version not in state["versions"]:
                 raise KeyError(f"Version {to_version} not found")
-            self.production_version = to_version
-            self._save_registry()
-            return to_version
-
-        # Find previous version (simple: just go one back in list)
-        if self.production_version is None:
-            raise ValueError("No production version to rollback from")
-
-        try:
-            current_idx = self._versions.index(self.production_version)
-        except ValueError as e:
-            raise ValueError("Production version not found in version list") from e
-        if current_idx == 0:
-            raise ValueError("No previous version available")
-        previous_version = self._versions[current_idx - 1]
-
-        self.production_version = previous_version
-        self._save_registry()
-        return previous_version
+            elif to_version in history:
+                while history[-1] != to_version:
+                    history.pop()
+            else:
+                # An explicit choice can deploy any registered version.
+                history.append(to_version)
+            state["production_version"] = history[-1]
+            return history[-1]
 
     def list_versions(self) -> list[dict[str, Any]]:
         """
@@ -537,10 +552,11 @@ class DMLModelRegistry:
         Returns:
             List of dicts with version info (id, created_at, is_production, is_staging)
         """
+        state = self._load_registry()
         result = []
-        for version_id in self._versions:
+        for version_id in state["versions"]:
             try:
-                model = self.get(version_id)
+                model = DMLModelVersion.load(self.base_path / version_id)
                 result.append(
                     {
                         "version_id": version_id,
@@ -548,8 +564,8 @@ class DMLModelRegistry:
                         "model_type": model.model_type,
                         "n_folds": model.n_folds,
                         "metrics": model.metrics,
-                        "is_production": version_id == self.production_version,
-                        "is_staging": version_id == self.staging_version,
+                        "is_production": version_id == state["production_version"],
+                        "is_staging": version_id == state["staging_version"],
                     }
                 )
             except Exception as e:
@@ -557,8 +573,8 @@ class DMLModelRegistry:
                     {
                         "version_id": version_id,
                         "error": str(e),
-                        "is_production": version_id == self.production_version,
-                        "is_staging": version_id == self.staging_version,
+                        "is_production": version_id == state["production_version"],
+                        "is_staging": version_id == state["staging_version"],
                     }
                 )
         return result

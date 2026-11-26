@@ -15,7 +15,9 @@ import tempfile
 import numpy as np
 import pytest
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.linear_model import LogisticRegression, Ridge
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 from dml_ts.production.dml_pipeline import (
     InsuranceDMLPipeline,
@@ -320,7 +322,7 @@ class TestInsuranceDMLPipeline:
             save_path = pipeline.save(tmpdir)
 
             assert (save_path / "config.json").exists()
-            assert (save_path / "scaler.pkl").exists()
+            assert (save_path / result.model_version / "propensity_fold_0.pkl").exists()
             assert (save_path / "state.json").exists()
 
             # Load
@@ -328,6 +330,10 @@ class TestInsuranceDMLPipeline:
 
             assert loaded_pipeline._fitted is True
             assert loaded_pipeline._ate == pytest.approx(original_ate)
+            np.testing.assert_allclose(
+                loaded_pipeline.predict_propensity(X[:12]), pipeline.predict_propensity(X[:12])
+            )
+            assert loaded_pipeline.fit(X, T, Y).ate == pytest.approx(original_ate)
 
     def test_repr(self, sample_data, pipeline_with_registry):
         """Test pipeline string representation."""
@@ -447,3 +453,137 @@ def test_use_hac_unavailable_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     pipeline = mod.InsuranceDMLPipeline(mod.PipelineConfig(use_hac=True))
     with pytest.raises(RuntimeError, match="use_hac=True"):
         pipeline.fit(X, T, Y)
+
+
+@pytest.mark.parametrize("binary", [True, False], ids=["binary-ate", "continuous-plr"])
+@pytest.mark.parametrize("hac", [False, True], ids=["iid", "hac"])
+def test_forward_scores_and_scale_or_location_invariance(tmp_path, binary, hac):
+    """Reconstruct independent nuisance fits, scores and variances on the 320 test dates."""
+    rng = np.random.default_rng(123)
+    x = rng.normal(size=(400, 2))
+    if binary:
+        t = rng.binomial(1, 1 / (1 + np.exp(-x[:, 0])))
+        y = x[:, 0] + (2 + x[:, 1]) * t + rng.normal(size=400)
+    else:
+        t = x[:, 0] + rng.normal(size=400)
+        y = 2 * t + x[:, 1] + rng.normal(size=400)
+    config = PipelineConfig(
+        model_registry_path=str(tmp_path),
+        n_folds=4,
+        time_column="date",
+        propensity_model=LogisticRegression() if binary else LinearRegression(),
+        outcome_model=LinearRegression(),
+        use_hac=hac,
+        hac_bandwidth=4,
+    )
+    pipeline = InsuranceDMLPipeline(config)
+    fit = pipeline.fit(x, t, y)
+    assert fit.metadata["n_used"] == 320
+    assert fit.metadata["n_unscored"] == 80
+    assert fit.metadata["hac_bandwidth"] == (4 if hac else None)
+    assert ("overlap_violations" in [c.check_name for c in fit.monitoring_results]) == binary
+    checks, _ = pipeline.evaluate_retrain_need(x[:40], t[:40], x[40:80], t[40:80])
+    assert ("overlap_violations" in [c.check_name for c in checks]) == binary
+
+    models = pipeline._current_version.get_nuisance_models()
+    estimates, t_residuals, y_residuals = [], [], []
+    for k, start in enumerate(range(80, 400, 80)):
+        train = np.arange(start)
+        test = np.arange(start, start + 80)
+        # The serialized scaler must only have seen data preceding this test block.
+        np.testing.assert_allclose(models[k][0][0].mean_, x[train].mean(axis=0))
+        if binary:
+            logistic = make_pipeline(StandardScaler(), LogisticRegression()).fit(x[train], t[train])
+            e = np.clip(logistic.predict_proba(x[test])[:, 1], 0.01, 0.99)
+            arm_predictions = []
+            for arm in (0, 1):
+                subset = train[t[train] == arm]
+                fit_arm = LinearRegression().fit(x[subset], y[subset])
+                arm_predictions.append(fit_arm.predict(x[test]))
+            m0, m1 = arm_predictions
+            estimates.extend(
+                m1 - m0 + t[test] * (y[test] - m1) / e - (1 - t[test]) * (y[test] - m0) / (1 - e)
+            )
+        else:
+            t_hat = LinearRegression().fit(x[train], t[train]).predict(x[test])
+            y_hat = LinearRegression().fit(x[train], y[train]).predict(x[test])
+            t_residuals.extend(t[test] - t_hat)
+            y_residuals.extend(y[test] - y_hat)
+    if binary:
+        theta = np.mean(estimates)
+        psi = np.asarray(estimates) - theta
+    else:
+        v, u = np.asarray(t_residuals), np.asarray(y_residuals)
+        theta = np.dot(v, u) / np.dot(v, v)
+        psi = v * (u - theta * v) / np.mean(v**2)
+    if hac:
+        score = psi - psi.mean()
+        n = len(score)
+        long_run_variance = score @ score / n
+        for lag in range(1, 5):
+            long_run_variance += 2 * (1 - lag / 5) * (score[lag:] @ score[:-lag]) / n
+        se = np.sqrt(long_run_variance / n)
+    else:
+        se = np.std(psi, ddof=1) / np.sqrt(len(psi))
+
+    np.testing.assert_allclose([fit.ate, fit.ate_se], [theta, se])
+    transformed = pipeline.fit(x, t if binary else 10 * t, y + 100 if binary else y)
+    factor = 1 if binary else 10
+    np.testing.assert_allclose(
+        factor
+        * np.array(
+            [
+                transformed.ate,
+                transformed.ate_se,
+                transformed.ate_ci_lower,
+                transformed.ate_ci_upper,
+            ]
+        ),
+        [fit.ate, fit.ate_se, fit.ate_ci_lower, fit.ate_ci_upper],
+    )
+
+
+def test_unidentified_training_folds_and_residuals(tmp_path):
+    x = np.arange(40, dtype=float).reshape(-1, 1)
+    config = PipelineConfig(time_column="week", n_folds=4, model_registry_path=str(tmp_path))
+    pipeline = InsuranceDMLPipeline(config)
+    with pytest.raises(ValueError, match="both treatment arms"):
+        pipeline.fit(x, x[:, 0] >= 20, x[:, 0])
+    config.propensity_model = LinearRegression()
+    with pytest.raises(ValueError, match="no residual variation"):
+        pipeline.fit(x, x[:, 0], np.sin(x[:, 0]))
+
+
+def test_loading_single_scaler_registry_snapshot(tmp_path):
+    # Old snapshots store their scaler separately and look up the learners in the registry.
+    import json
+
+    from dml_ts.production.model_registry import DMLModelRegistry, DMLModelVersion
+
+    rng = np.random.default_rng(7)
+    x = rng.normal(size=(50, 2))
+    t = rng.binomial(1, 0.5, len(x))
+    scaler = StandardScaler().fit(x)
+    classifier = LogisticRegression().fit(scaler.transform(x), t)
+    outcome_model = Ridge().fit(scaler.transform(x), t + x[:, 0])
+    registry = DMLModelRegistry(tmp_path / "registry")
+    old = DMLModelVersion.create(
+        model_type="double_ml",
+        nuisance_models={0: (classifier, outcome_model)},
+        feature_names=["x0", "x1"],
+        treatment_name="offer",
+        outcome_name="renewal",
+        hyperparameters={},
+        feature_transformer=scaler,
+    )
+    version_id = registry.register(old)
+    (tmp_path / "state.json").write_text(
+        json.dumps({"fitted": True, "ate": 1.0, "ate_se": 0.1, "current_version_id": version_id})
+    )
+    (tmp_path / "config.json").write_text(
+        json.dumps({"model_registry_path": str(tmp_path / "registry")})
+    )
+    restored = InsuranceDMLPipeline.load(tmp_path)
+    np.testing.assert_allclose(
+        restored.predict_propensity(x[:5]), classifier.predict_proba(scaler.transform(x[:5]))[:, 1]
+    )

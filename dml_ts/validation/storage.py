@@ -10,10 +10,15 @@ Provides efficient storage, retrieval, and caching of:
 import hashlib
 import json
 import pickle
+from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
+from uuid import uuid4
 
+from filelock import FileLock
+
+from dml_ts._persistence import write_json_atomically
 from dml_ts.validation.dgp_generator import DGPResult
 from dml_ts.validation.validation_result import ValidationResult
 
@@ -60,7 +65,9 @@ class ResultStorage:
         Args:
             base_dir: Base directory for storing results
         """
-        self.base_dir = Path(base_dir)
+        # Absolute, so that a later change of the working directory does not point this
+        # object at another (empty) store.
+        self.base_dir = Path(base_dir).absolute()
         self.results_dir = self.base_dir / "results"
         self.dgp_cache_dir = self.base_dir / "dgp_cache"
         self.index_file = self.base_dir / "index.json"
@@ -68,9 +75,6 @@ class ResultStorage:
         # Create directories
         self.results_dir.mkdir(parents=True, exist_ok=True)
         self.dgp_cache_dir.mkdir(parents=True, exist_ok=True)
-
-        # Load or initialize index
-        self.index = self._load_index()
 
     def save_result(
         self,
@@ -95,24 +99,35 @@ class ResultStorage:
 
         # Generate filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{method}_{timestamp}.json"
+        filename = f"{method}_{timestamp}_{uuid4().hex}.json"
         filepath = self.results_dir / filename
 
-        # Save result as JSON
-        with open(filepath, "w") as f:
-            result_dict = result.to_dict()
-            if metadata:
-                result_dict["storage_metadata"] = metadata
-            json.dump(result_dict, f, indent=2)
-
-        # Update index
-        self._add_to_index(
-            filepath=filepath,
-            method=method,
-            status=result.status,
-            timestamp=result.timestamp.isoformat(),
-            metadata=metadata or {},
-        )
+        data = replace(
+            result, storage_metadata=result.storage_metadata | (metadata or {})
+        ).to_dict()
+        write_json_atomically(filepath, data)
+        indexed = False
+        try:
+            with FileLock(self.base_dir / "index.lock"):
+                index = self.index
+                index["results"].append(
+                    {
+                        "filepath": str(filepath.resolve()),
+                        "method": method,
+                        "status": result.status,
+                        "timestamp": result.timestamp.isoformat(),
+                        "metadata": data["storage_metadata"],
+                    }
+                )
+                index["last_updated"] = datetime.now().isoformat()
+                write_json_atomically(self.index_file, index)
+                indexed = True
+        except Exception:
+            # Once the index names the payload, an error (for example in releasing the
+            # lock) must not delete it: the index would point at a missing file.
+            if not indexed:
+                filepath.unlink()
+            raise
 
         return filepath
 
@@ -167,11 +182,21 @@ class ResultStorage:
         # Load results
         results = []
         for entry in filtered_entries:
-            filepath = Path(entry["filepath"])
+            filepath = self._payload_path(entry)
             if filepath.exists():
                 results.append(self.load_result(filepath))
 
         return results
+
+    def _payload_path(self, entry: dict[str, Any]) -> Path:
+        """Where an indexed payload is now.
+
+        The index records the path a payload had when it was saved. A store that has been
+        moved or renamed keeps its payloads beside its index, so a recorded path that no
+        longer exists is looked up by name in this store's results directory.
+        """
+        recorded = Path(entry["filepath"])
+        return recorded if recorded.exists() else self.results_dir / recorded.name
 
     def cache_dgp(self, dgp_result: DGPResult, dgp_config: dict[str, Any]) -> str:
         """
@@ -266,51 +291,26 @@ class ResultStorage:
         from collections import Counter
 
         # Count by method and status
-        methods = [entry["method"] for entry in self.index["results"]]
-        statuses = [entry["status"] for entry in self.index["results"]]
+        index = self.index
+        methods = [entry["method"] for entry in index["results"]]
+        statuses = [entry["status"] for entry in index["results"]]
 
         # Count cache entries
         cache_count = len(list(self.dgp_cache_dir.glob("*.pkl")))
 
         return {
-            "total_results": len(self.index["results"]),
+            "total_results": len(index["results"]),
             "methods": dict(Counter(methods)),
             "statuses": dict(Counter(statuses)),
             "cache_entries": cache_count,
-            "last_updated": self.index.get("last_updated", "Never"),
+            "last_updated": index.get("last_updated", "Never"),
         }
 
-    def _load_index(self) -> dict[str, Any]:
-        """Load or create result index."""
+    @property
+    def index(self) -> dict[str, Any]:
+        """Read the last published index, including results saved by other workers."""
         if self.index_file.exists():
             with open(self.index_file) as f:
                 return cast(dict[str, Any], json.load(f))
         else:
             return {"results": [], "last_updated": None}
-
-    def _save_index(self) -> None:
-        """Save result index."""
-        self.index["last_updated"] = datetime.now().isoformat()
-
-        with open(self.index_file, "w") as f:
-            json.dump(self.index, f, indent=2)
-
-    def _add_to_index(
-        self,
-        filepath: Path,
-        method: str,
-        status: str,
-        timestamp: str,
-        metadata: dict[str, Any],
-    ) -> None:
-        """Add entry to index."""
-        entry = {
-            "filepath": str(filepath),
-            "method": method,
-            "status": status,
-            "timestamp": timestamp,
-            "metadata": metadata,
-        }
-
-        self.index["results"].append(entry)
-        self._save_index()

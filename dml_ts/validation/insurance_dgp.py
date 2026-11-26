@@ -98,6 +98,25 @@ class InsuranceDGPResult:
     true_params: InsuranceDGPParams
     description: str
 
+    def treatment_history(self, n_lags: int) -> tuple[NDArray[np.intp], NDArray[np.float64]]:
+        """Return row indices and T at the preceding months for the same product.
+
+        Rows without every requested calendar lag are excluded. Lag columns
+        run from most recent to oldest, in the returned rows' input order.
+        """
+        if n_lags < 0:
+            raise ValueError("n_lags must be nonnegative")
+        keys = list(zip(self.product_index.tolist(), self.time_index.tolist(), strict=True))
+        by_key = dict(zip(keys, self.T, strict=True))
+        if len(by_key) != len(keys):
+            raise ValueError("Expected one treatment per product and month")
+        lags = np.full((len(keys), n_lags), np.nan)
+        for row, (product, month) in enumerate(keys):
+            for lag in range(1, n_lags + 1):
+                lags[row, lag - 1] = by_key.get((product, month - lag), np.nan)
+        kept = np.flatnonzero(np.isfinite(lags).all(axis=1))
+        return kept, lags[kept]
+
 
 def _generate_macro_environment(
     n_periods: int,
@@ -310,7 +329,7 @@ def _generate_outcome(
         Y += true_tau * T
 
         # Macro effects (stacked for all observations)
-        X_macro_expanded = np.tile(X_macro, (n_products, 1))
+        X_macro_expanded = np.repeat(X_macro, n_products, axis=0)
         for i, (_key, beta) in enumerate(beta_macro.items()):
             Y += beta * X_macro_expanded[:, i]
 
@@ -518,7 +537,7 @@ def create_insurance_dgp(
         n_periods: Number of time periods (months recommended)
         n_products: Number of product lines
         true_tau: True treatment effect (competitor price -> our sales)
-            Default -0.8: 1 bps competitor rate increase -> 0.8 unit sales increase for us
+            The default slope of -0.8 means 0.8 fewer sales units per basis point.
         seed: Random seed for reproducibility
 
     Returns:
@@ -552,15 +571,13 @@ def create_insurance_dgp(
     # Generate firm-level controls
     X_firm = _generate_firm_controls(n_periods, n_products, rng)
 
-    # Expand macro to match panel structure
-    X_macro_expanded = np.tile(X_macro, (n_products, 1))
-
-    # Combine all controls
-    X = np.column_stack([X_firm, X_macro_expanded])
-
-    # Create indices
+    # The generators flatten (month, product) arrays. Return every variable
+    # in the public product-major order, including each month's common macros.
     time_index = np.tile(np.arange(n_periods), n_products)
     product_index = np.repeat(np.arange(n_products), n_periods)
+    source_rows = time_index * n_products + product_index
+    X_macro_expanded = X_macro[time_index]
+    X = np.column_stack([X_firm[source_rows], X_macro_expanded])
 
     # Description
     desc_parts = [
@@ -580,8 +597,8 @@ def create_insurance_dgp(
         )
 
     return InsuranceDGPResult(
-        Y=Y,
-        T=T,
+        Y=Y[source_rows],
+        T=T[source_rows],
         X=X,
         X_macro=X_macro_expanded,
         time_index=time_index,

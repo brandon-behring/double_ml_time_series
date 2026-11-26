@@ -1,52 +1,15 @@
-"""Rosenbaum Bounds Sensitivity Analysis.
+"""Illustrative sensitivity curve for a scalar estimate and standard error.
 
-Implements sensitivity analysis for observational studies following
-Rosenbaum (2002). The key insight: if we cannot assume zero hidden bias,
-how much hidden bias would be required to qualitatively change our conclusions?
-
-The sensitivity parameter Γ (gamma) represents the odds ratio of treatment
-assignment between two units with the same observed covariates but possibly
-different unobserved confounders. Under randomization, Γ = 1. As Γ increases,
-we allow for greater hidden bias.
-
-Core Questions Answered
------------------------
-1. At what Γ does the treatment effect become statistically insignificant?
-2. Is the estimate "robust" (Γ_critical > 2) or "fragile" (Γ_critical < 1.2)?
-
-Interpretation Guide
---------------------
-- Γ_critical > 2.0: "Robust" - Requires strong unmeasured confounding to overturn
-- Γ_critical ∈ [1.5, 2.0]: "Moderately robust"
-- Γ_critical ∈ [1.2, 1.5]: "Sensitive" - Modest confounding could alter conclusions
-- Γ_critical < 1.2: "Fragile" - Very sensitive to hidden bias
-
-Mathematical Foundation
------------------------
-For a treatment effect estimate θ̂ with standard error SE, the bounds at Γ are:
-
-    Upper p-value: P(Z > z_upper) where z_upper = (θ̂ - Δ(Γ)) / SE
-    Lower p-value: P(Z > z_lower) where z_lower = (θ̂ + Δ(Γ)) / SE
-
-where Δ(Γ) is the maximum bias consistent with hidden confounding of magnitude Γ.
-
-For continuous treatments (DML context), we adapt this using the relationship:
-
-    Δ(Γ) ≈ SE × √((Γ - 1)² / Γ) × adjustment_factor
-
-References
-----------
-Rosenbaum, P. R. (2002). Observational Studies (2nd ed.). Springer.
-
-Rosenbaum, P. R. (2010). Design of Observational Studies. Springer.
-
-Keele, L. (2010). An overview of rbounds: An R package for Rosenbaum bounds
-sensitivity analysis with matched data. Unpublished manuscript.
+The assumed bias equals SE × log(Γ) × (n_treated + n_control) /
+(2 × sqrt(n_treated × n_control)). Subtracting that bias from the absolute
+estimate gives an adjusted two-sided normal test. Formal Rosenbaum bounds
+require a specified assignment model and matched data.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Literal
 
 import matplotlib.pyplot as plt
@@ -58,18 +21,19 @@ from scipy import stats
 
 @dataclass
 class SensitivityResult:
-    """Result container for Rosenbaum bounds sensitivity analysis.
+    """Result of the illustrative sensitivity curve (not a formal Rosenbaum bound).
 
     Attributes
     ----------
     gamma_critical : float
         The smallest Γ at which the effect becomes statistically insignificant
-        (p > α). Higher values indicate more robust findings.
+        (p > α), or the upper grid endpoint if the crossing is right-censored.
+        Use crossing_observed to distinguish these cases.
     p_values_by_gamma : dict[float, float]
-        Upper-bound p-values at each tested Γ value.
+        Adjusted normal-test p-values under the assumed bias curve.
     interpretation : str
-        Categorical interpretation: "Robust", "Moderately Robust",
-        "Sensitive", or "Fragile".
+        Descriptive category of the reported grid value. For a censored result
+        this categorizes the endpoint, which is a lower bound on the threshold.
     theta : float
         Original treatment effect estimate.
     se : float
@@ -100,50 +64,45 @@ class SensitivityResult:
     alpha: float
     gamma_values: NDArray[np.float64]
 
+    @property
+    def crossing_observed(self) -> bool:
+        """Whether a tested p-value exceeded alpha, including at the endpoint."""
+        # Historical grids could omit a non-divisible upper endpoint.
+        p = self.p_values_by_gamma.get(self.gamma_critical)
+        return p is not None and p > self.alpha
+
+    @property
+    def gamma_label(self) -> str:
+        """Threshold or lower bound for display."""
+        relation = "=" if self.crossing_observed else ">"
+        return f"Γ_crit {relation} {self.gamma_critical:g}"
+
     def __repr__(self) -> str:
         return (
-            f"SensitivityResult(Γ_crit={self.gamma_critical:.2f}, "
-            f"interpretation='{self.interpretation}', "
+            f"SensitivityResult({self.gamma_label}, "
+            f"crossing_observed={self.crossing_observed}, "
             f"θ={self.theta:.4f}±{self.se:.4f})"
         )
 
     def summary(self) -> str:
         """Return formatted summary of sensitivity analysis."""
-        return f"""
-Rosenbaum Bounds Sensitivity Analysis
-=====================================
-Treatment Effect:     θ̂ = {self.theta:.4f}
-Standard Error:       SE = {self.se:.4f}
-Significance Level:   α = {self.alpha}
-
-Critical Gamma:       Γ_crit = {self.gamma_critical:.2f}
-Interpretation:       {self.interpretation}
-
-Explanation:
-  An unmeasured confounder would need to change treatment odds
-  by a factor of {self.gamma_critical:.2f}x between similar units
-  to render this effect statistically insignificant.
-
-P-values at Selected Γ:
-  Γ = 1.0: p = {self.p_values_by_gamma.get(1.0, float("nan")):.4f} (no hidden bias)
-  Γ = 1.5: p = {self.p_values_by_gamma.get(1.5, float("nan")):.4f}
-  Γ = 2.0: p = {self.p_values_by_gamma.get(2.0, float("nan")):.4f}
-  Γ = 3.0: p = {self.p_values_by_gamma.get(3.0, float("nan")):.4f}
-
-Interpretation Guide:
-  Robust (Γ > 2.0):           Strong confounding needed to overturn
-  Moderately Robust (1.5-2.0): Moderate confounding could affect conclusions
-  Sensitive (1.2-1.5):        Modest confounding could alter results
-  Fragile (< 1.2):            Very sensitive to unmeasured confounding
-"""
+        grid = "\n".join(f"  Γ = {g:g}    p = {p:.4g}" for g, p in self.p_values_by_gamma.items())
+        description = (
+            f"First tested crossing ({self.interpretation})"
+            if self.crossing_observed
+            else "No crossing within the tested range"
+        )
+        return (
+            "Illustrative Rosenbaum Bounds Sensitivity Analysis\n"
+            f"Estimate {self.theta:.4f}, SE {self.se:.4f}, α {self.alpha:g}\n"
+            f"Critical Gamma    {self.gamma_label}    {description}\n"
+            "The curve assumes a bias proportional to SE × log(Γ).\n"
+            f"{grid}"
+        )
 
 
 class RosenbaumBounds:
-    """Rosenbaum bounds sensitivity analysis for continuous treatment DML.
-
-    Computes bounds on treatment effect significance as a function of
-    the hidden bias parameter Γ. This helps assess how robust findings
-    are to violations of the unconfoundedness assumption.
+    """Illustrative sensitivity curve for a scalar DML coefficient.
 
     Parameters
     ----------
@@ -177,10 +136,10 @@ class RosenbaumBounds:
         gamma_step: float = 0.1,
         alpha: float = 0.05,
     ) -> None:
-        """Initialize the Rosenbaum bounds analyzer."""
-        if gamma_max <= 1.0:
+        """Set the grid of Γ values and the significance level of the illustrative curve."""
+        if not np.isfinite(gamma_max) or gamma_max <= 1.0:
             raise ValueError(f"gamma_max must be > 1.0, got {gamma_max}")
-        if gamma_step <= 0:
+        if not np.isfinite(gamma_step) or gamma_step <= 0:
             raise ValueError(f"gamma_step must be positive, got {gamma_step}")
         if not 0 < alpha < 1:
             raise ValueError(f"alpha must be in (0, 1), got {alpha}")
@@ -219,13 +178,19 @@ class RosenbaumBounds:
         ValueError
             If inputs are invalid (e.g., se <= 0).
         """
-        if se <= 0:
+        if not np.isfinite(theta):
+            raise ValueError("Treatment effect must be finite")
+        if not np.isfinite(se) or se <= 0:
             raise ValueError(f"Standard error must be positive, got {se}")
-        if n_treated <= 0 or n_control <= 0:
+        if not np.isfinite([n_treated, n_control]).all() or min(n_treated, n_control) <= 0:
             raise ValueError("Sample sizes must be positive")
 
         # Generate gamma values to test
-        gamma_values = np.arange(1.0, self.gamma_max + self.gamma_step, self.gamma_step)
+        limit, step = Decimal(str(self.gamma_max)), Decimal(str(self.gamma_step))
+        points = [float(1 + i * step) for i in range(int((limit - 1) // step) + 1)]
+        if points[-1] < self.gamma_max:
+            points.append(self.gamma_max)
+        gamma_values = np.array(points)
 
         # Compute p-values at each gamma
         p_values_by_gamma: dict[float, float] = {}
@@ -239,7 +204,7 @@ class RosenbaumBounds:
                 n_treated=n_treated,
                 n_control=n_control,
             )
-            p_values_by_gamma[round(gamma_f, 2)] = p_value
+            p_values_by_gamma[gamma_f] = p_value
 
         # Find critical gamma (smallest where p > alpha)
         gamma_critical = self._find_critical_gamma(p_values_by_gamma)
@@ -265,74 +230,10 @@ class RosenbaumBounds:
         n_treated: int,
         n_control: int,
     ) -> float:
-        """Compute upper-bound p-value for treatment effect at given Γ.
-
-        For continuous treatments, we use an approximation based on the
-        maximum bias that hidden confounding of strength Γ could induce.
-
-        The bias adjustment is derived from the relationship between Γ
-        and the maximum shift in treatment probability that could occur
-        due to an unmeasured confounder.
-        """
-        if gamma == 1.0:
-            # No hidden bias - return standard p-value
-            z_stat = abs(theta) / se
-            return float(2 * (1 - stats.norm.cdf(z_stat)))
-
-        # Compute bias adjustment for gamma > 1
-        # This is an approximation for continuous treatments
-        # based on Rosenbaum (2002) Eq. 4.14 for matched pairs
-        bias_adjustment = self._compute_bias_adjustment(
-            gamma=gamma,
-            se=se,
-            n_treated=n_treated,
-            n_control=n_control,
-        )
-
-        # Adjust z-statistic for potential bias
-        # We use the conservative (upper) bound
-        adjusted_z = (abs(theta) - bias_adjustment) / se
-
-        if adjusted_z <= 0:
-            # Effect could be zero or opposite sign under this gamma
-            return 1.0
-
-        # One-sided p-value (conservative upper bound)
-        p_value = 1 - stats.norm.cdf(adjusted_z)
-
-        return float(min(p_value * 2, 1.0))  # Two-sided
-
-    def _compute_bias_adjustment(
-        self,
-        gamma: float,
-        se: float,
-        n_treated: int,
-        n_control: int,
-    ) -> float:
-        """Compute maximum bias consistent with hidden confounding of strength Γ.
-
-        For a hidden confounder U that affects both treatment assignment
-        and outcome, the maximum bias is bounded by the product of:
-        1. The effect of U on treatment (captured by Γ)
-        2. The effect of U on outcome
-
-        We use a conservative approximation suitable for DML contexts.
-        """
-        # Total sample size
-        n = n_treated + n_control
-
-        # Log of gamma provides a natural scale for the bias
-        log_gamma = np.log(gamma)
-
-        # Bias scales with: log(gamma) × SE × sqrt(n) / sqrt(n_eff)
-        # where n_eff accounts for treatment imbalance
-        n_eff = 4 * n_treated * n_control / n
-
-        # Conservative bias adjustment
-        # This follows the spirit of Rosenbaum (2002) but adapted for DML
-        bias = se * log_gamma * np.sqrt(n / n_eff)
-
-        return float(bias)
+        """Apply the assumed bias function to a two-sided normal test."""
+        imbalance = (n_treated + n_control) / (2 * np.sqrt(float(n_treated) * n_control))
+        adjusted_z = max(0.0, abs(theta) / se - np.log(gamma) * imbalance)
+        return float(2 * stats.norm.sf(adjusted_z))
 
     def _find_critical_gamma(self, p_values_by_gamma: dict[float, float]) -> float:
         """Find the smallest Γ where p-value exceeds alpha."""
@@ -384,15 +285,15 @@ class RosenbaumBounds:
         p_values = [result.p_values_by_gamma[g] for g in gammas]
 
         # Plot p-values
-        ax.plot(gammas, p_values, "b-", linewidth=2, label="Upper-bound p-value")
+        ax.plot(gammas, p_values, "b-", linewidth=2, label="Adjusted p-value")
 
         # Add significance threshold
         ax.axhline(
-            y=self.alpha,
+            y=result.alpha,
             color="r",
             linestyle="--",
             linewidth=1.5,
-            label=f"α = {self.alpha}",
+            label=f"α = {result.alpha}",
         )
 
         # Mark critical gamma
@@ -401,15 +302,15 @@ class RosenbaumBounds:
             color="orange",
             linestyle=":",
             linewidth=1.5,
-            label=f"Γ_crit = {result.gamma_critical:.2f}",
+            label=result.gamma_label,
         )
 
         # Shade robust region
         ax.fill_between(
             gammas,
             0,
-            [self.alpha] * len(gammas),
-            where=[g <= result.gamma_critical for g in gammas],
+            [result.alpha] * len(gammas),
+            where=[p <= result.alpha for p in p_values],
             alpha=0.2,
             color="green",
             label="Statistically significant",
@@ -421,9 +322,9 @@ class RosenbaumBounds:
 
         if title is None:
             title = (
-                f"Rosenbaum Bounds Sensitivity Analysis\n"
-                f"θ̂ = {result.theta:.3f}, Γ_crit = {result.gamma_critical:.2f} "
-                f"({result.interpretation})"
+                f"Illustrative sensitivity curve\n"
+                f"θ̂ = {result.theta:.3f}, {result.gamma_label} "
+                f"({result.interpretation if result.crossing_observed else 'no crossing'})"
             )
         ax.set_title(title, fontsize=14)
 
@@ -442,9 +343,9 @@ class RosenbaumBounds:
         color = interp_colors.get(result.interpretation, "gray")
 
         ax.annotate(
-            result.interpretation,
-            xy=(result.gamma_critical, self.alpha),
-            xytext=(result.gamma_critical + 0.3, self.alpha + 0.15),
+            result.interpretation if result.crossing_observed else "No crossing",
+            xy=(result.gamma_critical, result.alpha),
+            xytext=(result.gamma_critical + 0.3, result.alpha + 0.15),
             fontsize=11,
             color=color,
             fontweight="bold",
@@ -474,7 +375,8 @@ def compute_sensitivity_for_dml(
     n_samples : int
         Total sample size.
     treatment_r2 : float
-        R² of treatment model (used to adjust effective sample size).
+        Retained for compatibility. Equal proxy group sizes cancel in the bias
+        function, so treatment R² cannot calibrate this curve.
     gamma_max : float
         Maximum Γ to test.
     alpha : float
@@ -499,12 +401,11 @@ def compute_sensitivity_for_dml(
     >>> float(sensitivity.gamma_critical)
     3.0
     """
-    # For continuous treatments, we split sample approximately in half
-    # adjusted for treatment model R²
-    adjustment = max(0.1, 1 - treatment_r2)
-    n_eff = int(n_samples * adjustment)
-    n_half = n_eff // 2
-
+    if n_samples < 2:
+        raise ValueError("At least two observations are required")
+    if not np.isfinite(treatment_r2):
+        raise ValueError("treatment_r2 must be finite")
+    n_half = n_samples // 2
     bounds = RosenbaumBounds(gamma_max=gamma_max, alpha=alpha)
     return bounds.analyze(
         theta=theta,

@@ -19,6 +19,13 @@ tests, and primary literature outrank this file if they ever disagree.
   `Var(psi)/n` assumes no serial correlation — do not use on time series
   (that is `TemporalPLRDML`'s job).
 
+For binary treatment with covariate-specific effects, the PLR coefficient weights
+each effect by the conditional treatment variance. With two equally populated
+groups, propensities 0.1 and 0.5, and effects 0 and 2, the coefficient is
+1.470588 even with the population nuisance functions. The population ATE is
+1. The binary AIPW score in the insurance pipeline targets the population mean
+contrast under exchangeability and overlap. [Executable comparisons](test/dml/test_scientific_oracles.py)
+
 ## `TemporalPLRDML` (+ `RollingWindowDML`)
 
 - **Sequential exogeneity** with lagged treatment controls (chapter 5). This is
