@@ -262,6 +262,46 @@ def cross_fit_predictions(
     return Y_hat, T_hat
 
 
+def as_validated_arrays(
+    Y: object, T: object, X: object
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """Convert Y, T and X to float arrays, check their shapes, and make X two-dimensional.
+
+    The conversion comes first because a pandas ``Series`` is indexed by label and an
+    array by position. With a reordered index, ``Y[train_idx]`` picked other rows than
+    ``X[train_idx]``, and two ``Series`` with different labels were aligned by label when
+    multiplied; both gave a wrong slope with no error (#75). After the conversion every
+    row is addressed by its position, as ``TemporalPLRDML.fit`` has always done.
+
+    Args:
+        Y: Outcome, anything ``np.asarray`` reads as a one-dimensional float array.
+        T: Treatment, likewise.
+        X: Controls, one- or two-dimensional; a one-dimensional X is one column.
+
+    Returns:
+        ``(Y, T, X)`` as float arrays, X of shape ``(n, p)``.
+
+    Raises:
+        ValueError: If Y or T is not one-dimensional or the lengths disagree
+            (see ``validate_lengths``), or if a value cannot be read as a float.
+
+    Examples:
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> y = pd.Series([1.0, 2.0, 3.0], index=[2, 0, 1])
+        >>> Y, T, X = as_validated_arrays(y, [0, 1, 0], [5.0, 6.0, 7.0])
+        >>> Y.tolist(), T.tolist(), X.shape
+        ([1.0, 2.0, 3.0], [0.0, 1.0, 0.0], (3, 1))
+    """
+    Y_arr = np.asarray(Y, dtype=float)
+    T_arr = np.asarray(T, dtype=float)
+    X_arr = np.asarray(X, dtype=float)
+    validate_lengths(Y_arr, T_arr, X_arr)
+    if X_arr.ndim == 1:
+        X_arr = X_arr.reshape(-1, 1)
+    return Y_arr, T_arr, X_arr
+
+
 def validate_lengths(
     Y: NDArray[np.float64], T: NDArray[np.float64], X: NDArray[np.float64]
 ) -> None:

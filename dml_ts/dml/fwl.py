@@ -52,7 +52,7 @@ from numpy.typing import NDArray
 from temporalcv import coverage_in_unit, finite_se
 
 from ._results import ResultBase
-from ._utils import is_numerically_constant, theta_via_fwl, validate_lengths
+from ._utils import as_validated_arrays, is_numerically_constant, theta_via_fwl
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -249,11 +249,9 @@ def fwl_estimate(
     >>> bool(abs(result.theta - 2.0) < 0.1)  # Should recover ~2.0
     True
     """
-    validate_lengths(Y, T, X)
+    # Read the inputs by position (a pandas Series would be indexed by label) and validate.
+    Y, T, X = as_validated_arrays(Y, T, X)
     n = len(Y)
-
-    if X.ndim == 1:
-        X = X.reshape(-1, 1)
 
     # Add intercept if requested
     if add_intercept:

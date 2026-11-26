@@ -107,6 +107,12 @@ are the compatibility contract).
   that only approximates a treatment the controls determine leaves residuals far above the
   bound, so for `T = 0.5 * x0` the ridge learner, the default random forest and gradient
   boosting still return an estimate. (#42)
+- `double_ml`, `robinson_estimator` and `fwl_estimate` read their inputs by position. They
+  indexed a pandas `Series` by label where they indexed the controls by position, so a frame
+  that had been shuffled, sorted or filtered gave a wrong slope with no error (`double_ml`: 1.82
+  where the arrays give 2.03), and an outcome and a treatment with different labels were paired
+  by label (`fwl_estimate` and `robinson_estimator`: -0.15 for a slope of 2). `Y`, `T` and `X`
+  are converted to float arrays at entry, as `TemporalPLRDML` does; lists are accepted. (#75)
 
 ## [1.1.4] - 2026-06-14
 

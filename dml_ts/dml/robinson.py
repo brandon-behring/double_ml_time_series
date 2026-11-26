@@ -54,8 +54,13 @@ from sklearn.base import BaseEstimator, clone
 from temporalcv import finite_se
 
 from ._results import ResultBase
+from ._utils import (
+    as_validated_arrays,
+    get_nuisance_model,
+    predict_conditional_mean,
+    theta_via_fwl,
+)
 from ._utils import compute_r2 as _compute_r2
-from ._utils import get_nuisance_model, predict_conditional_mean, theta_via_fwl, validate_lengths
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -173,11 +178,8 @@ def robinson_estimator(
     >>> bool(abs(result.theta - 2.0) < 0.3)  # Should recover ~2.0
     True
     """
-    # Validate inputs
-    validate_lengths(Y, T, X)
-
-    if X.ndim == 1:
-        X = X.reshape(-1, 1)
+    # Read the inputs by position (a pandas Series would be indexed by label) and validate.
+    Y, T, X = as_validated_arrays(Y, T, X)
 
     # Get nuisance model
     if model is None:
