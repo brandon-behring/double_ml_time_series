@@ -429,6 +429,15 @@
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bias-validation-dml-ts-validation-bias-validation">Bias Validation (<code class="docutils literal notranslate"><span class="pre">dml_ts.validation.bias_validation</span></code>)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts.bias"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts.bias</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts.coverage"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts.coverage</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts.overall"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts.overall</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts.__new__"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts.__new__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.classify_bias_and_coverage"><code class="docutils literal notranslate"><span class="pre">classify_bias_and_coverage()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.assess_simulation_draws"><code class="docutils literal notranslate"><span class="pre">assess_simulation_draws()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.BiasValidation"><code class="docutils literal notranslate"><span class="pre">BiasValidation</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.BiasValidation.__init__"><code class="docutils literal notranslate"><span class="pre">BiasValidation.__init__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.BiasValidation.validate"><code class="docutils literal notranslate"><span class="pre">BiasValidation.validate()</span></code></a></li>
@@ -683,11 +692,15 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.bias_p_value"><code class="docutils literal notranslate"><span class="pre">ValidationResult.bias_p_value</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.coverage_p_value"><code class="docutils literal notranslate"><span class="pre">ValidationResult.coverage_p_value</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.statistical_status"><code class="docutils literal notranslate"><span class="pre">ValidationResult.statistical_status</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.bias_status"><code class="docutils literal notranslate"><span class="pre">ValidationResult.bias_status</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.coverage_status"><code class="docutils literal notranslate"><span class="pre">ValidationResult.coverage_status</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.storage_metadata"><code class="docutils literal notranslate"><span class="pre">ValidationResult.storage_metadata</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.to_dict"><code class="docutils literal notranslate"><span class="pre">ValidationResult.to_dict()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.to_json"><code class="docutils literal notranslate"><span class="pre">ValidationResult.to_json()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.from_dict"><code class="docutils literal notranslate"><span class="pre">ValidationResult.from_dict()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.from_json"><code class="docutils literal notranslate"><span class="pre">ValidationResult.from_json()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.passes"><code class="docutils literal notranslate"><span class="pre">ValidationResult.passes()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.bias_ci_level"><code class="docutils literal notranslate"><span class="pre">ValidationResult.bias_ci_level</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.summary"><code class="docutils literal notranslate"><span class="pre">ValidationResult.summary()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.__init__"><code class="docutils literal notranslate"><span class="pre">ValidationResult.__init__()</span></code></a></li>
 </ul>
@@ -1774,8 +1787,98 @@ performance against known treatment effects.</p>
 <p id="module-dml_ts.validation.bias_validation">Bias validation via Monte Carlo simulation.</p>
 <p>Validates DML estimator bias, MSE, and confidence interval coverage
 through repeated Monte Carlo draws from a known DGP. Uses EconML’s
-LinearDML with bootstrap-based hypothesis tests for statistical and
-practical significance.</p>
+LinearDML with a one-sample t-test for mean simulation error and a
+bootstrap percentile interval for bias.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dml_ts.validation.bias_validation.SimulationVerdicts">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.validation.bias_validation.</span></span><span class="sig-name descname"><span class="pre">SimulationVerdicts</span></span><a class="reference internal" href="../_modules/dml_ts/validation/bias_validation.html#SimulationVerdicts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.bias_validation.SimulationVerdicts" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.NamedTuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></a></p>
+<p>SimulationVerdicts(bias, coverage)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dml_ts.validation.bias_validation.SimulationVerdicts.bias">
+<span class="sig-name descname"><span class="pre">bias</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'PASS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WARNING'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FAIL'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#dml_ts.validation.bias_validation.SimulationVerdicts.bias" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dml_ts.validation.bias_validation.SimulationVerdicts.coverage">
+<span class="sig-name descname"><span class="pre">coverage</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'PASS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WARNING'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FAIL'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#dml_ts.validation.bias_validation.SimulationVerdicts.coverage" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dml_ts.validation.bias_validation.SimulationVerdicts.overall">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">overall</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'PASS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WARNING'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FAIL'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#dml_ts.validation.bias_validation.SimulationVerdicts.overall" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dml_ts.validation.bias_validation.SimulationVerdicts.__new__">
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'PASS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WARNING'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FAIL'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'PASS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WARNING'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FAIL'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dml_ts.validation.bias_validation.SimulationVerdicts.__new__" title="Link to this definition">#</a></dt>
+<dd><p>Create new instance of SimulationVerdicts(bias, coverage)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dml_ts.validation.bias_validation.classify_bias_and_coverage">
+<span class="sig-prename descclassname"><span class="pre">dml_ts.validation.bias_validation.</span></span><span class="sig-name descname"><span class="pre">classify_bias_and_coverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_bias</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nominal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_coverage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correction_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bonferroni'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">practical_epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/bias_validation.html#classify_bias_and_coverage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.bias_validation.classify_bias_and_coverage" title="Link to this definition">#</a></dt>
+<dd><p>Classify mean bias and interval calibration at familywise significance levels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dml_ts.validation.bias_validation.SimulationVerdicts" title="dml_ts.validation.bias_validation.SimulationVerdicts"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimulationVerdicts</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dml_ts.validation.bias_validation.assess_simulation_draws">
+<span class="sig-prename descclassname"><span class="pre">dml_ts.validation.bias_validation.</span></span><span class="sig-name descname"><span class="pre">assess_simulation_draws</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulation_errors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_effect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nominal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correction_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bonferroni'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">practical_epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/bias_validation.html#assess_simulation_draws"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.bias_validation.assess_simulation_draws" title="Link to this definition">#</a></dt>
+<dd><p>Judge the bias and the interval coverage of one estimator across independent draws.</p>
+<p>The DML validator and the six baselines share this path. The bias test is the
+one-sample t-test of <code class="docutils literal notranslate"><span class="pre">bias_p_value</span></code> on one signed error per draw. The coverage test
+is the exact binomial test of the number of intervals that contain <code class="docutils literal notranslate"><span class="pre">true_effect</span></code>
+against <code class="docutils literal notranslate"><span class="pre">nominal</span></code>. Both p-values go to <code class="docutils literal notranslate"><span class="pre">classify_bias_and_coverage</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>simulation_errors</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – Estimate minus truth, one per independent draw, <code class="docutils literal notranslate"><span class="pre">(R,)</span></code>.</p></li>
+<li><p><strong>ci_bounds</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – Lower and upper interval endpoints per draw, <code class="docutils literal notranslate"><span class="pre">(R,</span> <span class="pre">2)</span></code>.</p></li>
+<li><p><strong>true_effect</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – The effect the intervals should contain.</p></li>
+<li><p><strong>nominal</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Nominal coverage of the intervals, for example 0.95.</p></li>
+<li><p><strong>alpha_test</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Familywise significance level of the two tests.</p></li>
+<li><p><strong>correction_method</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'bonferroni'</span></code>, <code class="docutils literal notranslate"><span class="pre">'holm'</span></code>, <code class="docutils literal notranslate"><span class="pre">'none'</span></code>]</span>) – Multiple-testing correction across the two tests.</p></li>
+<li><p><strong>practical_epsilon</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Absolute bias from which a strict rejection is a FAIL.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference internal" href="#dml_ts.validation.bias_validation.SimulationVerdicts" title="dml_ts.validation.bias_validation.SimulationVerdicts"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimulationVerdicts</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">(verdicts,</span> <span class="pre">bias_p_value,</span> <span class="pre">coverage_p_value)</span></code>.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">true_effect</span></code> is not finite or <code class="docutils literal notranslate"><span class="pre">nominal</span></code> is not in (0, 1); if
+    there is not one error and one interval per draw; if an interval holds a NaN
+    or has its endpoints out of order; if every error is at the rounding level of
+    the true effect (a simulation without noise leaves the tests nothing to judge);
+    or if the bias test is degenerate (see <code class="docutils literal notranslate"><span class="pre">bias_p_value</span></code>).</p>
+</dd>
+</dl>
+<div class="admonition-examples admonition">
+<p class="admonition-title">Examples</p>
+<p>Unbiased estimates whose intervals are too short: the bias verdict passes and
+the coverage verdict fails, so the estimator fails.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">narrow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">errors</span> <span class="o">-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">errors</span> <span class="o">+</span> <span class="mf">0.25</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">verdicts</span><span class="p">,</span> <span class="n">p_bias</span><span class="p">,</span> <span class="n">p_coverage</span> <span class="o">=</span> <span class="n">assess_simulation_draws</span><span class="p">(</span><span class="n">errors</span><span class="p">,</span> <span class="n">narrow</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">verdicts</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="n">verdicts</span><span class="o">.</span><span class="n">coverage</span><span class="p">,</span> <span class="n">verdicts</span><span class="o">.</span><span class="n">overall</span>
+<span class="go">(&#39;PASS&#39;, &#39;FAIL&#39;, &#39;FAIL&#39;)</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="dml_ts.validation.bias_validation.BiasValidation">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.validation.bias_validation.</span></span><span class="sig-name descname"><span class="pre">BiasValidation</span></span><a class="reference internal" href="../_modules/dml_ts/validation/bias_validation.html#BiasValidation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.bias_validation.BiasValidation" title="Link to this definition">#</a></dt>
@@ -1797,9 +1900,12 @@ correction (Bonferroni by default, or Holm; both via statsmodels).</p>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Production runs use n_simulations=1000; shrunk here so the</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># example stays fast. The per-seed status is stochastic, so we</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># assert the recovered bias is finite rather than a fixed label.</span>
+<p>This numerical example requires the optional EconML dependency.
+The test runs ten fits and checks that the recovered bias is finite.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">importlib.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_spec</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;econml&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<span class="gp">... </span>    <span class="n">pytest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;Install the full extra to run the EconML validation example&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">validator</span> <span class="o">=</span> <span class="n">BiasValidation</span><span class="p">(</span><span class="n">n_simulations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dgp</span> <span class="o">=</span> <span class="n">DGPGenerator</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">true_effect</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">validator</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
@@ -1810,7 +1916,7 @@ correction (Bonferroni by default, or Holm; both via statsmodels).</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.bias_validation.BiasValidation.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_simulations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/bias_validation.html#BiasValidation.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.bias_validation.BiasValidation.__init__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_simulations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/bias_validation.html#BiasValidation.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.bias_validation.BiasValidation.__init__" title="Link to this definition">#</a></dt>
 <dd><p>Initialize validation method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1818,6 +1924,7 @@ correction (Bonferroni by default, or Holm; both via statsmodels).</p>
 <li><p><strong>n_simulations</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of Monte Carlo simulations</p></li>
 <li><p><strong>alpha</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Significance level (default: 0.05 for 95% CI)</p></li>
 <li><p><strong>random_state</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Random seed for reproducibility</p></li>
+<li><p><strong>n_jobs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of independent DML fits to run concurrently</p></li>
 </ul>
 </dd>
 </dl>
@@ -2146,6 +2253,11 @@ Expected to be severely biased when confounding_strength &gt; 0.</p>
 <p>OLS estimator with controls: Y ~ T + X.</p>
 <p>Standard econometrics approach that controls for observed confounders.
 Should have less bias than NaiveOLS but more than DML (less efficient).</p>
+<p>Known defect (#61): the standard error is computed from a design matrix
+without the fitted intercept, so the intervals are too short. <code class="docutils literal notranslate"><span class="pre">validate</span></code>
+reports this as a coverage verdict of FAIL even where the model is correct:
+in Chapter 3’s Experiment 3.1 its 95% intervals cover in 69 of 100 datasets,
+and a reference interval that includes the intercept covers in 91.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2519,9 +2631,8 @@ shared data, for contrast against the DML estimators.</p>
 <dt class="sig sig-object py" id="dml_ts.validation.baseline_comparison.BaselineComparison.compare">
 <span class="sig-name descname"><span class="pre">compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dgp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/baseline_comparison.html#BaselineComparison.compare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.baseline_comparison.BaselineComparison.compare" title="Link to this definition">#</a></dt>
 <dd><p>Run all methods on same DGP with deterministic comparability.</p>
-<p>FIXED (Issue C3): Reset DGP random state before each method to ensure
-all methods see identical random draws. This prevents ranking instability
-where methods could vary by up to 4 positions due to different data.</p>
+<p>The DGP seed takes precedence over the comparison seed. If both are absent,
+draw a run seed once and record it in each method’s metadata for replay.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dgp</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dml_ts.validation.dgp_generator.DGPGenerator" title="dml_ts.validation.dgp_generator.DGPGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">DGPGenerator</span></code></a></span>) – Data generating process to validate against</p>
@@ -2589,11 +2700,14 @@ where methods could vary by up to 4 positions due to different data.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.baseline_comparison.BaselineComparison.generate_summary_statistics">
-<span class="sig-name descname"><span class="pre">generate_summary_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dgp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/baseline_comparison.html#BaselineComparison.generate_summary_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.baseline_comparison.BaselineComparison.generate_summary_statistics" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">generate_summary_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dgp</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/baseline_comparison.html#BaselineComparison.generate_summary_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.baseline_comparison.BaselineComparison.generate_summary_statistics" title="Link to this definition">#</a></dt>
 <dd><p>Generate summary statistics across all methods.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>dgp</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dml_ts.validation.dgp_generator.DGPGenerator" title="dml_ts.validation.dgp_generator.DGPGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">DGPGenerator</span></code></a></span>) – Data generating process to validate against</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dgp</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dml_ts.validation.dgp_generator.DGPGenerator" title="dml_ts.validation.dgp_generator.DGPGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">DGPGenerator</span></code></a></span>) – Data generating process to validate against</p></li>
+<li><p><strong>results</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="#dml_ts.validation.validation_result.ValidationResult" title="dml_ts.validation.validation_result.ValidationResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValidationResult</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Existing comparison on this DGP, when already fitted.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
@@ -2623,8 +2737,8 @@ estimators, and future validation methods.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n_bootstrap_bias</strong> – Number of bootstrap samples for bias estimation
-(used in hypothesis testing for E[bias]=0)</p></li>
+<li><p><strong>n_bootstrap_bias</strong> – Number of resamples for the percentile confidence
+interval on mean simulation bias</p></li>
 <li><p><strong>n_bootstrap_ci</strong> – Number of bootstrap samples for confidence intervals
 (used for CI construction in baseline methods)</p></li>
 <li><p><strong>seed</strong> – Random seed for reproducibility (None = use parent estimator’s seed)</p></li>
@@ -2917,6 +3031,9 @@ distribution normality / symmetry, and Monte-Carlo variance stability.</p>
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.validation.bootstrap_diagnostics.</span></span><span class="sig-name descname"><span class="pre">BootstrapDiagnostics</span></span><a class="reference internal" href="../_modules/dml_ts/validation/bootstrap_diagnostics.html#BootstrapDiagnostics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Bootstrap quality diagnostics for DML validation.</p>
+<p>LinearDML case refits use fixed original-unit folds. Repeated copies of a
+source row share its fold; the underlying forest nuisance fits use fixed
+hyperparameters. Each original row is assumed to represent one sampling unit.</p>
 <p>Provides comprehensive diagnostics for bootstrap procedures including:
 - Convergence analysis (optimal n_bootstrap)
 - Distribution diagnostics (normality, skewness, kurtosis)
@@ -2971,18 +3088,22 @@ distribution normality / symmetry, and Monte-Carlo variance stability.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics.diagnose_convergence">
-<span class="sig-name descname"><span class="pre">diagnose_convergence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_replications</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/bootstrap_diagnostics.html#BootstrapDiagnostics.diagnose_convergence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics.diagnose_convergence" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">diagnose_convergence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bootstrap_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_replications</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/bootstrap_diagnostics.html#BootstrapDiagnostics.diagnose_convergence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics.diagnose_convergence" title="Link to this definition">#</a></dt>
 <dd><p>Diagnose bootstrap convergence across different sample sizes.</p>
 <p>Tests whether bootstrap estimates stabilize as n_bootstrap increases.
 Uses multiple replications to assess Monte Carlo variability.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>target</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'bias'</span></code>, <code class="docutils literal notranslate"><span class="pre">'variance'</span></code>, <code class="docutils literal notranslate"><span class="pre">'coverage'</span></code>]</span>) – What to diagnose (“bias”, “variance”, “coverage”)</p></li>
+<li><p><strong>target</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'bias'</span></code>, <code class="docutils literal notranslate"><span class="pre">'variance'</span></code>, <code class="docutils literal notranslate"><span class="pre">'coverage'</span></code>, <code class="docutils literal notranslate"><span class="pre">'conditional_inclusion'</span></code>]</span>) – Statistic to diagnose. “coverage” uses independent generated datasets.
+“conditional_inclusion” repeats the bootstrap on the supplied fixed data.</p></li>
 <li><p><strong>n_bootstrap_range</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – List of n_bootstrap values to test</p></li>
-<li><p><strong>true_value</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – True parameter value (required for bias/coverage)</p></li>
+<li><p><strong>true_value</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Parameter value for bias, coverage or conditional inclusion</p></li>
 <li><p><strong>n_replications</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of replications per n_bootstrap</p></li>
 <li><p><strong>tolerance</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Relative change threshold for convergence (default 5%)</p></li>
+<li><p><strong>data_generator</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[], <a class="reference internal" href="#dml_ts.validation.dgp_generator.DGPResult" title="dml_ts.validation.dgp_generator.DGPResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">DGPResult</span></code></a>] | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Callable producing a fresh independent dataset per replication,
+e.g. a persistent seeded DGP’s generate method. Required for coverage.
+The same replication is used for every bootstrap sample size.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -3097,7 +3218,7 @@ treatment effects, misspecification scenarios, and propensity extremeness.</p>
 <li><p><strong>X_true</strong> – True confounders including omitted variables (n, p + p_omitted)</p></li>
 <li><p><strong>true_effect</strong> – Individual treatment effects (n,) - varies by individual for HTE</p></li>
 <li><p><strong>true_ate</strong> – Average treatment effect (scalar)</p></li>
-<li><p><strong>propensity_score</strong> – True propensity scores P(T=1|X) (n,)</p></li>
+<li><p><strong>propensity_score</strong> – Assignment probabilities conditional on all latent covariates (n,)</p></li>
 <li><p><strong>n</strong> – Sample size</p></li>
 <li><p><strong>p</strong> – Number of observed confounders</p></li>
 <li><p><strong>p_omitted</strong> – Number of omitted confounders</p></li>
@@ -3237,7 +3358,7 @@ treatment effects, misspecification scenarios, and propensity extremeness.</p>
 <li><p><strong>hte_strength</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Strength of heterogeneity (0 = constant effect)</p></li>
 <li><p><strong>hte_nonlinear</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Use non-linear HTE function</p></li>
 <li><p><strong>p_omitted</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of omitted confounders</p></li>
-<li><p><strong>omitted_var_strength</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Strength of omitted variable confounding</p></li>
+<li><p><strong>omitted_var_strength</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Multiplier of omitted covariates in assignment and baseline outcome</p></li>
 <li><p><strong>polynomial_degree</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Degree of polynomial terms (1 = linear, 2 = quadratic, etc.)</p></li>
 <li><p><strong>propensity_extremeness</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Multiplier for propensity logit (&gt;1 = more extreme)</p></li>
 <li><p><strong>measurement_error_std</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Std dev of measurement error in X</p></li>
@@ -3283,63 +3404,46 @@ treatment effects, misspecification scenarios, and propensity extremeness.</p>
 <hr class="docutils" />
 <section id="empirical-replication-dml-ts-validation-empirical-replication">
 <h2><a class="toc-backref" href="#id14" role="doc-backlink">Empirical Replication (<code class="docutils literal notranslate"><span class="pre">dml_ts.validation.empirical_replication</span></code>)</a><a class="headerlink" href="#empirical-replication-dml-ts-validation-empirical-replication" title="Link to this heading">#</a></h2>
-<p>Empirical replication of the Chernozhukov et al. (2018) 401(k) DML analysis,
-for real-data validation of the implementation.</p>
-<p id="module-dml_ts.validation.empirical_replication">Empirical replication of Chernozhukov et al. (2018) 401(k) DML analysis.</p>
-<p>Replicates published results from “Double/debiased machine learning for treatment
-and structural parameters” (Chernozhukov, Chetverikov, Demirer, Duflo, Hansen,
-Newey, Robins, 2018) using 401(k) dataset to validate DML implementation.</p>
-<dl>
-<dt>Key Reference:</dt><dd><p>Chernozhukov et al. (2018), Econometrics Journal, 21(1): C1-C68
-<a class="reference external" href="https://doi.org/10.1111/ectj.12097">https://doi.org/10.1111/ectj.12097</a></p>
-</dd>
-<dt>Published ATE Estimates (Table 1):</dt><dd><ul class="simple">
-<li><p>PLR Random Forest: $9,127 (95% CI: $7,723 - $10,531)</p></li>
-<li><p>PLR Lasso: $9,580</p></li>
-</ul>
-</dd>
-<dt>Dataset:</dt><dd><ul class="simple">
-<li><p>Source: 1991 Survey of Income and Program Participation (SIPP)</p></li>
-<li><p>Sample size: n=9,915</p></li>
-<li><p>Treatment: e401 (eligibility), p401 (participation)</p></li>
-<li><p>Outcome: net_tfa (net total financial assets)</p></li>
-<li><p>Controls: 11 covariates (age, inc, fsize, educ, db, marr, twoearn, pira, hown, etc.)</p></li>
-</ul>
-</dd>
-<dt>Usage:</dt><dd><p>Requires the real 401(k) dataset (downloaded via <code class="docutils literal notranslate"><span class="pre">doubleml.fetch_401K</span></code>)
-and an econml DML fit, so the example is skipped under doctest.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.empirical_replication</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-<span class="gp">... </span>    <span class="n">FourZeroOneKReplication</span><span class="p">,</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">replicate_plr_rf</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
-<span class="go">&#39;PLR_RF&#39;</span>
-</pre></div>
-</div>
-</dd>
-</dl>
+<p>The companion fits a mean effect of 401(k) eligibility on net financial assets
+using one fivefold split. It reports descriptive differences from the published
+fivefold forest and rigorous-lasso estimates in Table 2, Panel B. The paper
+uses a constant slope and the median across 100 sample partitions. Table 3
+uses eligibility as an instrument to estimate a participation effect for compliers.</p>
+<p id="module-dml_ts.validation.empirical_replication">Compare single-partition EconML fits on the 1991 SIPP 401(k) sample.</p>
+<p>Chernozhukov et al. (2018), Table 2, Panel B, report fivefold partially
+linear eligibility coefficients of $9,247 (forest) and $8,187 (rigorous
+lasso), aggregated over 100 partitions. The companion uses a single
+fivefold partition, allows the effect to vary linearly with its input
+covariates, and reports the mean fitted effect on net financial assets.
+On the distributed sample its eleven inputs include two wealth measures,
+<code class="docutils literal notranslate"><span class="pre">nifa</span></code> and <code class="docutils literal notranslate"><span class="pre">tw</span></code>, in addition to the nine published controls.</p>
+<p>Table 3 instruments participation (<code class="docutils literal notranslate"><span class="pre">p401</span></code>) with eligibility (<code class="docutils literal notranslate"><span class="pre">e401</span></code>)
+and estimates a complier effect. Fitting participation directly in this
+module measures an adjusted participation contrast with a different target.</p>
+<p>Reference: <a class="reference external" href="https://doi.org/10.1111/ectj.12097">https://doi.org/10.1111/ectj.12097</a></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.ReplicationResult">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.validation.empirical_replication.</span></span><span class="sig-name descname"><span class="pre">ReplicationResult</span></span><a class="reference internal" href="../_modules/dml_ts/validation/empirical_replication.html#ReplicationResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Results from 401(k) replication analysis.</p>
+<p>Mean fitted effect and its descriptive distance from a published reference.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>method</strong> – Estimation method used (“PLR_RF”, “PLR_Lasso”)</p></li>
-<li><p><strong>ate_estimate</strong> – Estimated average treatment effect</p></li>
-<li><p><strong>std_error</strong> – Standard error of ATE estimate</p></li>
-<li><p><strong>ci_lower</strong> – Lower bound of 95% confidence interval</p></li>
-<li><p><strong>ci_upper</strong> – Upper bound of 95% confidence interval</p></li>
-<li><p><strong>published_ate</strong> – Published ATE from Chernozhukov et al. (2018)</p></li>
-<li><p><strong>difference</strong> – Absolute difference (estimate - published)</p></li>
-<li><p><strong>rel_difference</strong> – Relative difference (%) vs published</p></li>
-<li><p><strong>p_value</strong> – P-value for statistical difference from published</p></li>
-<li><p><strong>status</strong> – Replication status (“MATCH” or “MISMATCH”)</p></li>
-<li><p><strong>tolerance</strong> – Tolerance threshold for matching (default 15%)</p></li>
-<li><p><strong>timestamp</strong> – When replication was performed</p></li>
-<li><p><strong>metadata</strong> – Additional replication details</p></li>
+<li><p><strong>method</strong> – Companion learner identifier (“PLR_RF” or “PLR_Lasso”).</p></li>
+<li><p><strong>ate_estimate</strong> – Mean fitted effect on net financial assets, in dollars.</p></li>
+<li><p><strong>std_error</strong> – EconML standard error of the mean fitted effect.</p></li>
+<li><p><strong>ci_lower</strong> – Lower bound of the 95% interval for the mean effect.</p></li>
+<li><p><strong>ci_upper</strong> – Upper bound of the 95% interval for the mean effect.</p></li>
+<li><p><strong>published_ate</strong> – Fivefold Table 2B coefficient for eligibility, if applicable.</p></li>
+<li><p><strong>difference</strong> – Signed estimate minus published reference, in dollars.</p></li>
+<li><p><strong>rel_difference</strong> – Signed difference divided by the published reference.</p></li>
+<li><p><strong>p_value</strong> – Legacy field. A test of the difference between estimates on
+the same sample would need their joint uncertainty. New fits return None.</p></li>
+<li><p><strong>status</strong> – Descriptive distance relative to the supplied tolerance, or
+NO_BENCHMARK for directly fitted participation.</p></li>
+<li><p><strong>tolerance</strong> – Relative difference cutoff (0.15 means 15%).</p></li>
+<li><p><strong>timestamp</strong> – When the fit was summarized.</p></li>
+<li><p><strong>metadata</strong> – Treatment, fitted specification, benchmark and run settings.</p></li>
 </ul>
 </dd>
 </dl>
@@ -3370,27 +3474,27 @@ and an econml DML fit, so the example is skipped under doctest.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.ReplicationResult.published_ate">
-<span class="sig-name descname"><span class="pre">published_ate</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.published_ate" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">published_ate</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.published_ate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.ReplicationResult.difference">
-<span class="sig-name descname"><span class="pre">difference</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.difference" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">difference</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.difference" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.ReplicationResult.rel_difference">
-<span class="sig-name descname"><span class="pre">rel_difference</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.rel_difference" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">rel_difference</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.rel_difference" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.ReplicationResult.p_value">
-<span class="sig-name descname"><span class="pre">p_value</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.p_value" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">p_value</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.p_value" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.ReplicationResult.status">
-<span class="sig-name descname"><span class="pre">status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'MATCH'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'MISMATCH'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.status" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'WITHIN_TOLERANCE'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'OUTSIDE_TOLERANCE'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'NO_BENCHMARK'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.ReplicationResult.status" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -3419,179 +3523,84 @@ and an econml DML fit, so the example is skipped under doctest.</p>
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.FourZeroOneKReplication">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.validation.empirical_replication.</span></span><span class="sig-name descname"><span class="pre">FourZeroOneKReplication</span></span><a class="reference internal" href="../_modules/dml_ts/validation/empirical_replication.html#FourZeroOneKReplication"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.empirical_replication.FourZeroOneKReplication" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Replicate Chernozhukov et al. (2018) 401(k) DML analysis.</p>
-<p>Validates DML implementation by comparing estimates with published results
-from seminal paper on double/debiased machine learning.</p>
+<p>Fit cross-sectional 401(k) companion specifications on one fivefold partition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data_path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Path to 401(k) dataset CSV (optional, loads from doubleml if None)</p></li>
-<li><p><strong>random_state</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Random seed for reproducibility</p></li>
-<li><p><strong>tolerance</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Relative difference threshold for matching (default 0.15 = 15%)</p></li>
+<li><p><strong>data_path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – CSV with the SIPP columns, or None to fetch via doubleml.</p></li>
+<li><p><strong>random_state</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Seed for the partition and the nuisance learners.</p></li>
+<li><p><strong>tolerance</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Descriptive relative gap cutoff for the eligibility comparisons.</p></li>
 </ul>
 </dd>
 </dl>
 <div class="admonition-examples admonition">
 <p class="admonition-title">Examples</p>
-<p>Requires the real 401(k) dataset and an econml DML fit:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">replicate_plr_rf</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">status</span>
-<span class="go">&#39;MATCH&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">rel_difference</span> <span class="o">&lt;</span> <span class="mf">0.15</span>
-<span class="go">True</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FourZeroOneKReplication</span><span class="o">.</span><span class="n">PUBLISHED_ATES</span><span class="p">[</span><span class="s2">&quot;PLR_RF&quot;</span><span class="p">]</span>
+<span class="go">9247.0</span>
 </pre></div>
 </div>
 </div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.FourZeroOneKReplication.PUBLISHED_ATES">
-<span class="sig-name descname"><span class="pre">PUBLISHED_ATES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'PLR_Lasso':</span> <span class="pre">9580.0,</span> <span class="pre">'PLR_RF':</span> <span class="pre">9127.0}</span></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.FourZeroOneKReplication.PUBLISHED_ATES" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">PUBLISHED_ATES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'PLR_Lasso':</span> <span class="pre">8187.0,</span> <span class="pre">'PLR_RF':</span> <span class="pre">9247.0}</span></span><a class="headerlink" href="#dml_ts.validation.empirical_replication.FourZeroOneKReplication.PUBLISHED_ATES" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.FourZeroOneKReplication.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.15</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/empirical_replication.html#FourZeroOneKReplication.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.empirical_replication.FourZeroOneKReplication.__init__" title="Link to this definition">#</a></dt>
-<dd><p>Initialize 401(k) replication module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Path to 401(k) dataset (uses doubleml if None)</p></li>
-<li><p><strong>random_state</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Random seed for reproducibility</p></li>
-<li><p><strong>tolerance</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Relative difference threshold (default 15%)</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.FourZeroOneKReplication.load_data">
 <span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/empirical_replication.html#FourZeroOneKReplication.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.empirical_replication.FourZeroOneKReplication.load_data" title="Link to this definition">#</a></dt>
-<dd><p>Load 401(k) dataset.</p>
+<dd><p>Load the supplied CSV or the DoubleML 401(k) dataset, caching the frame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataFrame with 401(k) data (n=9,915, 14 variables)</p>
-</dd>
 </dl>
-<div class="admonition-examples admonition">
-<p class="admonition-title">Examples</p>
-<p>Downloads the real 401(k) dataset via <code class="docutils literal notranslate"><span class="pre">doubleml.fetch_401K</span></code>:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">shape</span>
-<span class="go">(9915, 14)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;net_tfa&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.FourZeroOneKReplication.preprocess_data">
 <span class="sig-name descname"><span class="pre">preprocess_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">treatment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'e401'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/empirical_replication.html#FourZeroOneKReplication.preprocess_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.empirical_replication.FourZeroOneKReplication.preprocess_data" title="Link to this definition">#</a></dt>
-<dd><p>Preprocess 401(k) data for DML estimation.</p>
+<dd><p>Return net financial assets, the treatment, and the companion feature matrix.</p>
+<p>The default CSV column order is preserved. Every column except the
+outcome and the two treatment indicators becomes an effect modifier.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>treatment</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Treatment variable (“e401” for eligibility, “p401” for participation)</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p>Y: Outcome (net_tfa)</p></li>
-<li><p>T: Treatment (e401 or p401)</p></li>
-<li><p>X: Controls (11 covariates)</p></li>
-</ul>
-</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>]</span></p>
 </dd>
 </dl>
-<div class="admonition-examples admonition">
-<p class="admonition-title">Examples</p>
-<p>Downloads the real 401(k) dataset via <code class="docutils literal notranslate"><span class="pre">doubleml.fetch_401K</span></code>:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">preprocess_data</span><span class="p">(</span><span class="n">treatment</span><span class="o">=</span><span class="s2">&quot;e401&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span>
-<span class="go">(9915,)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">T</span><span class="o">.</span><span class="n">shape</span>
-<span class="go">(9915,)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="o">.</span><span class="n">shape</span>
-<span class="go">(9915, 11)</span>
-</pre></div>
-</div>
-</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.FourZeroOneKReplication.replicate_plr_rf">
 <span class="sig-name descname"><span class="pre">replicate_plr_rf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">treatment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'e401'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_estimators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/empirical_replication.html#FourZeroOneKReplication.replicate_plr_rf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.empirical_replication.FourZeroOneKReplication.replicate_plr_rf" title="Link to this definition">#</a></dt>
-<dd><p>Replicate PLR with Random Forest (primary validation).</p>
-<p>Replicates Chernozhukov et al. (2018) Table 1 estimate of $9,127
-using Partially Linear Regression with Random Forest.</p>
+<dd><p>Fit a conditional linear effect using random-forest nuisance models.</p>
+<p>Uses a regression forest for wealth and a classification forest for
+binary treatment. Both use the requested tree count and depth, and
+a minimum leaf size of ten.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>treatment</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Treatment variable (“e401” for eligibility)</p></li>
-<li><p><strong>n_estimators</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of trees in Random Forest (default 500)</p></li>
-<li><p><strong>max_depth</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – Maximum tree depth (None = unlimited)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dml_ts.validation.empirical_replication.ReplicationResult" title="dml_ts.validation.empirical_replication.ReplicationResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReplicationResult</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ReplicationResult with comparison to published estimate</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dml_ts.validation.empirical_replication.ReplicationResult" title="dml_ts.validation.empirical_replication.ReplicationResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReplicationResult</span></code></a></span></p>
 </dd>
 </dl>
-<div class="admonition-examples admonition">
-<p class="admonition-title">Examples</p>
-<p>Requires the real 401(k) dataset and an econml DML fit:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">replicate_plr_rf</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
-<span class="go">&#39;PLR_RF&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">ate_estimate</span> <span class="o">-</span> <span class="mi">9127</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1500</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.empirical_replication.FourZeroOneKReplication.replicate_plr_lasso">
 <span class="sig-name descname"><span class="pre">replicate_plr_lasso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">treatment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'e401'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/empirical_replication.html#FourZeroOneKReplication.replicate_plr_lasso"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.empirical_replication.FourZeroOneKReplication.replicate_plr_lasso" title="Link to this definition">#</a></dt>
-<dd><p>Replicate PLR with Lasso (secondary validation).</p>
-<p>Replicates Chernozhukov et al. (2018) Table 1 estimate of $9,580
-using Partially Linear Regression with Lasso.</p>
+<dd><p>Fit a conditional linear effect using cross-validated lasso nuisances.</p>
+<p>The legacy alpha argument is recorded for compatibility. EconML fits each
+cross-validated learner (LassoCV, LogisticRegressionCV) once on the whole
+sample to select its penalty and reuses that penalty in every fold; the
+penalties are not selected on the training folds.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>treatment</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Treatment variable (“e401” for eligibility)</p></li>
-<li><p><strong>alpha</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Lasso regularization parameter (default 0.01)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dml_ts.validation.empirical_replication.ReplicationResult" title="dml_ts.validation.empirical_replication.ReplicationResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReplicationResult</span></code></a></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ReplicationResult with comparison to published estimate</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dml_ts.validation.empirical_replication.ReplicationResult" title="dml_ts.validation.empirical_replication.ReplicationResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReplicationResult</span></code></a></span></p>
 </dd>
 </dl>
-<div class="admonition-examples admonition">
-<p class="admonition-title">Examples</p>
-<p>Requires the real 401(k) dataset and an econml DML fit:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">FourZeroOneKReplication</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">replicator</span><span class="o">.</span><span class="n">replicate_plr_lasso</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">method</span>
-<span class="go">&#39;PLR_Lasso&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">ate_estimate</span> <span class="o">-</span> <span class="mi">9580</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1500</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-</div>
 </dd></dl>
 
 </dd></dl>
@@ -3600,40 +3609,16 @@ using Partially Linear Regression with Lasso.</p>
 <hr class="docutils" />
 <section id="lasso-diagnostic-dml-ts-validation-lasso-diagnostic">
 <h2><a class="toc-backref" href="#id15" role="doc-backlink">Lasso Diagnostic (<code class="docutils literal notranslate"><span class="pre">dml_ts.validation.lasso_diagnostic</span></code>)</a><a class="headerlink" href="#lasso-diagnostic-dml-ts-validation-lasso-diagnostic" title="Link to this heading">#</a></h2>
-<p>Diagnostic tooling investigating the 401(k) Lasso ATE mismatch against
-published results (bootstrap convergence, seed sensitivity, hyperparameter
-analysis).</p>
-<p id="module-dml_ts.validation.lasso_diagnostic">Diagnostic module for investigating 401(k) Lasso mismatch.</p>
-<p>Analyzes the -44.4% difference between published and replicated Lasso ATE estimates
-in Chernozhukov et al. (2018) 401(k) study.</p>
-<dl>
-<dt>Problem:</dt><dd><ul class="simple">
-<li><p>Published ATE: $9,580</p></li>
-<li><p>Our ATE: $5,330 (-44.4% difference)</p></li>
-<li><p>SE: $6,930 (130% of point estimate - extremely wide!)</p></li>
-<li><p>CI: $-8,253 to $18,913 (spans $27,167)</p></li>
-</ul>
-</dd>
-<dt>Diagnostic Goals:</dt><dd><ol class="arabic simple">
-<li><p>Bootstrap distribution analysis (convergence, outliers, normality)</p></li>
-<li><p>Hyperparameter sensitivity (cv_folds, max_iter)</p></li>
-<li><p>Cross-fitting seed analysis (random_state variability)</p></li>
-<li><p>Implementation configuration comparison with published paper</p></li>
-</ol>
-</dd>
-<dt>Usage:</dt><dd><p>Requires the real 401(k) dataset (downloaded via <code class="docutils literal notranslate"><span class="pre">doubleml.fetch_401K</span></code>)
-and many econml DML fits, so the example is skipped under doctest.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.lasso_diagnostic</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoDiagnostic</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">diagnostic</span> <span class="o">=</span> <span class="n">LassoDiagnostic</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">diagnostic</span><span class="o">.</span><span class="n">run_comprehensive_diagnostic</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">bootstrap_diagnostic</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">seed_sensitivity</span><span class="o">.</span><span class="n">cv_ate</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="go">0.35</span>
-</pre></div>
-</div>
-</dd>
-</dl>
+<p>Diagnostics for the companion lasso estimate of the eligibility effect. These
+measure how the estimate varies with observation resampling, the random split
+and nuisance-learner settings.</p>
+<p id="module-dml_ts.validation.lasso_diagnostic">Stability diagnostics for the companion 401(k) eligibility fit.</p>
+<p>The companion lasso uses a single fivefold partition, cross-validated nuisance
+penalties and linearly heterogeneous effects. Its default inputs include the
+wealth measures nifa and tw. Chernozhukov et al. (2018), Table 2, Panel B,
+report $8,187 for the fivefold homogeneous partially linear coefficient with
+rigorous lasso, aggregated across 100 partitions. The diagnostics here measure
+sensitivity to resampling, tuning and seeds within the companion specification.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dml_ts.validation.lasso_diagnostic.BootstrapDiagnosticResult">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.validation.lasso_diagnostic.</span></span><span class="sig-name descname"><span class="pre">BootstrapDiagnosticResult</span></span><a class="reference internal" href="../_modules/dml_ts/validation/lasso_diagnostic.html#BootstrapDiagnosticResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.lasso_diagnostic.BootstrapDiagnosticResult" title="Link to this definition">#</a></dt>
@@ -3738,7 +3723,7 @@ and many econml DML fits, so the example is skipped under doctest.</p>
 <li><p><strong>std_errors</strong> – Array of standard errors for each parameter value</p></li>
 <li><p><strong>sensitivity_score</strong> – Coefficient of variation (std/mean) of ATE estimates</p></li>
 <li><p><strong>is_sensitive</strong> – Whether ATE is sensitive to this parameter (CV &gt; 0.1)</p></li>
-<li><p><strong>recommended_value</strong> – Recommended parameter value based on stability</p></li>
+<li><p><strong>recommended_value</strong> – Candidate with the smallest reported ATE standard error</p></li>
 <li><p><strong>metadata</strong> – Additional analysis info</p></li>
 </ul>
 </dd>
@@ -3872,14 +3857,14 @@ and many econml DML fits, so the example is skipped under doctest.</p>
 <dt class="sig sig-object py" id="dml_ts.validation.lasso_diagnostic.ComprehensiveDiagnosticResult">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.validation.lasso_diagnostic.</span></span><span class="sig-name descname"><span class="pre">ComprehensiveDiagnosticResult</span></span><a class="reference internal" href="../_modules/dml_ts/validation/lasso_diagnostic.html#ComprehensiveDiagnosticResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.lasso_diagnostic.ComprehensiveDiagnosticResult" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Comprehensive diagnostic results for 401(k) Lasso mismatch.</p>
+<p>Results of the 401(k) lasso stability checks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>bootstrap_diagnostic</strong> – Bootstrap distribution analysis</p></li>
 <li><p><strong>hyperparameter_sensitivity</strong> – Dict of sensitivity analyses (cv_folds, max_iter)</p></li>
 <li><p><strong>seed_sensitivity</strong> – Cross-fitting seed analysis</p></li>
-<li><p><strong>root_cause_analysis</strong> – Identified root cause(s) of mismatch</p></li>
+<li><p><strong>root_cause_analysis</strong> – Summary of the observed diagnostic signals</p></li>
 <li><p><strong>recommendations</strong> – List of recommendations for fixing or documenting issue</p></li>
 <li><p><strong>timestamp</strong> – When diagnostic was performed</p></li>
 </ul>
@@ -3926,9 +3911,7 @@ and many econml DML fits, so the example is skipped under doctest.</p>
 <dt class="sig sig-object py" id="dml_ts.validation.lasso_diagnostic.LassoDiagnostic">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dml_ts.validation.lasso_diagnostic.</span></span><span class="sig-name descname"><span class="pre">LassoDiagnostic</span></span><a class="reference internal" href="../_modules/dml_ts/validation/lasso_diagnostic.html#LassoDiagnostic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.lasso_diagnostic.LassoDiagnostic" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Diagnostic tool for investigating 401(k) Lasso mismatch.</p>
-<p>Performs comprehensive diagnostic analysis to explain the -44.4% difference
-between published and replicated Lasso ATE estimates.</p>
+<p>Diagnose sensitivity of the companion lasso eligibility estimate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -3995,11 +3978,11 @@ between published and replicated Lasso ATE estimates.</p>
 <dt class="sig sig-object py" id="dml_ts.validation.lasso_diagnostic.LassoDiagnostic.analyze_bootstrap_distribution">
 <span class="sig-name descname"><span class="pre">analyze_bootstrap_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/lasso_diagnostic.html#LassoDiagnostic.analyze_bootstrap_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.lasso_diagnostic.LassoDiagnostic.analyze_bootstrap_distribution" title="Link to this definition">#</a></dt>
 <dd><p>Analyze bootstrap distribution of Lasso ATE estimates.</p>
-<p>Performs bootstrap resampling to check:
-- Distribution convergence
-- Normality (Shapiro-Wilk test)
-- Outlier detection (&gt;3 SD from mean)
-- CI stability</p>
+<p>This pairs bootstrap holds a fivefold, treatment-stratified partition of
+the original household records fixed. Every resampled copy inherits its
+household’s fold. The output describes variability of the refitted
+effect, conditional on that partition. In EconML 0.16 the two penalties
+are selected using these folds across the whole bootstrap sample.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>n_bootstrap</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of bootstrap samples</p>
@@ -4096,12 +4079,12 @@ Note <code class="docutils literal notranslate"><span class="pre">parameter</spa
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.lasso_diagnostic.LassoDiagnostic.run_comprehensive_diagnostic">
 <span class="sig-name descname"><span class="pre">run_comprehensive_diagnostic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_seeds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/lasso_diagnostic.html#LassoDiagnostic.run_comprehensive_diagnostic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.lasso_diagnostic.LassoDiagnostic.run_comprehensive_diagnostic" title="Link to this definition">#</a></dt>
-<dd><p>Run complete diagnostic analysis for 401(k) Lasso mismatch.</p>
+<dd><p>Run the bootstrap, tuning and split-sensitivity diagnostics.</p>
 <p>Performs:
 1. Bootstrap distribution analysis
 2. Hyperparameter sensitivity (cv_folds, max_iter)
 3. Cross-fitting seed analysis
-4. Root cause identification
+4. Summary of observed diagnostic signals
 5. Recommendations</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -4164,6 +4147,9 @@ in reporting, storage, and analysis.</p>
 <li><p><strong>bias_p_value</strong> – Optional p-value from bias hypothesis test</p></li>
 <li><p><strong>coverage_p_value</strong> – Optional p-value from coverage hypothesis test</p></li>
 <li><p><strong>statistical_status</strong> – Optional status from statistical hypothesis testing</p></li>
+<li><p><strong>bias_status</strong> – Optional verdict for the point estimator</p></li>
+<li><p><strong>coverage_status</strong> – Optional verdict for interval calibration</p></li>
+<li><p><strong>storage_metadata</strong> – Additional metadata supplied when archiving the result</p></li>
 </ul>
 </dd>
 </dl>
@@ -4261,6 +4247,21 @@ in reporting, storage, and analysis.</p>
 <span class="sig-name descname"><span class="pre">statistical_status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'PASS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FAIL'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WARNING'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dml_ts.validation.validation_result.ValidationResult.statistical_status" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dml_ts.validation.validation_result.ValidationResult.bias_status">
+<span class="sig-name descname"><span class="pre">bias_status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'PASS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FAIL'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WARNING'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dml_ts.validation.validation_result.ValidationResult.bias_status" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dml_ts.validation.validation_result.ValidationResult.coverage_status">
+<span class="sig-name descname"><span class="pre">coverage_status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'PASS'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'FAIL'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WARNING'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dml_ts.validation.validation_result.ValidationResult.coverage_status" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dml_ts.validation.validation_result.ValidationResult.storage_metadata">
+<span class="sig-name descname"><span class="pre">storage_metadata</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#dml_ts.validation.validation_result.ValidationResult.storage_metadata" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.validation_result.ValidationResult.to_dict">
 <span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/validation_result.html#ValidationResult.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.validation_result.ValidationResult.to_dict" title="Link to this definition">#</a></dt>
@@ -4337,6 +4338,12 @@ in reporting, storage, and analysis.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="dml_ts.validation.validation_result.ValidationResult.bias_ci_level">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">bias_ci_level</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#dml_ts.validation.validation_result.ValidationResult.bias_ci_level" title="Link to this definition">#</a></dt>
+<dd><p>Confidence level of the bias interval. Historical results used 95%.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.validation_result.ValidationResult.summary">
 <span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dml_ts/validation/validation_result.html#ValidationResult.summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dml_ts.validation.validation_result.ValidationResult.summary" title="Link to this definition">#</a></dt>
@@ -4353,7 +4360,7 @@ in reporting, storage, and analysis.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dml_ts.validation.validation_result.ValidationResult.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_simulations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_estimates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_estimates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_p_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage_p_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistical_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dml_ts.validation.validation_result.ValidationResult.__init__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_simulations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_estimates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_estimates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_p_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage_p_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistical_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coverage_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dml_ts.validation.validation_result.ValidationResult.__init__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -4850,6 +4857,15 @@ All functions use the same color scheme, fonts, and layout.</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bias-validation-dml-ts-validation-bias-validation">Bias Validation (<code class="docutils literal notranslate"><span class="pre">dml_ts.validation.bias_validation</span></code>)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts.bias"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts.bias</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts.coverage"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts.coverage</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts.overall"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts.overall</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.SimulationVerdicts.__new__"><code class="docutils literal notranslate"><span class="pre">SimulationVerdicts.__new__()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.classify_bias_and_coverage"><code class="docutils literal notranslate"><span class="pre">classify_bias_and_coverage()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.assess_simulation_draws"><code class="docutils literal notranslate"><span class="pre">assess_simulation_draws()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.BiasValidation"><code class="docutils literal notranslate"><span class="pre">BiasValidation</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.BiasValidation.__init__"><code class="docutils literal notranslate"><span class="pre">BiasValidation.__init__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.bias_validation.BiasValidation.validate"><code class="docutils literal notranslate"><span class="pre">BiasValidation.validate()</span></code></a></li>
@@ -5104,11 +5120,15 @@ All functions use the same color scheme, fonts, and layout.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.bias_p_value"><code class="docutils literal notranslate"><span class="pre">ValidationResult.bias_p_value</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.coverage_p_value"><code class="docutils literal notranslate"><span class="pre">ValidationResult.coverage_p_value</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.statistical_status"><code class="docutils literal notranslate"><span class="pre">ValidationResult.statistical_status</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.bias_status"><code class="docutils literal notranslate"><span class="pre">ValidationResult.bias_status</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.coverage_status"><code class="docutils literal notranslate"><span class="pre">ValidationResult.coverage_status</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.storage_metadata"><code class="docutils literal notranslate"><span class="pre">ValidationResult.storage_metadata</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.to_dict"><code class="docutils literal notranslate"><span class="pre">ValidationResult.to_dict()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.to_json"><code class="docutils literal notranslate"><span class="pre">ValidationResult.to_json()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.from_dict"><code class="docutils literal notranslate"><span class="pre">ValidationResult.from_dict()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.from_json"><code class="docutils literal notranslate"><span class="pre">ValidationResult.from_json()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.passes"><code class="docutils literal notranslate"><span class="pre">ValidationResult.passes()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.bias_ci_level"><code class="docutils literal notranslate"><span class="pre">ValidationResult.bias_ci_level</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.summary"><code class="docutils literal notranslate"><span class="pre">ValidationResult.summary()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dml_ts.validation.validation_result.ValidationResult.__init__"><code class="docutils literal notranslate"><span class="pre">ValidationResult.__init__()</span></code></a></li>
 </ul>

@@ -324,9 +324,11 @@
 <span class="sd">Used to test DML performance under assumption violations.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">expit</span>
 
 
 <div class="viewcode-block" id="EnhancedDGPResult">
@@ -342,7 +344,7 @@
 <span class="sd">        X_true: True confounders including omitted variables (n, p + p_omitted)</span>
 <span class="sd">        true_effect: Individual treatment effects (n,) - varies by individual for HTE</span>
 <span class="sd">        true_ate: Average treatment effect (scalar)</span>
-<span class="sd">        propensity_score: True propensity scores P(T=1|X) (n,)</span>
+<span class="sd">        propensity_score: Assignment probabilities conditional on all latent covariates (n,)</span>
 <span class="sd">        n: Sample size</span>
 <span class="sd">        p: Number of observed confounders</span>
 <span class="sd">        p_omitted: Number of omitted confounders</span>
@@ -444,7 +446,7 @@
 <span class="sd">            hte_strength: Strength of heterogeneity (0 = constant effect)</span>
 <span class="sd">            hte_nonlinear: Use non-linear HTE function</span>
 <span class="sd">            p_omitted: Number of omitted confounders</span>
-<span class="sd">            omitted_var_strength: Strength of omitted variable confounding</span>
+<span class="sd">            omitted_var_strength: Multiplier of omitted covariates in assignment and baseline outcome</span>
 <span class="sd">            polynomial_degree: Degree of polynomial terms (1 = linear, 2 = quadratic, etc.)</span>
 <span class="sd">            propensity_extremeness: Multiplier for propensity logit (&gt;1 = more extreme)</span>
 <span class="sd">            measurement_error_std: Std dev of measurement error in X</span>
@@ -452,6 +454,18 @@
 <span class="sd">            noise_level: Noise in outcome equation</span>
 <span class="sd">            random_state: Random seed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polynomial_degree</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="n">polynomial_degree</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;polynomial_degree must be a positive integer&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">p_omitted</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">omitted_var_strength</span><span class="p">)</span> <span class="ow">or</span> <span class="n">omitted_var_strength</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;p_omitted and omitted_var_strength must be nonnegative&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">p_omitted</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">omitted_var_strength</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;p_omitted=</span><span class="si">{</span><span class="n">p_omitted</span><span class="si">}</span><span class="s2"> with omitted_var_strength=0: the omitted covariates &quot;</span>
+                <span class="s2">&quot;enter neither the assignment nor the outcome, so nothing is confounded by &quot;</span>
+                <span class="s2">&quot;them. Set omitted_var_strength above 0 for an omitted-variable design.&quot;</span><span class="p">,</span>
+                <span class="ne">RuntimeWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_effect</span> <span class="o">=</span> <span class="n">base_effect</span>
@@ -480,15 +494,9 @@
         <span class="n">p_total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_omitted</span>
         <span class="n">X_true</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">p_total</span><span class="p">)</span>
 
-        <span class="c1"># Step 2: Add measurement error to observed confounders</span>
-        <span class="n">X_observed</span> <span class="o">=</span> <span class="n">X_true</span><span class="p">[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_error_std</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">measurement_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_error_std</span>
-            <span class="n">X_observed</span> <span class="o">+=</span> <span class="n">measurement_error</span>
-
         <span class="c1"># Step 3: Generate treatment with confounding from ALL confounders</span>
         <span class="n">propensity_logit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_propensity_logit</span><span class="p">(</span><span class="n">X_true</span><span class="p">)</span>
-        <span class="n">propensity_score</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">propensity_logit</span><span class="p">))</span>
+        <span class="n">propensity_score</span> <span class="o">=</span> <span class="n">expit</span><span class="p">(</span><span class="n">propensity_logit</span><span class="p">)</span>
         <span class="n">T</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">propensity_score</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># Step 4: Calculate individual treatment effects (HTE)</span>
@@ -497,6 +505,12 @@
 
         <span class="c1"># Step 5: Generate outcome with confounding</span>
         <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_outcome</span><span class="p">(</span><span class="n">X_true</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">true_effect</span><span class="p">)</span>
+
+        <span class="c1"># Draw measurement noise last, even at zero scale. Matched runs then share the</span>
+        <span class="c1"># entire latent process across measurement-error levels on every replication.</span>
+        <span class="n">X_observed</span> <span class="o">=</span> <span class="n">X_true</span><span class="p">[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_error_std</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">EnhancedDGPResult</span><span class="p">(</span>
             <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span>
@@ -522,21 +536,17 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Propensity logit values (n,)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Linear term: β^T X</span>
-        <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span>
-        <span class="n">logit</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">propensity_extremeness</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_confounder_signal</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
-        <span class="c1"># Add polynomial terms if requested</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_degree</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="c1"># Add X^2 terms for first few variables</span>
-            <span class="n">n_poly</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_poly</span><span class="p">):</span>
-                <span class="n">logit</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-
-        <span class="c1"># Apply extremeness multiplier</span>
-        <span class="n">logit</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">propensity_extremeness</span>
-
-        <span class="k">return</span> <span class="n">logit</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_confounder_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Draw linear coefficients and add powers through the requested degree.&quot;&quot;&quot;</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">scale</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="p">:]</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">omitted_var_strength</span>
+        <span class="n">signal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">power</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_degree</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">signal</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="p">:</span><span class="n">width</span><span class="p">]</span> <span class="o">**</span> <span class="n">power</span><span class="p">)</span> <span class="o">@</span> <span class="n">scale</span><span class="p">[:</span><span class="n">width</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">signal</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_treatment_effects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate individual treatment effects (HTE).</span>
@@ -550,7 +560,7 @@
         <span class="n">n</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># Start with base effect</span>
-        <span class="n">effects</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_effect</span><span class="p">)</span>
+        <span class="n">effects</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_effect</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hte_strength</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hte_nonlinear</span><span class="p">:</span>
@@ -582,15 +592,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="c1"># Confounding: Y depends on X</span>
-        <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span>
-        <span class="n">Y</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">gamma</span>
-
-        <span class="c1"># Add polynomial confounding if requested</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_degree</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">n_poly</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_poly</span><span class="p">):</span>
-                <span class="n">Y</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_confounder_signal</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
         <span class="c1"># Add treatment effect: Y += τ(X) * T</span>
         <span class="n">Y</span> <span class="o">+=</span> <span class="n">true_effect</span> <span class="o">*</span> <span class="n">T</span>

@@ -344,6 +344,7 @@
 <span class="sd">    True</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
 
@@ -351,6 +352,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.dgp_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">DGPResult</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._bootstrap_folds</span><span class="w"> </span><span class="kn">import</span> <span class="n">original_fold_ids</span><span class="p">,</span> <span class="n">resampled_folds</span>
 
 
 <div class="viewcode-block" id="ConvergenceDiagnostic">
@@ -410,6 +413,10 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">BootstrapDiagnostics</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Bootstrap quality diagnostics for DML validation.</span>
 
+<span class="sd">    LinearDML case refits use fixed original-unit folds. Repeated copies of a</span>
+<span class="sd">    source row share its fold; the underlying forest nuisance fits use fixed</span>
+<span class="sd">    hyperparameters. Each original row is assumed to represent one sampling unit.</span>
+
 <span class="sd">    Provides comprehensive diagnostics for bootstrap procedures including:</span>
 <span class="sd">    - Convergence analysis (optimal n_bootstrap)</span>
 <span class="sd">    - Distribution diagnostics (normality, skewness, kurtosis)</span>
@@ -460,18 +467,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">=</span> <span class="n">estimator_type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_fold_ids</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="BootstrapDiagnostics.diagnose_convergence">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bootstrap_diagnostics.BootstrapDiagnostics.diagnose_convergence">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">diagnose_convergence</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">target</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="s2">&quot;variance&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">],</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="s2">&quot;variance&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">,</span> <span class="s2">&quot;conditional_inclusion&quot;</span><span class="p">],</span>
         <span class="n">n_bootstrap_range</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
         <span class="n">true_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_replications</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
         <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">data_generator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">DGPResult</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvergenceDiagnostic</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Diagnose bootstrap convergence across different sample sizes.</span>
 
@@ -479,11 +488,15 @@
 <span class="sd">        Uses multiple replications to assess Monte Carlo variability.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            target: What to diagnose (&quot;bias&quot;, &quot;variance&quot;, &quot;coverage&quot;)</span>
+<span class="sd">            target: Statistic to diagnose. &quot;coverage&quot; uses independent generated datasets.</span>
+<span class="sd">                &quot;conditional_inclusion&quot; repeats the bootstrap on the supplied fixed data.</span>
 <span class="sd">            n_bootstrap_range: List of n_bootstrap values to test</span>
-<span class="sd">            true_value: True parameter value (required for bias/coverage)</span>
+<span class="sd">            true_value: Parameter value for bias, coverage or conditional inclusion</span>
 <span class="sd">            n_replications: Number of replications per n_bootstrap</span>
 <span class="sd">            tolerance: Relative change threshold for convergence (default 5%)</span>
+<span class="sd">            data_generator: Callable producing a fresh independent dataset per replication,</span>
+<span class="sd">                e.g. a persistent seeded DGP&#39;s generate method. Required for coverage.</span>
+<span class="sd">                The same replication is used for every bootstrap sample size.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ConvergenceDiagnostic with convergence assessment and recommendations</span>
@@ -496,37 +509,39 @@
 <span class="sd">            ... )</span>
 <span class="sd">            ConvergenceDiagnostic(converged=True, recommended_n=1000, ...)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">target</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">true_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;bias&quot;</span><span class="p">,</span> <span class="s2">&quot;variance&quot;</span><span class="p">,</span> <span class="s2">&quot;coverage&quot;</span><span class="p">,</span> <span class="s2">&quot;conditional_inclusion&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown convergence target: </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="o">!=</span> <span class="s2">&quot;variance&quot;</span> <span class="ow">and</span> <span class="n">true_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;true_value required for </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2"> diagnostics&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;coverage&quot;</span> <span class="ow">and</span> <span class="n">data_generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;coverage requires a data_generator for independent datasets; &quot;</span>
+                <span class="s2">&quot;use conditional_inclusion for one fixed dataset&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_replications</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">n_bootstrap_range</span> <span class="ow">or</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_bootstrap_range</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Use at least two replications and bootstrap sizes of at least two&quot;</span><span class="p">)</span>
 
-        <span class="n">estimates_by_n</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">std_errors_by_n</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">measurements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_replications</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_bootstrap_range</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">replication</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_replications</span><span class="p">):</span>
+            <span class="n">trial</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">if</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;coverage&quot;</span> <span class="ow">and</span> <span class="n">data_generator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">trial</span> <span class="o">=</span> <span class="n">BootstrapDiagnostics</span><span class="p">(</span>
+                    <span class="n">data_generator</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">31</span><span class="p">))</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">n_boot</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">n_bootstrap_range</span><span class="p">):</span>
+                <span class="n">estimates</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_boot</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;variance&quot;</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;bias&quot;</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">estimates</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_value</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.025</span><span class="p">,</span> <span class="mf">0.975</span><span class="p">])</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lower</span> <span class="o">&lt;=</span> <span class="n">true_value</span> <span class="o">&lt;=</span> <span class="n">upper</span><span class="p">)</span>
+                <span class="n">measurements</span><span class="p">[</span><span class="n">replication</span><span class="p">,</span> <span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
-        <span class="k">for</span> <span class="n">n_boot</span> <span class="ow">in</span> <span class="n">n_bootstrap_range</span><span class="p">:</span>
-            <span class="c1"># Run multiple replications to assess stability</span>
-            <span class="n">replication_estimates</span> <span class="o">=</span> <span class="p">[]</span>
-
-            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_replications</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;bias&quot;</span><span class="p">:</span>
-                    <span class="c1"># Bootstrap estimate of bias</span>
-                    <span class="n">boot_estimates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_boot</span><span class="p">)</span>
-                    <span class="n">bias_estimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_value</span>
-                    <span class="n">replication_estimates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bias_estimate</span><span class="p">)</span>
-
-                <span class="k">elif</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;variance&quot;</span><span class="p">:</span>
-                    <span class="c1"># Bootstrap estimate of variance</span>
-                    <span class="n">boot_estimates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_boot</span><span class="p">)</span>
-                    <span class="n">var_estimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                    <span class="n">replication_estimates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_estimate</span><span class="p">)</span>
-
-                <span class="k">elif</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;coverage&quot;</span><span class="p">:</span>
-                    <span class="c1"># Bootstrap coverage rate</span>
-                    <span class="n">boot_cis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_confidence_intervals</span><span class="p">(</span><span class="n">n_boot</span><span class="p">)</span>
-                    <span class="n">coverage</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">true_value</span> <span class="o">&lt;=</span> <span class="n">ci</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">ci</span> <span class="ow">in</span> <span class="n">boot_cis</span><span class="p">])</span>
-                    <span class="n">replication_estimates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coverage</span><span class="p">)</span>
-
-            <span class="n">estimates_by_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">replication_estimates</span><span class="p">))</span>
-            <span class="n">std_errors_by_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">replication_estimates</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">estimates_by_n</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">replication_sd</span> <span class="o">=</span> <span class="n">measurements</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">std_errors_by_n</span> <span class="o">=</span> <span class="p">(</span><span class="n">replication_sd</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_replications</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
         <span class="c1"># Assess convergence: relative change between consecutive n_bootstrap values</span>
         <span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
@@ -572,6 +587,8 @@
                 <span class="s2">&quot;n_replications&quot;</span><span class="p">:</span> <span class="n">n_replications</span><span class="p">,</span>
                 <span class="s2">&quot;true_value&quot;</span><span class="p">:</span> <span class="n">true_value</span><span class="p">,</span>
                 <span class="s2">&quot;monte_carlo_error&quot;</span><span class="p">:</span> <span class="n">std_errors_by_n</span><span class="p">,</span>
+                <span class="s2">&quot;replication_sd&quot;</span><span class="p">:</span> <span class="n">replication_sd</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="s2">&quot;independent_datasets&quot;</span><span class="p">:</span> <span class="n">n_replications</span> <span class="k">if</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;coverage&quot;</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">)</span></div>
 
@@ -612,6 +629,17 @@
 
         <span class="c1"># Generate bootstrap distribution</span>
         <span class="n">boot_estimates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
+
+        <span class="c1"># A non-finite or point-mass (all-identical) bootstrap distribution cannot be</span>
+        <span class="c1"># diagnosed: Shapiro-Wilk returns p=1.0 (is_normal=True) and skew/kurtosis become</span>
+        <span class="c1"># NaN, fabricating a normality verdict from degenerate data. Fail loud instead.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">))</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Degenerate bootstrap distribution: estimates are non-finite or a single &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;point mass (range=</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">))</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">); normality and &quot;</span>
+                <span class="s2">&quot;skewness diagnostics would be fabricated. Check for a constant/degenerate &quot;</span>
+                <span class="s2">&quot;sample.&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Normality test (Shapiro-Wilk)</span>
         <span class="n">stat</span><span class="p">,</span> <span class="n">normality_pvalue</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">shapiro</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">)</span>
@@ -737,7 +765,8 @@
 
             <span class="c1"># Estimate on bootstrap sample</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">==</span> <span class="s2">&quot;LinearDML&quot;</span><span class="p">:</span>
-                <span class="n">estimate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_dml</span><span class="p">(</span><span class="n">Y_boot</span><span class="p">,</span> <span class="n">T_boot</span><span class="p">,</span> <span class="n">X_boot</span><span class="p">)</span>
+                <span class="n">folds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dml_folds</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+                <span class="n">estimate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_dml</span><span class="p">(</span><span class="n">Y_boot</span><span class="p">,</span> <span class="n">T_boot</span><span class="p">,</span> <span class="n">X_boot</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">folds</span><span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">==</span> <span class="s2">&quot;OLS&quot;</span><span class="p">:</span>
                 <span class="n">estimate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_ols</span><span class="p">(</span><span class="n">Y_boot</span><span class="p">,</span> <span class="n">T_boot</span><span class="p">,</span> <span class="n">X_boot</span><span class="p">)</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;IPW&quot;</span><span class="p">,</span> <span class="s2">&quot;AIPW&quot;</span><span class="p">]:</span>
@@ -749,30 +778,30 @@
 
         <span class="k">return</span> <span class="n">boot_estimates</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_bootstrap_confidence_intervals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate bootstrap confidence intervals (percentile method).</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            n_bootstrap: Number of bootstrap samples</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            List of (lower, upper) CI bounds</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">boot_estimates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bootstrap_estimates</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
-        <span class="n">ci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span>
-        <span class="n">ci_upper</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">boot_estimates</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">[(</span><span class="n">ci_lower</span><span class="p">,</span> <span class="n">ci_upper</span><span class="p">)]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_dml_folds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_fold_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_original_fold_ids</span> <span class="o">=</span> <span class="n">original_fold_ids</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span> <span class="n">stratified</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">resampled_folds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_original_fold_ids</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_estimate_point</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate point estimate on full data.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">==</span> <span class="s2">&quot;LinearDML&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_dml</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">folds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dml_folds</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_dml</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">folds</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span> <span class="o">==</span> <span class="s2">&quot;OLS&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_ols</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator_type</span><span class="si">}</span><span class="s2"> not yet implemented&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_estimate_dml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_estimate_dml</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">cv</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate treatment effect using LinearDML.&quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
@@ -788,7 +817,7 @@
             <span class="n">model_y</span><span class="o">=</span><span class="n">model_y</span><span class="p">,</span>
             <span class="n">model_t</span><span class="o">=</span><span class="n">model_t</span><span class="p">,</span>
             <span class="n">discrete_treatment</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
             <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
         <span class="p">)</span>
 

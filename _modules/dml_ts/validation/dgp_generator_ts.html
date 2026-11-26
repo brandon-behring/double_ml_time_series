@@ -331,6 +331,8 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">solve_discrete_lyapunov</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">expit</span>
 
 
 <div class="viewcode-block" id="TimeSeriesDGPResult">
@@ -521,15 +523,26 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_stable_ar_coefs</span><span class="p">(</span><span class="n">treatment_ar_order</span><span class="p">)</span>
 
         <span class="c1"># The confounder VAR(1) innovation variance is 1 - rho**2, floored to 0.01 in</span>
-        <span class="c1"># _generate_var_confounders. Near a unit root the floor binds, so the generated</span>
-        <span class="c1"># persistence no longer matches the requested coefficient -- warn rather than</span>
-        <span class="c1"># silently fabricate a different process.</span>
+        <span class="c1"># _generate_var_confounders. The floor changes marginal variance near a unit root.</span>
         <span class="k">if</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">confounder_var_coef</span><span class="o">**</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;confounder_var_coef=</span><span class="si">{</span><span class="n">confounder_var_coef</span><span class="si">}</span><span class="s2"> is near unit-root: the &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;VAR(1) innovation variance (</span><span class="si">{</span><span class="mf">1.0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">confounder_var_coef</span><span class="o">**</span><span class="mi">2</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">) is &quot;</span>
-                <span class="s2">&quot;floored to 0.01, so the generated confounder persistence will not match &quot;</span>
-                <span class="s2">&quot;the requested coefficient.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;floored to 0.01, so the stationary marginal variance exceeds one.&quot;</span><span class="p">,</span>
+                <span class="ne">RuntimeWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># The AR(1) error innovation variance is noise_level**2 * (1 - error_ar_coef**2),</span>
+        <span class="c1"># floored to 0.01 in _generate_ar1_errors. Because it is scaled by noise_level**2</span>
+        <span class="c1"># the floor binds for *moderate* error_ar_coef when noise_level is small (not only</span>
+        <span class="c1"># near a unit root), silently inflating the error scale -- warn when it binds.</span>
+        <span class="n">error_innovation_var</span> <span class="o">=</span> <span class="n">noise_level</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">error_ar_coef</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error_innovation_var</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;error AR(1) innovation variance (</span><span class="si">{</span><span class="n">error_innovation_var</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">) is floored &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;to 0.01 (noise_level=</span><span class="si">{</span><span class="n">noise_level</span><span class="si">}</span><span class="s2">, error_ar_coef=</span><span class="si">{</span><span class="n">error_ar_coef</span><span class="si">}</span><span class="s2">): the &quot;</span>
+                <span class="s2">&quot;generated error scale/persistence will not match the requested parameters.&quot;</span><span class="p">,</span>
                 <span class="ne">RuntimeWarning</span><span class="p">,</span>
                 <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="p">)</span>
@@ -683,12 +696,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">))</span>
 
-        <span class="c1"># Initialize</span>
-        <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
-
         <span class="c1"># Generate VAR(1) process (diagonal coefficient matrix)</span>
         <span class="n">innovation_var</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounder_var_coef</span><span class="o">**</span><span class="mi">2</span>
         <span class="n">innovation_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">innovation_var</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">))</span>
+        <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">innovation_std</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">innovation_var</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
             <span class="n">innovation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">innovation_std</span>
@@ -718,44 +729,42 @@
         <span class="c1"># Confounding effect</span>
         <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounding_strength</span> <span class="o">*</span> <span class="mf">0.3</span>
 
-        <span class="c1"># Generate AR process for treatment</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-
-        <span class="c1"># Burn-in period</span>
-        <span class="n">burn_in</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ar_order</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
-        <span class="n">T_extended</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="n">burn_in</span><span class="p">)</span>
-
-        <span class="c1"># Innovation variance (adjusted for stationarity)</span>
-        <span class="n">innovation_var</span> <span class="o">=</span> <span class="mf">0.5</span>
-        <span class="n">innovation_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">innovation_var</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">burn_in</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="n">burn_in</span><span class="p">):</span>
-            <span class="c1"># AR component</span>
-            <span class="n">ar_component</span> <span class="o">=</span> <span class="mf">0.0</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ar_order</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">t</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">ar_component</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">T_extended</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-
-            <span class="c1"># Confounder component (use X at corresponding time)</span>
-            <span class="n">t_actual</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="n">burn_in</span>
-            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">t_actual</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-                <span class="n">conf_component</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">t_actual</span><span class="p">]</span> <span class="o">@</span> <span class="n">beta</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">conf_component</span> <span class="o">=</span> <span class="mf">0.0</span>
-
-            <span class="c1"># Innovation</span>
-            <span class="n">innovation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">()</span> <span class="o">*</span> <span class="n">innovation_std</span>
-
-            <span class="c1"># Combine</span>
-            <span class="n">T_extended</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">ar_component</span> <span class="o">+</span> <span class="n">conf_component</span> <span class="o">+</span> <span class="n">unit_effect</span> <span class="o">+</span> <span class="n">innovation</span>
-
-        <span class="c1"># Extract non-burn-in portion</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="n">T_extended</span><span class="p">[</span><span class="n">burn_in</span><span class="p">:]</span>
-
-        <span class="c1"># Convert to binary if needed</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">beta</span>
+        <span class="n">innovations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ar_order</span><span class="p">:</span>
+            <span class="c1"># Joint stationary state (T_t, ..., T_{t-p+1}, X_t @ beta). The final</span>
+            <span class="c1"># coordinate is AR(1) because all X coordinates share the same rho.</span>
+            <span class="n">rho</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">confounder_var_coef</span>
+            <span class="n">transition</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ar_order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ar_order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">transition</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="n">ar_order</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span>
+            <span class="n">transition</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">ar_order</span><span class="p">,</span> <span class="p">:</span> <span class="n">ar_order</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ar_order</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">transition</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">rho</span>
+            <span class="n">cov_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">transition</span><span class="p">)</span>
+            <span class="n">signal_noise</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rho</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">beta</span> <span class="o">@</span> <span class="n">beta</span><span class="p">)</span>
+            <span class="n">cov_noise</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">signal_noise</span>
+            <span class="n">cov_noise</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov_noise</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cov_noise</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal_noise</span>
+            <span class="n">cov</span> <span class="o">=</span> <span class="n">solve_discrete_lyapunov</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">cov_noise</span><span class="p">)</span>
+            <span class="c1"># Condition the initial treatment lags on the first generated covariate.</span>
+            <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">ar_order</span><span class="p">,</span> <span class="n">unit_effect</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span>
+            <span class="n">lag_cov</span> <span class="o">=</span> <span class="n">cov</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">signal_noise</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">loading</span> <span class="o">=</span> <span class="n">cov</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">cov</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">mean</span> <span class="o">+=</span> <span class="n">loading</span> <span class="o">*</span> <span class="n">signal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">lag_cov</span> <span class="o">=</span> <span class="n">lag_cov</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">loading</span><span class="p">,</span> <span class="n">cov</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">initial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="p">(</span><span class="n">lag_cov</span> <span class="o">+</span> <span class="n">lag_cov</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">history</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="n">ar_order</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">history</span><span class="p">[:</span><span class="n">ar_order</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                <span class="n">last</span> <span class="o">=</span> <span class="n">t</span> <span class="o">+</span> <span class="n">ar_order</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">past</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">last</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">history</span><span class="p">[</span><span class="n">last</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">treatment_ar_coefs</span> <span class="o">@</span> <span class="n">past</span> <span class="o">+</span> <span class="n">unit_effect</span> <span class="o">+</span> <span class="n">signal</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="n">innovations</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="n">ar_order</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="n">unit_effect</span> <span class="o">+</span> <span class="n">signal</span> <span class="o">+</span> <span class="n">innovations</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_type</span> <span class="o">==</span> <span class="s2">&quot;binary&quot;</span><span class="p">:</span>
-            <span class="n">propensity</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">T</span><span class="p">))</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">propensity</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">expit</span><span class="p">(</span><span class="n">T</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">T</span>
 

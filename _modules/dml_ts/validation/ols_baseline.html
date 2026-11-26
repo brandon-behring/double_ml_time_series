@@ -320,12 +320,13 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation._simulation_inference</span><span class="w"> </span><span class="kn">import</span> <span class="n">percentile_interval</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bias_validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">assess_simulation_draws</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.bootstrap_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_BOOTSTRAP_CONFIG</span><span class="p">,</span> <span class="n">BootstrapConfig</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.dgp_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">DGPGenerator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.validation_result</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationResult</span>
@@ -396,6 +397,7 @@
         <span class="n">estimates</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">ci_bounds</span> <span class="o">=</span> <span class="p">[]</span>
 
+        <span class="n">z_critical</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">isf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">):</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
 
@@ -418,8 +420,8 @@
             <span class="n">se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse_residuals</span> <span class="o">/</span> <span class="n">T_var</span><span class="p">)</span> <span class="k">if</span> <span class="n">T_var</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
             <span class="c1"># Confidence interval</span>
-            <span class="n">ci_lower</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">-</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">se</span>
-            <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">+</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">se</span>
+            <span class="n">ci_lower</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">-</span> <span class="n">z_critical</span> <span class="o">*</span> <span class="n">se</span>
+            <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">+</span> <span class="n">z_critical</span> <span class="o">*</span> <span class="n">se</span>
 
             <span class="n">estimates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ate</span><span class="p">)</span>
             <span class="n">ci_bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ci_lower</span><span class="p">,</span> <span class="n">ci_upper</span><span class="p">))</span>
@@ -430,18 +432,25 @@
         <span class="n">mse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_mse</span><span class="p">(</span><span class="n">estimates_arr</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>
         <span class="n">coverage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_coverage</span><span class="p">(</span><span class="n">ci_bounds</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>
 
-        <span class="c1"># Statistical hypothesis test for bias</span>
+        <span class="n">verdicts</span><span class="p">,</span> <span class="n">bias_p_value</span><span class="p">,</span> <span class="n">coverage_p_value</span> <span class="o">=</span> <span class="n">assess_simulation_draws</span><span class="p">(</span>
+            <span class="n">estimates_arr</span> <span class="o">-</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ci_bounds</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
+            <span class="n">nominal</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="n">bias_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_bias_samples</span><span class="p">(</span><span class="n">estimates_arr</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>
-        <span class="n">status</span><span class="p">,</span> <span class="n">bias_p_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_status</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span>
+        <span class="n">bias_lower</span><span class="p">,</span> <span class="n">bias_upper</span> <span class="o">=</span> <span class="n">percentile_interval</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ValidationResult</span><span class="p">(</span>
             <span class="n">method</span><span class="o">=</span><span class="s2">&quot;NaiveOLS&quot;</span><span class="p">,</span>
-            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">overall</span><span class="p">,</span>
+            <span class="n">bias_status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+            <span class="n">coverage_status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">coverage</span><span class="p">,</span>
             <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
             <span class="n">mse</span><span class="o">=</span><span class="n">mse</span><span class="p">,</span>
             <span class="n">coverage</span><span class="o">=</span><span class="n">coverage</span><span class="p">,</span>
-            <span class="n">ci_lower</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)),</span>
-            <span class="n">ci_upper</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">)),</span>
+            <span class="n">ci_lower</span><span class="o">=</span><span class="n">bias_lower</span><span class="p">,</span>
+            <span class="n">ci_upper</span><span class="o">=</span><span class="n">bias_upper</span><span class="p">,</span>
             <span class="n">n_simulations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">,</span>
             <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
             <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
@@ -450,16 +459,18 @@
                 <span class="s2">&quot;dgp_true_effect&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
                 <span class="s2">&quot;dgp_confounding&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">confounding_strength</span><span class="p">,</span>
                 <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="s2">&quot;bias_ci_level&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
                 <span class="s2">&quot;estimator&quot;</span><span class="p">:</span> <span class="s2">&quot;NaiveOLS&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;controls_used&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="p">},</span>
             <span class="n">bias_p_value</span><span class="o">=</span><span class="n">bias_p_value</span><span class="p">,</span>
+            <span class="n">coverage_p_value</span><span class="o">=</span><span class="n">coverage_p_value</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate bias: E[θ̂] - θ₀&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">estimates</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_effect</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">estimates</span> <span class="o">-</span> <span class="n">true_effect</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_mse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate mean squared error: E[(θ̂ - θ₀)²]&quot;&quot;&quot;</span>
@@ -471,37 +482,14 @@
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">covers</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_bias_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bootstrap samples of bias for hypothesis testing&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample independent estimates for the percentile interval on mean bias.&quot;&quot;&quot;</span>
         <span class="n">n_bootstrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bootstrap_config</span><span class="o">.</span><span class="n">n_bootstrap_bias</span>
+        <span class="n">simulation_errors</span> <span class="o">=</span> <span class="n">estimates</span> <span class="o">-</span> <span class="n">true_effect</span>
         <span class="n">bias_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">):</span>
-            <span class="n">sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">estimates</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">bias_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_effect</span>
-        <span class="k">return</span> <span class="n">bias_samples</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_determine_status</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">bias_samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">alpha_test</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determine validation status using t-test for bias&quot;&quot;&quot;</span>
-        <span class="n">mean_bias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span>
-        <span class="n">se_bias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">))</span>
-
-        <span class="k">if</span> <span class="n">se_bias</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">t_stat</span> <span class="o">=</span> <span class="n">mean_bias</span> <span class="o">/</span> <span class="n">se_bias</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-            <span class="n">bias_p_value</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">t_stat</span><span class="p">),</span> <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">bias_p_value</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">mean_bias</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.0</span>
-
-        <span class="n">status</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">bias_p_value</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;FAIL&quot;</span>
-        <span class="k">elif</span> <span class="n">bias_p_value</span> <span class="o">&lt;</span> <span class="n">alpha_test</span><span class="p">:</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;WARNING&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;PASS&quot;</span>
-
-        <span class="k">return</span> <span class="n">status</span><span class="p">,</span> <span class="n">bias_p_value</span></div>
+            <span class="n">sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">simulation_errors</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">simulation_errors</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">bias_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bias_samples</span></div>
 
 
 
@@ -513,6 +501,12 @@
 
 <span class="sd">    Standard econometrics approach that controls for observed confounders.</span>
 <span class="sd">    Should have less bias than NaiveOLS but more than DML (less efficient).</span>
+
+<span class="sd">    Known defect (#61): the standard error is computed from a design matrix</span>
+<span class="sd">    without the fitted intercept, so the intervals are too short. ``validate``</span>
+<span class="sd">    reports this as a coverage verdict of FAIL even where the model is correct:</span>
+<span class="sd">    in Chapter 3&#39;s Experiment 3.1 its 95% intervals cover in 69 of 100 datasets,</span>
+<span class="sd">    and a reference interval that includes the intercept covers in 91.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        n_simulations: Number of Monte Carlo simulations</span>
@@ -571,6 +565,7 @@
         <span class="n">estimates</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">ci_bounds</span> <span class="o">=</span> <span class="p">[]</span>
 
+        <span class="n">z_critical</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">isf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">):</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
 
@@ -597,8 +592,8 @@
                 <span class="n">se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
             <span class="c1"># Confidence interval</span>
-            <span class="n">ci_lower</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">-</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">se</span>
-            <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">+</span> <span class="mf">1.96</span> <span class="o">*</span> <span class="n">se</span>
+            <span class="n">ci_lower</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">-</span> <span class="n">z_critical</span> <span class="o">*</span> <span class="n">se</span>
+            <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">ate</span> <span class="o">+</span> <span class="n">z_critical</span> <span class="o">*</span> <span class="n">se</span>
 
             <span class="n">estimates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ate</span><span class="p">)</span>
             <span class="n">ci_bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ci_lower</span><span class="p">,</span> <span class="n">ci_upper</span><span class="p">))</span>
@@ -609,18 +604,25 @@
         <span class="n">mse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_mse</span><span class="p">(</span><span class="n">estimates_arr</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>
         <span class="n">coverage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_coverage</span><span class="p">(</span><span class="n">ci_bounds</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>
 
-        <span class="c1"># Statistical hypothesis test for bias</span>
+        <span class="n">verdicts</span><span class="p">,</span> <span class="n">bias_p_value</span><span class="p">,</span> <span class="n">coverage_p_value</span> <span class="o">=</span> <span class="n">assess_simulation_draws</span><span class="p">(</span>
+            <span class="n">estimates_arr</span> <span class="o">-</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ci_bounds</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
+            <span class="n">nominal</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="n">bias_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_bias_samples</span><span class="p">(</span><span class="n">estimates_arr</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>
-        <span class="n">status</span><span class="p">,</span> <span class="n">bias_p_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_status</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span>
+        <span class="n">bias_lower</span><span class="p">,</span> <span class="n">bias_upper</span> <span class="o">=</span> <span class="n">percentile_interval</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ValidationResult</span><span class="p">(</span>
             <span class="n">method</span><span class="o">=</span><span class="s2">&quot;OLSWithControls&quot;</span><span class="p">,</span>
-            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">overall</span><span class="p">,</span>
+            <span class="n">bias_status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+            <span class="n">coverage_status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">coverage</span><span class="p">,</span>
             <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
             <span class="n">mse</span><span class="o">=</span><span class="n">mse</span><span class="p">,</span>
             <span class="n">coverage</span><span class="o">=</span><span class="n">coverage</span><span class="p">,</span>
-            <span class="n">ci_lower</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)),</span>
-            <span class="n">ci_upper</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">)),</span>
+            <span class="n">ci_lower</span><span class="o">=</span><span class="n">bias_lower</span><span class="p">,</span>
+            <span class="n">ci_upper</span><span class="o">=</span><span class="n">bias_upper</span><span class="p">,</span>
             <span class="n">n_simulations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">,</span>
             <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
             <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
@@ -629,16 +631,18 @@
                 <span class="s2">&quot;dgp_true_effect&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
                 <span class="s2">&quot;dgp_confounding&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">confounding_strength</span><span class="p">,</span>
                 <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="s2">&quot;bias_ci_level&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
                 <span class="s2">&quot;estimator&quot;</span><span class="p">:</span> <span class="s2">&quot;OLSWithControls&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;controls_used&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="p">},</span>
             <span class="n">bias_p_value</span><span class="o">=</span><span class="n">bias_p_value</span><span class="p">,</span>
+            <span class="n">coverage_p_value</span><span class="o">=</span><span class="n">coverage_p_value</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate bias: E[θ̂] - θ₀&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">estimates</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_effect</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">estimates</span> <span class="o">-</span> <span class="n">true_effect</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_mse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate mean squared error: E[(θ̂ - θ₀)²]&quot;&quot;&quot;</span>
@@ -650,37 +654,14 @@
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">covers</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_bias_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bootstrap samples of bias for hypothesis testing&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample independent estimates for the percentile interval on mean bias.&quot;&quot;&quot;</span>
         <span class="n">n_bootstrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bootstrap_config</span><span class="o">.</span><span class="n">n_bootstrap_bias</span>
+        <span class="n">simulation_errors</span> <span class="o">=</span> <span class="n">estimates</span> <span class="o">-</span> <span class="n">true_effect</span>
         <span class="n">bias_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">):</span>
-            <span class="n">sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">estimates</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">bias_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_effect</span>
-        <span class="k">return</span> <span class="n">bias_samples</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_determine_status</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">bias_samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">alpha_test</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determine validation status using t-test for bias&quot;&quot;&quot;</span>
-        <span class="n">mean_bias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span>
-        <span class="n">se_bias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">))</span>
-
-        <span class="k">if</span> <span class="n">se_bias</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">t_stat</span> <span class="o">=</span> <span class="n">mean_bias</span> <span class="o">/</span> <span class="n">se_bias</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-            <span class="n">bias_p_value</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">t_stat</span><span class="p">),</span> <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">bias_p_value</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">mean_bias</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.0</span>
-
-        <span class="n">status</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">bias_p_value</span> <span class="o">&lt;</span> <span class="mf">0.01</span><span class="p">:</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;FAIL&quot;</span>
-        <span class="k">elif</span> <span class="n">bias_p_value</span> <span class="o">&lt;</span> <span class="n">alpha_test</span><span class="p">:</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;WARNING&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;PASS&quot;</span>
-
-        <span class="k">return</span> <span class="n">status</span><span class="p">,</span> <span class="n">bias_p_value</span></div>
+            <span class="n">sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">simulation_errors</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">simulation_errors</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">bias_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bias_samples</span></div>
 
 </pre></div>
 

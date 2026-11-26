@@ -311,35 +311,14 @@
                 <article class="bd-article">
                   
   <h1>Source code for dml_ts.validation.lasso_diagnostic</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Diagnostic module for investigating 401(k) Lasso mismatch.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Stability diagnostics for the companion 401(k) eligibility fit.</span>
 
-<span class="sd">Analyzes the -44.4% difference between published and replicated Lasso ATE estimates</span>
-<span class="sd">in Chernozhukov et al. (2018) 401(k) study.</span>
-
-<span class="sd">Problem:</span>
-<span class="sd">    - Published ATE: $9,580</span>
-<span class="sd">    - Our ATE: $5,330 (-44.4% difference)</span>
-<span class="sd">    - SE: $6,930 (130% of point estimate - extremely wide!)</span>
-<span class="sd">    - CI: $-8,253 to $18,913 (spans $27,167)</span>
-
-<span class="sd">Diagnostic Goals:</span>
-<span class="sd">    1. Bootstrap distribution analysis (convergence, outliers, normality)</span>
-<span class="sd">    2. Hyperparameter sensitivity (cv_folds, max_iter)</span>
-<span class="sd">    3. Cross-fitting seed analysis (random_state variability)</span>
-<span class="sd">    4. Implementation configuration comparison with published paper</span>
-
-<span class="sd">Usage:</span>
-<span class="sd">    Requires the real 401(k) dataset (downloaded via ``doubleml.fetch_401K``)</span>
-<span class="sd">    and many econml DML fits, so the example is skipped under doctest.</span>
-
-<span class="sd">    &gt;&gt;&gt; from dml_ts.validation.lasso_diagnostic import LassoDiagnostic  # doctest: +SKIP</span>
-<span class="sd">    &gt;&gt;&gt; diagnostic = LassoDiagnostic(random_state=42)  # doctest: +SKIP</span>
-<span class="sd">    &gt;&gt;&gt; results = diagnostic.run_comprehensive_diagnostic()  # doctest: +SKIP</span>
-<span class="sd">    &gt;&gt;&gt; bool(results.bootstrap_diagnostic.converged)  # doctest: +SKIP</span>
-<span class="sd">    True</span>
-<span class="sd">    &gt;&gt;&gt; float(round(results.seed_sensitivity.cv_ate, 2))  # doctest: +SKIP</span>
-<span class="sd">    0.35</span>
+<span class="sd">The companion lasso uses a single fivefold partition, cross-validated nuisance</span>
+<span class="sd">penalties and linearly heterogeneous effects. Its default inputs include the</span>
+<span class="sd">wealth measures nifa and tw. Chernozhukov et al. (2018), Table 2, Panel B,</span>
+<span class="sd">report $8,187 for the fivefold homogeneous partially linear coefficient with</span>
+<span class="sd">rigorous lasso, aggregated across 100 partitions. The diagnostics here measure</span>
+<span class="sd">sensitivity to resampling, tuning and seeds within the companion specification.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
@@ -349,6 +328,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._bootstrap_folds</span><span class="w"> </span><span class="kn">import</span> <span class="n">original_fold_ids</span><span class="p">,</span> <span class="n">resampled_folds</span>
 
 
 <div class="viewcode-block" id="BootstrapDiagnosticResult">
@@ -400,7 +381,7 @@
 <span class="sd">        std_errors: Array of standard errors for each parameter value</span>
 <span class="sd">        sensitivity_score: Coefficient of variation (std/mean) of ATE estimates</span>
 <span class="sd">        is_sensitive: Whether ATE is sensitive to this parameter (CV &gt; 0.1)</span>
-<span class="sd">        recommended_value: Recommended parameter value based on stability</span>
+<span class="sd">        recommended_value: Candidate with the smallest reported ATE standard error</span>
 <span class="sd">        metadata: Additional analysis info</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -451,13 +432,13 @@
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.ComprehensiveDiagnosticResult">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ComprehensiveDiagnosticResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Comprehensive diagnostic results for 401(k) Lasso mismatch.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Results of the 401(k) lasso stability checks.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        bootstrap_diagnostic: Bootstrap distribution analysis</span>
 <span class="sd">        hyperparameter_sensitivity: Dict of sensitivity analyses (cv_folds, max_iter)</span>
 <span class="sd">        seed_sensitivity: Cross-fitting seed analysis</span>
-<span class="sd">        root_cause_analysis: Identified root cause(s) of mismatch</span>
+<span class="sd">        root_cause_analysis: Summary of the observed diagnostic signals</span>
 <span class="sd">        recommendations: List of recommendations for fixing or documenting issue</span>
 <span class="sd">        timestamp: When diagnostic was performed</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -474,10 +455,7 @@
 <div class="viewcode-block" id="LassoDiagnostic">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.lasso_diagnostic.LassoDiagnostic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LassoDiagnostic</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Diagnostic tool for investigating 401(k) Lasso mismatch.</span>
-
-<span class="sd">    Performs comprehensive diagnostic analysis to explain the -44.4% difference</span>
-<span class="sd">    between published and replicated Lasso ATE estimates.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Diagnose sensitivity of the companion lasso eligibility estimate.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        data_path: Path to 401(k) dataset (optional, loads from doubleml if None)</span>
@@ -513,9 +491,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_Y</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_T</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">=</span> <span class="kc">None</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -561,16 +539,14 @@
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
 
         <span class="c1"># Outcome</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_Y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;net_tfa&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;net_tfa&quot;</span><span class="p">])</span>
 
         <span class="c1"># Treatment (e401 eligibility)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_T</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;e401&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;e401&quot;</span><span class="p">])</span>
 
-        <span class="c1"># Controls (exclude outcome and treatments)</span>
-        <span class="c1"># FIXED (Issue C5): Include all 11 published covariates (removed &#39;nifa&#39;, &#39;tw&#39; from exclusion)</span>
-        <span class="c1"># Published design: age, inc, fsize, educ, male, db, marr, twoearn, pira, hown</span>
+        <span class="c1"># The companion adds nifa and tw to the published nine controls.</span>
         <span class="n">control_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;net_tfa&quot;</span><span class="p">,</span> <span class="s2">&quot;e401&quot;</span><span class="p">,</span> <span class="s2">&quot;p401&quot;</span><span class="p">]]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">control_vars</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">control_vars</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X</span></div>
 
@@ -580,11 +556,11 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">analyze_bootstrap_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BootstrapDiagnosticResult</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Analyze bootstrap distribution of Lasso ATE estimates.</span>
 
-<span class="sd">        Performs bootstrap resampling to check:</span>
-<span class="sd">        - Distribution convergence</span>
-<span class="sd">        - Normality (Shapiro-Wilk test)</span>
-<span class="sd">        - Outlier detection (&gt;3 SD from mean)</span>
-<span class="sd">        - CI stability</span>
+<span class="sd">        This pairs bootstrap holds a fivefold, treatment-stratified partition of</span>
+<span class="sd">        the original household records fixed. Every resampled copy inherits its</span>
+<span class="sd">        household&#39;s fold. The output describes variability of the refitted</span>
+<span class="sd">        effect, conditional on that partition. In EconML 0.16 the two penalties</span>
+<span class="sd">        are selected using these folds across the whole bootstrap sample.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            n_bootstrap: Number of bootstrap samples</span>
@@ -605,12 +581,14 @@
 <span class="sd">            23</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoCV</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoCV</span><span class="p">,</span> <span class="n">LogisticRegressionCV</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running bootstrap distribution analysis (B=</span><span class="si">{</span><span class="n">n_bootstrap</span><span class="si">}</span><span class="s2">)...&quot;</span><span class="p">)</span>
 
         <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_data</span><span class="p">()</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+        <span class="n">original_fold</span> <span class="o">=</span> <span class="n">original_fold_ids</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span> <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">n_arms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
 
         <span class="n">ate_estimates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
 
@@ -624,21 +602,22 @@
             <span class="n">T_boot</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">boot_idx</span><span class="p">]</span>
             <span class="n">X_boot</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">boot_idx</span><span class="p">,</span> <span class="p">:]</span>
 
-            <span class="c1"># Fit Lasso DML</span>
-            <span class="n">model_y</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
-            <span class="c1"># FIXED (Issue C2): Use logistic regression for binary treatment</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegressionCV</span>
+            <span class="n">folds</span> <span class="o">=</span> <span class="n">resampled_folds</span><span class="p">(</span><span class="n">original_fold</span><span class="p">,</span> <span class="n">boot_idx</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">T_boot</span><span class="p">[</span><span class="n">train</span><span class="p">])</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">n_arms</span> <span class="k">for</span> <span class="n">train</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">folds</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Bootstrap draw </span><span class="si">{</span><span class="n">b</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> lacks a treatment arm in a household training fold&quot;</span>
+                <span class="p">)</span>
 
+            <span class="n">model_y</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
             <span class="n">model_t</span> <span class="o">=</span> <span class="n">LogisticRegressionCV</span><span class="p">(</span>
-                <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;saga&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span>
+                <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;saga&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span>
             <span class="p">)</span>
 
-            <span class="c1"># FIXED (Issue C2): discrete_treatment=True for binary treatment</span>
             <span class="n">dml</span> <span class="o">=</span> <span class="n">LinearDML</span><span class="p">(</span>
                 <span class="n">model_y</span><span class="o">=</span><span class="n">model_y</span><span class="p">,</span>
                 <span class="n">model_t</span><span class="o">=</span><span class="n">model_t</span><span class="p">,</span>
                 <span class="n">discrete_treatment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                <span class="n">cv</span><span class="o">=</span><span class="n">folds</span><span class="p">,</span>
                 <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -669,9 +648,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Mean ATE: $</span><span class="si">{</span><span class="n">mean_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Std ATE: $</span><span class="si">{</span><span class="n">std_ate</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  95% CI: ($</span><span class="si">{</span><span class="n">ci_lower</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">, $</span><span class="si">{</span><span class="n">ci_upper</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Normality: </span><span class="si">{</span><span class="n">is_normal</span><span class="si">}</span><span class="s2"> (p=</span><span class="si">{</span><span class="n">normality_pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Shapiro-Wilk p: </span><span class="si">{</span><span class="n">normality_pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Outliers: </span><span class="si">{</span><span class="n">n_outliers</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_bootstrap</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n_outliers</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n_bootstrap</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Converged: </span><span class="si">{</span><span class="n">converged</span><span class="si">}</span><span class="s2"> (CV=</span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cv_running</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Last 100 cumulative means: CV=</span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cv_running</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">BootstrapDiagnosticResult</span><span class="p">(</span>
             <span class="n">ate_estimates</span><span class="o">=</span><span class="n">ate_estimates</span><span class="p">,</span>
@@ -689,6 +668,8 @@
                 <span class="s2">&quot;cv_running_mean&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">cv_running</span><span class="p">),</span>
                 <span class="s2">&quot;outlier_threshold&quot;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
                 <span class="s2">&quot;normality_test&quot;</span><span class="p">:</span> <span class="s2">&quot;Shapiro-Wilk&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;resampling_unit&quot;</span><span class="p">:</span> <span class="s2">&quot;original household row&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;folds&quot;</span><span class="p">:</span> <span class="s2">&quot;five fixed stratified original-household folds&quot;</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">)</span></div>
 
@@ -791,9 +772,9 @@
             <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
 
             <span class="c1"># Extract ATE and SE</span>
-            <span class="n">ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dml</span><span class="o">.</span><span class="n">effect</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-            <span class="n">ci_lower</span><span class="p">,</span> <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">dml</span><span class="o">.</span><span class="n">effect_interval</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
-            <span class="n">se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">ci_upper</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">ci_lower</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="mf">1.96</span><span class="p">))</span>
+            <span class="n">inference</span> <span class="o">=</span> <span class="n">dml</span><span class="o">.</span><span class="n">ate_inference</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">ate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">inference</span><span class="o">.</span><span class="n">mean_point</span><span class="p">))</span>
+            <span class="n">se</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">inference</span><span class="o">.</span><span class="n">stderr_mean</span><span class="p">))</span>
 
             <span class="n">ate_estimates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ate</span>
             <span class="n">std_errors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">se</span>
@@ -806,12 +787,12 @@
         <span class="n">sensitivity_score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">std_ate</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mean_ate</span><span class="p">))</span> <span class="k">if</span> <span class="n">mean_ate</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="n">is_sensitive</span> <span class="o">=</span> <span class="n">sensitivity_score</span> <span class="o">&gt;</span> <span class="mf">0.1</span>
 
-        <span class="c1"># Recommend value with minimum variance</span>
+        <span class="c1"># Descriptive minimum of the fitted standard errors across tested settings.</span>
         <span class="n">recommended_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">std_errors</span><span class="p">)</span>
         <span class="n">recommended_value</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">recommended_idx</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Sensitivity: </span><span class="si">{</span><span class="n">sensitivity_score</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="s1">&#39;HIGH&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">is_sensitive</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;LOW&#39;</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Recommended </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">recommended_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2"> with smallest fitted SE: </span><span class="si">{</span><span class="n">recommended_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">HyperparameterSensitivityResult</span><span class="p">(</span>
             <span class="n">parameter_name</span><span class="o">=</span><span class="n">parameter</span><span class="p">,</span>
@@ -854,7 +835,8 @@
 <span class="sd">            0.35</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">econml.dml</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearDML</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoCV</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LassoCV</span><span class="p">,</span> <span class="n">LogisticRegressionCV</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">StratifiedKFold</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Analyzing seed sensitivity (</span><span class="si">{</span><span class="n">n_seeds</span><span class="si">}</span><span class="s2"> seeds)...&quot;</span><span class="p">)</span>
 
@@ -867,21 +849,19 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seed</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">random_states</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Testing random_state=</span><span class="si">{</span><span class="n">seed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-            <span class="n">model_y</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
-            <span class="c1"># FIXED (Issue C2): Use logistic regression for binary treatment</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegressionCV</span>
+            <span class="n">model_y</span> <span class="o">=</span> <span class="n">LassoCV</span><span class="p">(</span><span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
 
             <span class="n">model_t</span> <span class="o">=</span> <span class="n">LogisticRegressionCV</span><span class="p">(</span>
-                <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;saga&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span>
+                <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;saga&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span>
             <span class="p">)</span>
 
-            <span class="c1"># FIXED (Issue C2): discrete_treatment=True for binary treatment</span>
+            <span class="n">splitter</span> <span class="o">=</span> <span class="n">StratifiedKFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">))</span>
             <span class="n">dml</span> <span class="o">=</span> <span class="n">LinearDML</span><span class="p">(</span>
                 <span class="n">model_y</span><span class="o">=</span><span class="n">model_y</span><span class="p">,</span>
                 <span class="n">model_t</span><span class="o">=</span><span class="n">model_t</span><span class="p">,</span>
                 <span class="n">discrete_treatment</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="n">cv</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">splitter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">T</span><span class="p">)),</span>
+                <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="n">dml</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
@@ -914,6 +894,8 @@
             <span class="n">is_stable</span><span class="o">=</span><span class="n">is_stable</span><span class="p">,</span>
             <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
                 <span class="s2">&quot;n_seeds&quot;</span><span class="p">:</span> <span class="n">n_seeds</span><span class="p">,</span>
+                <span class="s2">&quot;learner_seed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">,</span>
+                <span class="s2">&quot;fold_design&quot;</span><span class="p">:</span> <span class="s2">&quot;5 shuffled treatment-stratified folds&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;stability_threshold&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">)</span></div>
@@ -924,13 +906,13 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">run_comprehensive_diagnostic</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">n_bootstrap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">n_seeds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ComprehensiveDiagnosticResult</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run complete diagnostic analysis for 401(k) Lasso mismatch.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the bootstrap, tuning and split-sensitivity diagnostics.</span>
 
 <span class="sd">        Performs:</span>
 <span class="sd">        1. Bootstrap distribution analysis</span>
 <span class="sd">        2. Hyperparameter sensitivity (cv_folds, max_iter)</span>
 <span class="sd">        3. Cross-fitting seed analysis</span>
-<span class="sd">        4. Root cause identification</span>
+<span class="sd">        4. Summary of observed diagnostic signals</span>
 <span class="sd">        5. Recommendations</span>
 
 <span class="sd">        Args:</span>
@@ -976,12 +958,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="c1"># 4. Root cause analysis</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;PHASE 4: Root Cause Analysis&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;PHASE 4: Diagnostic Findings&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
         <span class="n">root_cause</span><span class="p">,</span> <span class="n">recommendations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_analyze_root_cause</span><span class="p">(</span>
             <span class="n">bootstrap_result</span><span class="p">,</span> <span class="n">hyperparameter_results</span><span class="p">,</span> <span class="n">seed_result</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Root Cause: </span><span class="si">{</span><span class="n">root_cause</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Diagnostic findings: </span><span class="si">{</span><span class="n">root_cause</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">(</span><span class="s2">&quot;Recommendations:&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">recommendations</span><span class="p">:</span>
@@ -1004,7 +986,7 @@
         <span class="n">hyperparameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HyperparameterSensitivityResult</span><span class="p">],</span>
         <span class="n">seed</span><span class="p">:</span> <span class="n">SeedSensitivityResult</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Identify root cause of mismatch from diagnostic results.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarize the observed diagnostic signals and corresponding checks.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            bootstrap: Bootstrap distribution analysis</span>
@@ -1019,13 +1001,15 @@
 
         <span class="c1"># Check bootstrap convergence</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">bootstrap</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
-            <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Bootstrap distribution not converged&quot;</span><span class="p">)</span>
+            <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;CV of the last 100 cumulative bootstrap means reaches 1%&quot;</span><span class="p">)</span>
             <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Increase bootstrap samples (current: </span><span class="si">{</span><span class="n">bootstrap</span><span class="o">.</span><span class="n">n_bootstrap</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
         <span class="c1"># Check normality</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">bootstrap</span><span class="o">.</span><span class="n">is_normal</span><span class="p">:</span>
-            <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Bootstrap distribution non-normal (heavy tails or skewness)&quot;</span><span class="p">)</span>
-            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Consider robust standard errors or percentile bootstrap CIs&quot;</span><span class="p">)</span>
+            <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Shapiro-Wilk rejects normality of the bootstrap estimates at 5%&quot;</span><span class="p">)</span>
+            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;Inspect the shape of the reported percentile bootstrap distribution&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Check outliers</span>
         <span class="k">if</span> <span class="n">bootstrap</span><span class="o">.</span><span class="n">has_outliers</span><span class="p">:</span>
@@ -1033,7 +1017,9 @@
                 <span class="sa">f</span><span class="s2">&quot;Bootstrap distribution has </span><span class="si">{</span><span class="n">bootstrap</span><span class="o">.</span><span class="n">n_outliers</span><span class="si">}</span><span class="s2"> outliers &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bootstrap</span><span class="o">.</span><span class="n">n_outliers</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">bootstrap</span><span class="o">.</span><span class="n">n_bootstrap</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span>
             <span class="p">)</span>
-            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Investigate and potentially remove outlier samples&quot;</span><span class="p">)</span>
+            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;Inspect input rows and convergence for the extreme resampled fits&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Check hyperparameter sensitivity</span>
         <span class="n">sensitive_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">hyperparameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">is_sensitive</span><span class="p">]</span>
@@ -1041,7 +1027,9 @@
             <span class="n">causes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;High sensitivity to hyperparameters: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sensitive_params</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">sensitive_params</span><span class="p">:</span>
                 <span class="n">rec_value</span> <span class="o">=</span> <span class="n">hyperparameters</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">.</span><span class="n">recommended_value</span>
-                <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Use </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">rec_value</span><span class="si">}</span><span class="s2"> for stability&quot;</span><span class="p">)</span>
+                <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Report all tested </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2"> values; </span><span class="si">{</span><span class="n">rec_value</span><span class="si">}</span><span class="s2"> gave the smallest fitted SE&quot;</span>
+                <span class="p">)</span>
 
         <span class="c1"># Check seed stability</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">seed</span><span class="o">.</span><span class="n">is_stable</span><span class="p">:</span>
@@ -1053,13 +1041,7 @@
 
         <span class="c1"># Synthesize root cause</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">causes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">root_cause</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;No obvious diagnostic issues found. Mismatch likely due to &quot;</span>
-                <span class="s2">&quot;implementation differences between published paper and EconML &quot;</span>
-                <span class="s2">&quot;(e.g., Lasso solver, convergence criteria, cross-fitting procedure).&quot;</span>
-            <span class="p">)</span>
-            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Document mismatch as acceptable implementation variation&quot;</span><span class="p">)</span>
-            <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Focus on Random Forest replication (MATCH status)&quot;</span><span class="p">)</span>
+            <span class="n">root_cause</span> <span class="o">=</span> <span class="s2">&quot;All assessed stability diagnostics met their configured thresholds.&quot;</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">causes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">root_cause</span> <span class="o">=</span> <span class="n">causes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1069,7 +1051,7 @@
         <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="s2">&quot;Compare Lasso solver and convergence settings with published implementation&quot;</span>
         <span class="p">)</span>
-        <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Consider flagging Lasso as limitation and relying on RF validation&quot;</span><span class="p">)</span>
+        <span class="n">recommendations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Report the fitted effect model, covariates and split design.&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">root_cause</span><span class="p">,</span> <span class="n">recommendations</span></div>
 

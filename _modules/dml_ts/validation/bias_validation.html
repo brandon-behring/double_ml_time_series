@@ -315,17 +315,19 @@
 
 <span class="sd">Validates DML estimator bias, MSE, and confidence interval coverage</span>
 <span class="sd">through repeated Monte Carlo draws from a known DGP. Uses EconML&#39;s</span>
-<span class="sd">LinearDML with bootstrap-based hypothesis tests for statistical and</span>
-<span class="sd">practical significance.</span>
+<span class="sd">LinearDML with a one-sample t-test for mean simulation error and a</span>
+<span class="sd">bootstrap percentile interval for bias.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">NamedTuple</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span><span class="p">,</span> <span class="n">parallel_config</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.stats.multitest</span><span class="w"> </span><span class="kn">import</span> <span class="n">multipletests</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation._simulation_inference</span><span class="w"> </span><span class="kn">import</span> <span class="n">bias_p_value</span><span class="p">,</span> <span class="n">percentile_interval</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.dgp_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">DGPGenerator</span><span class="p">,</span> <span class="n">DGPResult</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dml_ts.validation.validation_result</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationResult</span>
 
@@ -375,6 +377,143 @@
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown correction_method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">. Use &#39;bonferroni&#39;, &#39;holm&#39;, or &#39;none&#39;&quot;</span><span class="p">)</span>
 
 
+<span class="n">Status</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">,</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">]</span>
+
+<span class="c1"># Simulation errors below sqrt(eps) of the true effect cannot be told from rounding.</span>
+<span class="n">_ROUNDING_RATIO</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="SimulationVerdicts">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bias_validation.SimulationVerdicts">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SimulationVerdicts</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="n">bias</span><span class="p">:</span> <span class="n">Status</span>
+    <span class="n">coverage</span><span class="p">:</span> <span class="n">Status</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">overall</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Status</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;FAIL&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;FAIL&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;WARNING&quot;</span> <span class="k">if</span> <span class="s2">&quot;WARNING&quot;</span> <span class="ow">in</span> <span class="bp">self</span> <span class="k">else</span> <span class="s2">&quot;PASS&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="classify_bias_and_coverage">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bias_validation.classify_bias_and_coverage">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">classify_bias_and_coverage</span><span class="p">(</span>
+    <span class="n">bias</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">p_bias</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">coverage</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">nominal</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">p_coverage</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">alpha_test</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">correction_method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span> <span class="s2">&quot;holm&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span>
+    <span class="n">practical_epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationVerdicts</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Classify mean bias and interval calibration at familywise significance levels.&quot;&quot;&quot;</span>
+    <span class="n">p_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">p_bias</span><span class="p">,</span> <span class="n">p_coverage</span><span class="p">]</span>
+    <span class="n">bias_rejected</span><span class="p">,</span> <span class="n">coverage_rejected</span> <span class="o">=</span> <span class="n">_corrected_rejections</span><span class="p">(</span>
+        <span class="n">p_values</span><span class="p">,</span> <span class="n">alpha_test</span><span class="p">,</span> <span class="n">correction_method</span>
+    <span class="p">)</span>
+    <span class="n">strict_bias</span> <span class="o">=</span> <span class="n">_corrected_rejections</span><span class="p">(</span><span class="n">p_values</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">correction_method</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">bias_status</span><span class="p">:</span> <span class="n">Status</span> <span class="o">=</span> <span class="s2">&quot;PASS&quot;</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.15</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">practical_epsilon</span> <span class="ow">and</span> <span class="n">strict_bias</span><span class="p">):</span>
+        <span class="n">bias_status</span> <span class="o">=</span> <span class="s2">&quot;FAIL&quot;</span>
+    <span class="k">elif</span> <span class="n">bias_rejected</span><span class="p">:</span>
+        <span class="n">bias_status</span> <span class="o">=</span> <span class="s2">&quot;WARNING&quot;</span>
+
+    <span class="n">coverage_status</span><span class="p">:</span> <span class="n">Status</span> <span class="o">=</span> <span class="s2">&quot;PASS&quot;</span>
+    <span class="k">if</span> <span class="n">coverage_rejected</span><span class="p">:</span>
+        <span class="n">coverage_status</span> <span class="o">=</span> <span class="s2">&quot;FAIL&quot;</span> <span class="k">if</span> <span class="n">coverage</span> <span class="o">&lt;</span> <span class="n">nominal</span> <span class="k">else</span> <span class="s2">&quot;WARNING&quot;</span>
+    <span class="k">return</span> <span class="n">SimulationVerdicts</span><span class="p">(</span><span class="n">bias_status</span><span class="p">,</span> <span class="n">coverage_status</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="assess_simulation_draws">
+<a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bias_validation.assess_simulation_draws">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">assess_simulation_draws</span><span class="p">(</span>
+    <span class="n">simulation_errors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">ci_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">nominal</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">alpha_test</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">correction_method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span> <span class="s2">&quot;holm&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span>
+    <span class="n">practical_epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SimulationVerdicts</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Judge the bias and the interval coverage of one estimator across independent draws.</span>
+
+<span class="sd">    The DML validator and the six baselines share this path. The bias test is the</span>
+<span class="sd">    one-sample t-test of ``bias_p_value`` on one signed error per draw. The coverage test</span>
+<span class="sd">    is the exact binomial test of the number of intervals that contain ``true_effect``</span>
+<span class="sd">    against ``nominal``. Both p-values go to ``classify_bias_and_coverage``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        simulation_errors: Estimate minus truth, one per independent draw, ``(R,)``.</span>
+<span class="sd">        ci_bounds: Lower and upper interval endpoints per draw, ``(R, 2)``.</span>
+<span class="sd">        true_effect: The effect the intervals should contain.</span>
+<span class="sd">        nominal: Nominal coverage of the intervals, for example 0.95.</span>
+<span class="sd">        alpha_test: Familywise significance level of the two tests.</span>
+<span class="sd">        correction_method: Multiple-testing correction across the two tests.</span>
+<span class="sd">        practical_epsilon: Absolute bias from which a strict rejection is a FAIL.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``(verdicts, bias_p_value, coverage_p_value)``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``true_effect`` is not finite or ``nominal`` is not in (0, 1); if</span>
+<span class="sd">            there is not one error and one interval per draw; if an interval holds a NaN</span>
+<span class="sd">            or has its endpoints out of order; if every error is at the rounding level of</span>
+<span class="sd">            the true effect (a simulation without noise leaves the tests nothing to judge);</span>
+<span class="sd">            or if the bias test is degenerate (see ``bias_p_value``).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Unbiased estimates whose intervals are too short: the bias verdict passes and</span>
+<span class="sd">        the coverage verdict fails, so the estimator fails.</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; errors = np.linspace(-1.0, 1.0, 200)</span>
+<span class="sd">        &gt;&gt;&gt; narrow = np.column_stack([errors - 0.25, errors + 0.25])</span>
+<span class="sd">        &gt;&gt;&gt; verdicts, p_bias, p_coverage = assess_simulation_draws(errors, narrow, 0.0, 0.95)</span>
+<span class="sd">        &gt;&gt;&gt; verdicts.bias, verdicts.coverage, verdicts.overall</span>
+<span class="sd">        (&#39;PASS&#39;, &#39;FAIL&#39;, &#39;FAIL&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">true_effect</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;true_effect must be finite, got </span><span class="si">{</span><span class="n">true_effect</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">nominal</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nominal coverage must be in (0, 1), got </span><span class="si">{</span><span class="n">nominal</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">simulation_errors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ci_bounds</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">errors</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">bounds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Expected one simulation error and one confidence interval per independent draw&quot;</span>
+        <span class="p">)</span>
+    <span class="c1"># With a noise-free generator an exact estimator leaves errors of order 1e-15. A t-test</span>
+    <span class="c1"># and a coverage count on rounding residue fail it, so that case is refused instead.</span>
+    <span class="n">largest</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">errors</span><span class="p">)))</span> <span class="k">if</span> <span class="n">errors</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="k">if</span> <span class="n">true_effect</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">largest</span> <span class="o">&lt;=</span> <span class="n">_ROUNDING_RATIO</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">true_effect</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Degenerate assessment: every simulation error is at the rounding level of the &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;true effect (largest |error| </span><span class="si">{</span><span class="n">largest</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">, true effect </span><span class="si">{</span><span class="n">true_effect</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">). &quot;</span>
+            <span class="s2">&quot;The simulation has no noise for the bias and coverage tests to judge.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">p_bias</span> <span class="o">=</span> <span class="n">bias_p_value</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">bounds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Per-draw intervals must have ordered endpoints and contain no NaN&quot;</span><span class="p">)</span>
+    <span class="n">covered</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">((</span><span class="n">bounds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">true_effect</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">true_effect</span> <span class="o">&lt;=</span> <span class="n">bounds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])))</span>
+    <span class="n">p_coverage</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stats</span><span class="o">.</span><span class="n">binomtest</span><span class="p">(</span><span class="n">covered</span><span class="p">,</span> <span class="n">errors</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">nominal</span><span class="p">)</span><span class="o">.</span><span class="n">pvalue</span><span class="p">)</span>
+    <span class="n">verdicts</span> <span class="o">=</span> <span class="n">classify_bias_and_coverage</span><span class="p">(</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errors</span><span class="p">)),</span>
+        <span class="n">p_bias</span><span class="p">,</span>
+        <span class="n">covered</span> <span class="o">/</span> <span class="n">errors</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+        <span class="n">nominal</span><span class="p">,</span>
+        <span class="n">p_coverage</span><span class="p">,</span>
+        <span class="n">alpha_test</span><span class="p">,</span>
+        <span class="n">correction_method</span><span class="p">,</span>
+        <span class="n">practical_epsilon</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">verdicts</span><span class="p">,</span> <span class="n">p_bias</span><span class="p">,</span> <span class="n">p_coverage</span></div>
+
+
+
 <div class="viewcode-block" id="BiasValidation">
 <a class="viewcode-back" href="../../../api/validation.html#dml_ts.validation.bias_validation.BiasValidation">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BiasValidation</span><span class="p">:</span>
@@ -392,9 +531,13 @@
 <span class="sd">        random_state: Random seed for reproducibility</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; # Production runs use n_simulations=1000; shrunk here so the</span>
-<span class="sd">        &gt;&gt;&gt; # example stays fast. The per-seed status is stochastic, so we</span>
-<span class="sd">        &gt;&gt;&gt; # assert the recovered bias is finite rather than a fixed label.</span>
+<span class="sd">        This numerical example requires the optional EconML dependency.</span>
+<span class="sd">        The test runs ten fits and checks that the recovered bias is finite.</span>
+
+<span class="sd">        &gt;&gt;&gt; from importlib.util import find_spec</span>
+<span class="sd">        &gt;&gt;&gt; if find_spec(&quot;econml&quot;) is None:</span>
+<span class="sd">        ...     import pytest</span>
+<span class="sd">        ...     pytest.skip(&quot;Install the full extra to run the EconML validation example&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; validator = BiasValidation(n_simulations=10, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt; dgp = DGPGenerator(n=150, p=5, true_effect=2.0, random_state=42)</span>
 <span class="sd">        &gt;&gt;&gt; result = validator.validate(dgp)</span>
@@ -409,6 +552,7 @@
         <span class="n">n_simulations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
         <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize validation method.</span>
 
@@ -416,11 +560,15 @@
 <span class="sd">            n_simulations: Number of Monte Carlo simulations</span>
 <span class="sd">            alpha: Significance level (default: 0.05 for 95% CI)</span>
 <span class="sd">            random_state: Random seed for reproducibility</span>
+<span class="sd">            n_jobs: Number of independent DML fits to run concurrently</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">n_simulations</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_simulations must be positive, got </span><span class="si">{</span><span class="n">n_simulations</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;</span> <span class="n">alpha</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;alpha must be between 0 and 1 (exclusive), got </span><span class="si">{</span><span class="n">alpha</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_jobs</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_jobs must be positive&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span> <span class="o">=</span> <span class="n">n_simulations</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
@@ -439,6 +587,10 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            ValidationResult with status and metrics</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Degenerate bias test requires at least two independent simulation errors&quot;</span>
+            <span class="p">)</span>
         <span class="c1"># Step 1: Run Monte Carlo simulations (now returns estimates + CI bounds)</span>
         <span class="n">estimates</span><span class="p">,</span> <span class="n">ci_bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_simulations</span><span class="p">(</span><span class="n">dgp</span><span class="p">)</span>
 
@@ -447,24 +599,24 @@
         <span class="n">mse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_mse</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>
         <span class="n">coverage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_coverage</span><span class="p">(</span><span class="n">ci_bounds</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>  <span class="c1"># Use actual DML CIs</span>
 
-        <span class="c1"># Step 3: Calculate bootstrap CI for bias (needed for t-test)</span>
-        <span class="n">bias_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_bias_samples</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>
-        <span class="n">ci_lower</span><span class="p">,</span> <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">,</span> <span class="p">[</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">97.5</span><span class="p">])</span>
-
-        <span class="c1"># Step 4: Determine status using statistical hypothesis tests</span>
-        <span class="n">status</span><span class="p">,</span> <span class="n">bias_p_value</span><span class="p">,</span> <span class="n">coverage_p_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_statistical_status</span><span class="p">(</span>
-            <span class="n">bias_samples</span><span class="p">,</span> <span class="n">coverage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">ci_bounds</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span>
+        <span class="c1"># Step 3: Test mean error across the independent simulations.</span>
+        <span class="n">verdicts</span><span class="p">,</span> <span class="n">p_bias</span><span class="p">,</span> <span class="n">coverage_p_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assess_draws</span><span class="p">(</span>
+            <span class="n">estimates</span> <span class="o">-</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span> <span class="n">coverage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">,</span> <span class="n">ci_bounds</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span>
         <span class="p">)</span>
+
+        <span class="c1"># Step 4: Bootstrap the percentile interval for bias.</span>
+        <span class="n">bias_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_bias_samples</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">)</span>
+        <span class="n">ci_lower</span><span class="p">,</span> <span class="n">ci_upper</span> <span class="o">=</span> <span class="n">percentile_interval</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
 
         <span class="c1"># Create result (with CI bounds and p-values stored for analysis)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">ValidationResult</span><span class="p">(</span>
             <span class="n">method</span><span class="o">=</span><span class="s2">&quot;BiasValidation&quot;</span><span class="p">,</span>
-            <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">overall</span><span class="p">,</span>
             <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
             <span class="n">mse</span><span class="o">=</span><span class="n">mse</span><span class="p">,</span>
             <span class="n">coverage</span><span class="o">=</span><span class="n">coverage</span><span class="p">,</span>
-            <span class="n">ci_lower</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">ci_lower</span><span class="p">),</span>
-            <span class="n">ci_upper</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">ci_upper</span><span class="p">),</span>
+            <span class="n">ci_lower</span><span class="o">=</span><span class="n">ci_lower</span><span class="p">,</span>
+            <span class="n">ci_upper</span><span class="o">=</span><span class="n">ci_upper</span><span class="p">,</span>
             <span class="n">n_simulations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">,</span>
             <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
             <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
@@ -473,6 +625,8 @@
                 <span class="s2">&quot;dgp_true_effect&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">true_effect</span><span class="p">,</span>
                 <span class="s2">&quot;dgp_confounding&quot;</span><span class="p">:</span> <span class="n">dgp</span><span class="o">.</span><span class="n">confounding_strength</span><span class="p">,</span>
                 <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="s2">&quot;nominal_coverage&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="s2">&quot;bias_ci_level&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
                 <span class="s2">&quot;estimator&quot;</span><span class="p">:</span> <span class="s2">&quot;LinearDML&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;model_y&quot;</span><span class="p">:</span> <span class="s2">&quot;RandomForestRegressor(n_estimators=100)&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;model_t&quot;</span><span class="p">:</span> <span class="s2">&quot;RandomForestClassifier(n_estimators=100)&quot;</span><span class="p">,</span>  <span class="c1"># FIXED: Classifier for binary treatment</span>
@@ -483,9 +637,11 @@
             <span class="n">ci_estimates</span><span class="o">=</span><span class="n">ci_bounds</span><span class="p">,</span>
             <span class="n">point_estimates</span><span class="o">=</span><span class="n">estimates</span><span class="p">,</span>
             <span class="c1"># Store statistical test results (Phase 0 Day 2)</span>
-            <span class="n">bias_p_value</span><span class="o">=</span><span class="n">bias_p_value</span><span class="p">,</span>
+            <span class="n">bias_p_value</span><span class="o">=</span><span class="n">p_bias</span><span class="p">,</span>
             <span class="n">coverage_p_value</span><span class="o">=</span><span class="n">coverage_p_value</span><span class="p">,</span>
-            <span class="n">statistical_status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+            <span class="n">statistical_status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">overall</span><span class="p">,</span>
+            <span class="n">bias_status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+            <span class="n">coverage_status</span><span class="o">=</span><span class="n">verdicts</span><span class="o">.</span><span class="n">coverage</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">result</span></div>
@@ -503,28 +659,25 @@
 <span class="sd">                - estimates: Point estimates (n_simulations,)</span>
 <span class="sd">                - ci_bounds: CI bounds (n_simulations, 2) where [:, 0] = lower, [:, 1] = upper</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">estimates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">)</span>
-        <span class="n">ci_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">):</span>
-            <span class="c1"># Generate data</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
-
-            <span class="c1"># Estimate effect with DML (returns point estimate + CI)</span>
-            <span class="n">estimate</span><span class="p">,</span> <span class="n">ci_lower</span><span class="p">,</span> <span class="n">ci_upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_effect</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-
-            <span class="n">estimates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">estimate</span>
-            <span class="n">ci_bounds</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">ci_lower</span>
-            <span class="n">ci_bounds</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">ci_upper</span>
-
-        <span class="k">return</span> <span class="n">estimates</span><span class="p">,</span> <span class="n">ci_bounds</span>
+        <span class="c1"># One producer advances the DGP&#39;s RNG in the original order. Only</span>
+        <span class="c1"># independent fits are dispatched. Results retain their input order.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">fits</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_estimate_effect</span><span class="p">(</span><span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">())</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">parallel_config</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;loky&quot;</span><span class="p">,</span> <span class="n">inner_max_num_threads</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">fits</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">))(</span>
+                    <span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_estimate_effect</span><span class="p">)(</span><span class="n">dgp</span><span class="o">.</span><span class="n">generate</span><span class="p">())</span>
+                    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_simulations</span><span class="p">)</span>
+                <span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">values</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_estimate_effect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">DGPResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Estimate treatment effect using Double Machine Learning (DML).</span>
 
-<span class="sd">        Uses LinearDML from EconML with RandomForestRegressor models</span>
-<span class="sd">        for both outcome and treatment. Cross-fitting with 5 folds.</span>
+<span class="sd">        Uses five-fold EconML LinearDML with a forest regressor for the</span>
+<span class="sd">        outcome and a forest classifier for the binary treatment.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data: Generated dataset</span>
@@ -539,13 +692,13 @@
         <span class="n">model_y</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span>
             <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
         <span class="p">)</span>
-        <span class="c1"># FIXED (Issue C2): Use classifier for binary treatment (86.5% bias reduction)</span>
+        <span class="c1"># Estimate assignment probabilities with a classifier for the binary-treatment API.</span>
         <span class="n">model_t</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
             <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span>
         <span class="p">)</span>
 
         <span class="c1"># DML estimator with cross-fitting</span>
-        <span class="c1"># FIXED (Issue C2): discrete_treatment=True for binary treatment (DML orthogonal score theory)</span>
+        <span class="c1"># Tell EconML that the binary assignment has two discrete levels.</span>
         <span class="n">dml</span> <span class="o">=</span> <span class="n">LinearDML</span><span class="p">(</span>
             <span class="n">model_y</span><span class="o">=</span><span class="n">model_y</span><span class="p">,</span>
             <span class="n">model_t</span><span class="o">=</span><span class="n">model_t</span><span class="p">,</span>
@@ -576,7 +729,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Bias</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">estimates</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_effect</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">estimates</span> <span class="o">-</span> <span class="n">true_effect</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_mse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -595,8 +748,8 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate confidence interval coverage rate using DML&#39;s actual CIs.</span>
 
-<span class="sd">        This is the CORRECT implementation - uses DML&#39;s own confidence intervals</span>
-<span class="sd">        from effect_interval(), not reconstructed from Monte Carlo standard error.</span>
+<span class="sd">        Each row contains the marginal ATE interval endpoints returned by</span>
+<span class="sd">        ``ate_interval()`` for one independent DML fit.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ci_bounds: CI bounds from DML (n_simulations, 2) where [:, 0] = lower, [:, 1] = upper</span>
@@ -615,7 +768,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate bootstrap samples of bias.</span>
 
-<span class="sd">        Used for computing t-test for H₀: E[bias] = 0.</span>
+<span class="sd">        Used for the percentile confidence interval for mean simulation bias.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            estimates: Treatment effect estimates</span>
@@ -625,17 +778,18 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Array of bias samples from bootstrap resampling</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">simulation_errors</span> <span class="o">=</span> <span class="n">estimates</span> <span class="o">-</span> <span class="n">true_effect</span>
         <span class="n">bias_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bootstrap</span><span class="p">):</span>
-            <span class="n">sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">estimates</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">bias_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="o">-</span> <span class="n">true_effect</span>
+            <span class="n">sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">simulation_errors</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">simulation_errors</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">bias_samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">bias_samples</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_determine_statistical_status</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">bias_samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">simulation_errors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">coverage</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">n_simulations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">ci_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -644,130 +798,50 @@
         <span class="n">correction_method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span> <span class="s2">&quot;holm&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span>
         <span class="n">practical_epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">],</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Determine validation status using statistical hypothesis tests with practical significance.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the overall verdict and raw bias/coverage p-values.&quot;&quot;&quot;</span>
+        <span class="n">verdicts</span><span class="p">,</span> <span class="n">p_bias</span><span class="p">,</span> <span class="n">p_coverage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assess_draws</span><span class="p">(</span>
+            <span class="n">simulation_errors</span><span class="p">,</span>
+            <span class="n">coverage</span><span class="p">,</span>
+            <span class="n">n_simulations</span><span class="p">,</span>
+            <span class="n">ci_bounds</span><span class="p">,</span>
+            <span class="n">true_effect</span><span class="p">,</span>
+            <span class="n">alpha_test</span><span class="p">,</span>
+            <span class="n">correction_method</span><span class="p">,</span>
+            <span class="n">practical_epsilon</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">verdicts</span><span class="o">.</span><span class="n">overall</span><span class="p">,</span> <span class="n">p_bias</span><span class="p">,</span> <span class="n">p_coverage</span>
 
-<span class="sd">        ⚠️ CRITICAL FIX (2025-11-14): Added multiple testing correction to control familywise error rate.</span>
-<span class="sd">        ⚠️ PHASE 0 FIX (2025-11-22): Added practical significance threshold to distinguish statistical</span>
-<span class="sd">        from practical significance (resolves C2 test failures after classifier fix).</span>
-
-<span class="sd">        **Statistical vs Practical Significance**:</span>
-<span class="sd">        - **Statistical**: Is bias detectably different from zero? (t-test p-value)</span>
-<span class="sd">        - **Practical**: Is bias large enough to matter? (|bias| &gt; epsilon)</span>
-
-<span class="sd">        After C2 fix (using RandomForestClassifier for binary treatment), bias reduced by 86.5%.</span>
-<span class="sd">        Remaining bias (~0.004) is statistically significant but practically negligible.</span>
-
-<span class="sd">        **Status Determination Rules** (thresholds shown for the Bonferroni</span>
-<span class="sd">        default; rejection boundaries are inclusive, per statsmodels):</span>
-<span class="sd">        1. If |bias| &gt; 0.15 → FAIL (unacceptably large bias)</span>
-<span class="sd">        2. If |bias| &lt; practical_epsilon (default 0.1):</span>
-<span class="sd">           - If bias_p ≤ 0.025 or coverage_p ≤ 0.025 → WARNING (tiny bias, statistically detectable)</span>
-<span class="sd">           - Else → PASS (tiny bias, not significant)</span>
-<span class="sd">        3. If 0.1 &lt;= |bias| &lt;= 0.15:</span>
-<span class="sd">           - If bias_p ≤ 0.005 or coverage_p ≤ 0.005 → FAIL (moderate bias, highly significant)</span>
-<span class="sd">           - Elif bias_p ≤ 0.025 or coverage_p ≤ 0.025 → WARNING</span>
-<span class="sd">           - Else → PASS</span>
-
-<span class="sd">        **Multiple Testing Correction**: Controls familywise error rate ≤ 5%</span>
-<span class="sd">        (rejections delegated to ``statsmodels.stats.multitest.multipletests``)</span>
-<span class="sd">        - **bonferroni** (default): reject H_i if p_i ≤ α / k</span>
-<span class="sd">        - **holm** (step-down): reject sorted p_(i) while p_(i) ≤ α / (k - i + 1);</span>
-<span class="sd">          less conservative than Bonferroni per hypothesis. With k=2 and the</span>
-<span class="sd">          any-rejection status rule below, Holm and Bonferroni yield the SAME</span>
-<span class="sd">          status (Holm&#39;s first step is exactly the Bonferroni threshold) —</span>
-<span class="sd">          only per-hypothesis rejections differ.</span>
-<span class="sd">        - **none** (no correction): ONLY for single-method validation</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            bias_samples: Bootstrap samples of bias</span>
-<span class="sd">            coverage: Observed coverage rate</span>
-<span class="sd">            n_simulations: Number of simulations (for binomial test)</span>
-<span class="sd">            ci_bounds: CI bounds array (n_simulations, 2)</span>
-<span class="sd">            true_effect: True treatment effect</span>
-<span class="sd">            alpha_test: Significance level for hypothesis tests (default 0.05)</span>
-<span class="sd">            correction_method: Multiple testing correction (&quot;bonferroni&quot;, &quot;holm&quot;, &quot;none&quot;)</span>
-<span class="sd">            practical_epsilon: Practical significance threshold (default 0.1 = 5% of typical effect)</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            (status, bias_p_value, coverage_p_value)</span>
-
-<span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; # Tiny bias (-0.004) is statistically significant but practically negligible.</span>
-<span class="sd">            &gt;&gt;&gt; # (Samples must carry variance: a zero-variance bootstrap now raises.)</span>
-<span class="sd">            &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">            &gt;&gt;&gt; validator = BiasValidation(n_simulations=1000, random_state=42)</span>
-<span class="sd">            &gt;&gt;&gt; ci_bounds = np.tile([1.9, 2.1], (1000, 1))</span>
-<span class="sd">            &gt;&gt;&gt; status, p_bias, p_cov = validator._determine_statistical_status(</span>
-<span class="sd">            ...     bias_samples=-0.004 + np.linspace(-0.05, 0.05, 1000),</span>
-<span class="sd">            ...     coverage=1.0,</span>
-<span class="sd">            ...     n_simulations=1000,</span>
-<span class="sd">            ...     ci_bounds=ci_bounds,</span>
-<span class="sd">            ...     true_effect=2.0,</span>
-<span class="sd">            ...     practical_epsilon=0.1</span>
-<span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; status  # &quot;WARNING&quot; (not &quot;FAIL&quot;) because |bias| &lt; 0.1</span>
-<span class="sd">            &#39;WARNING&#39;</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Calculate p-values for both tests</span>
-        <span class="c1"># Test 1: t-test for H₀: E[bias] = 0</span>
-        <span class="n">mean_bias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span>
-        <span class="n">se_bias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">))</span>
-
-        <span class="c1"># Zero bootstrap SE means every simulation produced an identical bias, so the</span>
-        <span class="c1"># bias t-test is undefined. Fabricating p=0 (or p=1) here would silently drive</span>
-        <span class="c1"># the PASS/WARNING/FAIL verdict from a degenerate input (the #7/#9 bug class).</span>
-        <span class="k">if</span> <span class="n">se_bias</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_assess_draws</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">simulation_errors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">coverage</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">n_simulations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">ci_bounds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">true_effect</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">alpha_test</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">correction_method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span> <span class="s2">&quot;holm&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span>
+        <span class="n">practical_epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SimulationVerdicts</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the bias test and exact binomial coverage test to independent draws.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">simulation_errors</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">n_simulations</span><span class="p">,)</span> <span class="ow">or</span> <span class="n">ci_bounds</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">n_simulations</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Degenerate bias bootstrap: zero variance across </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="s2">&quot;resamples (every simulation returned an identical bias). The bias &quot;</span>
-                <span class="s2">&quot;t-test is undefined; refusing to fabricate a p-value. Check the &quot;</span>
-                <span class="s2">&quot;DGP/estimator for missing sampling variability.&quot;</span>
+                <span class="s2">&quot;Expected one simulation error and one confidence interval per independent draw&quot;</span>
             <span class="p">)</span>
-        <span class="n">t_stat</span> <span class="o">=</span> <span class="n">mean_bias</span> <span class="o">/</span> <span class="n">se_bias</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bias_samples</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="n">bias_p_value</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">t_stat</span><span class="p">),</span> <span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">))</span>
-
-        <span class="c1"># Test 2: Binomial test for H₀: coverage = 0.95</span>
-        <span class="n">n_cover</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">ci_bounds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">true_effect</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">true_effect</span> <span class="o">&lt;=</span> <span class="n">ci_bounds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
-        <span class="c1"># Use two-sided binomial test (scipy.stats.binomtest in newer scipy versions)</span>
-        <span class="n">binom_result</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">binomtest</span><span class="p">(</span><span class="n">n_cover</span><span class="p">,</span> <span class="n">n_simulations</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;two-sided&quot;</span><span class="p">)</span>
-        <span class="n">coverage_p_value</span> <span class="o">=</span> <span class="n">binom_result</span><span class="o">.</span><span class="n">pvalue</span>
-
-        <span class="c1"># Apply multiple testing correction (k=2 tests: bias t-test, coverage</span>
-        <span class="c1"># binomial). Per-hypothesis rejections delegate to statsmodels (#14);</span>
-        <span class="c1"># the tri-state status below only consumes &quot;any rejection&quot;, under</span>
-        <span class="c1"># which Holm and Bonferroni coincide for k=2 — Holm&#39;s first step IS</span>
-        <span class="c1"># the Bonferroni threshold.</span>
-        <span class="n">p_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">bias_p_value</span><span class="p">,</span> <span class="n">coverage_p_value</span><span class="p">]</span>
-        <span class="n">significant</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">_corrected_rejections</span><span class="p">(</span><span class="n">p_values</span><span class="p">,</span> <span class="n">alpha_test</span><span class="p">,</span> <span class="n">correction_method</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
-        <span class="n">highly_significant</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">_corrected_rejections</span><span class="p">(</span><span class="n">p_values</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">correction_method</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
-
-        <span class="c1"># Determine status with PRACTICAL + STATISTICAL significance</span>
-        <span class="n">abs_bias</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">mean_bias</span><span class="p">)</span>
-
-        <span class="c1"># Rule 1: Unacceptably large bias always FAILS</span>
-        <span class="k">if</span> <span class="n">abs_bias</span> <span class="o">&gt;</span> <span class="mf">0.15</span><span class="p">:</span>
-            <span class="n">status</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span> <span class="s2">&quot;FAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;FAIL&quot;</span>
-
-        <span class="c1"># Rule 2: Tiny bias (&lt; practical_epsilon) - distinguish statistical from practical</span>
-        <span class="k">elif</span> <span class="n">abs_bias</span> <span class="o">&lt;</span> <span class="n">practical_epsilon</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">highly_significant</span> <span class="ow">or</span> <span class="n">significant</span><span class="p">:</span>
-                <span class="c1"># Statistically detectable but practically negligible → WARNING</span>
-                <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;WARNING&quot;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;PASS&quot;</span>
-
-        <span class="c1"># Rule 3: Moderate bias (0.1 to 0.15) - stricter evaluation</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">highly_significant</span><span class="p">:</span>
-                <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;FAIL&quot;</span>  <span class="c1"># Moderate bias + highly significant = unacceptable</span>
-            <span class="k">elif</span> <span class="n">significant</span><span class="p">:</span>
-                <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;WARNING&quot;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;PASS&quot;</span>
-
-        <span class="k">return</span> <span class="n">status</span><span class="p">,</span> <span class="n">bias_p_value</span><span class="p">,</span> <span class="n">coverage_p_value</span></div>
+        <span class="n">verdicts</span><span class="p">,</span> <span class="n">p_bias</span><span class="p">,</span> <span class="n">p_coverage</span> <span class="o">=</span> <span class="n">assess_simulation_draws</span><span class="p">(</span>
+            <span class="n">simulation_errors</span><span class="p">,</span>
+            <span class="n">ci_bounds</span><span class="p">,</span>
+            <span class="n">true_effect</span><span class="p">,</span>
+            <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">alpha_test</span><span class="p">,</span>
+            <span class="n">correction_method</span><span class="p">,</span>
+            <span class="n">practical_epsilon</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">covered</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">((</span><span class="n">ci_bounds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">true_effect</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">true_effect</span> <span class="o">&lt;=</span> <span class="n">ci_bounds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">coverage</span><span class="p">,</span> <span class="n">covered</span> <span class="o">/</span> <span class="n">n_simulations</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Reported coverage disagrees with the per-draw intervals&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">verdicts</span><span class="p">,</span> <span class="n">p_bias</span><span class="p">,</span> <span class="n">p_coverage</span></div>
 
 </pre></div>
 
