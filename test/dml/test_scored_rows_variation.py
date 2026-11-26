@@ -4,11 +4,14 @@
 time-series split is trained on and never scored. A treatment that varies in that block alone
 is constant on every scored row. Its "residual" there is the error of the nuisance prediction,
 so the slope rests on how the two nuisance fits err together and not on held-out variation.
-Over 400 draws of a switch at row 60 of 400 the fit returned estimates centered on the true
-slope with a standard error about 30% too small (coverage 84.5%).
+Over 400 draws of a switch at row 60 of 400, with ridge learners and ``n_lags=0``, the fit
+returned estimates centered on the true slope with a standard error about 30% too small
+(coverage 84.5%). With the class default ``n_lags=1`` the same design gave a mean estimate of
+2.2 with a standard deviation of 3.0 and 52.8% coverage.
 
-The check refuses exact constancy and nothing else. A treatment that varies on a few scored
-rows is fitted, and its interval can be far too short; that is a separate defect (#81).
+The check refuses numerical constancy, a spread within rounding of the level, and nothing
+else. A treatment that varies on a few scored rows is fitted, and its interval can be far too
+short; that is a separate defect (#81).
 """
 
 import numpy as np
@@ -49,13 +52,31 @@ def test_treatment_that_varies_only_before_the_scored_rows_is_refused(learner, l
 
 @pytest.mark.tier2
 @pytest.mark.parametrize("strategy", STRATEGIES)
-@pytest.mark.parametrize("n_lags", [0, 1])
-def test_the_refusal_holds_for_every_split_strategy_and_with_lagged_controls(n_lags, strategy):
-    """``n_lags=1`` is the class default; the scored rows differ between the strategies."""
+@pytest.mark.parametrize("gap", [0, 5])
+@pytest.mark.parametrize("n_lags", [0, 1, 3])
+def test_the_refusal_holds_for_every_split_strategy_gap_and_number_of_lags(n_lags, gap, strategy):
+    """``n_lags=1`` is the class default.
+
+    With five splits of 400 rows, ``time_series_split`` and ``purged_cv`` score rows 70 to 399
+    and ``blocked_cv`` rows 66 to 395; lags move the first scored row by at most five.
+    """
     treatment = (np.arange(400) < 60).astype(float)
     y, x = temporal_draw(treatment)
     with pytest.raises(ValueError, match="Treatment has no variation on the scored rows"):
-        temporal_fit(y, treatment, x, n_lags=n_lags, cv_strategy=strategy)
+        temporal_fit(y, treatment, x, n_lags=n_lags, gap=gap, cv_strategy=strategy)
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize(("n_lags", "scored"), [(0, 330), (1, 330), (5, 325)])
+def test_the_refusal_counts_every_row_once(n_lags, scored):
+    """The scored rows and "the other" rows add up to the rows that were passed."""
+    treatment = (np.arange(400) < 60).astype(float)
+    y, x = temporal_draw(treatment)
+    counts = (
+        rf"on the {scored} rows that have an out-of-fold prediction\. The other {400 - scored} rows"
+    )
+    with pytest.raises(ValueError, match=counts):
+        temporal_fit(y, treatment, x, n_lags=n_lags)
 
 
 @pytest.mark.tier2
@@ -131,11 +152,12 @@ def test_panel_whose_only_treated_units_are_never_scored_is_refused(treated_unit
     It hands unit-major rows to the same time-series split, so the block that is trained on
     and never scored is the first UNITS. With the treatment varying only in those units and
     exactly zero elsewhere, the fit returned 17.2 with a standard error of 5.7 (one unit) and
-    4.4 with 1.0 (five units) for a true slope of 2.
+    4.3 with 3.2 (five units) for a true slope of 2.
 
-    The refusal reaches PanelDML only when the demeaned treatment is exactly constant on the
-    scored rows. A constant non-zero dose leaves rounding residue after demeaning and is
-    still fitted; how panels are split and checked belongs to the PanelDML redesign.
+    The refusal reaches PanelDML only where demeaning leaves the treatment numerically
+    constant on the scored rows: with unit effects in a balanced panel (the next two tests
+    mark what it does not reach). How panels are split and checked belongs to the PanelDML
+    redesign.
     """
     rng = np.random.default_rng(0)
     units, periods = 30, 10
@@ -146,6 +168,44 @@ def test_panel_whose_only_treated_units_are_never_scored_is_refused(treated_unit
     y = 2.0 * treatment + x[:, 1] + rng.standard_normal(units * periods)
     with pytest.raises(ValueError, match="Treatment has no variation on the scored rows"):
         PanelDML(model_y="ridge", model_t="ridge").fit(y, treatment, x, individual, period)
+
+
+def _panel_treated_in_the_first_unit(dose):
+    rng = np.random.default_rng(0)
+    units, periods = 30, 10
+    individual = np.repeat(np.arange(units), periods)
+    period = np.tile(np.arange(periods), units)
+    x = rng.standard_normal((units * periods, 2))
+    treatment = np.where(individual < 1, rng.standard_normal(units * periods), dose)
+    y = 2.0 * treatment + x[:, 1] + rng.standard_normal(units * periods)
+    return y, treatment, x, individual, period
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("dose", [0.1, 0.3, 1.7])
+def test_balanced_panel_with_a_constant_dose_outside_the_first_unit_is_refused(dose):
+    """Demeaning a constant dose leaves rounding residue, which counts as constant.
+
+    A check for exact constancy fitted these panels. In an unbalanced panel 129 of 200 such
+    doses are still fitted, because the residue there is not small beside what remains.
+    """
+    with pytest.raises(ValueError, match="Treatment has no variation on the scored rows"):
+        PanelDML(model_y="ridge", model_t="ridge").fit(*_panel_treated_in_the_first_unit(dose))
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("effects", ["time", "twoway"])
+def test_time_and_twoway_effects_are_outside_this_check(effects):
+    """This marks the boundary of the check, not a design that works.
+
+    Removing period means makes the treatment of the scored units vary with the first unit's
+    values, so it is not constant there and the panel is fitted: 4.50 and 4.43 with standard
+    errors of 1.58 and 1.56 for a true slope of 2, before this change and after it. The test
+    passes when the fit returns; it says nothing about the estimate.
+    """
+    panel = _panel_treated_in_the_first_unit(0.0)
+    result = PanelDML(model_y="ridge", model_t="ridge", fixed_effects=effects).fit(*panel)
+    assert np.isfinite(result.theta)
 
 
 @pytest.mark.tier2

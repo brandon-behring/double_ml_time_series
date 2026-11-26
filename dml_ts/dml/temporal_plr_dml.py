@@ -510,13 +510,14 @@ class TemporalPLRDML:
         # constant on all of them, its "residual" there is the error of the nuisance
         # prediction alone: the slope then rests on how the two nuisance fits err together
         # and not on any held-out variation, and its standard error is too small (#76).
-        # This refuses exact constancy only; a treatment that varies on a few scored rows
-        # is fitted, and its interval can be far too short (#81).
+        # This refuses numerical constancy only (a spread within rounding of the level); a
+        # treatment that varies on a few scored rows is fitted, and its interval can be far
+        # too short (#81).
         if is_numerically_constant(T_used):
             raise ValueError(
                 f"Treatment has no variation on the scored rows: the treatment is constant "
                 f"({T_used[0]:.6g}) on the {n_used} rows that have an out-of-fold prediction. "
-                f"The other {dropped_initial_rows} rows have none and are not scored, so "
+                f"The other {n_samples - n_used} rows have none and are not scored, so "
                 "variation there does not identify the effect"
             )
 

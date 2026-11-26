@@ -5,9 +5,20 @@ after ``df.sample(frac=1)`` it returned 1.82 where the arrays give 2.03. ``fwl_e
 ``robinson_estimator`` multiplied two residual ``Series`` that pandas aligned by label: with
 different labels on the outcome and the treatment they returned -0.15 for a slope of 2.
 
-The controls are not converted. A DataFrame or a sparse matrix reaches the nuisance model as
-it was given, which a first version of this change broke.
+The shared helper does not convert two-dimensional controls, which a first version of this
+change did. What each function then does with them is unchanged: ``robinson_estimator`` hands
+a DataFrame or a sparse matrix to the nuisance model as given; ``double_ml`` selects fold rows
+with ``X[rows]`` and so takes arrays and CSR or CSC matrices but not a DataFrame;
+``fwl_estimate`` builds a dense design from an array or a DataFrame of numbers.
+
+An object column is judged by its elements. NumPy and pandas cast a timezone-aware datetime,
+and an object array of ``np.timedelta64`` or ``np.complex128`` scalars, to floats without an
+error; a second version of this change returned 7,348 for such an outcome where the floats
+give 2.04.
 """
+
+import decimal
+import fractions
 
 import numpy as np
 import pandas as pd
@@ -20,7 +31,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 from dml_ts.dml import double_ml
-from dml_ts.dml._utils import as_validated_arrays, is_numerically_constant
+from dml_ts.dml._utils import _read_as_floats, as_validated_arrays, is_numerically_constant
 from dml_ts.dml.fwl import fwl_estimate
 from dml_ts.dml.robinson import robinson_estimator
 
@@ -119,6 +130,109 @@ def test_one_labelled_input_among_arrays_is_read_by_position(name):
     assert_allclose(SLOPES[name](df["y"].to_numpy(), df["t"], x), from_arrays, rtol=RTOL)
 
 
+@pytest.mark.tier2
+@pytest.mark.parametrize("name", sorted(SLOPES))
+def test_a_treatment_and_controls_that_disagree_are_refused_when_the_outcome_has_no_labels(name):
+    """The comparison is among the labelled inputs, whichever they are."""
+    df = frame()
+    shuffled = df.sample(frac=1, random_state=0)
+    with pytest.raises(ValueError, match="T and X carry different pandas indexes"):
+        SLOPES[name](df["y"].to_numpy(), df["t"], shuffled[["x0", "x1"]])
+
+
+LABELS = {
+    "dates": lambda n: pd.date_range("2020-01-01", periods=n, freq="D"),
+    "strings": lambda n: pd.Index([f"r{i:03d}" for i in range(n)]),
+    "repeated": lambda n: pd.Index(np.arange(n) % 7),
+    "two_levels": lambda n: pd.MultiIndex.from_arrays([np.arange(n) // 10, np.arange(n) % 10]),
+}
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("labels", sorted(LABELS))
+@pytest.mark.parametrize("name", sorted(SLOPES))
+def test_the_index_comparison_does_not_depend_on_the_kind_of_label(name, labels):
+    """Dates, strings, repeated labels and tuples: equal indexes pass, reordered ones do not."""
+    df = frame()
+    index = LABELS[labels](len(df))
+    y, t = df["y"].to_numpy(), df["t"].to_numpy()
+    x = df[["x0", "x1"]].to_numpy()
+    outcome, treatment = pd.Series(y, index=index), pd.Series(t, index=index)
+    assert_allclose(SLOPES[name](outcome, treatment, x), SLOPES[name](y, t, x), rtol=RTOL)
+    with pytest.raises(ValueError, match="Y and T carry different pandas indexes"):
+        SLOPES[name](outcome, treatment.iloc[::-1], x)
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("name", sorted(SLOPES))
+def test_equal_values_under_other_level_names_are_refused(name):
+    """(unit, period) against (period, unit) over a square panel: equal tuples, other rows.
+
+    ``Index.equals`` ignores names, so the two indexes compare equal although row ``i`` of
+    one is another observation than row ``i`` of the other.
+    """
+    rng = np.random.default_rng(8)
+    units = periods = 12
+    unit, period = np.repeat(np.arange(units), periods), np.tile(np.arange(periods), units)
+    x = rng.normal(size=(units * periods, 2))
+    t = x[:, 0] + rng.normal(size=units * periods)
+    y = 2 * t + x[:, 1] + rng.normal(size=units * periods)
+    by_unit = pd.MultiIndex.from_arrays([unit, period], names=["unit", "period"])
+    outcome = pd.Series(y, index=by_unit)
+    treatment = pd.Series(t, index=by_unit).swaplevel().sort_index()
+    assert outcome.index.equals(treatment.index)
+    with pytest.raises(ValueError, match=r"levels are named \['unit', 'period'\] and \['period'"):
+        SLOPES[name](outcome, treatment, x)
+    # One name against another on a single level is the same doubt.
+    with pytest.raises(ValueError, match=r"levels are named \['household'\] and \['week'\]"):
+        SLOPES[name](pd.Series(y).rename_axis("household"), pd.Series(t).rename_axis("week"), x)
+    # A named index beside an unnamed one with the same values is no disagreement.
+    reference = SLOPES[name](y, t, x)
+    assert_allclose(SLOPES[name](pd.Series(y).rename_axis("row"), pd.Series(t), x), reference)
+
+
+class _LabelsLikePandas:
+    """The index of a container that follows pandas without being pandas."""
+
+    def __init__(self, labels):
+        self.labels = list(labels)
+
+    def equals(self, other):
+        return self.labels == list(getattr(other, "labels", other))
+
+
+class _SeriesLikePandas:
+    def __init__(self, values, labels):
+        self.values, self.index = np.asarray(values, dtype=float), _LabelsLikePandas(labels)
+
+    def __array__(self, dtype=None, copy=None):
+        return self.values if dtype is None else self.values.astype(dtype)
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize("name", sorted(SLOPES))
+def test_an_index_is_whatever_can_be_compared_not_only_a_pandas_index(name):
+    """Containers that follow pandas carry labels too; the comparison must not skip them."""
+    df = frame()
+    shuffled = df.sample(frac=1, random_state=0)
+    x = df[["x0", "x1"]].to_numpy()
+    outcome = _SeriesLikePandas(df["y"], df.index)
+    reference = SLOPES[name](df["y"].to_numpy(), df["t"].to_numpy(), x)
+    assert_allclose(SLOPES[name](outcome, _SeriesLikePandas(df["t"], df.index), x), reference)
+    with pytest.raises(ValueError, match="Y and T carry different pandas indexes"):
+        SLOPES[name](outcome, _SeriesLikePandas(shuffled["t"], shuffled.index), x)
+
+
+@pytest.mark.tier1
+def test_the_refusal_names_the_safe_way_through_first():
+    """Aligning by label mispairs rows that were already in the same order under other labels."""
+    outcome = pd.Series([1.0, 2.0, 3.0], index=[10, 11, 12])
+    with pytest.raises(ValueError) as refusal:
+        as_validated_arrays(outcome, pd.Series([0.0, 1.0, 0.0]), np.ones((3, 1)))
+    message = str(refusal.value)
+    assert 0 < message.index(".to_numpy()") < message.index(".loc")
+
+
 # ---------------------------------------------------------------- values, not codes or ticks
 
 
@@ -154,7 +268,7 @@ def unreadable(kind, y, t):
         "string_treatment": (y, np.array(["a", "b"] * (len(t) // 2)), "T has dtype <U1"),
         "numeric_text": (pd.Series([str(v) for v in y], dtype=object), t, "Y holds text"),
         "text_categories": (y, pd.Categorical(["0", "1"] * (len(t) // 2)), "T holds text"),
-        "mixed_objects": (y, [None, object()] * (len(t) // 2), "T could not be read as a float"),
+        "mixed_objects": (y, [None, object()] * (len(t) // 2), "T holds object values"),
     }[kind]
 
 
@@ -197,6 +311,113 @@ def test_a_categorical_of_numbers_is_read_by_its_values_not_its_codes():
     assert T.tolist() == [10.0, 20.0, 20.0, 10.0]
 
 
+def object_column(kind, y):
+    """An outcome that NumPy or pandas would cast to floats although it is not a number."""
+    hours = np.round(y * 3600)
+    stamps = pd.Timestamp("2020-01-01", tz="UTC") + pd.to_timedelta(hours, unit="s")
+    return {
+        "tz_aware_series_s": (pd.Series(stamps).dt.as_unit("s"), "Timestamp"),
+        "tz_aware_series_ns": (pd.Series(stamps).dt.as_unit("ns"), "Timestamp"),
+        "tz_aware_index": (pd.DatetimeIndex(stamps), "Timestamp"),
+        "tz_aware_categorical": (pd.Series(pd.Categorical(stamps)), "Timestamp"),
+        "numpy_complex_objects": (
+            np.array([np.complex128(complex(v, 5.0)) for v in y], dtype=object),
+            "complex128",
+        ),
+        "python_complex_objects": (np.array([complex(v, 5.0) for v in y], dtype=object), "complex"),
+        "numpy_timedelta_objects": (
+            np.array([np.timedelta64(int(v), "ms") for v in hours], dtype=object),
+            "timedelta64",
+        ),
+        "numpy_datetime_objects": (
+            np.array([np.datetime64("2020-01-01") + np.timedelta64(i, "D") for i in range(len(y))])
+            .astype(object)
+            .astype("O"),
+            "date",
+        ),
+        "bytearray_objects": (
+            np.array([bytearray(repr(v).encode()) for v in y.tolist()] + [None], dtype=object)[:-1],
+            "bytearray",
+        ),
+        "memoryview_objects": (
+            np.array([memoryview(repr(v).encode()) for v in y.tolist()] + [None], dtype=object)[
+                :-1
+            ],
+            "memoryview",
+        ),
+        "not_a_time": (np.array([*y.tolist()[:-1], pd.NaT], dtype=object), "NaTType"),
+    }[kind]
+
+
+@pytest.mark.tier2
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "tz_aware_series_s",
+        "tz_aware_series_ns",
+        "tz_aware_index",
+        "tz_aware_categorical",
+        "numpy_complex_objects",
+        "python_complex_objects",
+        "numpy_timedelta_objects",
+        "numpy_datetime_objects",
+        "bytearray_objects",
+        "memoryview_objects",
+        "not_a_time",
+    ],
+)
+@pytest.mark.parametrize("name", sorted(SLOPES))
+def test_an_object_column_is_judged_by_its_elements(name, kind):
+    """What can be cast to floats is not thereby a number.
+
+    ``np.asarray(values, dtype=float)`` turns a timezone-aware datetime into ticks, drops the
+    imaginary part of ``np.complex128`` objects with a warning, and parses a ``bytearray``.
+    The unreworked functions raised on all of these.
+    """
+    df = frame()
+    y, t, x = df["y"].to_numpy(), df["t"].to_numpy(), df[["x0", "x1"]].to_numpy()
+    outcome, element = object_column(kind, y)
+    with pytest.raises(
+        ValueError, match=rf"^Y holds {element} values \(for example .*\), not real"
+    ):
+        SLOPES[name](outcome, t, x)
+    with pytest.raises(ValueError, match=rf"^T holds {element} values"):
+        SLOPES[name](y, outcome, x)
+
+
+@pytest.mark.tier1
+def test_real_numbers_in_an_object_column_are_read():
+    """The element check admits every real number, and nothing is lost on the way."""
+    mixed = [1, 2.5, True, np.float32(0.5), np.int8(-3), np.bool_(False), np.uint16(7)]
+    mixed += [decimal.Decimal("0.25"), fractions.Fraction(1, 8), None, float("nan")]
+    read = _read_as_floats("Y", np.array(mixed, dtype=object))
+    assert read[:9].tolist() == [1.0, 2.5, 1.0, 0.5, -3.0, 0.0, 7.0, 0.25, 0.125]
+    assert np.isnan(read[9:]).all()
+    assert _read_as_floats("T", np.array([3, 4], dtype=np.uint64)).tolist() == [3.0, 4.0]
+
+
+@pytest.mark.tier1
+def test_text_is_refused_wherever_it_stands_and_whatever_its_type():
+    with pytest.raises(ValueError, match=r"^Y holds text \(for example 'b'\)"):
+        _read_as_floats("Y", np.array([1.0, 2.0, "b", 4.0], dtype=object))
+    with pytest.raises(ValueError, match=r"^Y holds text \(for example b'7'\)"):
+        _read_as_floats("Y", np.array([1.0, b"7"], dtype=object))
+
+
+@pytest.mark.tier1
+def test_inputs_that_cannot_be_read_are_refused_by_name():
+    """A ragged list, a missing value NumPy cannot cast, and an integer too large for a float."""
+    with pytest.raises(ValueError, match="^Y could not be read as an array"):
+        _read_as_floats("Y", [[1.0, 2.0], [3.0]])
+    with pytest.raises(ValueError, match="^T could not be read as a float array"):
+        _read_as_floats("T", [1.0, pd.NA])
+    with pytest.raises(ValueError, match="^T could not be read as a float array"):
+        _read_as_floats("T", pd.Series([1.0, pd.NA], dtype=object))
+    with pytest.raises(ValueError, match="^Y could not be read as a float array"):
+        _read_as_floats("Y", [10**400, 1])
+    assert np.isnan(_read_as_floats("Y", [1.0, None])[1])
+
+
 @pytest.mark.tier1
 def test_a_mask_without_masked_entries_and_missing_values_are_read():
     """An unmasked masked array is its data; ``pd.NA`` is NaN for the finite checks to refuse."""
@@ -235,6 +456,32 @@ def test_robinson_hands_a_frame_of_controls_to_the_model_as_given():
     )
     result = robinson_estimator(df["y"], df["t"], controls, model=by_name)
     assert_allclose(result.theta, 2.0, atol=0.35)
+
+
+@pytest.mark.tier2
+def test_double_ml_does_not_yet_take_a_frame_of_controls():
+    """The present behaviour, pinned so that the documents cannot claim more.
+
+    ``double_ml`` selects fold rows with ``X[rows]``, which reads a DataFrame's columns by
+    label, so every frame of controls raises ``KeyError`` before a model sees it. This was so
+    before this change too. The pull request that carries the input rule to every estimator
+    selects rows by position; this test is then replaced by one that expects the arrays' result.
+    """
+    df = frame()
+    with pytest.raises(KeyError):
+        double_ml(df["y"], df["t"], df[["x0", "x1"]], model="ridge")
+    with pytest.raises(KeyError):
+        double_ml(df["y"].to_numpy(), df["t"].to_numpy(), df[["x0", "x1"]], model="ridge")
+
+
+@pytest.mark.tier2
+def test_fwl_estimate_does_not_take_sparse_controls():
+    """It builds a dense design; the refusal is NumPy's, from stacking the intercept column."""
+    df = frame()
+    with pytest.raises(ValueError):
+        fwl_estimate(
+            df["y"].to_numpy(), df["t"].to_numpy(), sparse.csr_matrix(df[["x0", "x1"]].to_numpy())
+        )
 
 
 @pytest.mark.tier2
@@ -325,3 +572,22 @@ def test_constancy_is_judged_the_same_at_every_scale(scale):
     assert not is_numerically_constant(varying)
     assert is_numerically_constant(np.full(50, 0.1 * scale))
     assert is_numerically_constant(scale * np.array([0.1 + 0.2, 0.3, 0.3, 0.1 + 0.2]))
+
+
+@pytest.mark.tier1
+def test_constancy_edge_cases():
+    """An empty array has nothing that varies; an infinite entry is not a constant level."""
+    assert is_numerically_constant(np.array([]))
+    assert not is_numerically_constant(np.array([1.0, np.inf]))
+    assert not is_numerically_constant(np.array([1.0, np.nan]))
+    assert is_numerically_constant(np.zeros(5))
+
+
+@pytest.mark.tier1
+def test_the_constancy_bound_grows_with_the_number_of_values():
+    """Rounding of a mean accumulates with the count: eight ulps apart is residue in 50 values."""
+    eps = np.finfo(float).eps
+    wobble = np.where(np.arange(50) % 2 == 0, 0.3, 0.3 * (1 + 8 * eps))
+    assert np.ptp(wobble) > 0
+    assert is_numerically_constant(wobble)
+    assert not is_numerically_constant(np.where(np.arange(50) % 2 == 0, 0.3, 0.3 * (1 + 1e-9)))
