@@ -315,11 +315,11 @@ class CausalMonitor:
         """
         Check for nuisance model degradation.
 
-        DML requires well-fitting nuisance models for valid inference.
-        Poor nuisance fit leads to biased treatment effects.
-
-        Note: This checks nuisance R², NOT treatment effect accuracy
-        (which is fundamentally unknowable).
+        Compares held-out R² with configurable predictive thresholds.
+        A known randomized assignment can have an optimal propensity R²
+        of zero. Choose thresholds appropriate to the assignment design.
+        Details report the decrease in R² points. A relative decrease
+        uses the absolute baseline magnitude and is undefined at zero.
 
         Args:
             r2_propensity: Current propensity model R² (or pseudo-R² for classification)
@@ -333,7 +333,7 @@ class CausalMonitor:
         # Use minimum of the two as the overall quality metric
         min_r2 = min(r2_propensity, r2_outcome)
 
-        details = {
+        details: dict[str, Any] = {
             "r2_propensity": float(r2_propensity),
             "r2_outcome": float(r2_outcome),
         }
@@ -344,7 +344,7 @@ class CausalMonitor:
             message = (
                 f"CRITICAL: Nuisance model fit very poor "
                 f"(min R²={min_r2:.2f} < {self.config.nuisance_r2_critical}). "
-                "DML estimates may be severely biased."
+                "Check prediction loss against the design-specific baseline."
             )
         elif min_r2 < self.config.nuisance_r2_warning:
             level = AlertLevel.WARNING
@@ -359,22 +359,23 @@ class CausalMonitor:
                 f"Nuisance fit OK (R² propensity={r2_propensity:.2f}, outcome={r2_outcome:.2f})"
             )
 
-        # Check relative degradation if baselines provided
-        if r2_propensity_baseline is not None:
-            prop_degradation = (r2_propensity_baseline - r2_propensity) / r2_propensity_baseline
-            details["propensity_degradation"] = float(prop_degradation)
-            if prop_degradation > 0.2:
+        # R² can be zero under random assignment and negative out of sample.
+        for name, current, baseline in (
+            ("propensity", r2_propensity, r2_propensity_baseline),
+            ("outcome", r2_outcome, r2_outcome_baseline),
+        ):
+            if baseline is None:
+                continue
+            decrease = float(baseline - current)
+            details[f"{name}_r2_decrease"] = decrease
+            relative = decrease / abs(baseline) if baseline != 0 else None
+            details[f"{name}_degradation"] = relative
+            if relative is not None and relative > 0.2:
                 if level == AlertLevel.OK:
                     level = AlertLevel.WARNING
-                message += f" Propensity degraded {prop_degradation:.1%} from baseline."
-
-        if r2_outcome_baseline is not None:
-            out_degradation = (r2_outcome_baseline - r2_outcome) / r2_outcome_baseline
-            details["outcome_degradation"] = float(out_degradation)
-            if out_degradation > 0.2:
-                if level == AlertLevel.OK:
-                    level = AlertLevel.WARNING
-                message += f" Outcome degraded {out_degradation:.1%} from baseline."
+                message += (
+                    f" {name.capitalize()} R² decreased by {relative:.1%} of baseline magnitude."
+                )
 
         return MonitoringResult(
             check_name="nuisance_degradation",

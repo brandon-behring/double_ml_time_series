@@ -281,6 +281,19 @@ class TestNuisanceDegradation:
         assert "propensity_degradation" in result.details
         assert result.details["propensity_degradation"] == pytest.approx(0.25, rel=0.01)
 
+    @pytest.mark.parametrize("role", ["propensity", "outcome"])
+    @pytest.mark.parametrize("baseline,relative", [(0, None), (-0.2, 0.5)])
+    def test_nonpositive_r2_baseline(self, role, baseline, relative):
+        current = baseline - 0.1
+        scores = {"r2_outcome": 0.8, "r2_propensity": 0.8}
+        scores[f"r2_{role}"] = current
+        result = CausalMonitor().check_nuisance_degradation(
+            **scores, **{f"r2_{role}_baseline": baseline}
+        )
+        assert result.details[f"{role}_r2_decrease"] == pytest.approx(0.1)
+        value = result.details[f"{role}_degradation"]
+        assert value is None if relative is None else value == pytest.approx(relative)
+
 
 class TestEffectStability:
     """Tests for effect stability monitoring."""

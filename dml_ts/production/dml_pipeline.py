@@ -23,10 +23,16 @@ import warnings
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
+from sklearn.base import clone, is_classifier
+from sklearn.linear_model import LogisticRegression, RidgeCV
+from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+
+from dml_ts.dml._utils import compute_r2, theta_via_fwl
+from dml_ts.dml.double_ml import _influence_function_se
 
 # Import our DML components
 try:
@@ -35,16 +41,11 @@ try:
         newey_west_se,
     )
 
-    from dml_ts.dml.double_ml import double_ml  # noqa: F401
-    from dml_ts.dml.temporal_plr_dml import TemporalPLRDML  # noqa: F401
-
     DML_AVAILABLE = True
 except ImportError as _import_error:
     DML_AVAILABLE = False
     warnings.warn(
-        f"DML/HAC components unavailable ({_import_error!r}); the demo "
-        "pipeline will fall back to NAIVE iid standard errors, which "
-        "understate uncertainty under autocorrelation.",
+        f"Temporal CV and HAC are unavailable ({_import_error!r}).",
         RuntimeWarning,
         stacklevel=2,
     )
@@ -65,7 +66,7 @@ class PipelineConfig:
         n_jobs: Parallel jobs for estimation
         random_state: Random seed for reproducibility
         model_registry_path: Path for model versioning
-        propensity_model: Model for treatment propensity
+        propensity_model: Classifier for 0/1 treatment, or regressor for numeric dose
         outcome_model: Model for outcome regression
         use_hac: Use HAC standard errors for time series
         hac_bandwidth: Bandwidth for HAC (None = Andrews data-driven selection)
@@ -73,7 +74,7 @@ class PipelineConfig:
         feature_columns: List of feature/covariate column names
         treatment_column: Treatment variable name
         outcome_column: Outcome variable name
-        time_column: Time index column name (for time series)
+        time_column: Enables forward splits on rows supplied in chronological order
         entity_column: Entity/panel identifier (for panel data)
     """
 
@@ -99,12 +100,12 @@ class PipelineResult:
     Result from a pipeline fit or predict operation.
 
     Attributes:
-        ate: Average Treatment Effect estimate
+        ate: Binary average treatment effect or continuous partially linear slope
         ate_se: Standard error of ATE
         ate_ci_lower: Lower bound of 95% CI
         ate_ci_upper: Upper bound of 95% CI
         cate: Conditional ATE (if computed)
-        nuisance_metrics: R² for propensity and outcome models
+        nuisance_metrics: Held-out R² for treatment and observed-arm outcome predictions
         monitoring_results: Results from causal monitoring
         model_version: Version ID of fitted model
         fit_timestamp: When model was fitted
@@ -139,7 +140,7 @@ class PipelineResult:
 
 class InsuranceDMLPipeline:
     """
-    Production DML pipeline for insurance/annuity pricing analysis.
+    Research DML pipeline for insurance/annuity pricing analysis.
 
     Integrates:
     - Feature transformation (scaling, encoding)
@@ -185,7 +186,7 @@ class InsuranceDMLPipeline:
         # Initialize components
         self._scaler: StandardScaler | None = None
         self._fitted = False
-        self._propensity_scores: np.ndarray | None = None
+        self._binary_treatment = False
         self._nuisance_models: dict[int, tuple[Any, Any]] | None = None
         self._ate: float | None = None
         self._ate_se: float | None = None
@@ -201,50 +202,6 @@ class InsuranceDMLPipeline:
         else:
             self._monitor = None
             self._scheduler = None
-
-        # Set default models if not provided
-        if self.config.propensity_model is None:
-            from sklearn.linear_model import LogisticRegressionCV
-
-            self.config.propensity_model = LogisticRegressionCV(cv=3, max_iter=1000)
-
-        if self.config.outcome_model is None:
-            from sklearn.linear_model import RidgeCV
-
-            self.config.outcome_model = RidgeCV(cv=3)
-
-    def _prepare_data(
-        self,
-        X: np.ndarray,
-        T: np.ndarray,
-        Y: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Prepare data for DML estimation.
-
-        Args:
-            X: Covariate matrix (n_samples, n_features)
-            T: Treatment vector (n_samples,)
-            Y: Outcome vector (n_samples,)
-
-        Returns:
-            Tuple of (X_scaled, T, Y) arrays
-        """
-        X = np.asarray(X)
-        T = np.asarray(T).flatten()
-        Y = np.asarray(Y).flatten()
-
-        if X.ndim == 1:
-            X = X.reshape(-1, 1)
-
-        # Fit or transform with scaler
-        if self._scaler is None:
-            self._scaler = StandardScaler()
-            X_scaled = self._scaler.fit_transform(X)
-        else:
-            X_scaled = self._scaler.transform(X)
-
-        return X_scaled, T, Y
 
     def _create_cross_validator(self, n_samples: int) -> TimeSeriesCrossValidator | Any:
         """
@@ -310,117 +267,111 @@ class InsuranceDMLPipeline:
         Returns:
             PipelineResult with estimates and diagnostics
         """
-        # Prepare data
-        X_scaled, T, Y = self._prepare_data(X, T, Y)
+        X = np.asarray(X, dtype=float)
+        T = np.asarray(T, dtype=float).reshape(-1)
+        Y = np.asarray(Y, dtype=float).reshape(-1)
+        if X.ndim == 1:
+            X = X.reshape(-1, 1)
+        if X.ndim != 2 or len(X) != len(T) or len(T) != len(Y):
+            raise ValueError("X, T and Y must have matching row counts.")
+        if not all(np.isfinite(values).all() for values in (X, T, Y)):
+            raise ValueError("X, T and Y must be finite.")
+        levels = np.unique(T)
+        if levels.size < 2:
+            raise ValueError("Treatment must vary across observations.")
+        binary = np.array_equal(levels, [0, 1])
+        if self.config.use_hac and not DML_AVAILABLE:
+            raise RuntimeError("use_hac=True requires temporalcv HAC components.")
+
+        treatment_learner = self.config.propensity_model
+        if treatment_learner is None:
+            treatment_learner = LogisticRegression(max_iter=1000) if binary else RidgeCV()
+        if binary and not hasattr(treatment_learner, "predict_proba"):
+            raise ValueError("The binary treatment model must provide predict_proba.")
+        if not binary and is_classifier(treatment_learner):
+            raise ValueError("A continuous treatment requires a regression model.")
+        outcome_learner = self.config.outcome_model
+        if outcome_learner is None:
+            outcome_learner = RidgeCV()
+        if is_classifier(outcome_learner):
+            raise ValueError("Use an outcome regressor to estimate conditional outcome means.")
+
         n_samples = len(T)
-
-        # Create cross-validator
-        cv = self._create_cross_validator(n_samples)
-
-        # Fit nuisance models and compute orthogonalized residuals
-        propensity_scores = np.zeros(n_samples)
-        outcome_predictions = np.zeros(n_samples)
-        self._nuisance_models = {}
-
+        fold_ids = np.full(n_samples, -1, dtype=int)
+        treatment_hat = np.full(n_samples, np.nan)
+        outcome_hat = np.full((n_samples, 2 if binary else 1), np.nan)
+        models = {}
         propensity_r2_list = []
         outcome_r2_list = []
+        cv = self._create_cross_validator(n_samples)
+        for fold, (train, test) in enumerate(cv.split(X)):
+            if binary and np.unique(T[train]).size != 2:
+                raise ValueError(f"Training fold {fold} needs observations in both treatment arms.")
+            prop_model = make_pipeline(StandardScaler(), clone(treatment_learner))
+            prop_model.fit(X[train], T[train])
+            treatment_hat[test] = self._predict_treatment(prop_model, X[test])
 
-        for fold_idx, (train_idx, test_idx) in enumerate(cv.split(X_scaled)):
-            X_train, X_test = X_scaled[train_idx], X_scaled[test_idx]
-            T_train, T_test = T[train_idx], T[test_idx]
-            Y_train, Y_test = Y[train_idx], Y[test_idx]
+            outcome_models = []
+            for column in range(outcome_hat.shape[1]):
+                rows = train[T[train] == column] if binary else train
+                out_model = make_pipeline(StandardScaler(), clone(outcome_learner))
+                out_model.fit(X[rows], Y[rows])
+                outcome_hat[test, column] = out_model.predict(X[test])
+                outcome_models.append(out_model)
+            if (
+                not np.isfinite(treatment_hat[test]).all()
+                or not np.isfinite(outcome_hat[test]).all()
+            ):
+                raise ValueError(f"Non-finite nuisance predictions in fold {fold}.")
+            observed_hat = (
+                outcome_hat[test, T[test].astype(int)] if binary else outcome_hat[test, 0]
+            )
+            fold_ids[test] = fold
+            propensity_r2_list.append(compute_r2(T[test], treatment_hat[test]))
+            outcome_r2_list.append(compute_r2(Y[test], observed_hat))
+            models[fold] = (prop_model, tuple(outcome_models) if binary else outcome_models[0])
 
-            # Clone and fit propensity model
-            from sklearn.base import clone
-
-            prop_model = clone(self.config.propensity_model)
-            out_model = clone(self.config.outcome_model)
-
-            # Fit propensity (treatment) model
-            if hasattr(prop_model, "predict_proba"):
-                prop_model.fit(X_train, T_train)
-                propensity_scores[test_idx] = prop_model.predict_proba(X_test)[:, 1]
-                # Pseudo-R² for classification
-                prop_r2 = prop_model.score(X_test, T_test)
-            else:
-                # Continuous treatment
-                prop_model.fit(X_train, T_train)
-                propensity_scores[test_idx] = prop_model.predict(X_test)
-                prop_r2 = prop_model.score(X_test, T_test)
-
-            # Fit outcome model (on control or full sample depending on setup)
-            out_model.fit(X_train, Y_train)
-            outcome_predictions[test_idx] = out_model.predict(X_test)
-            out_r2 = out_model.score(X_test, Y_test)
-
-            propensity_r2_list.append(prop_r2)
-            outcome_r2_list.append(out_r2)
-
-            # Store fitted models
-            self._nuisance_models[fold_idx] = (prop_model, out_model)
-
-        # Compute DML estimate
-        # Using simplified doubly-robust estimator
-        # theta = E[(Y - m(X)) / e(X) * T] + E[m(X)]
-        # For binary treatment:
-        # theta = mean((Y - Y_hat) * T / e_hat - (Y - Y_hat) * (1-T) / (1-e_hat))
-
-        # Clip propensity scores for stability
-        e_clipped = np.clip(propensity_scores, 0.01, 0.99)
-
-        # Residualized outcome
-        Y_residual = Y - outcome_predictions
-
-        # AIPW estimator for binary treatment
-        if len(np.unique(T)) <= 2:
-            # Binary treatment
-            treated_term = Y_residual * T / e_clipped
-            control_term = Y_residual * (1 - T) / (1 - e_clipped)
-            psi = treated_term - control_term
+        scored = fold_ids >= 0
+        y, treatment, m = Y[scored], T[scored], treatment_hat[scored]
+        n_used = len(y)
+        if n_used < 2:
+            raise ValueError("At least two held-out observations are required for inference.")
+        if binary:
+            if np.unique(treatment).size != 2:
+                raise ValueError("The scored sample must contain both treatment arms.")
+            mu0, mu1 = outcome_hat[scored].T
+            e = np.clip(m, 0.01, 0.99)
+            pseudo_outcome = (
+                mu1 - mu0 + treatment * (y - mu1) / e - (1 - treatment) * (y - mu0) / (1 - e)
+            )
+            ate = float(np.mean(pseudo_outcome))
+            psi = pseudo_outcome - ate
+            se = float(np.std(psi, ddof=1) / np.sqrt(n_used))
+            observed_hat = np.where(treatment == 1, mu1, mu0)
         else:
-            # Continuous treatment - use partially linear model approach
-            T_residual = T - propensity_scores
-            # Estimate coefficient via regression of Y_residual on T_residual
-            ate_coefficient = np.sum(Y_residual * T_residual) / np.sum(T_residual**2)
-            psi = Y_residual - ate_coefficient * T_residual
-            self._ate = ate_coefficient
+            observed_hat = outcome_hat[scored, 0]
+            y_residual = y - observed_hat
+            t_residual = treatment - m
+            ate, _ = theta_via_fwl(
+                y_residual,
+                t_residual,
+                treatment=treatment,
+                no_variation_msg="Continuous treatment has no residual variation on scored rows.",
+            )
+            se, psi = _influence_function_se(y_residual, t_residual, ate)
 
-        # Compute ATE
-        if len(np.unique(T)) <= 2:
-            self._ate = np.mean(psi)
-        ate = self._ate
-
-        # Compute standard error
-        if self.config.use_hac and DML_AVAILABLE:
-            # Historical quirk preserved: the retired dml_ts hac treated
-            # bandwidth=None as Andrews selection (an else-branch accident).
-            # temporalcv rejects None, so map it explicitly; note temporalcv's
-            # Andrews uses the literature alpha(1) constant for Bartlett
-            # (documented deviation from the old implementation).
+        bandwidth = None
+        if self.config.use_hac:
             bw = self.config.hac_bandwidth if self.config.hac_bandwidth is not None else "andrews"
-            se = float(newey_west_se(psi, bandwidth=bw).se)
-        else:
-            if self.config.use_hac and not DML_AVAILABLE:
-                raise RuntimeError(
-                    "use_hac=True but HAC components are unavailable (the "
-                    "temporalcv/dml imports failed at module load — see the "
-                    "earlier RuntimeWarning). Refusing to silently report "
-                    "naive iid standard errors; set use_hac=False to opt "
-                    "into them explicitly."
-                )
-            se = np.std(psi) / np.sqrt(n_samples)
-
-        self._ate_se = se
-        self._propensity_scores = propensity_scores
-
-        # Compute confidence interval
+            hac = newey_west_se(psi, bandwidth=bw)
+            se, bandwidth = float(hac.se), int(hac.bandwidth)
+        if not np.isfinite(se) or se <= 0:
+            raise ValueError("The score standard error must be finite and positive.")
         ci_lower = ate - 1.96 * se
         ci_upper = ate + 1.96 * se
-
-        # Aggregate nuisance metrics
         nuisance_metrics = {
-            "r2_propensity": float(np.mean(propensity_r2_list)),
-            "r2_outcome": float(np.mean(outcome_r2_list)),
+            "r2_propensity": compute_r2(treatment, m),
+            "r2_outcome": compute_r2(y, observed_hat),
             "r2_propensity_min": float(np.min(propensity_r2_list)),
             "r2_outcome_min": float(np.min(outcome_r2_list)),
         }
@@ -429,7 +380,7 @@ class InsuranceDMLPipeline:
         monitoring_results = []
         if self._monitor is not None:
             monitoring_results = self._monitor.run_all_checks(
-                propensity_scores=propensity_scores,
+                propensity_scores=m if binary else None,
                 r2_propensity=nuisance_metrics["r2_propensity"],
                 r2_outcome=nuisance_metrics["r2_outcome"],
                 current_effect=ate,
@@ -443,30 +394,39 @@ class InsuranceDMLPipeline:
             "n_folds": self.config.n_folds,
             "use_hac": self.config.use_hac,
             "hac_bandwidth": self.config.hac_bandwidth,
-            "propensity_model": str(type(self.config.propensity_model).__name__),
-            "outcome_model": str(type(self.config.outcome_model).__name__),
+            "propensity_model": type(treatment_learner).__name__,
+            "outcome_model": type(outcome_learner).__name__,
         }
 
         feature_names = (
             self.config.feature_columns
             if self.config.feature_columns
-            else [f"X_{i}" for i in range(X_scaled.shape[1])]
+            else [f"X_{i}" for i in range(X.shape[1])]
         )
 
-        self._current_version = DMLModelVersion.create(
+        version = DMLModelVersion.create(
             model_type="double_ml",
-            nuisance_models=self._nuisance_models,
+            nuisance_models=models,
             feature_names=feature_names,
             treatment_name=self.config.treatment_column,
             outcome_name=self.config.outcome_column,
             hyperparameters=hyperparameters,
             metrics=nuisance_metrics,
-            feature_transformer=self._scaler,
+            metadata={
+                "binary_treatment": binary,
+                "fold_scaling": True,
+                "custom_treatment_model": self.config.propensity_model is not None,
+                "custom_outcome_model": self.config.outcome_model is not None,
+            },
         )
 
         # Register model
-        version_id = self._registry.register(self._current_version)
-
+        version_id = self._registry.register(version)
+        self._current_version = version
+        self._nuisance_models = models
+        self._scaler = None  # Legacy saves can contain a single external scaler.
+        self._ate, self._ate_se = ate, se
+        self._binary_treatment = binary
         self._fitted = True
 
         return PipelineResult(
@@ -479,14 +439,25 @@ class InsuranceDMLPipeline:
             model_version=version_id,
             metadata={
                 "n_samples": n_samples,
-                "n_features": X_scaled.shape[1],
+                "n_features": X.shape[1],
+                "n_used": n_used,
+                "n_unscored": n_samples - n_used,
+                "estimand": "binary_ate" if binary else "continuous_plr_slope",
+                "hac_bandwidth": bandwidth,
                 "n_folds": self.config.n_folds,
             },
         )
 
+    @staticmethod
+    def _predict_treatment(model: Any, x: np.ndarray) -> np.ndarray:
+        if hasattr(model, "predict_proba"):
+            (treated,) = np.flatnonzero(model.classes_ == 1)
+            return np.asarray(model.predict_proba(x))[:, treated]
+        return np.asarray(model.predict(x))
+
     def predict_propensity(self, X: np.ndarray) -> np.ndarray:
         """
-        Predict treatment propensity for new data.
+        Predict the probability of treatment or the conditional mean of a numeric dose.
 
         Uses averaged predictions across all cross-fitting folds.
 
@@ -506,16 +477,13 @@ class InsuranceDMLPipeline:
         if X.ndim == 1:
             X = X.reshape(-1, 1)
 
-        X_scaled = self._scaler.transform(X)
-        n_samples = X_scaled.shape[0]
+        X_scaled = self._scaler.transform(X) if self._scaler is not None else X
+        n_samples = len(X_scaled)
 
         # Average across folds
         propensity_sum = np.zeros(n_samples)
         for _fold_idx, (prop_model, _) in self._nuisance_models.items():
-            if hasattr(prop_model, "predict_proba"):
-                propensity_sum += prop_model.predict_proba(X_scaled)[:, 1]
-            else:
-                propensity_sum += prop_model.predict(X_scaled)
+            propensity_sum += self._predict_treatment(prop_model, X_scaled)
 
         return propensity_sum / len(self._nuisance_models)
 
@@ -547,8 +515,8 @@ class InsuranceDMLPipeline:
         if not self._fitted:
             raise ValueError("Pipeline must be fitted before evaluation")
 
-        # Predict propensity on new data
-        propensity_new = self.predict_propensity(X_new)
+        # A probability overlap check applies to a binary assignment.
+        propensity_new = self.predict_propensity(X_new) if self._binary_treatment else None
 
         # Get nuisance metrics
         r2_prop = self._current_version.metrics.get("r2_propensity", 0.5)
@@ -618,6 +586,7 @@ class InsuranceDMLPipeline:
         # Save configuration
         config_data = {
             "n_folds": self.config.n_folds,
+            "model_registry_path": str(self.config.model_registry_path),
             "n_jobs": self.config.n_jobs,
             "random_state": self.config.random_state,
             "use_hac": self.config.use_hac,
@@ -640,6 +609,8 @@ class InsuranceDMLPipeline:
             with open(path / "scaler.pkl", "wb") as f:
                 pickle.dump(self._scaler, f)
 
+        if self._current_version is not None:
+            self._current_version.save(path)
         # Save fitted state
         state = {
             "fitted": self._fitted,
@@ -677,12 +648,6 @@ class InsuranceDMLPipeline:
         config = PipelineConfig(**config_data)
         pipeline = cls(config)
 
-        # Load scaler
-        scaler_path = path / "scaler.pkl"
-        if scaler_path.exists():
-            with open(scaler_path, "rb") as f:
-                pipeline._scaler = pickle.load(f)
-
         # Load state
         with open(path / "state.json") as f:
             state = json.load(f)
@@ -693,14 +658,31 @@ class InsuranceDMLPipeline:
 
         # Load current version if available
         if state["current_version_id"]:
-            try:
-                pipeline._current_version = pipeline._registry.get(state["current_version_id"])
-                # Restore nuisance models
-                models = pipeline._current_version.get_nuisance_models()
-                if isinstance(models, dict):
-                    pipeline._nuisance_models = models
-            except KeyError:
-                pass  # Version not in registry
+            version_id = state["current_version_id"]
+            if (path / version_id / "metadata.json").exists():
+                version = DMLModelVersion.load(path / version_id)
+            else:
+                version = pipeline._registry.get(version_id)
+            pipeline._current_version = version
+            pipeline._nuisance_models = cast(
+                dict[int, tuple[Any, Any]], version.get_nuisance_models()
+            )
+            first_treatment_model = pipeline._nuisance_models[0][0]
+            pipeline._binary_treatment = version.metadata.get(
+                "binary_treatment", hasattr(first_treatment_model, "predict_proba")
+            )
+            if version.metadata.get("custom_treatment_model"):
+                config.propensity_model = clone(first_treatment_model[-1])
+            if version.metadata.get("custom_outcome_model"):
+                stored_outcome = pipeline._nuisance_models[0][1]
+                if pipeline._binary_treatment:
+                    stored_outcome = stored_outcome[0]
+                config.outcome_model = clone(stored_outcome[-1])
+            if not version.metadata.get("fold_scaling"):
+                pipeline._scaler = version.get_feature_transformer()
+                if pipeline._scaler is None and (path / "scaler.pkl").exists():
+                    with open(path / "scaler.pkl", "rb") as f:
+                        pipeline._scaler = pickle.load(f)
 
         return pipeline
 
