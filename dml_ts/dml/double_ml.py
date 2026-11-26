@@ -66,6 +66,7 @@ from ._utils import (
     compute_r2,
     cross_fit_predictions,
     get_nuisance_model,
+    refuse_non_numeric_controls,
     theta_via_fwl,
 )
 
@@ -243,9 +244,12 @@ def double_ml(
     T : array, shape (n,)
         Treatment variable (continuous or binary).
     X : array, DataFrame or sparse matrix, shape (n, p)
-        Control variables / confounders. Handed to the nuisance model as given: a
+        Control variables / confounders. Handed to the nuisance models as given: a
         DataFrame keeps its column names and dtypes, a sparse matrix stays sparse, and
-        rows are selected by position.
+        rows are selected by position. When one of the package's own learners fits a
+        nuisance (``model`` is a string or the default, and ``outcome_model`` and
+        ``treatment_model`` are not both given) every column must hold numbers. To pass
+        other controls, supply the learner for both nuisances.
     n_folds : int
         Number of cross-fitting folds. Default: 5.
     model : sklearn estimator or str, optional
@@ -274,7 +278,10 @@ def double_ml(
     ValueError
         If Y or T is not one-dimensional or the lengths disagree; if Y or T holds a
         datetime, a timedelta, a complex value, text or a masked entry; if X is a masked
-        array with masked entries; if two of Y, T and X are pandas objects with different
+        array with masked entries; if one of the package's own learners fits a nuisance
+        and X holds a datetime, a timedelta, a complex value or text, or has more than
+        two dimensions (learners you supply receive such controls as given); if two of
+        Y, T and X are pandas objects with different
         indexes (rows are paired by position; pass ``.to_numpy()`` when they are already
         in the same order); or if the treatment has no variation left after the controls.
 
@@ -310,6 +317,11 @@ def double_ml(
         model = "random_forest"
 
     if isinstance(model, str):
+        if outcome_model is None or treatment_model is None:
+            # One of the package's own learners will fit at least one nuisance: the
+            # controls must be numbers. This only checks; the learners are handed X as
+            # it was given.
+            refuse_non_numeric_controls("X", X)
         model_type = cast(Literal["ridge", "lasso", "random_forest", "gradient_boosting"], model)
         # random_state=42 preserves this estimator's historical hardcoded
         # nuisance seed (independent of the fold-shuffling random_state).

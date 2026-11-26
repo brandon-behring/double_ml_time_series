@@ -2,20 +2,23 @@
 
 The public callables of ``dml_ts.dml`` that read data against the kinds of input, with two
 left out by name and reason below (``PanelDML`` and the EconML cross-check). A cell expects
-one of three things:
+one of two things:
 
 - the result that plain float arrays of the same values give;
-- a ``ValueError`` that names the argument at fault;
-- for ``robinson_estimator`` and ``double_ml`` with controls their model cannot read, the
-  model's own error. These two hand the controls to the nuisance model as given, so what the
-  model does with them is the model's affair, and that error does not name the argument.
+- a ``ValueError`` that names the argument at fault.
 
 No estimator is left out of a parametrization: where they differ by design, the difference is
-written in the case. The other estimators compute on the controls and convert them to floats
-under the refusals that hold for the outcome and the treatment.
+written in the case. ``robinson_estimator`` and ``double_ml`` hand the controls to the
+nuisance model as given, so a sparse matrix stays sparse; the other estimators compute on the
+controls, convert them to floats under the refusals that hold for the outcome and the
+treatment, and refuse a sparse matrix.
 
-What the matrix does not show. The learner is ridge throughout: the default forest reads a
-datetime or timedelta column of controls as ticks where ridge raises. An agreement between
+Controls that are not numbers are refused in every cell, because the learner of the matrix
+is one of the package's own (ridge). The section after the matrix covers what the matrix
+cannot: the other learners of the package, and a learner the caller supplies, which receives
+the controls as given and raises its own error, or none.
+
+What the matrix does not show. The learner is ridge throughout. An agreement between
 the two sides of a cell says that the container made no difference, not that the estimator
 is right; the arrays' results are checked elsewhere (golden parity, the formula contracts).
 
@@ -44,13 +47,14 @@ from dml_ts.dml import (
     DynamicGEstimationDML,
     RollingWindowDML,
     TemporalPLRDML,
+    _utils,
     double_ml,
     fwl_estimate,
     fwl_residualize,
     fwl_vs_ols_comparison,
     robinson_estimator,
 )
-from dml_ts.dml._utils import read_controls_as_floats, take_rows
+from dml_ts.dml._utils import read_controls_as_floats, refuse_non_numeric_controls, take_rows
 
 pytestmark = pytest.mark.tier2
 
@@ -224,9 +228,8 @@ class Case:
     values, for the cells that must agree with arrays. ``refused`` holds for every estimator
     that reads the argument at fault. ``refused_where_computed`` holds only for the estimators
     that compute on the controls; the estimators that hand the controls to the nuisance model
-    then either give the arrays' result or, with ``the_model_raises``, fail inside the model
-    (ridge here) with that exception type and message. ``rtol`` is looser where a learner
-    takes another numerical path for the same values.
+    then give the arrays' result. ``rtol`` is looser where a learner takes another numerical
+    path for the same values.
     """
 
     name: str
@@ -234,7 +237,6 @@ class Case:
     reference: Callable[[], tuple[Any, Any, Any]] = lambda: (Y0, T0, X0)
     refused: Refusal | None = None
     refused_where_computed: Refusal | None = None
-    the_model_raises: tuple[type[Exception], str] | None = None
     rtol: float = RTOL
 
     def __str__(self) -> str:
@@ -434,6 +436,30 @@ REFUSED_EVERYWHERE = (
         lambda: (Y0, T0, 5.0),
         refused=Refusal("X", r"X must hold the controls with one row per observation"),
     ),
+    # Refused by the estimators that compute on the controls, and by the two that hand them
+    # to a learner because that learner is the package's own here.
+    Case(
+        "frame of controls with a text column",
+        lambda: (Y0, T0, TEXT_FRAME),
+        refused=Refusal("X", r"X holds text \(for example 'a'\), not numbers"),
+    ),
+    Case(
+        "frame of controls with a datetime column",
+        lambda: (Y0, T0, DATE_FRAME),
+        refused=Refusal("X", r"X holds Timestamp values \(for example .*\), not real"),
+    ),
+    Case(
+        "complex controls",
+        lambda: (Y0, T0, X0 + 1j),
+        refused=Refusal("X", r"X has dtype complex128, which is not a number"),
+    ),
+    Case(
+        "three-dimensional controls",
+        lambda: (Y0, T0, np.stack([X0, X0], axis=2)),
+        refused=Refusal(
+            "X", r"X must hold the controls with one row per observation and one column"
+        ),
+    ),
 )
 
 CONTROLS_THAT_SPLIT_THE_ESTIMATORS = (
@@ -458,35 +484,6 @@ CONTROLS_THAT_SPLIT_THE_ESTIMATORS = (
         refused_where_computed=Refusal("X", r"X is a sparse matrix.*X\.toarray\(\)"),
         rtol=1e-4,
     ),
-    Case(
-        "frame of controls with a text column",
-        lambda: (Y0, T0, TEXT_FRAME),
-        refused_where_computed=Refusal("X", r"X holds text \(for example 'a'\), not numbers"),
-        the_model_raises=(ValueError, r"could not convert string to float: 'a'"),
-    ),
-    Case(
-        "frame of controls with a datetime column",
-        lambda: (Y0, T0, DATE_FRAME),
-        refused_where_computed=Refusal(
-            "X", r"X holds Timestamp values \(for example .*\), not real"
-        ),
-        # numpy's DTypePromotionError, a TypeError, raised inside scikit-learn's validation
-        the_model_raises=(TypeError, r"DateTime64DType.* could not be promoted"),
-    ),
-    Case(
-        "complex controls",
-        lambda: (Y0, T0, X0 + 1j),
-        refused_where_computed=Refusal("X", r"X has dtype complex128, which is not a number"),
-        the_model_raises=(ValueError, r"Complex data not supported"),
-    ),
-    Case(
-        "three-dimensional controls",
-        lambda: (Y0, T0, np.stack([X0, X0], axis=2)),
-        refused_where_computed=Refusal(
-            "X", r"X must hold the controls with one row per observation and one column"
-        ),
-        the_model_raises=(ValueError, r"Found array with dim 3"),
-    ),
 )
 
 CASES = SAME_AS_ARRAYS + REFUSED_EVERYWHERE + CONTROLS_THAT_SPLIT_THE_ESTIMATORS
@@ -510,11 +507,6 @@ def test_every_cell_gives_the_arrays_result_or_refuses_by_name(entry: Entry, cas
     if refusal is not None:
         assert refusal.argument in refusal.pattern
         with pytest.raises(ValueError, match=refusal.pattern):
-            entry.fit(*case.given())
-        return
-    if case.the_model_raises is not None and not entry.computes_on_controls:
-        kind, pattern = case.the_model_raises
-        with pytest.raises(kind, match=pattern):
             entry.fit(*case.given())
         return
 
@@ -600,6 +592,214 @@ def test_a_frame_of_controls_with_a_missing_value_is_read_as_nan():
     read = read_controls_as_floats("X", frame)
     assert np.isnan(read[1, 0])
     assert_allclose(np.delete(read.ravel(), 2), [1.0, 4.0, 5.0, 3.0, 6.0])
+
+
+# ----------------------------------- controls that are not numbers, and whose learner it is
+#
+# ``robinson_estimator`` and ``double_ml`` hand the controls on. With a learner of the package
+# (a string name, or the default) nobody has said how a datetime or a text column is to be
+# encoded, and the learners disagree: the forest read a datetime as ticks, ridge parsed text
+# that spells numbers. Such controls are refused. A learner the caller supplies gets them.
+
+
+def _robinson_with(Y, T, X, **learners):
+    return robinson_estimator(Y, T, X, **learners)
+
+
+def _double_ml_with(Y, T, X, **learners):
+    return double_ml(Y, T, X, random_state=0, **learners)
+
+
+HANDS_THE_CONTROLS_ON = pytest.mark.parametrize(
+    "fit", [_robinson_with, _double_ml_with], ids=["robinson_estimator", "double_ml"]
+)
+OWN_LEARNERS = (None, "ridge", "lasso", "random_forest", "gradient_boosting")
+ADVICE = r".* A learner you supply receives them as given"
+
+# Frames keep ``x0`` and ``x1``, so a learner that selects those two by name can still fit.
+NOT_NUMBERS: dict[str, tuple[Any, str]] = {
+    "datetime column": (DATE_FRAME, r"X holds Timestamp values \(for example "),
+    "timezone-aware column": (
+        _frame().assign(day=DATES.tz_localize("UTC")),
+        r"X holds Timestamp values \(for example .*tz='UTC'",
+    ),
+    "timedelta column": (
+        _frame().assign(wait=pd.to_timedelta(np.arange(N), unit="D")),
+        r"X holds Timedelta values \(for example ",
+    ),
+    "complex column": (_frame().assign(z=X0[:, 0] + 1j), r"X has dtype complex128"),
+    "text column": (TEXT_FRAME, r"X holds text \(for example 'a'\)"),
+    "numeric text in an object column": (
+        _frame().assign(x1=_frame().x1.astype(str).astype(object)),
+        r"X holds text \(for example '-?\d",
+    ),
+    "numeric text in a string column": (
+        _frame().assign(x1=_frame().x1.astype(str)),
+        r"X holds text \(for example '-?\d",
+    ),
+    "array of timedeltas": (
+        (1000 * X0).astype("int64").astype("timedelta64[s]"),
+        r"X has dtype timedelta64\[s\]",
+    ),
+    "frame of datetimes alone": (
+        pd.DataFrame({"day": DATES}),
+        r"X has dtype datetime64\[\w+\]",
+    ),
+    "complex sparse matrix": (
+        sparse.csr_matrix(X0 + 1j),
+        r"X is a sparse matrix of dtype complex128, which is not a number",
+    ),
+}
+COLUMNS_BESIDE_NUMBERS = [kind for kind in NOT_NUMBERS if "column" in kind]
+
+
+@HANDS_THE_CONTROLS_ON
+@pytest.mark.parametrize("learner", OWN_LEARNERS, ids=str)
+@pytest.mark.parametrize("kind", NOT_NUMBERS, ids=str)
+def test_a_learner_of_the_package_refuses_controls_that_are_not_numbers(fit, learner, kind):
+    controls, pattern = NOT_NUMBERS[kind]
+    with pytest.raises(ValueError, match=pattern + ADVICE):
+        fit(Y0, T0, controls, model=learner)
+
+
+@HANDS_THE_CONTROLS_ON
+@pytest.mark.parametrize("kind", COLUMNS_BESIDE_NUMBERS, ids=str)
+def test_a_supplied_learner_receives_the_controls_that_its_own_would_refuse(fit, kind):
+    """The pipeline selects ``x0`` and ``x1`` by name; ridge parses ``x1`` where it is text."""
+    controls, _ = NOT_NUMBERS[kind]
+    with_frame = fit(Y0, T0, controls, model=_by_name())
+    with_arrays = fit(Y0, T0, X0, model=Ridge(alpha=1.0))
+    assert_allclose(with_frame.theta, with_arrays.theta, rtol=RTOL)
+    assert_allclose(with_frame.se, with_arrays.se, rtol=RTOL)
+
+
+@HANDS_THE_CONTROLS_ON
+@pytest.mark.parametrize(
+    ("controls", "error", "pattern"),
+    [
+        (TEXT_FRAME, ValueError, r"could not convert string to float: 'a'"),
+        # numpy's DTypePromotionError, a TypeError, raised inside scikit-learn's validation
+        (DATE_FRAME, TypeError, r"DateTime64DType.* could not be promoted"),
+        (X0 + 1j, ValueError, r"Complex data not supported"),
+        (np.stack([X0, X0], axis=2), ValueError, r"Found array with dim 3"),
+    ],
+    ids=["text column", "datetime column", "complex array", "three dimensions"],
+)
+def test_with_a_supplied_learner_the_error_is_that_learners_own(fit, controls, error, pattern):
+    """Nothing is checked for it, so what it cannot read fails inside it, in its words."""
+    with pytest.raises(error, match=pattern):
+        fit(Y0, T0, controls, model=Ridge(alpha=1.0))
+
+
+def test_double_ml_checks_the_controls_when_either_learner_is_its_own():
+    reference = double_ml(Y0, T0, X0, model=Ridge(alpha=1.0), random_state=0)
+    # Both supplied: no learner of the package sees the controls, whatever ``model`` says.
+    for model in ({}, {"model": "ridge"}, {"model": _by_name()}):
+        both = double_ml(
+            Y0,
+            T0,
+            TEXT_FRAME,
+            outcome_model=_by_name(),
+            treatment_model=_by_name(),
+            random_state=0,
+            **model,
+        )
+        assert_allclose(both.theta, reference.theta, rtol=RTOL)
+    # One supplied beside a supplied ``model``: likewise.
+    for one in ("outcome_model", "treatment_model"):
+        fit = double_ml(Y0, T0, TEXT_FRAME, model=_by_name(), random_state=0, **{one: _by_name()})
+        assert_allclose(fit.theta, reference.theta, rtol=RTOL)
+    # One supplied and the other left to the package: refused, and told to supply both.
+    for model in ({}, {"model": "ridge"}):
+        for one in ("outcome_model", "treatment_model"):
+            with pytest.raises(
+                ValueError, match=r"X holds text .* in double_ml for both nuisance models"
+            ):
+                double_ml(Y0, T0, TEXT_FRAME, random_state=0, **model, **{one: _by_name()})
+
+
+NUMBERS: dict[str, Callable[[], Any]] = {
+    "float32 array": lambda: X0.astype(np.float32),
+    "frame with integer and boolean columns": lambda: pd.DataFrame(
+        {"count": np.round(3 * X0[:, 0]).astype(int), "flag": X0[:, 1] > 0}
+    ),
+    "frame of nullable columns": lambda: pd.DataFrame(
+        {"a": pd.array(X0[:, 0], dtype="Float64"), "b": pd.array(BINARY, dtype="boolean")}
+    ),
+    "object array of Python floats": lambda: X0.astype(object),
+    "sparse CSR, five columns": lambda: sparse.csr_matrix(X5),
+    "sparse COO": lambda: sparse.coo_matrix(X0),
+    "sparse integer matrix": lambda: sparse.csr_matrix(np.round(3 * X0).astype(int)),
+    "sparse boolean matrix": lambda: sparse.csr_matrix(X0 > 0),
+}
+
+
+@HANDS_THE_CONTROLS_ON
+@pytest.mark.parametrize("kind", NUMBERS, ids=str)
+def test_numeric_controls_reach_a_learner_of_the_package_as_they_were_given(fit, kind):
+    """The named ridge is ``Ridge(alpha=1.0)``; the supplied one is never checked.
+
+    So the two fits differ only by the check, and must agree to the last bit: a check that
+    handed on what it converted would fit ``float32`` controls in ``float64``.
+    """
+    own = fit(Y0, T0, NUMBERS[kind](), model="ridge")
+    supplied = fit(Y0, T0, NUMBERS[kind](), model=Ridge(alpha=1.0))
+    assert (own.theta, own.se) == (supplied.theta, supplied.se)
+
+
+@HANDS_THE_CONTROLS_ON
+def test_float32_controls_are_fitted_in_float32(fit):
+    """Why the test above can tell: the same values as ``float64`` give another number."""
+    single = fit(Y0, T0, X0.astype(np.float32), model="ridge")
+    double = fit(Y0, T0, X0.astype(np.float32).astype(float), model="ridge")
+    assert single.theta != double.theta
+    assert_allclose(single.theta, double.theta, rtol=1e-6)
+
+
+STORED_AS_NUMBERS: dict[str, Callable[[], pd.DataFrame]] = {
+    "float beside boolean": lambda: _frame().assign(flag=BINARY),
+    "float beside integer": lambda: _frame().assign(count=np.arange(N)),
+    "float32 and uint8": lambda: pd.DataFrame(
+        {"a": X0[:, 0].astype(np.float32), "b": BINARY.astype(np.uint8)}
+    ),
+    "booleans alone": lambda: pd.DataFrame({"flag": BINARY}),
+    "nullable columns with missing values": lambda: pd.DataFrame(
+        {
+            "a": pd.array([None, *X0[1:, 0]], dtype="Float64"),
+            "b": pd.array([None, *BINARY[1:]], dtype="boolean"),
+            "c": pd.array([None, *range(1, N)], dtype="Int64"),
+        }
+    ),
+    "a pandas sparse column": lambda: _frame().assign(
+        s=pd.arrays.SparseArray(np.where(BINARY, X0[:, 0], 0.0))
+    ),
+    "no columns": lambda: pd.DataFrame(index=range(N)),
+}
+
+
+@pytest.mark.parametrize("kind", STORED_AS_NUMBERS, ids=str)
+def test_a_frame_stored_as_numbers_is_judged_by_its_dtypes(kind, monkeypatch):
+    """Such a frame is passed without being read, and the conversion it skips agrees.
+
+    Float beside boolean columns convert through an object array that is read element by
+    element, which cost thirty times a ridge fit. The shortcut is right only if the
+    conversion could not have refused the frame, so the conversion is run here too.
+    """
+    frame = STORED_AS_NUMBERS[kind]()
+    assert read_controls_as_floats("X", frame).shape == frame.shape
+
+    def not_called(name, values):
+        raise AssertionError("a frame stored as numbers was converted to be checked")
+
+    monkeypatch.setattr(_utils, "read_controls_as_floats", not_called)
+    refuse_non_numeric_controls("X", frame)
+
+
+@pytest.mark.parametrize("kind", COLUMNS_BESIDE_NUMBERS, ids=str)
+def test_one_column_that_is_not_stored_as_numbers_sends_the_frame_to_the_conversion(kind):
+    controls, pattern = NOT_NUMBERS[kind]
+    with pytest.raises(ValueError, match=pattern + ADVICE):
+        refuse_non_numeric_controls("X", controls)
 
 
 # ------------------------------------- further arguments of the dynamic g-estimator: W, groups

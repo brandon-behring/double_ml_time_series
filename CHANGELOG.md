@@ -156,11 +156,30 @@ are the compatibility contract).
     model as it was given and select fold rows by position: a DataFrame keeps its column names
     and dtypes (in `double_ml` a DataFrame raised an error before a model saw it), and a
     sparse matrix in any format stays sparse. A masked array with masked entries is refused
-    there too, because a learner would read under the mask. What a learner does with a column
-    it is handed is otherwise the learner's affair, and it can misread one: ridge parses
-    numeric text in an object column, and the default forest reads a datetime or timedelta
-    column as ticks. The other estimators compute on the controls and convert them to floats
-    under the refusals that hold for the outcome; they refuse a sparse matrix by name.
+    there too, because a learner would read under the mask. The other estimators compute on
+    the controls and convert them to floats under the refusals that hold for the outcome; they
+    refuse a sparse matrix by name.
+  - Controls and the package's own learners. When `robinson_estimator` or `double_ml` fits a
+    nuisance with one of the package's learners (`model` is a string or left at its default,
+    and in `double_ml` `outcome_model` and `treatment_model` are not both given), controls
+    that are not numbers are refused by name: a datetime, a timedelta, a complex value, text,
+    and more than two dimensions. Nobody has said how such a column is to be encoded, and the
+    learners disagreed about it. The forest and gradient boosting read controls that were all
+    datetime or timedelta as integer ticks in their storage unit, where ridge and lasso
+    raised; text that spells numbers was parsed, in an object column by all four. Two kinds
+    of call returned a number before and are refused now: numeric text, which was parsed to
+    the arrays' result, and all-datetime or all-timedelta controls under the two tree
+    learners. Where the learner raised its own error (a `TypeError` for a datetime column
+    beside numeric ones, "could not convert string to float" for a text column), the error is
+    now a `ValueError` that names `X`. The controls are only checked, never converted: numeric
+    controls reach the learner as they were given (`float32` stays `float32`, a sparse matrix
+    stays sparse) and the estimates are bit-identical. A learner the caller supplies is not
+    checked and receives the controls whatever they hold; to pass such columns to `double_ml`,
+    supply the learner for both nuisances. The cost: an array is read once, into a copy that is
+    thrown away (under a tenth of the time of a ridge fit on the same array, at 100,000 and at
+    1,000,000 rows of 20 columns); an object array, or a frame with a column that is not
+    stored as numbers, is read element by element; a sparse matrix, and a DataFrame whose
+    columns are all stored as numbers, are judged by their dtypes.
   - `fwl_residualize` returns arrays and refuses an outcome that is not one-dimensional. It
     returned a labelled `Series` for a `Series`, so residualizing by hand and then regressing
     multiplied residuals by label: -0.15 for a slope of 2.03.

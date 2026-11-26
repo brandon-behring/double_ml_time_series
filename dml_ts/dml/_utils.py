@@ -498,6 +498,75 @@ def read_controls_as_floats(name: str, values: object) -> NDArray[np.float64]:
     return array
 
 
+_OWN_LEARNER_ADVICE = (
+    " The check applies because one of the package's own learners (a string name or the "
+    "default) receives the controls. A learner you supply receives them as given: to "
+    "encode such a column yourself, pass your own learner, in double_ml for both "
+    "nuisance models."
+)
+
+
+def refuse_non_numeric_controls(name: str, values: object) -> None:
+    """Refuse controls that one of the package's own learners would misread or cannot read.
+
+    For ``robinson_estimator`` and ``double_ml``, which hand the controls to a nuisance
+    model as given. When that model is one of the package's own (a string name, or the
+    default forest), the caller has not said how a column that is not a number is to be
+    encoded, and the learners disagree about it: the forest reads controls that are all
+    datetime or timedelta as integer ticks where ridge raises, and each of them parses
+    text that spells numbers in an object column. Such controls are refused here under
+    the refusals of :func:`read_controls_as_floats`: a datetime or timedelta, a complex
+    value, text, a masked entry, and more than two dimensions. A learner the caller
+    supplies is not checked, because a pipeline may encode such columns.
+
+    This is a check and nothing else. It returns nothing, and the caller hands on the
+    object it was given: a converted array would change the numbers (``float32`` controls
+    are fitted in ``float32``) and could not stand for a sparse matrix. A sparse matrix is
+    judged by its dtype alone and is never made dense.
+
+    The cost. A sparse matrix, and a DataFrame whose columns are all stored as numbers,
+    are judged by their dtypes and not read. Other dense controls pay one conversion
+    that is thrown away: a copy for an array of numbers, and for an object array or a
+    frame with a column that is not stored as numbers a pass over its elements in Python.
+
+    Raises:
+        ValueError: Naming the argument, and saying that a learner the caller supplies
+            receives the controls as given.
+
+    Examples:
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> from scipy import sparse
+        >>> refuse_non_numeric_controls("X", np.ones((3, 2), dtype=np.float32))
+        >>> refuse_non_numeric_controls("X", sparse.csr_matrix(np.eye(3)))
+        >>> days = pd.DataFrame({"day": pd.date_range("2020-01-01", periods=3)})
+        >>> refuse_non_numeric_controls("X", days)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: X has dtype datetime64[...], which is not a number. ...
+    """
+    if sparse.issparse(values):
+        dtype = values.dtype  # type: ignore[attr-defined]
+        if dtype.kind not in "fiub":
+            raise ValueError(
+                f"{name} is a sparse matrix of dtype {dtype}, which is not a number."
+                + _OWN_LEARNER_ADVICE
+            )
+        return
+    if isinstance(values, pd.DataFrame) and all(
+        getattr(dtype, "kind", "O") in "fiub" for dtype in values.dtypes
+    ):
+        # Every column is stored as numbers (a nullable column with its missing values
+        # included), so the conversion below could refuse nothing. It is skipped because
+        # float beside boolean columns convert through an object array, read element by
+        # element: 1.4 s for 100,000 rows of 20 columns, thirty times a ridge fit.
+        return
+    try:
+        read_controls_as_floats(name, values)
+    except ValueError as exc:
+        raise ValueError(f"{exc}{_OWN_LEARNER_ADVICE}") from exc
+
+
 def refuse_unequal_indexes(inputs: Mapping[str, object]) -> None:
     """Refuse pandas inputs whose indexes differ in value or order, or name their levels differently.
 
@@ -586,9 +655,12 @@ def as_validated_arrays(
        given: a DataFrame keeps its column names and dtypes and a sparse matrix stays
        sparse; only the row count is checked, and rows are selected by position. (A
        masked array with masked entries is refused there too: a learner would read under
-       the mask.) What the model then makes of a column is the model's affair: ridge
-       parses numeric text in an object column, and the default forest reads a datetime
-       or timedelta column as ticks. With ``numeric_controls=True`` (``fwl_estimate``,
+       the mask.) Those two estimators then check the controls, without converting them,
+       when the model is one of the package's own (:func:`refuse_non_numeric_controls`):
+       it would parse numeric text in an object column, and the default forest would
+       read controls that are all datetime or timedelta as ticks. What a model the
+       caller supplies makes of a column is that model's affair. With
+       ``numeric_controls=True`` (``fwl_estimate``,
        ``fwl_vs_ols_comparison``, ``TemporalPLRDML``, ``RollingWindowDML``,
        ``DynamicGEstimationDML``) the estimator computes on the controls, so X is
        converted to a float array under the refusals of point 1, and a sparse matrix is
