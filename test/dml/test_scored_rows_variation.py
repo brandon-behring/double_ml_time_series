@@ -184,13 +184,32 @@ def _panel_treated_in_the_first_unit(dose):
 @pytest.mark.tier2
 @pytest.mark.parametrize("dose", [0.1, 0.3, 1.7])
 def test_balanced_panel_with_a_constant_dose_outside_the_first_unit_is_refused(dose):
-    """Demeaning a constant dose leaves rounding residue, which counts as constant.
+    """One dose shared by every scored unit demeans to the same value in each of them.
 
-    A check for exact constancy fitted these panels. In an unbalanced panel 129 of 200 such
-    doses are still fitted, because the residue there is not small beside what remains.
+    Units of equal size leave the same rounding residue, so the demeaned treatment is
+    constant on the scored rows and the panel is refused. It was fitted before this change.
     """
     with pytest.raises(ValueError, match="Treatment has no variation on the scored rows"):
         PanelDML(model_y="ridge", model_t="ridge").fit(*_panel_treated_in_the_first_unit(dose))
+
+
+@pytest.mark.tier2
+def test_a_dose_of_its_own_in_every_scored_unit_is_outside_this_check():
+    """This marks the boundary of the check, not a design that works.
+
+    With a different constant dose in each scored unit the demeaned treatment is rounding
+    residue of the order of 1e-16 that differs between units. It is not constant, so the
+    panel is fitted on that residue, as before this change. So are 129 of 200 common doses
+    in an unbalanced panel, where units of unequal size leave unequal residue. The test
+    passes when the fit returns; it says nothing about the estimate.
+    """
+    y, treatment, x, individual, period = _panel_treated_in_the_first_unit(0.0)
+    doses = np.round(np.random.default_rng(1).uniform(0.1, 3.0, 30), 2)
+    own = np.where(individual < 1, treatment, doses[individual])
+    scored = own[individual >= 5].reshape(-1, 10)
+    assert np.ptp(scored, axis=1).max() == 0 and np.ptp(scored[:, 0]) > 1
+    result = PanelDML(model_y="ridge", model_t="ridge").fit(y, own, x, individual, period)
+    assert np.isfinite(result.theta)
 
 
 @pytest.mark.tier2

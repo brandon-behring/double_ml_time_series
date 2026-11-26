@@ -427,6 +427,11 @@ def test_a_mask_without_masked_entries_and_missing_values_are_read():
     nullable = pd.Series([1.0, 2.0, pd.NA], dtype="Float64")
     Y, _, _ = as_validated_arrays(nullable, pd.Series([0, 1, 0], dtype="Int64"), np.ones((3, 1)))
     assert np.isnan(Y[2]) and Y[:2].tolist() == [1.0, 2.0]
+    # A nullable boolean column with a missing value is the one that arrives as objects.
+    flags = pd.Series([True, False, pd.NA], dtype="boolean")
+    assert np.asarray(flags).dtype == object
+    _, T, _ = as_validated_arrays([1.0, 2.0, 3.0], flags, np.ones((3, 1)))
+    assert T[:2].tolist() == [1.0, 0.0] and np.isnan(T[2])
 
 
 @pytest.mark.tier2

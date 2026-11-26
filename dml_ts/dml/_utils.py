@@ -280,6 +280,9 @@ def cross_fit_predictions(
     return Y_hat, T_hat
 
 
+_NOTHING = object()
+
+
 def _is_real_number_or_missing(value: object) -> bool:
     """Whether one element of an object array is a real number or a missing value.
 
@@ -346,8 +349,9 @@ def _read_as_floats(name: str, values: object) -> NDArray[np.float64]:
                 f"{name} holds text (for example {text!r}), not numbers. "
                 "Convert it to floats first."
             )
-        other = next((v for v in array.ravel() if not _is_real_number_or_missing(v)), None)
-        if other is not None:
+        # A default of None would hide an element that is None.
+        other = next((v for v in array.ravel() if not _is_real_number_or_missing(v)), _NOTHING)
+        if other is not _NOTHING:
             raise ValueError(
                 f"{name} holds {type(other).__name__} values (for example {other!r}), not real "
                 "numbers. Convert it to floats in the unit you mean: a datetime or timedelta "
