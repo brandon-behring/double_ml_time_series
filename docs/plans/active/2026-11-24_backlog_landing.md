@@ -1141,8 +1141,9 @@ Lessons.
 - A repair is new code and can regress: both repairs of #79 did (the first narrowed the index
   comparison to pandas indexes; the second left one-dimensional sparse controls broken). Re-run
   the reviewer's scripts against every repair, not only the tests written for it.
-- A commit message is a claim. Five messages of this stretch carried a number that had not
-  been counted (rows of a file, sources, cells of a matrix). Count first.
+- A commit message is a claim. Three messages of this stretch carried a number that had not
+  been counted (the rows of a file in `608c1d7`, the sources in `0b84343`, the kinds of input
+  in `3b00405`), and the first version of this sentence said five. Count first.
 - A mutation that survives may be pointing at a false sentence and not at a missing test (the
   panel boundary), or at code whose result depends on a coincidence (a `None` default).
 - Identical locked versions do not make a number reproducible across machines: an unstable
