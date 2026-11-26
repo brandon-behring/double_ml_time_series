@@ -60,9 +60,10 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
 - **7 further files are held for their licence**; see
   [`docs/audits/DATA_SOURCES.md`](audits/DATA_SOURCES.md).
 - **Not landed either:** the end-to-end review of 2026-11-22 and the second audit it reviews
-  (their folders and tests), nine tests that need a held file, among them the test that checks
-  the numbers printed in the chapters, the Monte Carlo scripts of Chapters 6 and 8, and the
-  nightly workflow's November changes. The `Nightly Tests` workflow last ran on 2026-10-19;
+  (their folders and tests), nine test files that need a held file, among them the test that
+  checks the numbers printed in the chapters, two tests that replay the cricket forecast (see
+  the known limits), the Monte Carlo scripts of Chapters 6 and 8, and the nightly workflow's
+  November changes. The `Nightly Tests` workflow last ran on 2026-10-19;
   tier 3 and tier 4 have not run in CI since then. It is run once by hand when this stage of
   the landing ends.
 - **The insurance monitor reports a randomized binary treatment as "critical"** when it is
@@ -91,6 +92,12 @@ modes of `DynamicGEstimationDML` are wrong in the same way. `double_ml` raises `
 ### Known limits of what is on `main`
 
 - `PanelDML` under confounding that is nonlinear in the controls: see above (#84).
+- **The archived cricket forecast replays only on some machines.** Its cross-fitting assigns
+  series to folds with scikit-learn's `GroupKFold`, which orders groups of equal size with an
+  unstable sort; 1,069 of the 1,078 series share their size with another. The RMSE of the
+  DML forecast is 12.5298 on the machine that issued it, 12.4767 there with a stable sort,
+  and 12.5793 on the CI runner. The issued forecast stands as issued; the two tests that
+  replay it are held (#86). The other four forecasts of that study use no folds and agree.
 - The default interval of `TemporalPLRDML` is far too short when few scored rows carry the
   treatment's variation (one treated scored row: 7.5% coverage in 400 draws, #81), and under
   persistent scores (#54).
@@ -113,9 +120,9 @@ The gate was run on this change as built on `main` at `8feb54c`, in the locked e
 | --- | --- |
 | `ruff check`, `ruff format --check` | pass (143 files) |
 | `mypy dml_ts/` | no issues in 45 source files |
-| Test collection | 1,522 collected |
+| Test collection | 1,520 collected |
 | Tier 1 | 586 passed, 2 skipped |
-| Tier 1 + Tier 2, coverage | 1,306 passed, 6 skipped; coverage 85.50% (gate 70%) |
+| Tier 1 + Tier 2, coverage | 1,304 passed, 6 skipped; coverage 85.50% (gate 70%) |
 | Examples | 8 of 8 run |
 | Doctests | 54 passed, 12 skipped |
 | Sphinx `-W` | build succeeded |

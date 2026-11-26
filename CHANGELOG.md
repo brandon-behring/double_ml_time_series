@@ -21,7 +21,9 @@ are the compatibility contract).
   of the data files that are here). The reports were written against the November working
   copy and refer to those files, and to a module, a script and three tests that are not landed
   either. 31 test cases replay external archives and skip unless `DML_TS_EXTERNAL_REPLAY=1` is
-  set. (#65)
+  set. Two tests that replay the archived cricket forecast are held: its fold assignment
+  depends on the CPU through an unstable sort, so the forecast reproduces only on some
+  machines (#86). (#65)
 
 ### Changed
 

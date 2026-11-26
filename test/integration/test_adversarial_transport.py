@@ -30,23 +30,6 @@ def test_gss_forecasts_use_earlier_waves_and_the_same_later_target():
 
 
 @pytest.mark.tier2
-def test_archived_cricket_separates_effect_estimates_from_yearly_forecasts():
-    result = audit.cricket()
-    assert [r["year"] for r in result["later_years"]] == list(range(2015, 2026))
-    current = result["estimation_2025"]
-    assert current["test_matches"] == 946
-    assert current["effects"]["unadjusted"]["estimate"] == pytest.approx(
-        result["later_years"][-1]["target"]
-    )
-    for method, fit in current["effects"].items():
-        assert fit["clusters"] == 158
-        assert fit["se"] == pytest.approx(
-            expected["cricket"]["estimation_2025"]["effects"][method]["se"]
-        )
-    assert result["rmse"] == pytest.approx(expected["cricket"]["rmse"])
-
-
-@pytest.mark.tier2
 @pytest.mark.skipif(
     os.environ.get("DML_TS_EXTERNAL_REPLAY") != "1", reason="pinned survey and labor sources"
 )
