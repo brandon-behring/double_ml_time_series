@@ -1,0 +1,11 @@
+{
+  "seed": 20261121,
+  "repetitions": 500,
+  "workers": 24,
+  "worker_threads": 1,
+  "datasets": 1500,
+  "estimates_attempted": 4500,
+  "failed": 0,
+  "validated_held_out_estimates": 1500,
+  "wall_seconds": 15.8034584519919
+}

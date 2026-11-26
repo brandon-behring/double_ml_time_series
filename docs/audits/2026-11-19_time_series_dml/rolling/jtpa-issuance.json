@@ -1,0 +1,83 @@
+{
+  "1": {
+    "sha256": "389264166c22f0320fde67acaa99a6d86f9004a41ef3f1f2b007271d697a7f54",
+    "training": {
+      "assigned": {
+        "control": 1286,
+        "offer": 2679
+      },
+      "covered_sites": {
+        "control": 1058,
+        "offer": 2195
+      },
+      "linked": {
+        "control": 1058,
+        "offer": 2195
+      },
+      "valid_link": {
+        "control": 1041,
+        "offer": 2175
+      },
+      "observed": {
+        "control": 1041,
+        "offer": 2175
+      },
+      "observed_zeros": {
+        "control": 443,
+        "offer": 788
+      },
+      "site_observed": {
+        "CC": 250,
+        "CI": 23,
+        "CV": 631,
+        "HF": 101,
+        "IN": 850,
+        "JK": 324,
+        "LC": 215,
+        "MD": 386,
+        "PR": 326,
+        "SM": 110
+      }
+    },
+    "latest_assignment": "1988-06-30"
+  },
+  "2": {
+    "sha256": "d8fd0234aeea829dde5ff3d2748881f813a1662e064591b2070551f6a5b6018c",
+    "training": {
+      "assigned": {
+        "control": 727,
+        "offer": 1507
+      },
+      "covered_sites": {
+        "control": 606,
+        "offer": 1252
+      },
+      "linked": {
+        "control": 606,
+        "offer": 1252
+      },
+      "valid_link": {
+        "control": 594,
+        "offer": 1235
+      },
+      "observed": {
+        "control": 594,
+        "offer": 1235
+      },
+      "observed_zeros": {
+        "control": 244,
+        "offer": 442
+      },
+      "site_observed": {
+        "CC": 196,
+        "CV": 356,
+        "IN": 475,
+        "JK": 171,
+        "LC": 118,
+        "MD": 288,
+        "PR": 225
+      }
+    },
+    "latest_assignment": "1988-03-31"
+  }
+}

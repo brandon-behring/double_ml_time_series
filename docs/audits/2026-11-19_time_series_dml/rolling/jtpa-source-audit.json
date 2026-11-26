@@ -1,0 +1,12 @@
+{
+  "original_uiw_rows": 16011,
+  "marker_rows": 271,
+  "number_of_employers_is_99": 271,
+  "quarter_flag_missing": 271,
+  "sites": {
+    "MN": 229,
+    "PR": 42
+  },
+  "revised_raw_quarter_missing": 270,
+  "revised_raw_quarter_equals_99999": 0
+}

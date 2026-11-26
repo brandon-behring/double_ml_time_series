@@ -1,0 +1,29 @@
+# Could the 2022 reminder effect predict activity among new participants in 2023?
+
+The frozen estimate exceeded the later randomized effect by **0.0590 log units** (95% participant-bootstrap interval −0.0279 to +0.1469). The forecast was +0.0424 and the later estimate was −0.0166. In terms of geometric means of steps plus 0.5, the 2022 prediction implies a ratio of 1.043 and the later comparison gives 0.984. A zero-effect prediction was closer in this cohort. Sampling uncertainty permits both positive and negative signed errors. [Published myBPmyLife trial](https://doi.org/10.2196/78218) · [Analysis](../external/forward/reminders.py)
+
+## Matched calendar cohorts
+
+The December 31, 2022 freeze separates **131 participants with 34,643 decisions** from **115 new participants with 32,548 decisions**. Both cohorts contribute study days 14–97, in the active phase, on eligible occasions with heart rate present before assignment. Baseline demographics and steps, the pre-decision step count and the one-hour outcome must be present, as in the published replication. The first cohort had time to complete the entire window and an additional day for the last possible outcome before the freeze. Enrollment plus study day identifies the calendar date. The archive does not give every decision's exact wall-clock time. The chronological splitter operates on unique enrollment dates and all rows from one person remain together. [Enrollment codebook and source](https://github.com/WIRED-L-um/myBPmyLife-Primary-Analysis/tree/f47ce32b896f55b2c7279b35aab790a75f4398b1) · [Decision data and codebook](https://github.com/WIRED-L-um/MRT_myBPmyLife/tree/fa86c0d44ced3876f4a7351bc2d475fc4249342e)
+
+| Days 14–97, per eligible decision | Estimate in log units | 95% interval |
+|---|---:|---:|
+| Early randomized effect, frozen | +0.0424 | [−0.0143, +0.1003] |
+| Later randomized effect | −0.0166 | [−0.0840, +0.0508] |
+| Frozen forecast minus later effect | +0.0590 | [−0.0279, +0.1469] |
+| Zero forecast minus later effect | +0.0166 | [−0.0508, +0.0840] |
+| Forecast using later cohort's enrollment ages | +0.0490 | [−0.0080, +0.1059] |
+| Age-informed forecast minus later effect | +0.0656 | [−0.0220, +0.1557] |
+| Later orthogonal estimate with earlier outcome adjustment | −0.0140 | [−0.0823, +0.0546] |
+
+The target is the proximal effect of **assignment to an activity prompt versus assignment to no prompt** on log(next-hour steps + 0.5) in the prevailing reminder schedule. The activity and no-prompt probabilities are 0.125 and 0.75. Diet prompts make up the third arm. There were 4,279 activity and 26,061 no-prompt occasions early, and 4,127 and 24,434 later. The primary estimate uses self-normalized inverse-probability means in each arm, which here equal simple arm means because assignment probabilities are constant. Native partial regression gives the same coefficient. The known-probability augmented estimate uses two age groups (over 65 or younger) and arm-specific outcome means fitted on the earlier people. All three arms enter its standardization and the residual correction uses only the corresponding arm. [Prior full-sample replay](../11-external-replication-benchmarks.md#seven-additional-published-results)
+
+The enrollment-age sensitivity changes the earlier age-group mix to the later analytic cohort's mix. It projects each age group's decision frequency from the earlier people, so the prediction uses no later step outcomes or realized decision counts. Its interpretation conditions on membership in the analyzed later cohort. The signed-error intervals resample whole people separately in each era, 2,000 times with a fixed seed, refitting age means and recomputing both estimates and their difference. These intervals treat the observed calendar eras as given. The gain in absolute error over predicting zero was −0.0424 log units (−0.0963 to +0.0334). This measures performance on one later cohort.
+
+**Window checks.** Restricting to days 14–41 gave an earlier estimate of −0.0460, later −0.0066 and error −0.0394 [−0.1857, +0.1030]. Requiring the entire shorter window before the cutoff changes cohort membership to 159 early and 114 later people. On days 14–97, excluding occasions with another decision in the following hour removed 222 earlier and 157 later rows. The resulting error was +0.0586 [−0.0289, +0.1472]. The main estimate includes these occasions as part of the usual schedule.
+
+The target gives each eligible decision equal weight. Frequent watch wearers therefore contribute more decisions than occasional wearers. Interpreting the complete-case contrast causally requires that assignment did not selectively determine which next-hour outcomes were recorded. The estimate compares receipt of an assignment under the trial schedule and cannot isolate the effects of earlier accumulated notifications.
+
+**Operator and public clocks.** Enrollment and decision dates permit an operator reconstruction under the assumption that wearable outcomes were ingested by the end of their window plus the one-day margin. The archive does not record historical ingestion delays or a December 2022 data extract. The two pinned public source commits date to May and December **2025**. A public analyst could have issued the zero benchmark in 2022. We could not verify public access to these cohort-specific outcomes by that date. The previously reproduced full-sample result includes observations from both years. [Primary release](https://github.com/WIRED-L-um/myBPmyLife-Primary-Analysis/commit/f47ce32b896f55b2c7279b35aab790a75f4398b1) · [MRT release](https://github.com/WIRED-L-um/MRT_myBPmyLife/commit/fa86c0d44ced3876f4a7351bc2d475fc4249342e)
+
+Run `uv run --locked python docs/audits/2026-11-19_time_series_dml/external/forward/reminders.py --cache-dir /tmp/dml-external-bench-cache` from the repository root.

@@ -1,0 +1,423 @@
+{
+  "published_specification": {
+    "n": 15574,
+    "commuters": 497,
+    "arm_coefficients": {
+      "high": -12.944908490037252,
+      "low": -8.84580496120511,
+      "info": -0.19474688475607405
+    },
+    "cluster_se": {
+      "high": 6.037770705104078,
+      "low": 6.1280832309133215,
+      "info": 5.4033081281231805
+    },
+    "control_mean": 96.8782329790197
+  },
+  "history_adjusted_specification": {
+    "n": 15574,
+    "commuters": 497,
+    "arm_coefficients": {
+      "high": -14.458288808572036,
+      "low": -8.278346637345988,
+      "info": -0.5828176143022186
+    },
+    "cluster_se": {
+      "high": 5.776587351636614,
+      "low": 5.829273185748858,
+      "info": 5.2664970538806175
+    },
+    "control_mean": 96.8782329790197
+  },
+  "baseline_days_range": [
+    3,
+    62
+  ],
+  "monthly_support": [
+    {
+      "month": "2017-03",
+      "arm": "ctrl",
+      "assigned_people": 9,
+      "scheduled_days": 57,
+      "observed_days": 47,
+      "observed_people": 8,
+      "lost_days": 10
+    },
+    {
+      "month": "2017-03",
+      "arm": "high",
+      "assigned_people": 9,
+      "scheduled_days": 42,
+      "observed_days": 30,
+      "observed_people": 6,
+      "lost_days": 12
+    },
+    {
+      "month": "2017-03",
+      "arm": "info",
+      "assigned_people": 13,
+      "scheduled_days": 68,
+      "observed_days": 50,
+      "observed_people": 12,
+      "lost_days": 18
+    },
+    {
+      "month": "2017-03",
+      "arm": "low",
+      "assigned_people": 3,
+      "scheduled_days": 13,
+      "observed_days": 13,
+      "observed_people": 3,
+      "lost_days": 0
+    },
+    {
+      "month": "2017-04",
+      "arm": "ctrl",
+      "assigned_people": 30,
+      "scheduled_days": 286,
+      "observed_days": 220,
+      "observed_people": 27,
+      "lost_days": 66
+    },
+    {
+      "month": "2017-04",
+      "arm": "high",
+      "assigned_people": 17,
+      "scheduled_days": 168,
+      "observed_days": 121,
+      "observed_people": 15,
+      "lost_days": 47
+    },
+    {
+      "month": "2017-04",
+      "arm": "info",
+      "assigned_people": 28,
+      "scheduled_days": 238,
+      "observed_days": 162,
+      "observed_people": 23,
+      "lost_days": 76
+    },
+    {
+      "month": "2017-04",
+      "arm": "low",
+      "assigned_people": 15,
+      "scheduled_days": 136,
+      "observed_days": 128,
+      "observed_people": 14,
+      "lost_days": 8
+    },
+    {
+      "month": "2017-05",
+      "arm": "ctrl",
+      "assigned_people": 33,
+      "scheduled_days": 327,
+      "observed_days": 236,
+      "observed_people": 29,
+      "lost_days": 91
+    },
+    {
+      "month": "2017-05",
+      "arm": "high",
+      "assigned_people": 22,
+      "scheduled_days": 249,
+      "observed_days": 180,
+      "observed_people": 21,
+      "lost_days": 69
+    },
+    {
+      "month": "2017-05",
+      "arm": "info",
+      "assigned_people": 35,
+      "scheduled_days": 334,
+      "observed_days": 237,
+      "observed_people": 34,
+      "lost_days": 97
+    },
+    {
+      "month": "2017-05",
+      "arm": "low",
+      "assigned_people": 25,
+      "scheduled_days": 253,
+      "observed_days": 180,
+      "observed_people": 21,
+      "lost_days": 73
+    },
+    {
+      "month": "2017-06",
+      "arm": "ctrl",
+      "assigned_people": 56,
+      "scheduled_days": 579,
+      "observed_days": 450,
+      "observed_people": 55,
+      "lost_days": 129
+    },
+    {
+      "month": "2017-06",
+      "arm": "high",
+      "assigned_people": 43,
+      "scheduled_days": 360,
+      "observed_days": 295,
+      "observed_people": 41,
+      "lost_days": 65
+    },
+    {
+      "month": "2017-06",
+      "arm": "info",
+      "assigned_people": 68,
+      "scheduled_days": 549,
+      "observed_days": 456,
+      "observed_people": 67,
+      "lost_days": 93
+    },
+    {
+      "month": "2017-06",
+      "arm": "low",
+      "assigned_people": 47,
+      "scheduled_days": 404,
+      "observed_days": 308,
+      "observed_people": 40,
+      "lost_days": 96
+    },
+    {
+      "month": "2017-07",
+      "arm": "ctrl",
+      "assigned_people": 74,
+      "scheduled_days": 769,
+      "observed_days": 587,
+      "observed_people": 68,
+      "lost_days": 182
+    },
+    {
+      "month": "2017-07",
+      "arm": "high",
+      "assigned_people": 62,
+      "scheduled_days": 605,
+      "observed_days": 464,
+      "observed_people": 52,
+      "lost_days": 141
+    },
+    {
+      "month": "2017-07",
+      "arm": "info",
+      "assigned_people": 79,
+      "scheduled_days": 842,
+      "observed_days": 669,
+      "observed_people": 74,
+      "lost_days": 173
+    },
+    {
+      "month": "2017-07",
+      "arm": "low",
+      "assigned_people": 62,
+      "scheduled_days": 615,
+      "observed_days": 443,
+      "observed_people": 54,
+      "lost_days": 172
+    },
+    {
+      "month": "2017-08",
+      "arm": "ctrl",
+      "assigned_people": 23,
+      "scheduled_days": 99,
+      "observed_days": 66,
+      "observed_people": 18,
+      "lost_days": 33
+    },
+    {
+      "month": "2017-08",
+      "arm": "high",
+      "assigned_people": 24,
+      "scheduled_days": 131,
+      "observed_days": 92,
+      "observed_people": 20,
+      "lost_days": 39
+    },
+    {
+      "month": "2017-08",
+      "arm": "info",
+      "assigned_people": 23,
+      "scheduled_days": 132,
+      "observed_days": 55,
+      "observed_people": 16,
+      "lost_days": 77
+    },
+    {
+      "month": "2017-08",
+      "arm": "low",
+      "assigned_people": 24,
+      "scheduled_days": 147,
+      "observed_days": 102,
+      "observed_people": 20,
+      "lost_days": 45
+    },
+    {
+      "month": "2017-09",
+      "arm": "ctrl",
+      "assigned_people": 1,
+      "scheduled_days": 10,
+      "observed_days": 5,
+      "observed_people": 1,
+      "lost_days": 5
+    },
+    {
+      "month": "2017-09",
+      "arm": "info",
+      "assigned_people": 1,
+      "scheduled_days": 1,
+      "observed_days": 0,
+      "observed_people": 0,
+      "lost_days": 1
+    }
+  ],
+  "rolling": [
+    {
+      "month": "2017-03",
+      "train_days": 0,
+      "train_people": 0,
+      "last_training_date": null,
+      "test_high": 0,
+      "test_ctrl": 0,
+      "prior": {
+        "effect": null,
+        "se": null
+      },
+      "unadjusted": {
+        "effect": null,
+        "se": null
+      },
+      "status": "insufficient scored arms"
+    },
+    {
+      "month": "2017-04",
+      "train_days": 77,
+      "train_people": 14,
+      "last_training_date": "2017-03-31",
+      "test_high": 11,
+      "test_ctrl": 15,
+      "prior": {
+        "effect": -34.447012569841775,
+        "se": 49.595489102869735
+      },
+      "unadjusted": {
+        "effect": -21.156671571122462,
+        "se": 21.29196749723014
+      },
+      "status": "scored",
+      "adjusted": {
+        "effect": -23.943126806130927,
+        "se": 23.066126888977298
+      },
+      "heldout_control_rmse": 77.74074194428805,
+      "zero_change_control_rmse": 68.97758413697875
+    },
+    {
+      "month": "2017-05",
+      "train_days": 418,
+      "train_people": 42,
+      "last_training_date": "2017-04-28",
+      "test_high": 14,
+      "test_ctrl": 21,
+      "prior": {
+        "effect": -22.891657471955515,
+        "se": 17.645779563442208
+      },
+      "unadjusted": {
+        "effect": -16.126584073852527,
+        "se": 12.872033082332427
+      },
+      "status": "scored",
+      "adjusted": {
+        "effect": -11.987486057505032,
+        "se": 13.435870571626044
+      },
+      "heldout_control_rmse": 41.5343979998877,
+      "zero_change_control_rmse": 38.47360560171625
+    },
+    {
+      "month": "2017-06",
+      "train_days": 834,
+      "train_people": 76,
+      "last_training_date": "2017-05-31",
+      "test_high": 18,
+      "test_ctrl": 16,
+      "prior": {
+        "effect": -19.11522356590159,
+        "se": 10.892109329566706
+      },
+      "unadjusted": {
+        "effect": -15.121960183463454,
+        "se": 15.086553439756697
+      },
+      "status": "scored",
+      "adjusted": {
+        "effect": -14.536807427501602,
+        "se": 17.468256588668357
+      },
+      "heldout_control_rmse": 53.603457452427136,
+      "zero_change_control_rmse": 49.037546732064804
+    },
+    {
+      "month": "2017-07",
+      "train_days": 1579,
+      "train_people": 158,
+      "last_training_date": "2017-06-30",
+      "test_high": 39,
+      "test_ctrl": 50,
+      "prior": {
+        "effect": -14.479896355433457,
+        "se": 7.555154041945685
+      },
+      "unadjusted": {
+        "effect": -14.860405644977082,
+        "se": 11.3991861033814
+      },
+      "status": "scored",
+      "adjusted": {
+        "effect": -13.264618158056766,
+        "se": 11.303347295768841
+      },
+      "heldout_control_rmse": 58.444168156367724,
+      "zero_change_control_rmse": 56.97390015889491
+    },
+    {
+      "month": "2017-08",
+      "train_days": 2630,
+      "train_people": 230,
+      "last_training_date": "2017-07-31",
+      "test_high": 20,
+      "test_ctrl": 18,
+      "prior": {
+        "effect": -14.337478964270842,
+        "se": 6.282695549720677
+      },
+      "unadjusted": {
+        "effect": -7.910231545369015,
+        "se": 21.806682868918625
+      },
+      "status": "scored",
+      "adjusted": {
+        "effect": -0.6940229688062498,
+        "se": 20.392847378844433
+      },
+      "heldout_control_rmse": 55.11137158899389,
+      "zero_change_control_rmse": 60.294390963508896
+    },
+    {
+      "month": "2017-09",
+      "train_days": 2788,
+      "train_people": 233,
+      "last_training_date": "2017-08-28",
+      "test_high": 0,
+      "test_ctrl": 1,
+      "prior": {
+        "effect": -15.852476283818817,
+        "se": 6.542189094310019
+      },
+      "unadjusted": {
+        "effect": null,
+        "se": null
+      },
+      "status": "insufficient scored arms"
+    }
+  ]
+}

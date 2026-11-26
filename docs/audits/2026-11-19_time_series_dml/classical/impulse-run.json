@@ -1,0 +1,18 @@
+{
+  "seed": 20261121,
+  "rho": 0.6,
+  "beta": 1.0,
+  "paths": 1000,
+  "estimates": 6000,
+  "workers": 2,
+  "threads_per_worker": 1,
+  "serial_replay": [
+    300,
+    0
+  ],
+  "horizons": [
+    0,
+    1,
+    4
+  ]
+}

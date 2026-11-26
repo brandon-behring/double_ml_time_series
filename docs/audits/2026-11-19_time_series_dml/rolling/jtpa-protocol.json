@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "study": "National JTPA Study",
+  "design": "Blinded historical replay at a reconstructed operator cutoff. This is a local protocol freeze before opening the participant outcomes, not a contemporaneous public forecast.",
+  "source": "https://www.upjohn.org/sites/default/files/2019-02/jtpa_national_evaluation.zip",
+  "source_schema": {
+    "baseline": "Data/expbif/expbif_stata.zip, expbif.dta, one record per recid. Use the authors' experimental target groups adultm/adultf, ra_dt, assignment and site fields; use only preassignment covariates.",
+    "outcome": "Data/expuiw/uiw_stata.zip, uiw.dta, original unscaled unemployment-insurance wage records. Use uearn01 for calendar quarter +1; uearn_00 is the quarter of assignment. Flag and record duplicate IDs, missing linkage and missing earnings. Keep recorded zeros. Never replace an unavailable wage record with zero.",
+    "vintage": "Use the original Abt quarterly file. Reporting delays are assumptions. The archive contains revised data and no timestamped operator snapshots."
+  },
+  "target": "Adult JTPA offer effect on first full quarter UI-covered earnings",
+  "intervention": "Assignment to access JTPA services",
+  "comparator": "Assignment to control",
+  "unit": "nominal USD per adult",
+  "horizon": "first full calendar quarter after random assignment",
+  "origins": ["1989-01-01"],
+  "methods": ["zero", "historical", "dml"],
+  "holdout": "[1989-01-01,1989-04-01) assignments; earnings in 1989Q2. Each distinct adult receives equal weight.",
+  "eligibility": "Use the original authors' adult target-group definition, covered sites in the original UIW file, valid linkage and observed quarterly earnings. Define site coverage by availability of UI records, independent of wages. Tabulate all assigned adults, coverage, linkage, missingness and arm counts at every stage. If individual wage ascertainment is incomplete, interpret the complete-case contrast conditionally; no unconditional ITT claim without an ascertainment assumption.",
+  "maturity": "On 1989-01-01 train on earlier adult assignments whose quarter +1 has ended, and for which one full additional reporting quarter has ended. Repeat with two full additional reporting quarters. A quarter ending 1988-12-31 is complete at this origin. Do not use holdout covariates to form forecasts.",
+  "assignment": "The adult experiment assigned access with probability 2/3; the temporary 3:1 and 6:1 exceptions applied to out-of-school youths. Use the archived adult assignment indicator, with cross-checks against the alternate treatment/control field. Keep noncompliers in their assigned group.",
+  "forecasts": "Zero; pooled earlier difference in means; earlier five-fold participant-cross-fitted augmented inverse-probability (AIPW) effect with p=2/3. Fit separate ridge outcome regressions (alpha=1 with intercept, no tuning) by assignment arm, using baseline site, adult gender and age. Deterministic folds by sorted participant ID, shuffled seed 19890101. No holdout data inform nuisance fits, standardization or fold selection. Equal weight for each eligible historical adult.",
+  "benchmark": "Later assignment-arm difference in mean recorded earnings with Neyman two-arm standard error. Use the same holdout and benchmark for both lags. Report early and later site mix, counts and missingness to expose target drift.",
+  "scoring": "For each frozen forecast publish signed error (forecast minus later contrast), conditional 95% normal interval for error holding this issuance fixed, squared error and paired squared-error advantages over zero and historical. No generalization across forecast dates from this single cohort. Show equivalence sensitivity using 90% intervals at illustrative margins 50, 100 and 250 dollars. No deployment recommendation without costs.",
+  "failure": "Fail closed on duplicate participant IDs, unresolvable date/assignment coding, structural absence of a required source field, negative earnings outside a documented code, unsupported comparison, or insufficient data for the target. Record non-scoreable cases, and label any target-changing revision exploratory."
+}

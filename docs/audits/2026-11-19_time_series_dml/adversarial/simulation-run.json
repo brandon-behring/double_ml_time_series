@@ -1,0 +1,11 @@
+{
+  "seed": 20261121,
+  "n": 1200,
+  "draws_per_cell": 500,
+  "workers": 24,
+  "worker_threads": 1,
+  "datasets": 3000,
+  "estimates_attempted": 15000,
+  "failures": 0,
+  "wall_seconds": 20.436712876020465
+}

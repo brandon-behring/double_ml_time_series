@@ -1,0 +1,50 @@
+{
+  "issued_utc": "2026-11-21T02:17:47+00:00",
+  "source": "https://cricsheet.org/downloads/t20s_json.zip",
+  "source_sha256": "956f29df9d2b95dd6fe12de5bc70d4522f23693e5e7e2ac4c1a004e1b541ad8e",
+  "history_sha256": "6ed9c19769f0a8430fbd3fd5d6762990e5ace58b66220809b4f811f6e20d876c",
+  "historical_status": {
+    "eligible": 5848,
+    "uncontested": 1
+  },
+  "first_match": "2005-02-17",
+  "latest_match": "2026-11-01",
+  "forecasts": {
+    "zero": 0.0,
+    "historical": 1.3166894665,
+    "half_history": 0.65834473325,
+    "dml": 0.7315953616
+  },
+  "windows": {
+    "annual": {
+      "file": "cricket-annual-frozen.json",
+      "sha256": "e9c2acf2ef96df10c741fc440f18cf87fede061266e28a7dda76f51c29314ddc",
+      "start": "2026-12-01",
+      "end_exclusive": "2027-12-01"
+    },
+    "q1": {
+      "file": "cricket-q1-frozen.json",
+      "sha256": "83b5a6a0638af3207f7a73ce680f9dd1ec50aaa70212f31f1521a13292c1ada6",
+      "start": "2026-12-01",
+      "end_exclusive": "2027-03-01"
+    },
+    "q2": {
+      "file": "cricket-q2-frozen.json",
+      "sha256": "5a99c652257a381ed81b5fb417bce7f9d1b9be26eb83bd0e8e4ad5d04f3f5a50",
+      "start": "2027-03-01",
+      "end_exclusive": "2027-06-01"
+    },
+    "q3": {
+      "file": "cricket-q3-frozen.json",
+      "sha256": "b26b193455fbe1362ef057b07c9e40001ef6adad6946d79aa35e605f15168081",
+      "start": "2027-06-01",
+      "end_exclusive": "2027-09-01"
+    },
+    "q4": {
+      "file": "cricket-q4-frozen.json",
+      "sha256": "d631085b33881b4746f63636ee625644907915623d93c5ff83d56292fe746056",
+      "start": "2027-09-01",
+      "end_exclusive": "2027-12-01"
+    }
+  }
+}

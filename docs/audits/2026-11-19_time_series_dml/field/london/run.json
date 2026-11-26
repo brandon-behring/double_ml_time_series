@@ -1,0 +1,152 @@
+{
+  "source_sha256": {
+    "tariffs": "8a2eff6dcb737aee96cfa6c357d2947604d7f812896405c2ab5f98433d2cb150",
+    "meters": "149a6a9c43c622fd0a14b7d11be055665317d3018d9fb7e1043bd51420bfaea5"
+  },
+  "partitions": 168,
+  "raw_rows": 167932474,
+  "selected_rows_all_clock_conventions": 2070695,
+  "duplicated_meter_interval_rows_all_clocks": 0,
+  "missing_readings_all_clocks": 0,
+  "households": {
+    "Std": 4443,
+    "ToU": 1123
+  },
+  "allocation_support": [
+    {
+      "quarter": 0,
+      "high": 24,
+      "low": 24,
+      "matched_hours": [
+        2,
+        5,
+        8,
+        11,
+        14,
+        17,
+        20,
+        23
+      ],
+      "high_hours": [
+        2,
+        5,
+        8,
+        11,
+        14,
+        17,
+        20,
+        23
+      ],
+      "low_hours": [
+        2,
+        5,
+        8,
+        11,
+        14,
+        17,
+        20,
+        23
+      ],
+      "all_eight_start_times_estimable": true
+    },
+    {
+      "quarter": 1,
+      "high": 9,
+      "low": 5,
+      "matched_hours": [
+        5,
+        14,
+        23
+      ],
+      "high_hours": [
+        5,
+        11,
+        14,
+        17,
+        23
+      ],
+      "low_hours": [
+        2,
+        5,
+        8,
+        14,
+        23
+      ],
+      "all_eight_start_times_estimable": false
+    },
+    {
+      "quarter": 2,
+      "high": 7,
+      "low": 4,
+      "matched_hours": [
+        2,
+        11,
+        14,
+        20
+      ],
+      "high_hours": [
+        2,
+        8,
+        11,
+        14,
+        17,
+        20
+      ],
+      "low_hours": [
+        2,
+        11,
+        14,
+        20
+      ],
+      "all_eight_start_times_estimable": false
+    },
+    {
+      "quarter": 3,
+      "high": 6,
+      "low": 8,
+      "matched_hours": [
+        2,
+        5,
+        8,
+        20
+      ],
+      "high_hours": [
+        2,
+        5,
+        8,
+        20,
+        23
+      ],
+      "low_hours": [
+        2,
+        5,
+        8,
+        11,
+        14,
+        17,
+        20
+      ],
+      "all_eight_start_times_estimable": false
+    },
+    {
+      "quarter": 4,
+      "high": 2,
+      "low": 7,
+      "matched_hours": [],
+      "high_hours": [
+        2,
+        20
+      ],
+      "low_hours": [
+        5,
+        8,
+        11,
+        17,
+        23
+      ],
+      "all_eight_start_times_estimable": false
+    }
+  ],
+  "planting_seed": 20261121,
+  "planting_repetitions_per_cell": 500
+}

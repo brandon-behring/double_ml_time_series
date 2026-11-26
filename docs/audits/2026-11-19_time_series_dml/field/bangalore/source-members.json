@@ -1,0 +1,32 @@
+{
+  "treatment/full_daily_logs.csv": {
+    "start": 208570398,
+    "length": 260443,
+    "sha256": "2ac168d295392e012f9846b3f23fc278af5f3846a9ee4e5fa81924c5595a88fd"
+  },
+  "coded_gps/quality_all.csv": {
+    "start": 10717502,
+    "length": 2219625,
+    "sha256": "563335a2068b0d8f79730b512159df45391d7b8c1a8e4067da78dd59618d032b"
+  },
+  "coded_gps/sample_exp_chains_15 no PII.csv": {
+    "start": 47892829,
+    "length": 24529751,
+    "sha256": "2853917a552949f340fa998d3f2950358f2fb16bd38e0a4aa8cb994c766ba69b"
+  },
+  "coded_gps/charges_trips_dt_15.csv": {
+    "start": 8409876,
+    "length": 2306151,
+    "sha256": "88f13d273857e92e75232576c7d2a7dc56f2813904cfad5dbde27cfbc5230559"
+  },
+  "treatment/prerandomized_assignment.csv": {
+    "start": 208830929,
+    "length": 428741,
+    "sha256": "c630bad2ce7bb859354f6f7e93df1afc23ba4034eb3b2625273ab80db3162e9c"
+  },
+  "treatment/treatment roster noPII.csv": {
+    "start": 209682090,
+    "length": 30350,
+    "sha256": "2bb3f948d45708e4c2415e2ffc514af11c8a8026a8b7fdc887508fdd0d2d1bd2"
+  }
+}
