@@ -9,7 +9,7 @@ description: "Research-pipeline patterns for deployed causal inference (book-com
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_10.tex
-source_sha256: c3c41ddca0f39a4dad55966f272fa571aa999cf14480e5b3a524ae69c57a8274
+source_sha256: 33df3ede7ff245892c5e36a80390d0c46b0a0ade9c0f5bb1667f1ccfd6fc6ac3
 provenance:
   ai_tools:
     - Claude Code
@@ -79,10 +79,10 @@ DML models have a unique architecture requiring specialized serialization.
 A deployment-oriented DML model would need to serialize:
 
 1. **Nuisance models** for each cross-fitting fold:
-   - Propensity model: $\hat{e}(X) \approx P(T=1 \mid X)$.
-   - Outcome model: $\hat{m}(X) \approx \mathbb{E}[Y \mid X]$.
+   - For a continuous treatment, store models for $\mathbb{E}[T\mid X]$ and $\mathbb{E}[Y\mid X]$.
+   - For a binary treatment, store a propensity model and outcome regressions for both treatment arms.
 2. **Cross-fitting configuration** (K folds, temporal blocking).
-3. **Feature transformer** (scaling, encoding).
+3. **Feature preprocessing** fitted on each learner's training sample.
 4. **HAC parameters** for time series standard errors.
 5. **Training metadata** (data snapshot, hyperparameters).
 
@@ -496,90 +496,24 @@ Model Serving
 
 ### InsuranceDMLPipeline implementation
 
-```python
-class InsuranceDMLPipeline:
-    """Research DML pipeline for insurance pricing analysis."""
+Each fold fits its own feature scalers and nuisance models on the training rows. With a time column configured, supply one series in chronological order. The estimator scores dates having held-out predictions. The initial training block supplies history for the first fold. The result records both the total and the scored sample counts.
 
-    def __init__(self, config: PipelineConfig):
-        self.config = config
-        self._registry = DMLModelRegistry(config.model_registry_path)
-        self._monitor = CausalMonitor()
-        self._scheduler = RetrainScheduler(monitor=self._monitor)
+For continuous treatment, let $v_i=T_i-\hat m(X_i)$ and $u_i=Y_i-\hat\ell(X_i)$ be held-out residuals. The fitted slope and influence score use the same scored rows:
 
-    def fit(
-        self,
-        X: np.ndarray,
-        T: np.ndarray,
-        Y: np.ndarray,
-        baseline_ate: Optional[float] = None,
-    ) -> PipelineResult:
-        """
-        Fit DML pipeline to data.
+$$
+\hat\theta=\frac{\sum_i v_i u_i}{\sum_i v_i^2},
+\qquad
+\hat\psi_i=\frac{v_i(u_i-\hat\theta v_i)}{n_{\mathrm{used}}^{-1}\sum_j v_j^2}.
+$$
 
-        Stages:
-        1. Data preparation (scaling)
-        2. Cross-fitted nuisance estimation
-        3. ATE estimation with orthogonalization
-        4. HAC standard errors (time series)
-        5. Monitoring checks
-        6. Model versioning
-        """
-        # Prepare data
-        X_scaled, T, Y = self._prepare_data(X, T, Y)
+For binary treatment, each fold fits an assignment probability $\hat e$ and two outcome means $\hat\mu_a(X)=\widehat{\mathbb{E}}[Y\mid T=a,X]$. The implementation clips predicted probabilities to $[0.01,0.99]$ before dividing. The average treatment effect is the mean of the held-out augmented inverse-probability-weighted outcomes
 
-        # Create cross-validator
-        cv = self._create_cross_validator(len(T))
+$$
+h_i = \hat\mu_1-\hat\mu_0 + \frac{T_i(Y_i-\hat\mu_1)}{\hat e}
+       -\frac{(1-T_i)(Y_i-\hat\mu_0)}{1-\hat e}.
+$$
 
-        # Fit nuisance models per fold
-        propensity_scores = np.zeros(len(T))
-        outcome_predictions = np.zeros(len(T))
-        nuisance_models = {}
-
-        for fold_idx, (train_idx, test_idx) in enumerate(cv.split(X_scaled)):
-            prop_model, out_model = self._fit_fold(
-                X_scaled, T, Y, train_idx, test_idx
-            )
-            propensity_scores[test_idx] = self._predict_propensity(
-                prop_model, X_scaled[test_idx]
-            )
-            outcome_predictions[test_idx] = out_model.predict(X_scaled[test_idx])
-            nuisance_models[fold_idx] = (prop_model, out_model)
-
-        # Compute ATE via orthogonalization
-        ate, ate_se = self._compute_ate(
-            Y, outcome_predictions, T, propensity_scores
-        )
-
-        # Run monitoring
-        monitoring_results = self._monitor.run_all_checks(
-            propensity_scores=propensity_scores,
-            r2_propensity=self._compute_r2(propensity_scores, T),
-            r2_outcome=self._compute_r2(outcome_predictions, Y),
-            current_effect=ate,
-            baseline_effect=baseline_ate,
-        )
-
-        # Create and register model version
-        version = DMLModelVersion.create(
-            model_type="double_ml",
-            nuisance_models=nuisance_models,
-            feature_names=self.config.feature_columns,
-            treatment_name=self.config.treatment_column,
-            outcome_name=self.config.outcome_column,
-            hyperparameters=self._get_hyperparameters(),
-        )
-        version_id = self._registry.register(version)
-
-        return PipelineResult(
-            ate=ate,
-            ate_se=ate_se,
-            ate_ci_lower=ate - 1.96 * ate_se,
-            ate_ci_upper=ate + 1.96 * ate_se,
-            nuisance_metrics={"r2_propensity": ..., "r2_outcome": ...},
-            monitoring_results=monitoring_results,
-            model_version=version_id,
-        )
-```
+The binary influence score is $h_i-\bar h$. For either treatment, the independent-observation SE is the score's sample standard deviation divided by $\sqrt{n_{\mathrm{used}}}$. With HAC enabled, the pipeline uses the long-run variance of these scores in date order. Probability-overlap monitoring uses the original, unclipped predictions in the binary example. For continuous treatment, identification requires residual variation in the dose. Each serialized fold keeps its fitted preprocessing with its models.
 
 ### Workflow orchestration
 
@@ -649,102 +583,59 @@ with DAG(
 
 ## Insurance pricing case study
 
-We conclude with a complete example applying the research/demo pipeline to insurance competitor pricing.
+### Two simulated retention studies
 
-### Problem setup
+Consider two simulated insurance retention studies, each observing one customer decision per period at 400 ordered dates. In the price study, the treatment is a competitor's price difference measured in tens of dollars. By construction each additional ten dollars raises the probability of retention by 0.10, holding the controls fixed. In the offer study, a binary renewal offer raises retention probability by 0.20. The two outcomes are simulated separately on the same covariate history.
 
-An insurance company wants to estimate how competitor pricing affects policy retention:
-
-- **Treatment**: competitor price difference (continuous).
-- **Outcome**: retention indicator (binary).
-- **Confounders**: customer demographics, policy features, macroeconomic conditions.
-- **Time series**: quarterly observations with autocorrelation.
-
-### Pipeline configuration
+Four expanding folds use 80 dates for the initial training block and score the following 320 dates. Both fits use linear outcome regressions, with one regression per arm for the offer. The continuous price model is linear and the binary assignment model uses logistic regression. Each interval uses Bartlett HAC with four lags and a normal critical value of 1.96.
 
 ```python
-from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+from tempfile import TemporaryDirectory
+
+import numpy as np
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from dml_ts.production import InsuranceDMLPipeline, PipelineConfig
 
-config = PipelineConfig(
-    n_folds=5,
-    model_registry_path="./models/insurance_dml",
+rng = np.random.default_rng(42)
+x = rng.uniform(-1, 1, (400, 2))
+price = x[:, 0] + rng.uniform(-1, 1, len(x))
+retained = rng.binomial(1, 0.50 + 0.10 * price + 0.10 * x[:, 1])
+offer = rng.binomial(1, 0.50 + 0.20 * x[:, 0])
+renewed = rng.binomial(1, 0.35 + 0.20 * offer + 0.10 * x[:, 1])
 
-    # Nuisance models
-    propensity_model=GradientBoostingClassifier(
-        n_estimators=100,
-        max_depth=4,
-        random_state=42,
-    ),
-    outcome_model=GradientBoostingRegressor(
-        n_estimators=100,
-        max_depth=4,
-        random_state=42,
-    ),
+with TemporaryDirectory() as registry:
+    def fit(treatment, outcome, treatment_model):
+        config = PipelineConfig(
+            n_folds=4, time_column="period", hac_bandwidth=4,
+            model_registry_path=registry,
+            propensity_model=treatment_model,
+            outcome_model=LinearRegression(),
+        )
+        return InsuranceDMLPipeline(config).fit(x, treatment, outcome)
 
-    # Time series configuration
-    use_hac=True,
-    time_column="quarter",
-
-    # Feature specification
-    feature_columns=[
-        "age", "income", "tenure", "coverage_amount",
-        "gdp_growth", "unemployment", "interest_rate",
-    ],
-    treatment_column="competitor_price_diff",
-    outcome_column="retained",
-)
-
-pipeline = InsuranceDMLPipeline(config)
+    slope = fit(price, retained, LinearRegression())
+    per_dollar = fit(10 * price, retained, LinearRegression())
+    ate = fit(offer, renewed, LogisticRegression())
+    shifted = fit(offer, renewed + 100, LogisticRegression())
 ```
 
-### Training and monitoring
+### Measured effects and uncertainty
 
-```python
-# Load data
-X, T, Y = load_insurance_data()
+**Synthetic retention estimates at 320 scored dates.** Effects are changes in retention probability per unit of the stated contrast.
 
-# Fit pipeline
-result = pipeline.fit(X, T, Y)
+| Contrast | Truth | Estimate | SE | 95% interval |
+|---|---:|---:|---:|---:|
+| Ten-dollar price change | 0.1000 | 0.1184 | 0.0510 | [0.0184, 0.2184] |
+| One-dollar price change | 0.0100 | 0.0118 | 0.0051 | [0.0018, 0.0218] |
+| Renewal offer | 0.2000 | 0.2325 | 0.0543 | [0.1261, 0.3390] |
+| Offer, outcome plus 100 | 0.2000 | 0.2325 | 0.0543 | [0.1261, 0.3390] |
 
-print(f"ATE: {result.ate:.4f}")
-print(f"95% CI: [{result.ate_ci_lower:.4f}, {result.ate_ci_upper:.4f}]")
-print(f"Nuisance R² (propensity): {result.nuisance_metrics['r2_propensity']:.3f}")
-print(f"Nuisance R² (outcome): {result.nuisance_metrics['r2_outcome']:.3f}")
+A price change of one dollar is one tenth of the first row's exposure contrast. Reporting price in dollars divides the slope, its SE and both interval endpoints by ten. The binary rows add 100 to every outcome as a check on the measurement scale. Both treatment-arm outcome models shift by the same amount, so the offer effect and its uncertainty stay the same. Each row summarizes a single simulated dataset. Repeated independent datasets would be needed to estimate coverage.
 
-# Check monitoring
-for check in result.monitoring_results:
-    if not check.is_ok():
-        print(f"ALERT: {check.message}")
+Run the companion driver with seed 42 from the repository root to reproduce the table.
 
-# Mark as active in the demo registry
-pipeline.promote_to_production()
-```
-
-### Deployment-oriented inference
-
-```python
-# Evaluate retraining need with new data
-X_new, T_new = load_new_quarter_data()
-
-results, trigger = pipeline.evaluate_retrain_need(
-    X_new, T_new,
-    X_baseline=X[:len(X_new)],
-    T_baseline=T[:len(X_new)],
-)
-
-if trigger is not None:
-    print(f"Retrain triggered: {trigger.reason}")
-    # Initiate retraining workflow
-else:
-    print("Model stable - no retraining needed")
-
-    # Predict propensity for new customers
-    propensity = pipeline.predict_propensity(X_new)
-
-    # Flag high-risk customers (extreme propensity)
-    high_risk = (propensity < 0.05) | (propensity > 0.95)
-    print(f"High-risk customers: {np.sum(high_risk)} ({np.mean(high_risk):.1%})")
+```sh
+PYTHONPATH=. python docs/audits/2026-11-19_time_series_dml/chapter10_pipeline.py
 ```
 
 ## Exercises
