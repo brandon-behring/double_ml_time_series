@@ -71,7 +71,8 @@ class TestResultAndValidation:
             )
 
     def test_mismatched_rows_rejected(self):
-        with pytest.raises(ValueError, match="same number of rows"):
+        # The wording is the shared input boundary's (``_utils.validate_lengths``).
+        with pytest.raises(ValueError, match=r"T length \(10\) must match Y length \(9\)"):
             _linear_estimator().fit(
                 np.zeros(9), np.zeros(10), np.zeros((10, 2)), groups=np.arange(10)
             )

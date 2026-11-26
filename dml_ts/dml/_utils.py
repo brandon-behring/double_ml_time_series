@@ -19,12 +19,13 @@ their own machinery.
 import decimal
 import numbers
 import os
-from collections.abc import Iterable
-from typing import Any, Literal
+from collections.abc import Iterable, Mapping
+from typing import Any, Literal, overload
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
+from scipy import sparse
 from sklearn.base import BaseEstimator, clone, is_classifier
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Lasso, Ridge
@@ -241,8 +242,32 @@ def predict_conditional_mean(model: BaseEstimator, X: NDArray[np.float64]) -> ND
     return np.asarray(probabilities @ np.asarray(model.classes_, dtype=float), dtype=float)
 
 
+def take_rows(X: Any, rows: NDArray[np.int64]) -> Any:
+    """Rows of ``X`` at the positions ``rows``, whatever ``X`` is.
+
+    ``X[rows]`` selects rows of an array and of a sparse matrix, but columns of a
+    DataFrame, by label. A DataFrame is therefore indexed with ``.iloc``. A sparse
+    matrix in a format other than CSR or CSC (COO, for one, cannot be indexed) is
+    converted to CSR first, as scikit-learn does when it fits.
+
+    Examples:
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> frame = pd.DataFrame({"a": [1.0, 2.0, 3.0]}, index=[10, 20, 30])
+        >>> take_rows(frame, np.array([0, 2]))["a"].tolist()
+        [1.0, 3.0]
+        >>> take_rows(np.arange(6).reshape(3, 2), np.array([2])).tolist()
+        [[4, 5]]
+    """
+    if hasattr(X, "iloc"):
+        return X.iloc[rows]
+    if sparse.issparse(X) and X.format not in ("csr", "csc"):
+        X = X.tocsr()
+    return X[rows]
+
+
 def cross_fit_predictions(
-    X: NDArray[np.float64],
+    X: Any,
     Y: NDArray[np.float64],
     T: NDArray[np.float64],
     splits: Iterable[tuple[NDArray[np.int64], NDArray[np.int64]]],
@@ -259,6 +284,10 @@ def cross_fit_predictions(
     isfinite guard raises (the old zeros-init silently passed a fabricated
     0.0 prediction downstream instead).
 
+    ``X`` may be an array, a sparse matrix or a DataFrame: its rows are selected
+    by position (:func:`take_rows`) and handed to the models as they are. ``Y``
+    and ``T`` must be arrays.
+
     Returns:
         Tuple of ``(Y_hat, T_hat)`` predictions, NaN where uncovered.
     """
@@ -267,7 +296,7 @@ def cross_fit_predictions(
     T_hat = np.full(n, np.nan)
 
     for train_idx, test_idx in splits:
-        X_train, X_test = X[train_idx], X[test_idx]
+        X_train, X_test = take_rows(X, train_idx), take_rows(X, test_idx)
 
         outcome_mod = clone(outcome_model)
         outcome_mod.fit(X_train, Y[train_idx])
@@ -304,7 +333,16 @@ def _is_real_number_or_missing(value: object) -> bool:
     return isinstance(value, (numbers.Real, decimal.Decimal, np.bool_))
 
 
-def _read_as_floats(name: str, values: object) -> NDArray[np.float64]:
+def _refuse_masked_entries(name: str, values: object) -> None:
+    """Refuse a masked array that has masked entries; NumPy and scikit-learn read under the mask."""
+    if isinstance(values, np.ma.MaskedArray) and np.ma.is_masked(values):
+        raise ValueError(
+            f"{name} is a masked array with masked entries. Its values would be read under "
+            "the mask; drop or fill those rows first."
+        )
+
+
+def read_as_floats(name: str, values: object) -> NDArray[np.float64]:
     """Read an outcome or a treatment as a float array, or say why it is not one.
 
     Numbers (floats, integers, booleans, and objects such as ``Decimal``) are read by their
@@ -321,23 +359,19 @@ def _read_as_floats(name: str, values: object) -> NDArray[np.float64]:
     Examples:
         >>> import numpy as np
         >>> import pandas as pd
-        >>> _read_as_floats("T", [0, 10, None]).tolist()
+        >>> read_as_floats("T", [0, 10, None]).tolist()
         [0.0, 10.0, nan]
-        >>> _read_as_floats("Y", np.array([1, 2], dtype="timedelta64[s]"))  # doctest: +ELLIPSIS
+        >>> read_as_floats("Y", np.array([1, 2], dtype="timedelta64[s]"))  # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: Y has dtype timedelta64[s], which is not a number. ...
         >>> stamps = pd.Series(pd.to_datetime(["2020-01-01", "2020-01-02"], utc=True))
-        >>> _read_as_floats("Y", stamps)  # doctest: +ELLIPSIS
+        >>> read_as_floats("Y", stamps)  # doctest: +ELLIPSIS
         Traceback (most recent call last):
             ...
         ValueError: Y holds Timestamp values (for example ...), not real numbers. ...
     """
-    if isinstance(values, np.ma.MaskedArray) and np.ma.is_masked(values):
-        raise ValueError(
-            f"{name} is a masked array with masked entries. Its values would be read under "
-            "the mask; drop or fill those rows first."
-        )
+    _refuse_masked_entries(name, values)
     try:
         array = np.asarray(values)
     except (TypeError, ValueError) as exc:
@@ -411,49 +445,145 @@ def _refuse_different_indexes(labelled: list[tuple[str, Any]]) -> None:
             )
 
 
+def read_controls_as_floats(name: str, values: object) -> NDArray[np.float64]:
+    """Read controls as a two-dimensional float array, or say why they are not one.
+
+    For the estimators that compute on the controls themselves. The refusals are those
+    of an outcome or a treatment (a datetime or timedelta, a complex value, text, a
+    masked entry); a sparse matrix is refused too, because these estimators need the
+    dense values. A one-dimensional input becomes one column.
+
+    Examples:
+        >>> import pandas as pd
+        >>> read_controls_as_floats("X", pd.DataFrame({"a": [1, 2], "b": [True, False]})).tolist()
+        [[1.0, 1.0], [2.0, 0.0]]
+        >>> read_controls_as_floats("X", [1.0, 2.0]).shape
+        (2, 1)
+        >>> read_controls_as_floats("W", pd.DataFrame({"g": ["a", "b"]}))  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: W holds text (for example 'a'), not numbers. ...
+    """
+    if sparse.issparse(values):
+        raise ValueError(
+            f"{name} is a sparse matrix. This estimator computes on the controls as a dense "
+            f"array; pass {name}.toarray() if it fits in memory."
+        )
+    array = read_as_floats(name, values)
+    if array.ndim == 1:
+        array = array.reshape(-1, 1)
+    if array.ndim != 2:
+        raise ValueError(
+            f"{name} must hold the controls with one row per observation and one column per "
+            f"control, got shape {array.shape}."
+        )
+    return array
+
+
+def refuse_unequal_indexes(inputs: Mapping[str, object]) -> None:
+    """Refuse pandas inputs whose indexes differ, in value or in order.
+
+    Rows are paired by position, and labels are never used to reorder them: a time-series
+    estimator depends on the order of its rows. Pairing by position is only right when the
+    labels agree, so two labelled inputs with different indexes are refused. Inputs
+    without a pandas index (arrays, lists, ``None``) take no part in the comparison.
+
+    Raises:
+        ValueError: Naming the first labelled input and the one whose index differs from it.
+
+    Examples:
+        >>> import pandas as pd
+        >>> y = pd.Series([1.0, 2.0, 3.0], index=[2, 0, 1])
+        >>> refuse_unequal_indexes({"Y": y, "T": [0, 1, 0], "groups": None})
+        >>> refuse_unequal_indexes({"Y": y, "T": y.sort_index()})  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: Y and T carry different pandas indexes. ...
+    """
+    # A pandas Series or DataFrame is recognized by an index that can be compared;
+    # a list also has an ``index`` attribute, which is a method.
+    labelled = [
+        (name, index)
+        for name, index in ((name, getattr(value, "index", None)) for name, value in inputs.items())
+        if hasattr(index, "equals")
+    ]
+    if labelled:
+        _refuse_different_indexes(labelled)
+
+
+@overload
 def as_validated_arrays(
-    Y: object, T: object, X: NDArray[np.float64]
-) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
-    """Read Y and T as float arrays, check the shapes, and make a flat X a column.
+    Y: object,
+    T: object,
+    X: Any,
+    *,
+    numeric_controls: Literal[True],
+    also_labelled: Mapping[str, object] | None = None,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]: ...
 
-    Rows are paired by position. ``double_ml`` indexed a pandas ``Series`` by label where
-    it indexed the controls by position: with a reordered frame its slope was wrong with
-    no error, and with other labels it raised ``KeyError``. ``fwl_estimate`` and
-    ``robinson_estimator`` multiplied two residual ``Series`` that pandas aligned by label:
-    they were right for a reordered frame and wrong, with no error, when the outcome and
-    the treatment carried different labels (#75). Reading Y and T by value removes the
-    labels.
 
-    Pairing by position is only right when the labels agree. Two pandas inputs whose
-    indexes differ, in value, in order or in the names of their levels, are therefore
-    refused: the same units in another order would be paired wrongly, and nothing in the
-    numbers would show it. The check cannot see an input whose index was reset after it
-    was reordered, and it reads by position any container whose ``index`` has no ``equals``
-    method.
+@overload
+def as_validated_arrays(
+    Y: object,
+    T: object,
+    X: Any,
+    *,
+    numeric_controls: Literal[False] = False,
+    also_labelled: Mapping[str, object] | None = None,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], Any]: ...
 
-    This function does not convert a two-dimensional X; it checks its row count and
-    returns it as given. A list is read as an array, and a one-dimensional X becomes one
-    column of an array, also when it was a ``Series``. What then happens to X is the
-    caller's affair: ``robinson_estimator`` hands it to the nuisance model, so a DataFrame
-    keeps its column names and dtypes and a sparse matrix stays sparse there;
-    ``double_ml`` selects fold rows with ``X[rows]``, which works for an array and a CSR
-    or CSC matrix and raises ``KeyError`` for a DataFrame; ``fwl_estimate`` stacks X into a
-    dense design, which a DataFrame of numbers survives and a sparse matrix does not.
+
+def as_validated_arrays(
+    Y: object,
+    T: object,
+    X: Any,
+    *,
+    numeric_controls: bool = False,
+    also_labelled: Mapping[str, object] | None = None,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], Any]:
+    """The one input boundary of the estimators: read Y, T and X, and check that they pair.
+
+    Every public estimator in ``dml_ts.dml`` except ``PanelDML`` reads its inputs here.
+
+    1. **Y and T are read by value as floats.** Lists, integers, booleans, ``Decimal``
+       objects and nullable pandas columns are read by their values. What conversion
+       would misread is refused by the argument's name: a datetime or timedelta, a
+       complex value, text, a masked array with masked entries, and anything that is
+       not one-dimensional.
+    2. **Rows are paired by position, and unequal pandas indexes are refused.** Labels
+       are never used to reorder rows. The same units in another order, or a ``Series``
+       rebuilt with a fresh index beside one with a date index, are refused; the message
+       names ``.to_numpy()`` as the way through when the rows already agree.
+    3. **Controls.** With ``numeric_controls=False`` (``robinson_estimator``,
+       ``double_ml``) a two-dimensional X is handed to the nuisance model as it was
+       given: a DataFrame keeps its column names and dtypes and a sparse matrix stays
+       sparse; only the row count is checked, and rows are selected by position. (A
+       masked array with masked entries is refused there too: a learner would read under
+       the mask.) With
+       ``numeric_controls=True`` (``fwl_estimate``, ``TemporalPLRDML``,
+       ``RollingWindowDML``, ``DynamicGEstimationDML``) the estimator computes on the
+       controls, so X is converted to a float array under the refusals of point 1, and a
+       sparse matrix is refused.
 
     Args:
         Y: Outcome: a one-dimensional sequence of numbers.
         T: Treatment: likewise.
         X: Controls with one row per observation.
+        numeric_controls: Whether the caller computes on X (see point 3).
+        also_labelled: Further inputs, by argument name, whose pandas indexes must equal
+            those of Y, T and X (for example ``{"W": W, "groups": groups}``). Only their
+            indexes are read here.
 
     Returns:
-        ``(Y, T, X)``: Y and T as float arrays; X as given, or as an array if it was a
-        list, or as one column if it was one-dimensional.
+        ``(Y, T, X)``: Y and T as float arrays. X as a two-dimensional float array if
+        ``numeric_controls``; otherwise as given, or as an array if it was a list, or as
+        one column if it was one-dimensional.
 
     Raises:
         ValueError: If Y or T is not numeric, is masked, or cannot be read; if Y or T is
             not one-dimensional or the lengths disagree (see ``validate_lengths``); if X
-            has no rows to count; or if two of the inputs are pandas objects whose indexes
-            differ in value, in order or in the names of their levels.
+            has no rows to count, or cannot be read as numbers when ``numeric_controls``;
+            or if two of the inputs are pandas objects with different indexes.
 
     Examples:
         >>> import numpy as np
@@ -466,34 +596,55 @@ def as_validated_arrays(
         Traceback (most recent call last):
             ...
         ValueError: Y and T carry different pandas indexes. ...
+        >>> frame = pd.DataFrame({"a": [5, 6, 7]}, index=y.index)
+        >>> as_validated_arrays(y, [0, 1, 0], frame)[2] is frame
+        True
+        >>> as_validated_arrays(y, [0, 1, 0], frame, numeric_controls=True)[2].dtype
+        dtype('float64')
     """
-    Y_arr = _read_as_floats("Y", Y)
-    T_arr = _read_as_floats("T", T)
+    Y_arr = read_as_floats("Y", Y)
+    T_arr = read_as_floats("T", T)
     given = X
-    if not hasattr(X, "shape"):
-        X = np.asarray(X)
-    if len(X.shape) == 0:
-        raise ValueError(
-            f"X must hold the controls with one row per observation, got an object of type "
-            f"{type(given).__name__} without rows."
-        )
+    if numeric_controls:
+        X = read_controls_as_floats("X", X)
+    else:
+        # Not converted, with one exception to "as given": a learner would read masked
+        # entries under their mask, exactly as a conversion here would.
+        _refuse_masked_entries("X", X)
+        if not hasattr(X, "shape"):
+            X = np.asarray(X)
+        if len(X.shape) == 0:
+            raise ValueError(
+                f"X must hold the controls with one row per observation, got an object of "
+                f"type {type(given).__name__} without rows."
+            )
     validate_lengths(Y_arr, T_arr, X)
-    # A pandas Series or DataFrame is recognized by an index that can be compared;
-    # a list also has an ``index`` attribute, which is a method.
-    labelled = [
-        (name, index)
-        for name, index in (
-            ("Y", getattr(Y, "index", None)),
-            ("T", getattr(T, "index", None)),
-            ("X", getattr(X, "index", None)),
-        )
-        if hasattr(index, "equals")
-    ]
-    if labelled:
-        _refuse_different_indexes(labelled)
+    refuse_unequal_indexes({"Y": Y, "T": T, "X": given, **(also_labelled or {})})
     if len(X.shape) == 1:
         X = np.asarray(X).reshape(-1, 1)
     return Y_arr, T_arr, X
+
+
+def require_one_dimensional(name: str, values: Any) -> None:
+    """Refuse an outcome or a treatment that is not one-dimensional, by its name.
+
+    Raises:
+        ValueError: Naming the argument and its shape.
+
+    Examples:
+        >>> import numpy as np
+        >>> require_one_dimensional("Y", np.ones(4))
+        >>> require_one_dimensional("Y", np.ones((4, 1)))  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: Y must be one-dimensional, got shape (4, 1). ...
+    """
+    shape = np.shape(values)
+    if len(shape) != 1:
+        raise ValueError(
+            f"{name} must be one-dimensional, got shape {shape}. "
+            f"Pass a single column as a flat array, for example np.asarray({name}).ravel()."
+        )
 
 
 def validate_lengths(
@@ -517,13 +668,8 @@ def validate_lengths(
             ...
         ValueError: T must be one-dimensional, got shape (4, 1). ...
     """
-    for name, values in (("Y", Y), ("T", T)):
-        shape = np.shape(values)
-        if len(shape) != 1:
-            raise ValueError(
-                f"{name} must be one-dimensional, got shape {shape}. "
-                f"Pass a single column as a flat array, for example np.asarray({name}).ravel()."
-            )
+    require_one_dimensional("Y", Y)
+    require_one_dimensional("T", T)
     n = len(Y)
     if len(T) != n:
         raise ValueError(f"T length ({len(T)}) must match Y length ({n})")

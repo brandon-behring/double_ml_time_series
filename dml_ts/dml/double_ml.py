@@ -242,8 +242,10 @@ def double_ml(
         Outcome variable.
     T : array, shape (n,)
         Treatment variable (continuous or binary).
-    X : array, shape (n, p)
-        Control variables / confounders.
+    X : array, DataFrame or sparse matrix, shape (n, p)
+        Control variables / confounders. Handed to the nuisance model as given: a
+        DataFrame keeps its column names and dtypes, a sparse matrix stays sparse, and
+        rows are selected by position.
     n_folds : int
         Number of cross-fitting folds. Default: 5.
     model : sklearn estimator or str, optional
@@ -266,6 +268,15 @@ def double_ml(
     -------
     DMLResult
         Contains theta, SE, confidence interval, residuals, and diagnostics.
+
+    Raises
+    ------
+    ValueError
+        If Y or T is not one-dimensional or the lengths disagree; if Y or T holds a
+        datetime, a timedelta, a complex value, text or a masked entry; if X is a masked
+        array with masked entries; if two of Y, T and X are pandas objects with different
+        indexes (rows are paired by position; pass ``.to_numpy()`` when they are already
+        in the same order); or if the treatment has no variation left after the controls.
 
     Notes
     -----

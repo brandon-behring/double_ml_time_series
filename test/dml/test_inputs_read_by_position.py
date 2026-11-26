@@ -5,11 +5,11 @@ after ``df.sample(frac=1)`` it returned 1.82 where the arrays give 2.03. ``fwl_e
 ``robinson_estimator`` multiplied two residual ``Series`` that pandas aligned by label: with
 different labels on the outcome and the treatment they returned -0.15 for a slope of 2.
 
-The shared helper does not convert two-dimensional controls, which a first version of this
-change did. What each function then does with them is unchanged: ``robinson_estimator`` hands
-a DataFrame or a sparse matrix to the nuisance model as given; ``double_ml`` selects fold rows
-with ``X[rows]`` and so takes arrays and CSR or CSC matrices but not a DataFrame;
-``fwl_estimate`` builds a dense design from an array or a DataFrame of numbers.
+For ``robinson_estimator`` and ``double_ml`` the shared helper does not convert
+two-dimensional controls, which a first version of this change did: a DataFrame or a sparse
+matrix reaches the nuisance model as given, and fold rows are selected by position.
+``fwl_estimate`` computes on its controls and converts them to floats. The matrix of every
+estimator against every kind of input is in ``test_input_contract.py``.
 
 An object column is judged by its elements. NumPy and pandas cast a timezone-aware datetime,
 and an object array of ``np.timedelta64`` or ``np.complex128`` scalars, to floats without an
@@ -31,7 +31,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 from dml_ts.dml import double_ml
-from dml_ts.dml._utils import _read_as_floats, as_validated_arrays, is_numerically_constant
+from dml_ts.dml._utils import as_validated_arrays, is_numerically_constant, read_as_floats
 from dml_ts.dml.fwl import fwl_estimate
 from dml_ts.dml.robinson import robinson_estimator
 
@@ -390,32 +390,32 @@ def test_real_numbers_in_an_object_column_are_read():
     """The element check admits every real number, and nothing is lost on the way."""
     mixed = [1, 2.5, True, np.float32(0.5), np.int8(-3), np.bool_(False), np.uint16(7)]
     mixed += [decimal.Decimal("0.25"), fractions.Fraction(1, 8), None, float("nan")]
-    read = _read_as_floats("Y", np.array(mixed, dtype=object))
+    read = read_as_floats("Y", np.array(mixed, dtype=object))
     assert read[:9].tolist() == [1.0, 2.5, 1.0, 0.5, -3.0, 0.0, 7.0, 0.25, 0.125]
     assert np.isnan(read[9:]).all()
-    assert _read_as_floats("T", np.array([3, 4], dtype=np.uint64)).tolist() == [3.0, 4.0]
+    assert read_as_floats("T", np.array([3, 4], dtype=np.uint64)).tolist() == [3.0, 4.0]
 
 
 @pytest.mark.tier1
 def test_text_is_refused_wherever_it_stands_and_whatever_its_type():
     with pytest.raises(ValueError, match=r"^Y holds text \(for example 'b'\)"):
-        _read_as_floats("Y", np.array([1.0, 2.0, "b", 4.0], dtype=object))
+        read_as_floats("Y", np.array([1.0, 2.0, "b", 4.0], dtype=object))
     with pytest.raises(ValueError, match=r"^Y holds text \(for example b'7'\)"):
-        _read_as_floats("Y", np.array([1.0, b"7"], dtype=object))
+        read_as_floats("Y", np.array([1.0, b"7"], dtype=object))
 
 
 @pytest.mark.tier1
 def test_inputs_that_cannot_be_read_are_refused_by_name():
     """A ragged list, a missing value NumPy cannot cast, and an integer too large for a float."""
     with pytest.raises(ValueError, match="^Y could not be read as an array"):
-        _read_as_floats("Y", [[1.0, 2.0], [3.0]])
+        read_as_floats("Y", [[1.0, 2.0], [3.0]])
     with pytest.raises(ValueError, match="^T could not be read as a float array"):
-        _read_as_floats("T", [1.0, pd.NA])
+        read_as_floats("T", [1.0, pd.NA])
     with pytest.raises(ValueError, match="^T could not be read as a float array"):
-        _read_as_floats("T", pd.Series([1.0, pd.NA], dtype=object))
+        read_as_floats("T", pd.Series([1.0, pd.NA], dtype=object))
     with pytest.raises(ValueError, match="^Y could not be read as a float array"):
-        _read_as_floats("Y", [10**400, 1])
-    assert np.isnan(_read_as_floats("Y", [1.0, None])[1])
+        read_as_floats("Y", [10**400, 1])
+    assert np.isnan(read_as_floats("Y", [1.0, None])[1])
 
 
 @pytest.mark.tier1
@@ -464,26 +464,24 @@ def test_robinson_hands_a_frame_of_controls_to_the_model_as_given():
 
 
 @pytest.mark.tier2
-def test_double_ml_does_not_yet_take_a_frame_of_controls():
-    """The present behaviour, pinned so that the documents cannot claim more.
+def test_double_ml_takes_a_frame_of_controls():
+    """Fold rows are selected by position, so a frame gives the result of its arrays.
 
-    ``double_ml`` selects fold rows with ``X[rows]``, which reads a DataFrame's columns by
-    label, so every frame of controls raises ``KeyError`` before a model sees it. This was so
-    before this change too. The pull request that carries the input rule to every estimator
-    selects rows by position; this test is then replaced by one that expects the arrays' result.
+    ``double_ml`` selected them with ``X[rows]``, which reads a DataFrame's columns by label:
+    every frame of controls raised ``KeyError`` before a model saw it.
     """
     df = frame()
-    with pytest.raises(KeyError):
-        double_ml(df["y"], df["t"], df[["x0", "x1"]], model="ridge")
-    with pytest.raises(KeyError):
-        double_ml(df["y"].to_numpy(), df["t"].to_numpy(), df[["x0", "x1"]], model="ridge")
+    y, t, x = df["y"].to_numpy(), df["t"].to_numpy(), df[["x0", "x1"]].to_numpy()
+    reference = double_ml(y, t, x, model="ridge").theta
+    assert_allclose(double_ml(df["y"], df["t"], df[["x0", "x1"]], model="ridge").theta, reference)
+    assert_allclose(double_ml(y, t, df[["x0", "x1"]], model="ridge").theta, reference, rtol=RTOL)
 
 
 @pytest.mark.tier2
-def test_fwl_estimate_does_not_take_sparse_controls():
-    """It builds a dense design; the refusal is NumPy's, from stacking the intercept column."""
+def test_fwl_estimate_refuses_sparse_controls_by_name():
+    """It computes on a dense design; the refusal was NumPy's, from stacking the intercept."""
     df = frame()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=r"^X is a sparse matrix.*X\.toarray\(\)"):
         fwl_estimate(
             df["y"].to_numpy(), df["t"].to_numpy(), sparse.csr_matrix(df[["x0", "x1"]].to_numpy())
         )

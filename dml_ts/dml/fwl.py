@@ -52,7 +52,15 @@ from numpy.typing import ArrayLike, NDArray
 from temporalcv import coverage_in_unit, finite_se
 
 from ._results import ResultBase
-from ._utils import as_validated_arrays, is_numerically_constant, theta_via_fwl
+from ._utils import (
+    as_validated_arrays,
+    is_numerically_constant,
+    read_as_floats,
+    read_controls_as_floats,
+    refuse_unequal_indexes,
+    require_one_dimensional,
+    theta_via_fwl,
+)
 
 
 @dataclass(frozen=True, slots=True, eq=False)
@@ -118,13 +126,16 @@ class FWLResult(ResultBase):
 
 
 def fwl_residualize(
-    Y: NDArray[np.float64],
-    X: NDArray[np.float64],
+    Y: ArrayLike,
+    X: ArrayLike,
     method: Literal["ols", "qr"] = "qr",
 ) -> tuple[NDArray[np.float64], float]:
     """Compute residuals from projecting Y onto X.
 
     This is the M_X·Y operation where M_X = I - X(X'X)⁻¹X'.
+
+    Y and X are read by value as floats and paired by position; the residuals are
+    returned as an array, also when Y was a pandas ``Series``.
 
     Parameters
     ----------
@@ -142,6 +153,15 @@ def fwl_residualize(
     r_squared : float
         R² of the projection (variance explained by X).
 
+    Raises
+    ------
+    ValueError
+        If Y is not one-dimensional; if Y or X holds a datetime, a timedelta, a
+        complex value, text or a masked entry, or X is a sparse matrix; if the row
+        counts disagree; if Y and X are
+        pandas objects with different indexes; or, with ``method="qr"``, if X is
+        rank-deficient.
+
     Notes
     -----
     The QR method computes residuals via
@@ -158,8 +178,14 @@ def fwl_residualize(
     >>> bool(np.allclose(residuals.sum(), 0))  # Residuals sum to ~0
     True
     """
-    if X.ndim == 1:
-        X = X.reshape(-1, 1)
+    # Read both by value and pair rows by position: a labelled Y minus an unlabelled
+    # projection would otherwise come back as a Series.
+    refuse_unequal_indexes({"Y": Y, "X": X})
+    Y = read_as_floats("Y", Y)
+    require_one_dimensional("Y", Y)
+    X = read_controls_as_floats("X", X)
+    if X.shape[0] != Y.shape[0]:
+        raise ValueError(f"X rows ({X.shape[0]}) must match Y length ({Y.shape[0]})")
 
     if method == "qr":
         # Numerically stable: Y_resid = Y - Q @ (Q.T @ Y).
@@ -195,7 +221,7 @@ def fwl_residualize(
 def fwl_estimate(
     Y: ArrayLike,
     T: ArrayLike,
-    X: NDArray[np.float64],
+    X: ArrayLike,
     add_intercept: bool = True,
     method: Literal["ols", "qr"] = "qr",
 ) -> FWLResult:
@@ -213,7 +239,7 @@ def fwl_estimate(
     T : array, shape (n,)
         Treatment variable (continuous or binary).
     X : array, shape (n, p)
-        Control variables / confounders.
+        Control variables / confounders. Converted to a float array.
     add_intercept : bool
         Whether to add intercept to X for residualization.
     method : {"ols", "qr"}
@@ -223,6 +249,16 @@ def fwl_estimate(
     -------
     FWLResult
         Contains theta (treatment effect), SE, t-stat, p-value, and residuals.
+
+    Raises
+    ------
+    ValueError
+        If Y or T is not one-dimensional or the lengths disagree; if Y, T or X holds
+        a datetime, a timedelta, a complex value, text or a masked entry, or X is a
+        sparse matrix; if two of Y, T and X are pandas objects with different indexes
+        (rows are paired by position; pass ``.to_numpy()`` when they are already in
+        the same order); if the controls are rank-deficient under ``method="qr"``;
+        or if the treatment has no variation left after the controls.
 
     Notes
     -----
@@ -249,8 +285,8 @@ def fwl_estimate(
     >>> bool(abs(result.theta - 2.0) < 0.1)  # Should recover ~2.0
     True
     """
-    # Read the inputs by position (a pandas Series would be indexed by label) and validate.
-    Y, T, X = as_validated_arrays(Y, T, X)
+    # The one input boundary: Y and T by value, X as a float array, rows by position.
+    Y, T, X = as_validated_arrays(Y, T, X, numeric_controls=True)
     n = len(Y)
 
     # Add intercept if requested
@@ -313,9 +349,9 @@ def fwl_estimate(
 
 
 def fwl_vs_ols_comparison(
-    Y: NDArray[np.float64],
-    T: NDArray[np.float64],
-    X: NDArray[np.float64],
+    Y: ArrayLike,
+    T: ArrayLike,
+    X: ArrayLike,
     rtol: float = 1e-8,
 ) -> dict:
     """Demonstrate FWL theorem by comparing with direct OLS.
@@ -360,10 +396,9 @@ def fwl_vs_ols_comparison(
     >>> bool(result["match"])
     True
     """
+    # The one input boundary, before either method reads the inputs.
+    Y, T, X = as_validated_arrays(Y, T, X, numeric_controls=True)
     n = len(Y)
-
-    if X.ndim == 1:
-        X = X.reshape(-1, 1)
 
     # Method 1: Full OLS with intercept
     # Design matrix: [1, T, X]
