@@ -235,7 +235,7 @@ Regularization changes fitted nuisance functions. Their convergence rates depend
 \[
 \|a\|_2(\|b\|_2+|\tau_0|\,\|a\|_2)=o_p(n^{-1/2}).
 \]
-Both errors being \(o_p(n^{-1/4})\) suffices. Other combinations can also satisfy the product condition. No learner family alone guarantees a rate. Identification, variation in residual treatment, and control of the empirical score are additional requirements.
+Both errors being \(o_p(n^{-1/4})\) suffices. Other combinations can also satisfy the product condition. The condition bounds the drift and nothing else: with \(\tau_0=0\) it reduces to \(\|a\|_2\|b\|_2=o_p(n^{-1/2})\), which a fast enough treatment fit meets even when the outcome fit does not converge. The usual DML regularity conditions therefore also require each error to vanish, \(\|a\|_2=o_p(1)\) and \(\|b\|_2=o_p(1)\), which is what controls the empirical score with fitted nuisances. No learner family alone guarantees a rate. Identification and variation in residual treatment are further requirements.
 
 \section{The Double Machine Learning
 Algorithm}\label{_the_double_machine_learning_algorithm}
@@ -979,7 +979,8 @@ results
 
 \textbf{Fix}: * Use \texttt{cv=5} as default (good balance) * Increase
 to \texttt{cv=10} for larger datasets ($n > 5{,}000$) *
-Leave-one-out (\texttt{cv=n}) is optimal but computationally expensive
+Leave-one-out (\texttt{cv=n}) is expensive, and the fixed-\(K\) argument
+above does not cover it
 
 \subsection{When to Use DML vs.
 Alternatives}\label{_when_to_use_dml_vs_alternatives}

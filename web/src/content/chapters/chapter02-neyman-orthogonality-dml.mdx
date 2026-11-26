@@ -9,7 +9,7 @@ description: "Regularization bias in ML nuisance estimation, Neyman orthogonalit
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_02.tex
-source_sha256: ea8848280137d4bcf125429dd206d47a6affbde4fcd04260f0c2db9e1b914482
+source_sha256: fe5e715a0188a374ae7e43465a5796e1bc9dc1e02f3fc3cb5a49f2a31ea3dafd
 provenance:
   ai_tools:
     - Claude Code
@@ -224,7 +224,7 @@ Regularization changes fitted nuisance functions. Their convergence rates depend
 $$
 \|a\|_2(\|b\|_2+|\tau_0|\,\|a\|_2)=o_p(n^{-1/2}).
 $$
-Both errors being $o_p(n^{-1/4})$ suffices. Other combinations can also satisfy the product condition. No learner family alone guarantees a rate. Identification, variation in residual treatment, and control of the empirical score are additional requirements.
+Both errors being $o_p(n^{-1/4})$ suffices. Other combinations can also satisfy the product condition. The condition bounds the drift and nothing else: with $\tau_0=0$ it reduces to $\|a\|_2\|b\|_2=o_p(n^{-1/2})$, which a fast enough treatment fit meets even when the outcome fit does not converge. The usual DML regularity conditions therefore also require each error to vanish, $\|a\|_2=o_p(1)$ and $\|b\|_2=o_p(1)$, which is what controls the empirical score with fitted nuisances. No learner family alone guarantees a rate. Identification and variation in residual treatment are further requirements.
 
 ## The Double Machine Learning algorithm
 
@@ -900,7 +900,7 @@ plt.tight_layout()
 **Mistake**: setting `cv=2` to speed up computation.
 
 - **Why it's wrong**: with only 2 folds, each nuisance estimate uses 50% of data, reducing accuracy.
-- **Fix**: use `cv=5` as default (good balance); increase to `cv=10` for larger datasets ($n > 5{,}000$); leave-one-out (`cv=n`) is optimal but computationally expensive.
+- **Fix**: use `cv=5` as default (good balance); increase to `cv=10` for larger datasets ($n > 5{,}000$); leave-one-out (`cv=n`) is expensive, and the fixed-$K$ argument above does not cover it.
 
 ### When to use DML vs. alternatives
 
