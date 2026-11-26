@@ -444,10 +444,9 @@ class TemporalPLRDML:
         if X.ndim == 1:
             X = X.reshape(-1, 1)
 
-        n_samples = len(Y)
-
         # Validate inputs
         validate_lengths(Y, T, X)
+        n_samples = len(Y)
         if not 0 < alpha < 1:
             raise ValueError(f"alpha must be in (0, 1), got {alpha!r}")
 
@@ -778,8 +777,8 @@ class RollingWindowDML:
         if X.ndim == 1:
             X = X.reshape(-1, 1)
 
-        n_samples = len(Y)
         validate_lengths(Y, T, X)
+        n_samples = len(Y)
         if time_index is not None and len(time_index) != n_samples:
             raise ValueError("time_index length must match Y length")
         starts = range(0, n_samples - self.window_size + 1, self.step_size)

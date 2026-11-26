@@ -60,13 +60,24 @@ from temporalcv import (
 )
 
 from ._results import ResultBase
-from ._utils import is_numerically_constant, predict_conditional_mean, theta_via_fwl
+from ._utils import (
+    is_numerically_constant,
+    no_variation_tolerance,
+    predict_conditional_mean,
+    theta_via_fwl,
+)
 
 ArrayLike: TypeAlias = np.ndarray | list[float]
 ModelSpec: TypeAlias = str | BaseEstimator
 Mode = Literal["panel", "series"]
 
 _DEFAULT_N_JOBS = int(os.environ.get("DML_N_JOBS", "-1"))
+
+# Series lags whose residuals have a direction below sqrt(eps) of their largest one are
+# linearly dependent to working precision. The normal equations square the condition
+# number, so no digit of their solution is reliable beyond this point. The level term of
+# ``no_variation_tolerance`` uses the same constant.
+_DEPENDENT_LAGS_RATIO = float(np.sqrt(np.finfo(float).eps))
 
 
 def _warn_if_ill_conditioned(matrix: NDArray[np.float64], name: str, *, tol: float = 1e12) -> None:
@@ -237,6 +248,92 @@ def _crossfit_residualize(
     return np.asarray(targets - preds, dtype=np.float64)
 
 
+def _are_dependent(columns: NDArray[np.float64]) -> tuple[bool, float]:
+    """Whether columns of non-zero norm are linearly dependent to working precision.
+
+    The columns are scaled to unit norm, so the test measures directions and not sizes.
+    Returns the verdict and the ratio of the smallest to the largest singular value.
+
+    Examples:
+        >>> import numpy as np
+        >>> a = np.array([1.0, -1.0, 1.0, -1.0])
+        >>> _are_dependent(np.column_stack([a, -a]))[0]
+        True
+        >>> _are_dependent(np.column_stack([a, np.array([1.0, 2.0, 3.0, 5.0])]))[0]
+        False
+    """
+    spectrum = np.linalg.svd(columns / np.linalg.norm(columns, axis=0), compute_uv=False)
+    ratio = float(spectrum[-1] / spectrum[0])
+    return ratio <= _DEPENDENT_LAGS_RATIO, ratio
+
+
+def _refuse_unidentified_lags(lags: NDArray[np.float64], residuals: NDArray[np.float64]) -> None:
+    """Raise when the lag effects of the series fit are not identified on the scored rows.
+
+    The checks on the lags themselves hold for every nuisance learner. Those on the
+    residuals depend on how well the learner reproduces the treatment: a learner that
+    fits a lag exactly leaves rounding residue, one that only approximates it does not.
+
+    Args:
+        lags: Treatment lags on the scored rows, ``(rows, m)``; column ``k`` is ``T_{t-k}``.
+        residuals: The same lags after cross-fitted residualization on the controls.
+
+    Raises:
+        ValueError: If there are no more scored rows than lags; if a lag is constant on
+            the scored rows; if a lag's residuals are within ``no_variation_tolerance``;
+            or if the lags, or their residuals, are linearly dependent.
+
+    Examples:
+        >>> import numpy as np
+        >>> t = np.tile([1.0, -1.0], 20)
+        >>> lags = np.column_stack([t[1:], t[:-1]])  # lag 1 is minus lag 0
+        >>> _refuse_unidentified_lags(lags, lags)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: The series treatment Gram matrix is singular to working precision: ...
+    """
+    rows, m = residuals.shape
+    if rows <= m:
+        raise ValueError(
+            f"Series mode scored {rows} rows for {m} lags: the lag effects are not identified "
+            "without more scored rows than lags. Use a longer series or fewer lags."
+        )
+    for k in range(m):
+        if is_numerically_constant(lags[:, k]):
+            # Its "residual" is then only the error of the nuisance prediction.
+            raise ValueError(
+                f"No treatment variation at period {k}: the treatment is constant "
+                f"({lags[0, k]:.6g}) on the {rows} scored rows."
+            )
+        # A lag whose residuals are rounding residue leaves the Gram system solvable
+        # with a slope of order 1/eps.
+        residual_norm = float(np.linalg.norm(residuals[:, k]))
+        tolerance = no_variation_tolerance(lags[:, k])
+        if residual_norm <= tolerance:
+            raise ValueError(
+                f"No residual treatment variation at period {k} (weak/colinear treatment). "
+                f"(norm of the treatment residuals {residual_norm:.3g} "
+                f"<= bound {tolerance:.3g})"
+            )
+    # Lags that each vary can still be linearly dependent: lag 1 of an alternating
+    # treatment is minus lag 0. The tests are made on the lags and their residuals and
+    # not on the Gram matrix. The computed condition number of the Gram matrix saturates
+    # near 1/eps, so whether the solver meets a zero pivot there, returns numbers, or
+    # fails later in the inversion depends on the machine.
+    for columns, what, scaled in (
+        (lags - lags.mean(axis=0), "treatment lags", "centered, scaled lags"),
+        (residuals, "residualized treatment lags", "scaled lag residuals"),
+    ):
+        dependent, ratio = _are_dependent(columns)
+        if dependent:
+            raise ValueError(
+                "The series treatment Gram matrix is singular to working precision: the "
+                f"{what} are linearly dependent on the scored rows, so the {m} lag effects "
+                "are not separately identified (smallest over largest singular value of the "
+                f"{scaled} {ratio:.3g} <= {_DEPENDENT_LAGS_RATIO:.3g})."
+            )
+
+
 def _r2(y: NDArray[np.float64], resid: NDArray[np.float64]) -> float:
     if is_numerically_constant(y):
         return 0.0
@@ -333,7 +430,9 @@ class DynamicGEstimationDML:
 
         Raises:
             ValueError: On inconsistent shapes, ragged or non-contiguous panels, or
-                missing ``groups`` for the panel mode.
+                missing ``groups`` for the panel mode; when a treatment (a panel
+                period or a series lag) has no residual variation; and in series
+                mode when the residualized lags are linearly dependent.
         """
         Y = np.asarray(Y, dtype=float).ravel()
         T = np.asarray(T, dtype=float).ravel()
@@ -498,7 +597,10 @@ class DynamicGEstimationDML:
             raise ValueError("Non-finite nuisance residuals on scored series rows.")
         lk = Ttil.shape[0]
 
+        _refuse_unidentified_lags(Tlag[keep], Ttil)
+
         gram = Ttil.T @ Ttil
+        _warn_if_ill_conditioned(gram, "series treatment Gram")
         theta = np.linalg.solve(gram, Ttil.T @ Ytil)
 
         # HAC sandwich: scores s_t = Ttil_t (Ytil_t - Ttil_t . theta); bread = (gram/Lk)^{-1}.
@@ -506,7 +608,6 @@ class DynamicGEstimationDML:
         scores = Ttil * resid_full[:, None]  # (Lk, m)
         bw = optimal_bandwidth(resid_full, method="newey_west")
         s_hac = _bartlett_long_run_cov(scores, bw)
-        _warn_if_ill_conditioned(gram, "series treatment Gram")
         bread = np.linalg.inv(gram / lk)
         cov = (bread @ s_hac @ bread.T) / lk
 

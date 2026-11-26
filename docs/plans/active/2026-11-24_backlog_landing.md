@@ -266,11 +266,13 @@ Part 0
 Part I (a box is ticked when the pull request is merged and its issues are checked)
 
 - [x] PR-0 `chore/landing-tooling` (#67, merged 2026-11-25 as `04b96db`)
-- [ ] PR-A `fix/validation-fail-loud-41a` (#41)
-- [ ] PR-1 `fix/core-numerics-42` (#42)
+- [x] PR-L `ci/lock-dependencies` (#73, merged 2026-11-25 as `f56fa08`; #70 stays open)
+- [x] PR-A `fix/validation-fail-loud-41a` (#68, merged 2026-11-25 as `87d9191`; #41 stays open)
+- [x] PR-1 `fix/core-numerics-42` (#69, merged 2026-11-25 as `257022d`; #42 stays open)
+- [ ] PR-1b `fix/silent-wrong-slopes-72` (#72, #42)
 - [ ] PR-2 `fix/validation-inference` (#41, #61, #63)
 - [ ] PR-3 `fix/applications-pipeline` (#44, #60, #62, #64)
-- [ ] PR-4 `docs/november-audits` (#65)
+- [ ] PR-4 `docs/november-audits` (#65, #70)
 - [ ] PR-5 `audit/public-data-extensions-2026-11-21`
 - [ ] Conservation check against the manifest
 - [ ] Part III residual patch saved
@@ -745,3 +747,63 @@ Branch `fix/silent-wrong-slopes-72` from `origin/main` after #69 merges.
   documentation's environment; and the comment on the `doctest` job no longer gives a numpy
   downgrade as its reason, since under the lock an extra cannot move a version. In `nightly.yml`
   the held Part III hunk still applies with `git apply --3way --check`.
+- **PR-L merged (#73, `f56fa08`).** Local gate in the locked environment: 683 passed, coverage
+  74.86%, examples, doctests and Sphinx pass. CI: six checks green; the job logs show uv 0.13.7,
+  the `setup-python` interpreter (CPython 3.13.18) and the lock's versions (scikit-learn 1.6.1,
+  numpy 2.4.6, statsmodels 0.14.6, temporalcv 2.2.0). On `main`'s own lock, `uv sync --locked`
+  failed as intended before the change ("The lockfile at `uv.lock` needs to be updated").
+- **First drift run** (dispatched by hand on `main` after the merge): scikit-learn 1.9.1, numpy
+  2.5.5, statsmodels 0.15.0, temporalcv 2.3.0, econml 0.17.1; mypy clean; 683 passed. So `main`
+  itself does not depend on the lock yet; the three numbers that move are in PR-4's tests (#70).
+- **#68 and #69 merged under the lock** (`87d9191`, `257022d`), each closed and reopened first so
+  that CI built a new merge commit: 691 and 783 passed, coverage 75.91% on the second. #69's
+  branch also passed the full local gate in an environment rebuilt from the lock (775 passed,
+  75.28%); its earlier gate had run under the unpinned versions. #41, #42, #70 and #72 were
+  checked open after the merges.
+- **PR-1b, one expectation of the plan corrected by measurement.** The plan expected series mode
+  to raise for `T = 0.5·x0` under the ridge learner too. It cannot under the two-term bound: a
+  ridge fit leaves shrinkage residue of norm 0.06 where the bound is 8.7e-6. In 300 simulated
+  series (truth 1.0) that fit reported a lag-0 effect with median absolute value 15.3, median
+  standard error 16.6, and p < 0.05 in 17.7% of the runs. `double_ml` and `robinson_estimator`
+  with a ridge learner accept the same treatment, but their standard errors (median 31.7 and
+  39.9) never gave p < 0.05. PR-1b therefore covers the exact cases (linear learner, constant
+  treatment, linearly dependent lags), and the ridge case is put to the owner at the stop.
+- **PR-1b, what #72 also covers.** With both the outcome and the treatment as `(n, 1)`,
+  `double_ml` returned 1.93 where the flat inputs give 2.04, and `robinson_estimator` 1.93 with a
+  standard error of 0.003; `RollingWindowDML` returned zero windows for any column vector.
+  `TemporalPLRDML` and `PanelDML` already raised, late, from the HAC routine.
+- **PR-1b opened as #74; CI found what the local gate did not.** The first version turned a
+  `LinAlgError` from the solver into the promised error. For an alternating treatment the Gram
+  matrix is singular only up to rounding: locally the solver met a zero pivot, on CI's machine it
+  did not and the later inversion raised a raw `LinAlgError`. The dependence of the lags is now
+  tested on their residuals (scaled singular values), not through a solver exception. Rule for
+  later slices: a guard must not rest on whether LAPACK meets an exact zero.
+- **Adversarial review of #74** (a fresh Claude agent and Gemini; Gemini's first, wide call
+  timed out with no text, two narrow calls answered; every claim re-run). Accepted and repaired:
+  the series guard looked only at residuals, so a lag constant on every scored row and lags that
+  a nonlinear learner does not reproduce exactly passed it; no more scored rows than lags ended
+  in an unrelated error; no test pinned the size of the bound; a 0-d outcome raised `TypeError`;
+  the message's hint failed on a DataFrame; three changelog sentences were incomplete. Rejected
+  after re-running: two of Gemini's claims. The series guard is now one helper,
+  `_refuse_unidentified_lags`. Final head `7089c0f`: local gate 882 passed, coverage 76.02%;
+  six CI checks green; 29 of 29 mutations caught; the reviewer's scan of dependent lags gives
+  200 of 200 refusals where it had found 36.
+- **Three issues filed from that review, for defects that predate #74:** #75 (a pandas `Series`
+  with a non-default index is read by label in `double_ml`, `fwl_estimate` and
+  `robinson_estimator`; P1), #76 (`TemporalPLRDML` returns a significant estimate when the
+  treatment is constant on every scored row; P1), #77 (flattened matrices in
+  `DynamicGEstimationDML`, truncated panel identifiers, masked arrays; P2). The evidence on the
+  approximating-learner case is a comment on #42. None of the three is in this plan; whether #75
+  and #76 are fixed before PR-3 is the owner's decision at the stop.
+- **PR-2 opened as #78.** The 41 files of the slice were taken whole (for each, `main` equals
+  the content the snapshot was built on) and passed the gate at the first attempt; the five
+  commits of snapshot work reproduce the gated tree `d7e992c`. One test of the snapshot is held
+  with the insurance hunks (`test_validate_dgp_recovery_rejects_nonpositive_nsims`).
+- **Deviation 1 had a consequence the plan did not list.** With the baselines judging coverage,
+  Chapter 3's Experiment 3.1 no longer prints what its table shows (PASS and WARNING become FAIL
+  and FAIL), and its text said the OLS labels use the bias test alone. The listing, the table
+  and two paragraphs were changed in both editions, in the same pull request. The baselines'
+  bias verdict also changes, because they now share the DML validator's rule. Rule for later
+  slices: before a deviation, search the chapters for what the changed function prints.
+- **A commit message with a wrong reason** (`d296a91`, the 401(k) p-value) was corrected in the
+  message of `d59f35b`, since commits are not amended here without the owner's word.
