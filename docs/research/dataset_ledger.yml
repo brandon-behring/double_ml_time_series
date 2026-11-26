@@ -435,17 +435,17 @@ entries:
   auth_required: false
   citation: 'Fagan, Henry & Mestre (2001), ECB Working Paper 42'
 - bibkey: pvw1995sipp401k
-  primary_url: https://www.nber.org/papers/w5287
-  name: 'Poterba-Venti-Wise 1995 SIPP-derived 401(k) eligibility data (NBER WP 5287)'
+  primary_url: https://www.nber.org/papers/w4391
+  name: 'Poterba–Venti–Wise study of SIPP 401(k) eligibility and saving'
   source: other
   status: unverified
   task_family: tabular
   license: unknown
-  citation: 'Poterba, J., Venti, S., Wise, D. (1995). "Do 401(k) Contributions Crowd Out Other Personal Saving?" NBER WP 5287.'
-  notes: 'Originating 1991 SIPP cross-section of 9,915 households used downstream by Chernozhukov-Hansen (2004) and Belloni et al. (2014). Identification strategy (401(k) eligibility as IV for participation) is the canonical DML demo.'
+  citation: 'Poterba, J., Venti, S., Wise, D. (1995). "Do 401(k) Contributions Crowd Out Other Personal Saving?" Journal of Public Economics 58: 1–32 (NBER WP 4391, 1993).'
+  notes: 'Background study using the 1984, 1987 and 1991 SIPP surveys. For the 9,915-record DML replication extract, use the pinned sipp1991.dta entry.'
 
 - bibkey: chernozhukov2018401ksipp
-  primary_url: https://github.com/VC2015/DMLonGitHub/raw/master/sipp1991.dta
+  primary_url: https://raw.githubusercontent.com/VC2015/DMLonGitHub/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/sipp1991.dta
   name: '1991 SIPP 401(k) eligibility data (sipp1991.dta, DML-on-GitHub distribution)'
   source: github
   status: verified
@@ -455,7 +455,7 @@ entries:
   access_method: direct
   auth_required: false
   citation: 'Chernozhukov, V. et al. (2018). "Double/debiased machine learning for treatment and structural parameters," Econometrics Journal 21: C1-C68.'
-  notes: 'Raw .dta file the DoubleML python package downloads. Variables: net_tfa (outcome), e401 (instrument), p401 (treatment), age, inc, educ, fsize, marr, twoearn, db, pira, hown. Same data also shipped as hdm::pension on CRAN.'
+  notes: '1991 cross-section. Table 2 uses eligibility (e401) as treatment. Table 3 instruments participation (p401) with e401. The outcome is net_tfa. The nine adjustment variables are age, inc, educ, fsize, marr, twoearn, db, pira and hown.'
 
 - bibkey: hdmpension2014cran
   primary_url: https://search.r-project.org/CRAN/refmans/hdm/html/pension.html
@@ -471,28 +471,28 @@ entries:
   notes: 'CRAN distribution of the same 1991 SIPP 401(k) data. 30+ variables. Load with data(pension) after install.packages("hdm").'
 
 - bibkey: doubleml2020pythonfetch401k
-  primary_url: https://github.com/DoubleML/doubleml-for-py/blob/main/doubleml/datasets/fetch_401K.py
+  primary_url: https://docs.doubleml.org/stable/api/generated/doubleml.datasets.fetch_401K.html
   name: 'DoubleML python package fetch_401K loader (downloads sipp1991.dta)'
   source: github
   status: verified
   task_family: tabular
-  license: BSD-3-Clause
+  license: unknown
   access_method: api
   auth_required: false
-  citation: 'Bach, P., Chernozhukov, V., Kurz, M.S., Spindler, M. (2022). "DoubleML — An Object-Oriented Implementation of Double Machine Learning in Python," JMLR.'
-  notes: 'Defines y_col=net_tfa, d_cols=e401, x_cols=(age, inc, educ, fsize, marr, twoearn, db, pira, hown). Mirror endpoint for the same Chernozhukov-Hansen 401(k) dataset.'
+  citation: 'Bach, P., Chernozhukov, V., Kurz, M.S., Spindler, M. (2022). "DoubleML — An Object-Oriented Implementation of Double Machine Learning in Python," JMLR 23(53): 1–6.'
+  notes: 'The Python API fetches the 1991 SIPP extract. The software licence and data provenance are separate. See the pinned author extract for the exact comparison sample.'
 
 - bibkey: doubleml2020rfetch401k
-  primary_url: https://search.r-project.org/CRAN/refmans/DoubleML/html/fetch_401k.html
+  primary_url: https://docs.doubleml.org/r/stable/reference/fetch_401k.html
   name: 'DoubleML R package fetch_401k loader function'
   source: other
   status: verified
   task_family: tabular
-  license: MIT
+  license: unknown
   access_method: r_package
   auth_required: false
-  citation: 'Bach, P., Kurz, M.S., Spindler, M., Klaassen, S. (2021). "DoubleML — An Object-Oriented Implementation of Double Machine Learning in R," J. Statistical Software.'
-  notes: 'CRAN-equivalent of the python loader; returns 12 documented variables including outcome net_tfa, treatment e401, instrument p401, demographic covariates.'
+  citation: 'Bach, P., Kurz, M.S., Chernozhukov, V., Spindler, M., Klaassen, S. (2024). "DoubleML: An Object-Oriented Implementation of Double Machine Learning in R," JSS 108(3).'
+  notes: 'With instrument=TRUE the DoubleMLData object uses eligibility (e401) as the instrument for participation (p401). The default sets eligibility as treatment.'
 
 # ============================================================
 # Pennsylvania Reemployment Bonus experiment (Bilias 2000;
@@ -1166,16 +1166,16 @@ entries:
   citation: 'LaLonde, R. J. (1986). Evaluating the econometric evaluations of training programs with experimental data. AER, 76(4), 604-620. Dehejia, R. H., & Wahba, S. (1999). Causal effects in nonexperimental studies: Reevaluating the evaluation of training programs. JASA, 94(448), 1053-1062.'
 
 - bibkey: doubleml401k2018github
-  primary_url: https://docs.doubleml.org/stable/api/datasets.html
+  primary_url: https://docs.doubleml.org/stable/api/generated/doubleml.datasets.fetch_401K.html
   name: 'DoubleML fetch_401K Dataset (SIPP 1991 financial wealth + 401(k) participation)'
   source: github
   status: verified
   task_family: regression
-  license: 'open source (BSD-3, packaged within DoubleML)'
+  license: unknown
   access_method: direct download
   auth_required: false
   rows: 9915
-  citation: 'Chernozhukov, V., Hansen, C., Spindler, M., & Bach, P. (2018). DoubleML: Double Machine Learning in Python. JMLR (with fetch_401K convenience wrapper). Data source: Survey of Income and Program Participation (SIPP) 1991.'
+  citation: 'Bach, P., Chernozhukov, V., Kurz, M.S., Spindler, M. (2022). "DoubleML — An Object-Oriented Implementation of Double Machine Learning in Python," JMLR 23(53): 1–6.'
 
 - bibkey: doubleblebonus2000github
   primary_url: https://docs.doubleml.org/stable/api/datasets.html
@@ -1312,3 +1312,334 @@ entries:
   access_method: signup wall
   auth_required: true
   citation: 'Huber, M., Lechner, M., & Wunsch, C. (2013). The performance of estimators based on the propensity score. Journal of Econometrics, 175(1), 1-21. Empirical Monte Carlo design using placebo treatments on German jobseeker data.'
+
+# Published-result benchmarks added November 20, 2026. benchmark_id is the CLI
+# identifier in the external-replication report. All ten archives were fitted.
+# The status field retains the ledger's source-and-license verification meaning.
+
+- bibkey: ciganovic2026bankarchive
+  benchmark_id: italy
+  primary_url: https://zenodo.org/records/21030557
+  name: Italian macroprudential policy and bank capital
+  source: zenodo
+  status: verified
+  task_family: time_series
+  license: CC BY 4.0 for the deposited package; upstream market feeds have separate terms
+  access_method: direct download
+  auth_required: false
+  rows: 71 quarters, 54 origins in the published fit
+  citation: Ciganovic, D’Amario and Tancioni (2026), Double Machine Learning for Time Series, Figure 2
+
+- bibkey: ferraroprice2013water
+  benchmark_id: water
+  primary_url: https://doi.org/10.7910/DVN1/22633
+  name: Cobb County randomized water-conservation letters
+  source: dataverse
+  status: verified
+  task_family: regression
+  license: CC0 1.0
+  access_method: direct download
+  auth_required: false
+  rows: 106669 households in Table 2
+  citation: Ferraro and Price (2013), Using Nonpecuniary Strategies to Influence Behavior, Table 2 model A
+
+- bibkey: gerbergreenlarimer2008turnout
+  benchmark_id: turnout
+  primary_url: https://doi.org/10.60600/YU/CGMWNW
+  name: Michigan household-randomized voter turnout mailings
+  source: dataverse
+  status: verified
+  task_family: regression
+  license: CC0 1.0
+  access_method: direct download
+  auth_required: false
+  rows: 344084 voters in 180002 households
+  citation: Gerber, Green and Larimer (2008), Social Pressure and Voter Turnout, Table 3 model A
+
+- bibkey: wolfers2006divorce
+  benchmark_id: wolfers
+  primary_url: https://users.nber.org/~jwolfers/data.php
+  name: State divorce rates and unilateral divorce reform
+  source: other
+  status: unverified
+  task_family: time_series
+  license: Public author download; redistribution terms unverified
+  access_method: direct download
+  auth_required: false
+  rows: 1631 state-years
+  citation: Wolfers (2006), Did Unilateral Divorce Laws Raise Divorce Rates?, Table 2
+
+- bibkey: chettylooneykroft2009beer
+  benchmark_id: beer
+  primary_url: https://doi.org/10.3886/E113312V1
+  name: US state beer consumption and excise and sales taxes
+  source: icpsr
+  status: unverified
+  task_family: time_series
+  license: Author mirror and openICPSR package; redistribution terms unverified
+  access_method: direct download
+  auth_required: false
+  rows: 1607 first differences
+  citation: 'Chetty, Looney and Kroft (2009), Salience and Taxation: Theory and Evidence, Table 6'
+
+- bibkey: dahldellavigna2009movies
+  benchmark_id: dahl
+  primary_url: https://econweb.ucsd.edu/~gdahl/movies-code.html
+  name: Daily movie audiences and assaults by time of day
+  source: other
+  status: unverified
+  task_family: time_series
+  license: Public author download; redistribution terms unverified
+  access_method: direct download
+  auth_required: false
+  rows: 1563 weekend days in the daily analysis
+  citation: Dahl and DellaVigna (2009), Does Movie Violence Increase Violent Crime?, Tables II–III
+
+- bibkey: bell2023drinkless
+  benchmark_id: drink-less
+  primary_url: https://osf.io/download/mtcfa/
+  name: Drink Less micro-randomized notification trial, Dataset A
+  source: osf
+  status: unverified
+  task_family: time_series
+  license: Public OSF download; data redistribution terms unverified
+  access_method: direct download
+  auth_required: false
+  rows: 10470 randomized evenings in 349 participants
+  citation: Bell et al. (2023), How Notifications Affect Engagement With a Behavior Change App, Tables 2 and 6
+
+- bibkey: golbus2026mybp
+  benchmark_id: mybp
+  primary_url: https://github.com/WIRED-L-um/MRT_myBPmyLife/tree/fa86c0d44ced3876f4a7351bc2d475fc4249342e
+  name: myBPmyLife randomized activity and diet prompts
+  source: github
+  status: unverified
+  task_family: time_series
+  license: Public author downloads; participant-data redistribution terms unverified
+  access_method: direct download
+  auth_required: false
+  rows: 187517 randomized decisions in 287 participants
+  citation: Golbus et al. (2026), Impact of Push Notifications on Physical Activity and Sodium Intake Among Patients with Hypertension
+
+- bibkey: lopezbernal2017sicily
+  benchmark_id: sicily
+  primary_url: https://github.com/gasparrini/2017_lopezbernal_IJE_codedata/tree/85456263850d03ae39439e032929347c40ff3a26
+  name: Monthly acute coronary events and the Sicily smoking ban
+  source: github
+  status: unverified
+  task_family: time_series
+  license: Public author download; data redistribution terms unverified
+  access_method: direct download
+  auth_required: false
+  rows: 59 months from January 2002 through November 2006
+  citation: Lopez Bernal, Cummins and Gasparrini (2017), Interrupted time series regression for the evaluation of public health interventions, Figure 4
+
+- bibkey: rameyzubairy2018fiscal
+  benchmark_id: ramey
+  primary_url: https://valerieramey.stanford.edu/research
+  name: US fiscal multipliers and military spending news
+  source: other
+  status: unverified
+  task_family: time_series
+  license: Public author archive; redistribution terms unverified
+  access_method: direct download
+  auth_required: false
+  rows: 508 quarters from 1889Q1 through 2015Q4
+  citation: Ramey and Zubairy (2018), Government Spending Multipliers in Good Times and in Bad, Table 1
+
+# ---------------------------------------------------------------------------
+# Licence check of 2026-11-26 (before the November audit folders were published)
+# ---------------------------------------------------------------------------
+# One entry per source from which a data file under docs/audits/ is derived. Each
+# `terms_url` was read from the provider's own site on `terms_read`; `license` is what
+# that page states. `files` are paths under docs/audits/. `content` says what those
+# files hold, and `verdict` is the decision taken for them:
+#
+#   landed                        no third-party rows, or a licence that grants redistribution
+#   landed with attribution       as above; the attribution is in docs/audits/DATA_SOURCES.md
+#   held                          the file reproduces a provider's rows and the terms read
+#                                 do not grant redistribution; it is not in the repository
+#
+# Files that hold only numbers computed in this repository (estimates, standard errors,
+# counts, moments, hashes) reproduce no third-party data. They are landed, and their
+# source is cited. A terms page that could not be read is recorded as such.
+
+- bibkey: cricsheet2026t20i
+  primary_url: https://cricsheet.org/downloads/
+  terms_url: https://cricsheet.org/licensing/
+  terms_read: 2026-11-26
+  name: Cricsheet Twenty20 international match records (JSON)
+  source: other
+  status: verified
+  task_family: time_series
+  license: Open Data Commons Attribution License 1.0 (https://opendatacommons.org/licenses/by/1.0/)
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-19_time_series_dml/prospective/cricket-history.csv.gz (5,849 match rows); seven cricket-*.json files (forecasts, protocol text and hashes computed here)
+  content: third-party records in the CSV; own computations in the JSON files
+  verdict: landed with attribution; the licence notice is in 2026-11-19_time_series_dml/prospective/cricket.md
+
+- bibkey: iccecb2026fixtures
+  primary_url: https://www.icc-cricket.com/news/india-announce-schedule-for-blockbuster-home-season
+  terms_url: https://www.icc-cricket.com/about/the-icc/legal-notices/website-terms-of-use
+  terms_read: 2026-11-26
+  name: Fixture announcements of the ICC and the ECB (six scheduled matches)
+  source: other
+  status: verified
+  task_family: time_series
+  license: none; the ICC reserves all rights and permits extracts for personal use; the ECB's terms page was not found
+  access_method: web page
+  auth_required: false
+  files: 2026-11-19_time_series_dml/prospective/cricket-fixture-examples.csv
+  content: six rows typed from the two announcements (date, teams, venue), each with its link
+  verdict: held
+
+- bibkey: norc2026gss
+  primary_url: https://gss.norc.org/get-the-data/stata.html
+  terms_url: https://gss.norc.org/terms-and-conditions.html
+  terms_read: 2026-11-26
+  name: General Social Survey 1972-2024, Release 3a
+  source: other
+  status: verified
+  task_family: regression
+  license: none named; the terms prescribe a citation for publications that use the data and say nothing about tables derived from it
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-19_time_series_dml/prospective/gss-history.csv, gss-frozen.json, gss-pending.json, gss-issuance.json, gss-review-template.json
+  content: eight wave-level estimates with standard errors and arm counts, forecasts and hashes, all computed here; no respondent records
+  verdict: landed with the citation NORC prescribes (docs/audits/DATA_SOURCES.md)
+
+- bibkey: frbphil2026spf
+  primary_url: https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/survey-of-professional-forecasters
+  terms_url: https://www.philadelphiafed.org/about-us/privacy-notice
+  terms_read: 2026-11-26
+  name: Survey of Professional Forecasters median forecasts, release dates and first-release real GDP growth (Federal Reserve Bank of Philadelphia)
+  source: other
+  status: verified
+  task_family: time_series
+  license: none named; "may be used for informational, educational, and research purposes only"; no clause on redistribution
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-19_time_series_dml/external/forward/gdp-survey.csv; 2026-11-21_evaluation_methods/reproduction/fresh-stdout.json.gz and historical-stdout.json.gz (their gdp-vintages entry)
+  content: the provider's series row by row (117 rows in the CSV; 104 quarterly rows in each archive)
+  verdict: held
+
+- bibkey: alfred2026gdpc1
+  primary_url: https://alfred.stlouisfed.org/series?seid=GDPC1
+  terms_url: https://fred.stlouisfed.org/legal/
+  terms_read: 2026-11-26
+  name: Real GDP vintages (GDPC1, U.S. Bureau of Economic Analysis, retrieved from ALFRED, Federal Reserve Bank of St. Louis)
+  source: fred
+  status: verified
+  task_family: time_series
+  license: FRED Terms of Use; the series is labelled "Public Domain - Citation Requested"; the terms prohibit providing stored FRED content to third parties
+  access_method: API
+  auth_required: false
+  files: 2026-11-19_time_series_dml/external/forward/gdp-vintages.csv; the two stdout archives named under frbphil2026spf
+  content: the CSV holds vintage dates and SHA-256 digests of the downloads, no series values; the archives hold growth rates computed from the vintages
+  verdict: the CSV is landed; the two archives are held
+
+- bibkey: journals2018issuelists
+  primary_url: https://www.aeaweb.org/journals/aer/issues
+  terms_url: https://www.crossref.org/documentation/retrieve-metadata/
+  terms_read: 2026-11-26
+  name: Articles of the 2018 volumes of the American Economic Review, AEJ Applied Economics and the Quarterly Journal of Economics (issue lists, checked against Crossref)
+  source: other
+  status: verified
+  task_family: regression
+  license: bibliographic metadata is treated by Crossref as facts, not subject to copyright (CC0); the publishers' site terms do not address metadata
+  access_method: web page and API
+  auth_required: false
+  files: 2026-11-19_time_series_dml/forward/journals-2018.csv; 2026-11-21_evaluation_methods/additional/journals.json
+  content: 215 bibliographic records (title, pages, DOI, volume, issue) beside this repository's own coding; counts of that coding
+  verdict: landed
+
+- bibkey: toddwolpin2006progresa
+  primary_url: https://doi.org/10.3886/E116240V1
+  terms_url: https://www.aeaweb.org/journals/data/data-code-policy
+  terms_read: 2026-11-26
+  name: PROGRESA replication files of Todd and Wolpin (2006)
+  source: other
+  status: unverified
+  task_family: regression
+  license: not determined; the openICPSR deposit page returned HTTP 403 and its DataCite record lists no rights
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-21_evaluation_methods/additional/progresa-raw.json
+  content: counts per arm, two effects with standard errors and two model values, computed here
+  verdict: landed (no third-party rows); the deposit's own licence could not be read
+
+- bibkey: ferraroprice2013watermoments
+  primary_url: https://doi.org/10.7910/DVN1/22633
+  terms_url: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN1/22633
+  terms_read: 2026-11-26
+  name: Cobb County water-conservation letters (Ferraro and Price), moments
+  source: dataverse
+  status: verified
+  task_family: regression
+  license: CC0 1.0
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-19_time_series_dml/external/taxes_water/water_moments.json
+  content: sample size, four arm counts and two cross-product matrices computed here
+  verdict: landed
+
+- bibkey: ukpn2014lowcarbonlondon
+  primary_url: https://data.london.gov.uk/dataset/smartmeter-energy-consumption-data-in-london-households-vqm0d
+  terms_url: https://data.london.gov.uk/dataset/smartmeter-energy-consumption-data-in-london-households-vqm0d
+  terms_read: 2026-11-26
+  name: SmartMeter Energy Consumption Data in London Households (UK Power Networks, Low Carbon London)
+  source: other
+  status: verified
+  task_family: time_series
+  license: CC BY 4.0
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-19_time_series_dml/field/london/ (events.csv, calibration.csv, effects.csv, draws.csv.gz, run.json)
+  content: 48 tariff-event rows from the Tariffs workbook with aggregates computed here in events.csv; estimates and simulation draws elsewhere; no meter readings
+  verdict: landed with attribution
+
+- bibkey: kreindler2024bangalore
+  primary_url: https://zenodo.org/records/10637043
+  terms_url: https://zenodo.org/records/10637043
+  terms_read: 2026-11-26
+  name: Replication package for "Peak-Hour Road Congestion Pricing - Experimental Evidence and Equilibrium Implications" (Kreindler)
+  source: zenodo
+  status: verified
+  task_family: regression
+  license: CC BY 4.0
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-19_time_series_dml/field/bangalore/results.json, source-members.json
+  content: coefficients and monthly counts computed here; archive member names with byte offsets and hashes
+  verdict: landed with attribution
+
+- bibkey: rollingcontrols2026sources
+  primary_url: https://devingpope.com/assets/files/Website_Stability.pdf
+  terms_url: https://www.econometricsociety.org/publications/econometrica/permissions
+  terms_read: 2026-11-26
+  name: Four sources of the rolling external controls - DellaVigna and Pope (stability of experimental results, Table 1); Casey, Glennerster, Miguel and Voors (Sierra Leone, Zenodo 7411565); DellaVigna and Linos (nudge units, Econometric Society supplement); ZOZOTOWN Open Bandit Dataset
+  source: other
+  status: verified
+  task_family: regression
+  license: none stated for the paper; CC BY 4.0 (Sierra Leone, Open Bandit); the Econometric Society permits sharing replication data after attribution
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-19_time_series_dml/rolling/external-controls.json
+  content: 30 arm means quoted from Table 1 of the paper, beside estimates computed here from the three packages
+  verdict: landed with attribution; the quoted table values are cited to the paper
+
+- bibkey: acic2019truth
+  primary_url: https://sites.google.com/view/acic2019datachallenge/data-challenge
+  terms_url: https://sites.google.com/view/acic2019datachallenge/data-challenge
+  terms_read: 2026-11-26
+  name: ACIC 2019 Data Challenge, low-dimensional track, with the organizers' file of true effects
+  source: other
+  status: verified
+  task_family: regression
+  license: none stated for the datasets or the truth file; "registration not required for download"
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-22_acic_coverage/draws.csv; 2026-11-21_evaluation_methods/additional/acic-results.csv; the other files of 2026-11-22_acic_coverage/
+  content: draws.csv and acic-results.csv carry the organizers' design and true effect for each contest file (3,200 and 16 rows) beside estimates computed here; the other files hold summaries by design
+  verdict: draws.csv and acic-results.csv are held; the summaries are landed, with the true effect of each of the 32 designs quoted from the organizers

@@ -1163,3 +1163,80 @@ entries:
   venue: Annals of Internal Medicine, 167(4), 268-274
   status: verified
   claim_family: inference_ts
+- bibkey: kolesar2025nonlinearworld
+  primary_url: https://arxiv.org/abs/2411.10415
+  title: 'Dynamic Causal Effects in a Nonlinear World: the Good, the Bad, and the Ugly'
+  authors: Kolesár and Plagborg-Møller (2025)
+  venue: Journal of Business & Economic Statistics, 43(4), 737-754
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: chernozhukov2026longstory
+  primary_url: https://arxiv.org/abs/2112.13398
+  title: 'Long Story Short: Omitted Variable Bias in Causal Machine Learning'
+  authors: Chernozhukov, Cinelli, Newey, Sharma and Syrgkanis (2026)
+  venue: The Review of Economics and Statistics, doi:10.1162/REST.a.1705
+  status: verified
+  claim_family: theory_orthogonality
+- bibkey: bach2024tuning
+  primary_url: https://arxiv.org/abs/2402.04674
+  title: 'Hyperparameter Tuning for Causal Inference with Double Machine Learning: A Simulation Study'
+  authors: Bach, Schacht, Chernozhukov, Klaassen and Spindler (2024)
+  venue: arXiv:2402.04674 (econ.EM)
+  status: verified
+  claim_family: estimator_xs
+- bibkey: rambachan2025commonestimands
+  primary_url: https://arxiv.org/abs/1903.01637
+  title: When do common time series estimands have nonparametric causal meaning?
+  authors: Rambachan and Shephard (2025)
+  venue: arXiv:1903.01637v4 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: carlson2026potentialsystem
+  primary_url: https://arxiv.org/abs/2603.20394
+  title: 'When are time series predictions causal? The potential system and dynamic causal effects'
+  authors: Carlson and Shephard (2026)
+  venue: arXiv:2603.20394 (econ.EM)
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: montielolea2021lpinference
+  primary_url: https://arxiv.org/abs/2007.13888
+  title: Local Projection Inference is Simpler and More Robust Than You Think
+  authors: Montiel Olea and Plagborg-Møller (2021)
+  venue: Econometrica, 89(4), 1789-1823
+  status: verified
+  claim_family: inference_ts
+- bibkey: adamek2024hdlp
+  primary_url: https://arxiv.org/abs/2209.03218
+  title: Local Projection Inference in High Dimensions
+  authors: Adamek, Smeekes and Wilms (2024)
+  venue: The Econometrics Journal, 27(3), 323-342
+  status: verified
+  claim_family: inference_ts
+- bibkey: goncalves2026semiparametriclp
+  primary_url: https://doi.org/10.24149/wp2616
+  title: Semiparametric Local Projections
+  authors: Gonçalves, Herrera, Kilian, Pesavento and Holban (2026)
+  venue: Federal Reserve Bank of Dallas Working Paper 2616
+  status: verified
+  claim_family: estimator_temporal
+- bibkey: lal2026representative
+  primary_url: https://arxiv.org/abs/2506.07462
+  title: Estimating Representative Causal Effects with Double Machine Learning
+  authors: Lal and Chou (2026)
+  venue: arXiv:2506.07462v4 (econ.EM); to appear at ECML PKDD
+  status: verified
+  claim_family: estimator_xs
+- bibkey: schaper2025rols
+  primary_url: https://arxiv.org/abs/2502.10301
+  title: Residualised Treatment Intensity and the Estimation of Average Partial Effects
+  authors: Schäper (2025)
+  venue: arXiv:2502.10301 (econ.EM)
+  status: verified
+  claim_family: estimator_xs
+- bibkey: montielolea2026varithmetic
+  primary_url: https://arxiv.org/abs/2405.09509
+  title: Double Robustness of Local Projections and Some Unpleasant VARithmetic
+  authors: Montiel Olea, Plagborg-Møller, Qian and Wolf (2026)
+  venue: Econometrica, 94(4), 1313-1343
+  status: verified
+  claim_family: inference_ts

@@ -23,6 +23,8 @@ Out of scope (deliberately excluded):
 
 **Cross-pipeline duplication is intentional, not a bug.** A handful of entries (e.g., 401(k) data, LaLonde NSW) appear here AND in the paper-side `06_replication_applied.md` synthesis file: the paper dossier captures the methodology paper that used the data; this dossier captures the data artifact itself. Both citations are correct — do NOT remove from either.
 
+For data used in executable early-to-later comparisons, see the [historical access ledger](../../audits/2026-11-19_time_series_dml/forward/access.md). It records the actual files, assignment designs and earliest observable outcomes.
+
 ## How this is organized
 
 Sub-section anchors use a per-file letter prefix (`## A1.`, `## A2.` … in file 01; `## B1.` in file 02; etc.). Lookup recipes below reference these anchors.

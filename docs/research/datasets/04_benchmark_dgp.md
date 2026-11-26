@@ -74,15 +74,9 @@ Methodology benchmarks and synthetic data-generating processes — ACIC competit
   - **Tasks:** Geffner, T., Antoran, J., Foster, A., Gong, W., Ma, C., Kiciman, E., Sharma, A., Lamb, A., Kukla, M., Pawlowski, N., Allamanis, M., & Zhang, C. (2022). Deep End-to-end Causal Inference. arXiv:2202.02195.
   - **Status:** Verified.
 
-## D8. DoubleML fetch_401K Dataset (SIPP 1991 financial wealth + 401(k) participation)
+## D8. DoubleML 401(k) benchmark
 
-- **DoubleML fetch_401K Dataset (SIPP 1991 financial wealth + 401(k) participation)** — GitHub (2018).
-  - **Source:** https://docs.doubleml.org/stable/api/datasets.html
-  - **Access:** direct download; auth_required: N
-  - **Schema:** rows: 9915, task_family: regression
-  - **Size+License:** license: open source (BSD-3, packaged within DoubleML)
-  - **Tasks:** Chernozhukov, V., Hansen, C., Spindler, M., & Bach, P. (2018). DoubleML: Double Machine Learning in Python. JMLR (with fetch_401K convenience wrapper). Data source: Survey of Income and Program Participation (SIPP) 1991.
-  - **Status:** Verified.
+The Python loader retrieves the 1991 SIPP cross-section with 9,915 observations. The eligibility example adjusts for nine household characteristics. The upstream licence covers the software and documentation. The ledger records the dataset licence as unknown. [DoubleML workflow](https://docs.doubleml.org/stable/workflow/workflow.html) · [Python package paper](https://jmlr.org/papers/v23/21-0862.html) · [Upstream licence](https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/LICENSE.Rmd)
 
 ## D9. DoubleML fetch_bonus: Pennsylvania Reemployment Bonus Experiment
 
