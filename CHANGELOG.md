@@ -117,20 +117,80 @@ are the compatibility contract).
   result are arrays. A value that is not a real number is refused with the argument's name: a
   datetime or timedelta (as floats it would be integer ticks in its storage unit), a complex
   value, text, and a masked array with masked entries. An object column is judged by its
-  elements, because NumPy and pandas cast a timezone-aware datetime, and object arrays of
-  `np.timedelta64` or `np.complex128` scalars, to floats without an error. The shared helper
-  does not convert two-dimensional controls, and what each function does with them is
-  unchanged: `robinson_estimator` hands a DataFrame or a sparse matrix to the nuisance model as
-  given; `double_ml` selects fold rows with `X[rows]`, so it takes arrays and CSR or CSC
-  matrices and raises `KeyError` for a DataFrame; `fwl_estimate` builds a dense design from an
-  array or a DataFrame of numbers. Two pandas inputs whose indexes differ in value or in
-  order are refused, and so are two whose levels are named differently: read by position, the
-  same units in another order would be paired wrongly. The comparison cannot see an index
+  elements, because `np.asarray(values, dtype=float)` casts a timezone-aware pandas column,
+  and object arrays of `np.timedelta64` or `np.complex128` scalars, to floats without an
+  error. Two pandas inputs whose indexes differ in value or in order are refused, and so are
+  two whose levels are named differently: read by position, the same units in another order
+  would be paired wrongly. The comparison cannot see an index
   that was reset after its rows were reordered, rows permuted among repeated labels, or a
   level that only one input names. It also refuses calls that were paired correctly before:
   the same rows under other labels (controls rebuilt from an array beside an outcome with a
   date index; the same instants in another time zone; the same values under another index
-  name). Pass `.to_numpy()` when the rows are already in the same order. (#75)
+  name). Pass `.to_numpy()` when the rows are already in the same order. The next entry carries
+  these rules to the other estimators and says what happens to the controls. (#75)
+- One input contract for the estimators. `fwl_estimate`, `fwl_vs_ols_comparison`,
+  `robinson_estimator`, `double_ml`, `TemporalPLRDML`, `RollingWindowDML` and
+  `DynamicGEstimationDML` read their inputs through one function, and `fwl_residualize`,
+  which takes no treatment, through the readers that function is built from. Not covered:
+  `PanelDML`, which keeps its own reading until its redesign, and the EconML cross-check
+  `fit_econml_reference`, which still converts and flattens its arguments itself. (#77)
+  - The outcome and the treatment are read by value as floats, and what a conversion would
+    misread is refused by the argument's name, as in the entry above. `TemporalPLRDML` and
+    `RollingWindowDML` converted everything: a treatment stored as a timedelta in seconds gave
+    0.0021 for a slope of 2.09, numeric text was parsed, a complex value lost its imaginary
+    part and a masked entry was read under its mask.
+  - An outcome or a treatment that is not one-dimensional is refused. `DynamicGEstimationDML`
+    flattened whatever it was given: outcome and treatment as `(periods, units)` matrices gave
+    [-0.032, -0.306, 1.958] where the stacked rows give [0.060, -0.021, 2.075]. A matrix in
+    the right order is refused as well; pass the stacked rows. The refusal of a matrix does
+    not recommend flattening it, which is that misreading.
+  - Rows are paired by position, and two pandas inputs with different indexes are refused by
+    every one of these estimators. For a treatment that carried the outcome's labels in
+    another order, `TemporalPLRDML` returned -0.18 where the arrays give 2.09, and
+    `RollingWindowDML` window slopes of 0.41, -0.32 and -0.18 where they give 1.93, 2.04 and
+    2.20. The refusal also covers inputs that these estimators paired correctly before: the
+    same rows under other labels. Pass `.to_numpy()` when the rows are already in the same
+    order. A labelled `time_index` takes part in the comparison; its values are still not
+    used.
+  - Controls. `robinson_estimator` and `double_ml` hand a two-dimensional `X` to the nuisance
+    model as it was given and select fold rows by position: a DataFrame keeps its column names
+    and dtypes (in `double_ml` a DataFrame raised an error before a model saw it), and a
+    sparse matrix in any format stays sparse. A masked array with masked entries is refused
+    there too, because a learner would read under the mask. The other estimators compute on
+    the controls and convert them to floats under the refusals that hold for the outcome; they
+    refuse a sparse matrix by name.
+  - Controls and the package's own learners. When `robinson_estimator` or `double_ml` fits a
+    nuisance with one of the package's learners (`model` is a string or left at its default,
+    and in `double_ml` `outcome_model` and `treatment_model` are not both given), controls
+    that are not numbers are refused by name: a datetime, a timedelta, a complex value, text,
+    and more than two dimensions. Nobody has said how such a column is to be encoded, and the
+    learners disagreed about it. The forest and gradient boosting read controls that were all
+    datetime or timedelta as integer ticks in their storage unit, where ridge and lasso
+    raised; text that spells numbers was parsed, in an object column by all four. Two kinds
+    of call returned a number before and are refused now: numeric text, which was parsed to
+    the arrays' result, and all-datetime or all-timedelta controls under the two tree
+    learners. Where the learner raised its own error (a `TypeError` for a datetime column
+    beside numeric ones, "could not convert string to float" for a text column), the error is
+    now a `ValueError` that names `X`. The controls are only checked, never converted: numeric
+    controls reach the learner as they were given (`float32` stays `float32`, a sparse matrix
+    stays sparse) and the estimates are bit-identical. A learner the caller supplies is not
+    checked and receives the controls whatever they hold; to pass such columns to `double_ml`,
+    supply the learner for both nuisances. The cost: an array is read once, into a copy that is
+    thrown away (under a tenth of the time of a ridge fit on the same array, at 100,000 and at
+    1,000,000 rows of 20 columns); an object array, or a frame with a column that is not
+    stored as numbers, is read element by element; a sparse matrix, and a DataFrame whose
+    columns are all stored as numbers, are judged by their dtypes.
+  - `fwl_residualize` returns arrays and refuses an outcome that is not one-dimensional. It
+    returned a labelled `Series` for a `Series`, so residualizing by hand and then regressing
+    multiplied residuals by label: -0.15 for a slope of 2.03.
+  - `DynamicGEstimationDML` reads `W` like the controls and includes a labelled `groups` in
+    the index comparison. `groups` must hold one identifier per row and is refused when it
+    has masked entries; identifiers are compared as given. A length mismatch is reported in
+    the words of the other estimators ("T length (10) must match Y length (9)").
+  - Also refused now, where these estimators returned the arrays' result before: numeric
+    text; a complex array whose imaginary part is zero; an object array whose elements are
+    not real numbers (objects that only define `__float__`); and labels that mean the same
+    without being equal (the same instants in another time zone, dates beside date strings).
 - `TemporalPLRDML` raises when the treatment is constant on the rows it scores. The first block
   of a time-series split is trained on and not scored; for a treatment that varies only there,
   the "residual" on the scored rows is the error of the nuisance prediction. Over 400 draws of

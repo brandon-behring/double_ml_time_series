@@ -58,6 +58,7 @@ from ._utils import (
     as_validated_arrays,
     get_nuisance_model,
     predict_conditional_mean,
+    refuse_non_numeric_controls,
     theta_via_fwl,
 )
 from ._utils import compute_r2 as _compute_r2
@@ -137,8 +138,12 @@ def robinson_estimator(
         Outcome variable.
     T : array, shape (n,)
         Treatment variable (continuous or binary).
-    X : array, shape (n, p)
-        Control variables / confounders.
+    X : array, DataFrame or sparse matrix, shape (n, p)
+        Control variables / confounders. Handed to the nuisance model as given: a
+        DataFrame keeps its column names and dtypes, a sparse matrix stays sparse, and
+        rows are selected by position. With one of the package's own learners (a string
+        value of ``model``, or the default) every column must hold numbers; a learner
+        you supply receives the controls whatever they hold.
     model : sklearn estimator or str, optional
         A regressor with ``predict`` or a classifier with ``predict_proba`` for
         numeric outcome and treatment classes. Supported string values are
@@ -149,6 +154,18 @@ def robinson_estimator(
     -------
     RobinsonResult
         Contains theta, SE, residuals, and R² values.
+
+    Raises
+    ------
+    ValueError
+        If Y or T is not one-dimensional or the lengths disagree; if Y or T holds a
+        datetime, a timedelta, a complex value, text or a masked entry; if X is a masked
+        array with masked entries; if ``model`` is a string or the default and X holds a
+        datetime, a timedelta, a complex value or text, or has more than two dimensions
+        (a learner you supply receives such controls as given); if two of Y, T and X are
+        pandas objects with different
+        indexes (rows are paired by position; pass ``.to_numpy()`` when they are already
+        in the same order); or if the treatment has no variation left after the controls.
 
     Notes
     -----
@@ -186,6 +203,9 @@ def robinson_estimator(
         model = "random_forest"
 
     if isinstance(model, str):
+        # One of the package's own learners: the controls must be numbers. This only
+        # checks; the learner is handed X as it was given.
+        refuse_non_numeric_controls("X", X)
         model_type = cast(Literal["ridge", "lasso", "random_forest", "gradient_boosting"], model)
         # random_state=42 preserves the historical hardcoded nuisance seed.
         outcome_model = get_nuisance_model(model_type, random_state=42)

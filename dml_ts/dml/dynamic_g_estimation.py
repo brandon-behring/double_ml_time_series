@@ -61,9 +61,12 @@ from temporalcv import (
 
 from ._results import ResultBase
 from ._utils import (
+    as_validated_arrays,
     is_numerically_constant,
     no_variation_tolerance,
     predict_conditional_mean,
+    read_controls_as_floats,
+    refuse_masked_entries,
     theta_via_fwl,
 )
 
@@ -428,24 +431,32 @@ class DynamicGEstimationDML:
         Returns:
             A :class:`DynamicGEstimationResult` (also stored on ``self.result_``).
 
+        Rows are paired by position; labels are never used to reorder them. Y, T, X
+        and W are read by value as floats, and ``groups`` is compared as given.
+
         Raises:
             ValueError: On inconsistent shapes, ragged or non-contiguous panels, or
                 missing ``groups`` for the panel mode; when a treatment (a panel
                 period or a series lag) has no residual variation; and in series
-                mode when the residualized lags are linearly dependent.
+                mode when the residualized lags are linearly dependent. Also if Y or
+                T is not one-dimensional (a column vector or a matrix is refused, not
+                flattened); if Y, T, X or W holds a datetime, a timedelta, a complex
+                value, text or a masked entry, or X or W is a sparse matrix; if
+                ``groups`` has masked entries or not one id per row; or if two of Y, T,
+                X, W and ``groups`` are pandas objects with different indexes (pass
+                ``.to_numpy()`` when the rows are already in the same order).
         """
-        Y = np.asarray(Y, dtype=float).ravel()
-        T = np.asarray(T, dtype=float).ravel()
-        X = np.asarray(X, dtype=float)
-        if X.ndim == 1:
-            X = X.reshape(-1, 1)
+        # The one input boundary: Y and T by value, X and W as float arrays, rows by
+        # position. An outcome or a treatment that is not one-dimensional is refused: a
+        # flattened (n, k) matrix would be read as one series k times as long (#77).
+        Y, T, X = as_validated_arrays(
+            Y, T, X, numeric_controls=True, also_labelled={"W": W, "groups": groups}
+        )
         if W is not None:
-            W = np.asarray(W, dtype=float)
-            if W.ndim == 1:
-                W = W.reshape(-1, 1)
+            W = read_controls_as_floats("W", W)
+            if W.shape[0] != len(Y):
+                raise ValueError(f"W rows ({W.shape[0]}) must match Y length ({len(Y)})")
             X = np.hstack([X, W])
-        if not (len(Y) == len(T) == X.shape[0]):
-            raise ValueError("Y, T, X must share the same number of rows.")
 
         resolved_mode: Mode = (
             mode if mode is not None else ("panel" if groups is not None else "series")
@@ -453,7 +464,15 @@ class DynamicGEstimationDML:
         if resolved_mode == "panel":
             if groups is None:
                 raise ValueError("mode='panel' requires groups (unit ids per row).")
-            result = self._fit_panel(Y, T, X, np.asarray(groups), alpha)
+            # Identifiers are compared as given, never cast; a masked one is not read.
+            refuse_masked_entries("groups", groups)
+            unit_ids = np.asarray(groups)
+            if unit_ids.shape != (len(Y),):
+                raise ValueError(
+                    f"groups must hold one unit id per row: got shape {unit_ids.shape} "
+                    f"for {len(Y)} rows."
+                )
+            result = self._fit_panel(Y, T, X, unit_ids, alpha)
         else:
             result = self._fit_series(Y, T, X, alpha)
         self.result_ = result

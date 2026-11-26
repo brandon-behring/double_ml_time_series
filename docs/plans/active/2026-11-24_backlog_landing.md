@@ -271,11 +271,11 @@ Part I (a box is ticked when the pull request is merged and its issues are check
 - [x] PR-1 `fix/core-numerics-42` (#69, merged 2026-11-25 as `257022d`; #42 stays open)
 - [x] PR-1b `fix/silent-wrong-slopes-72` (#74, merged 2026-11-25 as `19a8911`; #72 closed, #42 stays open)
 - [x] PR-2 `fix/validation-inference` (#78, merged 2026-11-25 as `dc917cf`; #41, #61, #63 stay open)
-- [ ] PR-1c `fix/series-labels-and-constant-scored-rows` (#75, #76)
+- [ ] PR-1c `fix/series-labels-and-constant-scored-rows` (#79, open; #75, #76)
 - [x] PR-3 `fix/applications-pipeline` (#80, merged 2026-11-26 as `8feb54c`; #60 closed, #44, #62, #64 stay open)
-- [ ] PR-1d `fix/one-input-boundary` (#77; the input rule in every estimator but `PanelDML`)
-- [ ] PR-4 `docs/november-audits` (#65, #70)
-- [ ] PR-5 `audit/public-data-extensions-2026-11-21`
+- [ ] PR-1d `fix/one-input-boundary` (#82, open, stacked on #79; #77)
+- [ ] PR-4 `docs/november-audits` (#83, open; #65, #70)
+- [ ] PR-5 `audit/public-data-extensions` (#87, open, stacked on #83)
 - [ ] Conservation check against the manifest
 - [ ] Part III residual patch saved
 - [ ] `Nightly Tests` re-enabled and observed once
@@ -1078,3 +1078,78 @@ had introduced, so #79 was repaired on its branch and waits for a new go-ahead.
 - **Lesson.** Whether a container can be cast is not whether it holds numbers. A reader that
   falls back on a cast must first look at what it is casting; the matrix of input kinds needs
   the kinds that libraries cast silently (timezone-aware dates, object arrays of scalars).
+
+### Record of the fourth stretch (2026-11-26): PR-1d, PR-4, PR-5, and what the reviews found
+
+State at the stop. Nothing below is merged; each waits for a go-ahead.
+
+| Pull request | Head | Base | Local gate | CI | Reviewed |
+|---|---|---|---|---|---|
+| #79 PR-1c | `7a5c2c6` | `main` | 1,165 tier 1 + 2, 83.26%; 63 of 63 mutations | 6 checks green | Its third version by a fresh agent, together with #82; the head not independently |
+| #82 PR-1d | `85374d7` | #79's branch | 1,709 tier 1 + 2, 83.51%; 43 of 43 mutations | none (the workflow runs for pull requests against `main` only) | `035f3e3` by a fresh agent and Gemini; the head not independently |
+| #83 PR-4 | `c540b9e` | `main` | 1,304 tier 1 + 2, 85.50%; book 190 pages; web | 8 checks green | `a0fe76d` by a fresh agent (claims against evidence); the head not independently |
+| #87 PR-5 | `695390b` | #83's branch | 1,304 tier 1 + 2, 85.50% | none, as for #82 | Licence check only |
+
+Trial merges of the four branches with `main` and with each other are clean. Tier 1 + 2 on a
+trial merge of #82 and #83: 2,041 passed, 6 skipped.
+
+- **#79 did not meet the rule for its merge.** Its second version returned numbers for inputs
+  that `main` refuses (see the record above). The third review, of its repaired input code
+  together with #82, found one more regression in it (a one-dimensional sparse array of
+  controls) and a hole in the repair (level names compared with the first input only). Both
+  are repaired in `7a5c2c6`.
+- **PR-1d (#82) is stacked on #79** because #79 could not merge. It carries the input contract
+  to `fwl_residualize`, `fwl_vs_ols_comparison`, `TemporalPLRDML`, `RollingWindowDML` and
+  `DynamicGEstimationDML`, and makes `double_ml` take a DataFrame of controls. Departures from
+  Addendum 4's table: `fwl_vs_ols_comparison` joined the boundary; masked controls are refused
+  for the learner-facing functions too; a labelled `time_index` joins the index comparison;
+  `groups` must hold one identifier per row. Not covered: `fit_econml_reference`, which
+  converts and flattens its arguments itself (#42).
+- **Open decision from #82's review.** `robinson_estimator` and `double_ml` hand a frame of
+  datetime or timedelta columns to their default forest, which reads ticks. The contract hands
+  controls to a learner unchanged. An option is to convert under the refusals when the learner
+  is one of the package's own and to hand on unchanged only to a learner the caller supplies.
+- **Licence check (PR-4, PR-5).** Read on the providers' pages on 2026-11-26; recorded in
+  `docs/research/dataset_ledger.yml` and `docs/audits/DATA_SOURCES.md`. Rule applied: a file
+  that reproduces a provider's rows lands only under a licence that grants redistribution;
+  files that hold only numbers computed here, or that quote published results, land with their
+  source cited. **Seven files are held and await the owner's decision:** `gdp-survey.csv`
+  (Survey of Professional Forecasters), two printed-output receipts that embed it, three ACIC
+  files with the organizers' truth per challenge file, and six fixture rows typed from ICC and
+  ECB announcements. One of the ACIC files was in the first push of #83 and is in that
+  branch's history.
+- **`PanelDML` on `main` has the defect the redesign was rejected for (#84).** It demeans the
+  controls before a learner sees them: default forest, confounder `x**2`, bias +1.07 for a
+  slope of 2 and 0% coverage in 40 replications; with a linear confounder +0.01 and 90%. For
+  Part II: `main`'s `PanelDML` is not a sound reference arm under nonlinear confounding.
+- **The archived cricket forecast depends on the CPU (#86).** Its `GroupKFold` orders groups of
+  equal size with an unstable sort. RMSE of the DML forecast: 12.5298 on the issuing machine,
+  12.4767 there with a stable sort (the value #70 records for scikit-learn 1.9.1), 12.5793 on
+  the CI runner. Two tests that replay it are held out of #83. The lock of PR-L does not make
+  those two reproducible, so #70 stays open.
+- **Other issues filed:** #85 (two passages of Chapter 2 that contradict the corrected text).
+- **PR-5 (#87).** The four commits applied to #83's branch without the expected conflict. Its
+  package comparison reproduces its stored output byte for byte on the current code. Its last
+  commit adds a "Handoff for Claude" section to a public README; landed unchanged and put to
+  the owner.
+- **Not done in this stretch:** tier 3 and 4; the 31 test cases that replay external archives;
+  the nightly workflow (the API lists it as active, last run 2026-10-19, where this plan calls
+  it disabled); a review of the final heads.
+
+Lessons.
+
+- A repair is new code and can regress: both repairs of #79 did (the first narrowed the index
+  comparison to pandas indexes; the second left one-dimensional sparse controls broken). Re-run
+  the reviewer's scripts against every repair, not only the tests written for it.
+- A commit message is a claim. Three messages of this stretch carried a number that had not
+  been counted (the rows of a file in `608c1d7`, the sources in `0b84343`, the kinds of input
+  in `3b00405`), and the first version of this sentence said five. Count first.
+- A mutation that survives may be pointing at a false sentence and not at a missing test (the
+  panel boundary), or at code whose result depends on a coincidence (a `None` default).
+- Identical locked versions do not make a number reproducible across machines: an unstable
+  sort, an iterative solver or a vectorized kernel can differ by CPU. A test that pins a
+  number needs a tolerance chosen for that, or inputs that have no ties.
+- A status document written before its claims are checked repeats the plan's beliefs. The
+  claim that only the redesign demeans the controls came from this plan and was false of
+  `main`.
+- Pull requests stacked on a branch get no CI here; say so where the evidence is listed.

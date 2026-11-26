@@ -63,11 +63,11 @@ from temporalcv import (
 from ._results import ResultBase
 from ._utils import (
     ModelType,
+    as_validated_arrays,
     cross_fit_predictions,
     is_numerically_constant,
     no_variation_tolerance,
     theta_via_fwl,
-    validate_lengths,
 )
 from ._utils import compute_r2 as _compute_r2
 from ._utils import get_nuisance_model as _get_nuisance_model
@@ -423,30 +423,33 @@ class TemporalPLRDML:
         using Neyman-orthogonal moment conditions, time series cross-fitting,
         and HAC standard errors.
 
+        Rows are paired by position and must be in time order; labels are never used
+        to reorder them. Y, T and X are read by value as floats.
+
         Args:
             Y: Outcome variable (n_samples,)
             T: Treatment variable (n_samples,)
-            X: Confounders (n_samples, n_features)
+            X: Confounders (n_samples, n_features). Converted to a float array.
             time_index: Accepted for API compatibility and length-validated;
-                splitting is positional (row order), so the values are not used
+                splitting is positional (row order), so the values are not used.
+                A labelled time_index takes part in the index comparison
             alpha: Significance level for confidence intervals (default 0.05)
 
         Returns:
             TemporalPLRDMLResult with treatment effect, HAC SE, and diagnostics
 
         Raises:
-            ValueError: If inputs have incompatible shapes
+            ValueError: If the inputs have incompatible shapes; if Y or T is not
+                one-dimensional; if Y, T or X holds a datetime, a timedelta, a complex
+                value, text or a masked entry, or X is a sparse matrix; if two of Y, T,
+                X and time_index are pandas objects with different indexes (pass
+                ``.to_numpy()`` when the rows are already in the same order); or if the
+                treatment has no variation on the scored rows.
         """
-        # Convert to numpy arrays
-        Y = np.asarray(Y, dtype=np.float64)
-        T = np.asarray(T, dtype=np.float64)
-        X = np.asarray(X, dtype=np.float64)
-
-        if X.ndim == 1:
-            X = X.reshape(-1, 1)
-
-        # Validate inputs
-        validate_lengths(Y, T, X)
+        # The one input boundary: Y and T by value, X as a float array, rows by position.
+        Y, T, X = as_validated_arrays(
+            Y, T, X, numeric_controls=True, also_labelled={"time_index": time_index}
+        )
         n_samples = len(Y)
         if not 0 < alpha < 1:
             raise ValueError(f"alpha must be in (0, 1), got {alpha!r}")
@@ -776,24 +779,30 @@ class RollingWindowDML:
     ) -> RollingWindowDML:
         """Fit rolling-window DML model.
 
+        Rows are paired by position and must be in time order; labels are never used
+        to reorder them. Y, T and X are read by value as floats.
+
         Args:
             Y: Outcome variable (n_samples,)
             T: Treatment variable (n_samples,)
-            X: Confounders (n_samples, n_features)
+            X: Confounders (n_samples, n_features). Converted to a float array.
             time_index: Optional row labels, length-validated. Returned centers
                 are positions in the input, including when labels are supplied.
 
         Returns:
             self: Fitted model
+
+        Raises:
+            ValueError: If the inputs have incompatible shapes; if Y or T is not
+                one-dimensional; if Y, T or X holds a datetime, a timedelta, a complex
+                value, text or a masked entry, or X is a sparse matrix; or if two of Y,
+                T, X and time_index are pandas objects with different indexes (pass
+                ``.to_numpy()`` when the rows are already in the same order).
         """
-        Y = np.asarray(Y, dtype=np.float64)
-        T = np.asarray(T, dtype=np.float64)
-        X = np.asarray(X, dtype=np.float64)
-
-        if X.ndim == 1:
-            X = X.reshape(-1, 1)
-
-        validate_lengths(Y, T, X)
+        # The one input boundary: Y and T by value, X as a float array, rows by position.
+        Y, T, X = as_validated_arrays(
+            Y, T, X, numeric_controls=True, also_labelled={"time_index": time_index}
+        )
         n_samples = len(Y)
         if time_index is not None and len(time_index) != n_samples:
             raise ValueError("time_index length must match Y length")
