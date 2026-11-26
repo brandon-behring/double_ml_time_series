@@ -21,7 +21,7 @@ from scipy import stats
 
 @dataclass
 class SensitivityResult:
-    """Result container for Rosenbaum bounds sensitivity analysis.
+    """Result of the illustrative sensitivity curve (not a formal Rosenbaum bound).
 
     Attributes
     ----------
@@ -136,7 +136,7 @@ class RosenbaumBounds:
         gamma_step: float = 0.1,
         alpha: float = 0.05,
     ) -> None:
-        """Initialize the Rosenbaum bounds analyzer."""
+        """Set the grid of Γ values and the significance level of the illustrative curve."""
         if not np.isfinite(gamma_max) or gamma_max <= 1.0:
             raise ValueError(f"gamma_max must be > 1.0, got {gamma_max}")
         if not np.isfinite(gamma_step) or gamma_step <= 0:

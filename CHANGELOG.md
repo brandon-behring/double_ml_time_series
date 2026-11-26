@@ -33,9 +33,11 @@ are the compatibility contract).
   with X the slope weights each effect by `Var(T|X)` and can differ from the ATE.
 - `dml_ts.sensitivity` describes its curve as what it is: an assumed log-gamma bias function
   applied to a two-sided normal test of a scalar estimate. It is not the Rosenbaum bound for
-  matched pairs, and the docstrings, the example and the API page no longer call it one. The
-  result says whether the tested grid crossed the significance level and labels its threshold
-  as a threshold or as a lower bound. (#44)
+  matched pairs, and the module's docstrings and API page say so. The class keeps its name,
+  `RosenbaumBounds`, and its summary is headed "Illustrative Rosenbaum Bounds Sensitivity
+  Analysis"; the example still prints the old name. The result says whether the tested grid
+  crossed the significance level and labels its threshold as a threshold or as a lower bound;
+  for a grid without a crossing, `interpretation` categorizes the grid's upper end. (#44)
 - `InsuranceDMLPipeline` fits nuisance preprocessing within folds and reports intervals from
   held-out scores: the partially linear score for a continuous treatment, the augmented
   inverse-probability score for a binary one. A binary treatment needs a model with
