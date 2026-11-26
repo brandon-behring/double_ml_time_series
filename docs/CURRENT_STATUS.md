@@ -21,19 +21,23 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
 
 | Subject | State |
 |---|---|
-| Core numerics (#69, #74) | The "no treatment variation" check is relative to the treatment's size; a column vector as outcome or treatment is refused; series-mode `DynamicGEstimationDML` refuses lags that are not identified |
+| Core numerics (#69, #74) | The "no treatment variation" check is relative to the treatment's size; a column vector as outcome or treatment is refused by `fwl_estimate`, `robinson_estimator`, `double_ml`, `TemporalPLRDML`, `RollingWindowDML` and `PanelDML` (`DynamicGEstimationDML` flattens it); series-mode `DynamicGEstimationDML` refuses lags that are not identified |
 | Validation inference (#68, #78) | The bias test of the seven validators tests mean error across independent simulations; the six baselines also give a coverage verdict; the 401(k) comparison uses the published fivefold benchmarks |
-| Applications (#80) | The insurance pipeline scores held-out rows in the treatment's units; the insurance generator returns its rows in one product-major order; the sensitivity module calls its curve a log-gamma bias curve; loaders are pinned; the registry and the result store write atomically |
+| Applications (#80) | The insurance pipeline scores held-out rows in the treatment's units; the insurance generator returns its rows in one product-major order; the sensitivity module's docstrings call its curve a log-gamma bias curve (its printed summary is still headed "Rosenbaum Bounds"); the orange-juice loader checks a pinned digest; the registry and the result store write atomically |
 | Continuous integration (#73) | Installs from `uv.lock`; a weekly job with unpinned dependencies reports drift and blocks nothing |
-| Audits and Chapters 2 and 5 (this change) | The four November audit folders, with 32 tests; both editions of Chapters 2 and 5 |
+| Audits and Chapters 2 and 5 (this change) | The four November audit folders with 31 test files, the effect-forecast module with its test, and both editions of Chapters 2 and 5 |
 
 ### Not on `main`, and what follows from it
 
-- **`PanelDML` is the estimator of June.** A November redesign of it removed unit effects from
-  the controls before the learners saw them; the end-to-end review measured a bias of about
-  +1.04 and 0.3% coverage under confounding that is nonlinear in the controls, and that
-  redesign is not landed. A new design is chosen and validated under a protocol fixed in
-  advance before any change to `PanelDML` lands. Until then:
+- **`PanelDML` is the estimator of June, and it is biased when confounding is nonlinear in the
+  controls.** It removes the fixed effects from the controls before a learner sees them, so a
+  learner cannot represent a confounder that depends on the controls' levels. On `main`, with
+  40 units, 15 periods and a confounder `x**2`, the default forest gives a bias of +1.07 for a
+  slope of 2 and 0% coverage in 40 replications; with a confounder linear in `x` it gives
+  +0.01 and 90% (#84). A November redesign has the same property (the end-to-end review, which
+  is not landed, measured about +1.04 and 0.3% for it) and is not landed. A new design is
+  chosen and validated under a protocol fixed in advance before any change to `PanelDML`
+  lands. Until then:
   - Chapter 6 and its listings describe the June estimator.
   - **Chapter 8's printed numbers do not reproduce.** They were computed before the insurance
     generator's rows were aligned. The chapter's `PanelDML` listing prints -0.8553 with a
@@ -42,12 +46,18 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
     draws. The chapter is recomputed when the panel estimator is settled.
   - Chapter 4 cites `retail_check.py`, which is one of the held files below.
 - **28 files of the audit folders are held with it**, because they call the redesigned
-  estimator or report numbers from the rejected design. The audit reports refer to them.
+  estimator or report numbers from the rejected design. The audit reports refer to them, and
+  also to the unlanded module `dml_ts/dml/_panel.py`, to `scripts/validate_falsification.py`
+  and to three of the held tests. The reports were written against the November working
+  copy: where they say that Chapters 6 and 8 report corrected panel designs, that is not true
+  of `main`. Two landed receipts of the 2026-11-21 reproduction,
+  `standalone-stdout.json.gz` and `execution-code-sha256.json.gz`, contain the printed output
+  and the digests of held scripts.
   - Scripts of `audits/2026-11-19_time_series_dml/`: `method_checks.py`, `retail_check.py`, `classical/replay.py`, `external/questions/minimum_wage.py`, `external/turnout/replay.py`, `adversarial/failures.py`, `adversarial/empirical.py`.
   - Artifacts: `panel-draws.csv`, `insurance-panel-draws.csv`, `insurance-panel-summary.csv`, `insurance-rolling.csv`, `stress-draws.csv.gz`, `stress-summary.csv`, `retail-results.csv`, `retail-folds.csv`, `retail-baselines.json`, `adversarial/failures.json`, `adversarial/empirical.json`, `classical/results.json`, `external/turnout/household_counts.csv`.
   - Reports: `09-panel-retail-insurance.md`, `panel-inference.md`, `10-property-tests-and-falsification.md`, `adversarial/failures.md`, `adversarial/empirical.md`, `questions/minimum-wage.md`.
   - Of `audits/2026-11-21_evaluation_methods/`: `reproduction/design_probes.py`, `reproduction/design-probes.json`.
-- **6 further files are held for their licence**; see
+- **7 further files are held for their licence**; see
   [`docs/audits/DATA_SOURCES.md`](audits/DATA_SOURCES.md).
 - **Not landed either:** the end-to-end review of 2026-11-22 and the second audit it reviews
   (their folders and tests), nine tests that need a held file, among them the test that checks
@@ -60,9 +70,10 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
 
 ### The input contract of the estimators
 
-Inputs are read by value and paired by position; what a conversion would misread is refused by
-the argument's name, and two pandas inputs with different indexes are refused. The contract is
-stated in `dml_ts.dml._utils.as_validated_arrays`.
+The contract: inputs are read by value and paired by position; what a conversion would misread
+is refused by the argument's name, and two pandas inputs with different indexes are refused. It
+arrives with the two changes below, in the docstring of `as_validated_arrays`
+(`dml_ts/dml/_utils.py`). No estimator on `main` follows it yet.
 
 | Estimator | Follows the contract |
 |---|---|
@@ -70,20 +81,28 @@ stated in `dml_ts.dml._utils.as_validated_arrays`.
 | `fwl_residualize`, `fwl_vs_ols_comparison`, `TemporalPLRDML`, `RollingWindowDML`, `DynamicGEstimationDML` | From the pull request of branch `fix/one-input-boundary` on (open on 2026-11-26; refs #77) |
 | `PanelDML` | Not yet: it casts unit and period identifiers to integers and reads labelled inputs by position without comparing them (#77). Its inputs are settled with its redesign |
 
-Before those two changes, `TemporalPLRDML`, `RollingWindowDML` and `PanelDML` return a wrong
-slope with no error for a treatment that carries the outcome's labels in another order (#77).
+Before those two changes, every estimator but `double_ml` returns a wrong slope with no error
+for a treatment that carries the outcome's labels in another order: `fwl_estimate` and
+`robinson_estimator` give 0.90 and 0.91 where the arrays give 2.03, `TemporalPLRDML` -0.18
+where they give 2.09, and `PanelDML` -0.18 where they give 2.16; `RollingWindowDML` and both
+modes of `DynamicGEstimationDML` are wrong in the same way. `double_ml` raises `KeyError`
+(#75, #77).
 
 ### Known limits of what is on `main`
 
+- `PanelDML` under confounding that is nonlinear in the controls: see above (#84).
 - The default interval of `TemporalPLRDML` is far too short when few scored rows carry the
-  treatment's variation (#81), and under persistent scores (#54).
-- The default learners are biased under persistent covariates, and results depend on the
-  treatment's units (#51). The validation gates cannot detect these failures (#56).
+  treatment's variation (one treated scored row: 7.5% coverage in 400 draws, #81), and under
+  persistent scores (#54).
+- The default learners are biased under persistent covariates (#51). With the lasso learner
+  the estimate depends on the treatment's units (1.97, 1.11 and 1.97 for a slope of 2 when the
+  treatment is multiplied by 1, 0.01 and 100); the default forest does not. The validation
+  gates cannot detect these failures (#56).
 - Series-mode g-estimation returns direct effects, not blips, under feedback from treatment to
   state (#50).
 - `FREDLoader.get_macro_controls` returns no rows for the default monthly call under pandas 3
   (#62). The 401(k) default control list includes post-treatment wealth (#63).
-- Open findings on the manuscript: #49, #57, #59, #65.
+- Open findings on the manuscript: #49, #57, #59, #65, #85.
 
 ### Verified on 2026-11-26
 
