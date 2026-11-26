@@ -691,6 +691,20 @@ def test_with_a_supplied_learner_the_error_is_that_learners_own(fit, controls, e
         fit(Y0, T0, controls, model=Ridge(alpha=1.0))
 
 
+@HANDS_THE_CONTROLS_ON
+def test_masked_controls_are_refused_for_a_supplied_learner_too(fit):
+    """The one exception to "as given": any learner would read the values under the mask.
+
+    With a learner of the package the check for numbers refuses masked entries first, so
+    only a supplied learner shows that the boundary refuses them itself.
+    """
+    with pytest.raises(ValueError, match=r"^X is a masked array with masked entries") as refusal:
+        fit(Y0, T0, _masked(X0), model=Ridge(alpha=1.0))
+    assert "A learner you supply" not in str(refusal.value)
+    unmasked = fit(Y0, T0, np.ma.array(X0), model=Ridge(alpha=1.0))
+    assert unmasked.theta == fit(Y0, T0, X0, model=Ridge(alpha=1.0)).theta
+
+
 def test_double_ml_checks_the_controls_when_either_learner_is_its_own():
     reference = double_ml(Y0, T0, X0, model=Ridge(alpha=1.0), random_state=0)
     # Both supplied: no learner of the package sees the controls, whatever ``model`` says.

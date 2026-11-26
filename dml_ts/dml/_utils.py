@@ -553,9 +553,7 @@ def refuse_non_numeric_controls(name: str, values: object) -> None:
                 + _OWN_LEARNER_ADVICE
             )
         return
-    if isinstance(values, pd.DataFrame) and all(
-        getattr(dtype, "kind", "O") in "fiub" for dtype in values.dtypes
-    ):
+    if isinstance(values, pd.DataFrame) and all(dtype.kind in "fiub" for dtype in values.dtypes):
         # Every column is stored as numbers (a nullable column with its missing values
         # included), so the conversion below could refuse nothing. It is skipped because
         # float beside boolean columns convert through an object array, read element by
