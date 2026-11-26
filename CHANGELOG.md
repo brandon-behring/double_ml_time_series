@@ -8,6 +8,19 @@ are the compatibility contract).
 
 ## [Unreleased]
 
+### Added
+
+- `dml_ts.validation.effect_forecast` freezes a set of effect forecasts with their protocol
+  under a digest, and scores them against experimental estimates that are supplied later.
+- The November audits under `docs/audits/`, with 32 tests: the time-series DML audit and its
+  replays of published experiments (2026-11-19), the evaluation-methods audit (2026-11-21),
+  the ACIC coverage study and the mathematical review (2026-11-22). 34 files that these
+  folders refer to are not in the repository: 28 depend on the pending redesign of `PanelDML`
+  (listed in `docs/CURRENT_STATUS.md`), and 6 reproduce a provider's rows under terms that do
+  not grant redistribution (listed in `docs/audits/DATA_SOURCES.md`, with the licences and
+  attributions of the data files that are here). 31 test cases replay external archives and
+  skip unless `DML_TS_EXTERNAL_REPLAY=1` is set. (#65)
+
 ### Changed
 
 - `RollingWindowDML` fits complete windows of exactly `window_size` consecutive rows. Starts
@@ -71,6 +84,15 @@ are the compatibility contract).
   directory after the working directory changes, a store that has been moved or renamed still
   loads its results, and published files have the permissions of an ordinary file. `filelock`
   is a declared dependency.
+- Chapters 2 and 5 follow the audits, in both editions. Chapter 2 reports what its listings
+  print: on the seeded dataset the adjusted OLS regression gives 2.501 and the forest-based DML
+  estimate 2.407 for a true effect of 2.5 (the text said that OLS gave 2.134). Chapter 5's
+  coverage table is recomputed from 200 simulated series per design: 89.5% at lag zero and
+  88.5% with the HAC adjustment on the chapter's process, 60.5% and 89.0% with persistent
+  scores (the earlier table reported 78% and 93%, and its draws could not be recovered). Two
+  statements of Chapter 2 are corrected: the product condition on the nuisance errors bounds
+  the drift of the score and does not replace the consistency of each error, and leave-one-out
+  cross-fitting is not covered by the fixed-K argument (the text called it optimal). (#65)
 
 ### Fixed
 
