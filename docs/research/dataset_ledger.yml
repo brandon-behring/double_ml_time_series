@@ -1463,6 +1463,10 @@ entries:
 #   landed with attribution       as above; the attribution is in docs/audits/DATA_SOURCES.md
 #   held                          the file reproduces a provider's rows and the terms read
 #                                 do not grant redistribution; it is not in the repository
+#   landed by the owner's decision
+#                                 no licence is stated, or none that grants redistribution;
+#                                 the file was held, and the owner decided on 2026-11-26 to
+#                                 land it. It is listed in docs/audits/DATA_SOURCES.md
 #
 # Files that hold only numbers computed in this repository (estimates, standard errors,
 # counts, moments, hashes) reproduce no third-party data. They are landed, and their
@@ -1496,7 +1500,7 @@ entries:
   auth_required: false
   files: 2026-11-19_time_series_dml/prospective/cricket-fixture-examples.csv
   content: six rows typed from the two announcements (date, teams, venue), each with its link
-  verdict: held
+  verdict: landed by the owner's decision of 2026-11-26; no licence is stated that grants redistribution
 
 - bibkey: norc2026gss
   primary_url: https://gss.norc.org/get-the-data/stata.html
@@ -1691,7 +1695,7 @@ entries:
   auth_required: false
   files: 2026-11-22_acic_coverage/draws.csv and reference-propensity.csv; 2026-11-21_evaluation_methods/additional/acic-results.csv; the other files of 2026-11-22_acic_coverage/
   content: draws.csv, reference-propensity.csv and acic-results.csv carry the organizers' file name and true effect for each contest file (3,200, 50 and 16 rows) beside estimates computed here; by-design.csv holds summaries by design and reference-propensity.json a summary of design 30
-  verdict: the three files with a row per contest file are held; the summaries are landed, with the true effects of the designs quoted from the organizers
+  verdict: the three files with a row per contest file are landed by the owner's decision of 2026-11-26, since no licence is stated; the summaries are landed, with the true effects of the designs quoted from the organizers
 
 - bibkey: upjohn2019jtpa
   primary_url: https://www.upjohn.org/sites/default/files/2019-02/jtpa_national_evaluation.zip

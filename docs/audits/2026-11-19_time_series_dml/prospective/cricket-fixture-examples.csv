@@ -1,0 +1,7 @@
+fixture_id,match_id,date,gender,team1,team2,venue,status,source
+icc:india-home-2026-sri-lanka-t20i-1,icc:india-home-2026-sri-lanka-t20i-1,2026-12-22,male,India,Sri Lanka,Rajkot,unresolved,https://www.icc-cricket.com/news/india-announce-schedule-for-blockbuster-home-season
+icc:india-home-2026-sri-lanka-t20i-2,icc:india-home-2026-sri-lanka-t20i-2,2026-12-24,male,India,Sri Lanka,Cuttack,unresolved,https://www.icc-cricket.com/news/india-announce-schedule-for-blockbuster-home-season
+icc:india-home-2026-sri-lanka-t20i-3,icc:india-home-2026-sri-lanka-t20i-3,2026-12-27,male,India,Sri Lanka,Pune,unresolved,https://www.icc-cricket.com/news/india-announce-schedule-for-blockbuster-home-season
+ecb:4596552-t20i-1,ecb:4596552-t20i-1,2027-02-01,female,England,Sri Lanka,"Pallekele International Cricket Stadium, Kandy",unresolved,https://www.ecb.co.uk/news/4596552/england-women-tour-to-sri-lanka-fixtures-announced
+ecb:4596552-t20i-2,ecb:4596552-t20i-2,2027-02-03,female,England,Sri Lanka,"Pallekele International Cricket Stadium, Kandy",unresolved,https://www.ecb.co.uk/news/4596552/england-women-tour-to-sri-lanka-fixtures-announced
+ecb:4596552-t20i-3,ecb:4596552-t20i-3,2027-02-05,female,England,Sri Lanka,"Pallekele International Cricket Stadium, Kandy",unresolved,https://www.ecb.co.uk/news/4596552/england-women-tour-to-sri-lanka-fixtures-announced
