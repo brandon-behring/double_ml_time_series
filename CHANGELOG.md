@@ -42,18 +42,35 @@ are the compatibility contract).
   held-out scores: the partially linear score for a continuous treatment, the augmented
   inverse-probability score for a binary one. A binary treatment needs a model with
   `predict_proba` and a continuous one a regressor; folds or scored samples without both
-  treatment arms raise. `CausalMonitor` compares held-out R² with configurable thresholds and
-  allows for an R² of zero under random assignment. (#60, #64)
+  treatment arms raise. The pipeline hands `CausalMonitor` the held-out R² of both nuisance
+  fits; for a binary treatment that is the R² of the held-out probabilities, where it was
+  classification accuracy. The monitor's default thresholds (0.50 and 0.30) are unchanged and
+  the pipeline has no setting for them, so a randomized binary treatment, whose best
+  propensity R² is zero, is reported as critical and `evaluate_retrain_need` returns a
+  trigger; both case studies of Chapter 10 are reported as critical. The monitor's alerts
+  remain as #64 describes them. (#60, #64)
 - `create_insurance_dgp` returns every variable in one product-major order, so an outcome, its
   treatment and its controls belong to the same product and month, and
   `InsuranceDGPResult.treatment_history(n_lags)` returns the treatment of the same product at
-  the preceding months. Results computed from the generator's earlier output change.
-- `OJDataLoader` checks its download against a pinned SHA-256 digest, and
-  `FREDLoader.get_macro_controls` computes year-over-year changes at the target frequency on
-  calendar anniversaries. (#62)
+  the preceding months. Results computed from the generator's earlier output change. Chapter 8
+  is not regenerated yet: its `PanelDML` listing prints -0.8553 with a standard error of 0.0330
+  and an interval that covers the true -0.8; on the aligned rows the same call returns -0.8531
+  with 0.0175 and an interval that excludes it, and the recovery study of its exercise covers
+  the truth in 21% of 100 draws (56% on the earlier rows; the chapter prints 93.0%). The
+  chapter is recomputed with the `PanelDML` redesign.
+- `OJDataLoader` checks its download against a pinned SHA-256 digest; a cached file that does
+  not match is not served, and a failed download says so. `FREDLoader.get_macro_controls`
+  computes year-over-year changes at the target frequency: 52 weeks, 12 months, 4 quarters or
+  one year back, and for daily data the same calendar date a year earlier. A frequency without
+  a fixed number of rows per year (business days, two weeks) raises for that transform. Not
+  repaired: in a daily request of a series without weekend rows the filled rows repeat the
+  previous row's change, and a weekly series requested daily returns no rows. (#62)
 - `DMLModelRegistry` and `ResultStorage` write complete JSON documents atomically under a file
   lock; the registry keeps a deployment history, and a failed archive leaves the prior index and
-  payload in place. `filelock` is a declared dependency.
+  payload in place. A store or registry opened with a relative path keeps meaning the same
+  directory after the working directory changes, a store that has been moved or renamed still
+  loads its results, and published files have the permissions of an ordinary file. `filelock`
+  is a declared dependency.
 
 ### Fixed
 
