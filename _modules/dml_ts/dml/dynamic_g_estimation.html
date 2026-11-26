@@ -373,13 +373,24 @@
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_numerically_constant</span><span class="p">,</span> <span class="n">predict_conditional_mean</span><span class="p">,</span> <span class="n">theta_via_fwl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">is_numerically_constant</span><span class="p">,</span>
+    <span class="n">no_variation_tolerance</span><span class="p">,</span>
+    <span class="n">predict_conditional_mean</span><span class="p">,</span>
+    <span class="n">theta_via_fwl</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">ArrayLike</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
 <span class="n">ModelSpec</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">BaseEstimator</span>
 <span class="n">Mode</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;panel&quot;</span><span class="p">,</span> <span class="s2">&quot;series&quot;</span><span class="p">]</span>
 
 <span class="n">_DEFAULT_N_JOBS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DML_N_JOBS&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">))</span>
+
+<span class="c1"># Series lags whose residuals have a direction below sqrt(eps) of their largest one are</span>
+<span class="c1"># linearly dependent to working precision. The normal equations square the condition</span>
+<span class="c1"># number, so no digit of their solution is reliable beyond this point. The level term of</span>
+<span class="c1"># ``no_variation_tolerance`` uses the same constant.</span>
+<span class="n">_DEPENDENT_LAGS_RATIO</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_warn_if_ill_conditioned</span><span class="p">(</span><span class="n">matrix</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e12</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -556,6 +567,92 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">targets</span> <span class="o">-</span> <span class="n">preds</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_are_dependent</span><span class="p">(</span><span class="n">columns</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether columns of non-zero norm are linearly dependent to working precision.</span>
+
+<span class="sd">    The columns are scaled to unit norm, so the test measures directions and not sizes.</span>
+<span class="sd">    Returns the verdict and the ratio of the smallest to the largest singular value.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; a = np.array([1.0, -1.0, 1.0, -1.0])</span>
+<span class="sd">        &gt;&gt;&gt; _are_dependent(np.column_stack([a, -a]))[0]</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; _are_dependent(np.column_stack([a, np.array([1.0, 2.0, 3.0, 5.0])]))[0]</span>
+<span class="sd">        False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">spectrum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">columns</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">compute_uv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spectrum</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">spectrum</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">ratio</span> <span class="o">&lt;=</span> <span class="n">_DEPENDENT_LAGS_RATIO</span><span class="p">,</span> <span class="n">ratio</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_refuse_unidentified_lags</span><span class="p">(</span><span class="n">lags</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">residuals</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raise when the lag effects of the series fit are not identified on the scored rows.</span>
+
+<span class="sd">    The checks on the lags themselves hold for every nuisance learner. Those on the</span>
+<span class="sd">    residuals depend on how well the learner reproduces the treatment: a learner that</span>
+<span class="sd">    fits a lag exactly leaves rounding residue, one that only approximates it does not.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lags: Treatment lags on the scored rows, ``(rows, m)``; column ``k`` is ``T_{t-k}``.</span>
+<span class="sd">        residuals: The same lags after cross-fitted residualization on the controls.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If there are no more scored rows than lags; if a lag is constant on</span>
+<span class="sd">            the scored rows; if a lag&#39;s residuals are within ``no_variation_tolerance``;</span>
+<span class="sd">            or if the lags, or their residuals, are linearly dependent.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; t = np.tile([1.0, -1.0], 20)</span>
+<span class="sd">        &gt;&gt;&gt; lags = np.column_stack([t[1:], t[:-1]])  # lag 1 is minus lag 0</span>
+<span class="sd">        &gt;&gt;&gt; _refuse_unidentified_lags(lags, lags)  # doctest: +ELLIPSIS</span>
+<span class="sd">        Traceback (most recent call last):</span>
+<span class="sd">            ...</span>
+<span class="sd">        ValueError: The series treatment Gram matrix is singular to working precision: ...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">residuals</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">if</span> <span class="n">rows</span> <span class="o">&lt;=</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Series mode scored </span><span class="si">{</span><span class="n">rows</span><span class="si">}</span><span class="s2"> rows for </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2"> lags: the lag effects are not identified &quot;</span>
+            <span class="s2">&quot;without more scored rows than lags. Use a longer series or fewer lags.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_numerically_constant</span><span class="p">(</span><span class="n">lags</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]):</span>
+            <span class="c1"># Its &quot;residual&quot; is then only the error of the nuisance prediction.</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No treatment variation at period </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: the treatment is constant &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">lags</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">]</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">) on the </span><span class="si">{</span><span class="n">rows</span><span class="si">}</span><span class="s2"> scored rows.&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># A lag whose residuals are rounding residue leaves the Gram system solvable</span>
+        <span class="c1"># with a slope of order 1/eps.</span>
+        <span class="n">residual_norm</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">residuals</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]))</span>
+        <span class="n">tolerance</span> <span class="o">=</span> <span class="n">no_variation_tolerance</span><span class="p">(</span><span class="n">lags</span><span class="p">[:,</span> <span class="n">k</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">residual_norm</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No residual treatment variation at period </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> (weak/colinear treatment). &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(norm of the treatment residuals </span><span class="si">{</span><span class="n">residual_norm</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&lt;= bound </span><span class="si">{</span><span class="n">tolerance</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+    <span class="c1"># Lags that each vary can still be linearly dependent: lag 1 of an alternating</span>
+    <span class="c1"># treatment is minus lag 0. The tests are made on the lags and their residuals and</span>
+    <span class="c1"># not on the Gram matrix. The computed condition number of the Gram matrix saturates</span>
+    <span class="c1"># near 1/eps, so whether the solver meets a zero pivot there, returns numbers, or</span>
+    <span class="c1"># fails later in the inversion depends on the machine.</span>
+    <span class="k">for</span> <span class="n">columns</span><span class="p">,</span> <span class="n">what</span><span class="p">,</span> <span class="n">scaled</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">lags</span> <span class="o">-</span> <span class="n">lags</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="s2">&quot;treatment lags&quot;</span><span class="p">,</span> <span class="s2">&quot;centered, scaled lags&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">residuals</span><span class="p">,</span> <span class="s2">&quot;residualized treatment lags&quot;</span><span class="p">,</span> <span class="s2">&quot;scaled lag residuals&quot;</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="n">dependent</span><span class="p">,</span> <span class="n">ratio</span> <span class="o">=</span> <span class="n">_are_dependent</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dependent</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The series treatment Gram matrix is singular to working precision: the &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2"> are linearly dependent on the scored rows, so the </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2"> lag effects &quot;</span>
+                <span class="s2">&quot;are not separately identified (smallest over largest singular value of the &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scaled</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ratio</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2"> &lt;= </span><span class="si">{</span><span class="n">_DEPENDENT_LAGS_RATIO</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">).&quot;</span>
+            <span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_r2</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">resid</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">is_numerically_constant</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
         <span class="k">return</span> <span class="mf">0.0</span>
@@ -659,7 +756,9 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: On inconsistent shapes, ragged or non-contiguous panels, or</span>
-<span class="sd">                missing ``groups`` for the panel mode.</span>
+<span class="sd">                missing ``groups`` for the panel mode; when a treatment (a panel</span>
+<span class="sd">                period or a series lag) has no residual variation; and in series</span>
+<span class="sd">                mode when the residualized lags are linearly dependent.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
         <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
@@ -831,7 +930,10 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Non-finite nuisance residuals on scored series rows.&quot;</span><span class="p">)</span>
         <span class="n">lk</span> <span class="o">=</span> <span class="n">Ttil</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
+        <span class="n">_refuse_unidentified_lags</span><span class="p">(</span><span class="n">Tlag</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">Ttil</span><span class="p">)</span>
+
         <span class="n">gram</span> <span class="o">=</span> <span class="n">Ttil</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Ttil</span>
+        <span class="n">_warn_if_ill_conditioned</span><span class="p">(</span><span class="n">gram</span><span class="p">,</span> <span class="s2">&quot;series treatment Gram&quot;</span><span class="p">)</span>
         <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">gram</span><span class="p">,</span> <span class="n">Ttil</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Ytil</span><span class="p">)</span>
 
         <span class="c1"># HAC sandwich: scores s_t = Ttil_t (Ytil_t - Ttil_t . theta); bread = (gram/Lk)^{-1}.</span>
@@ -839,7 +941,6 @@
         <span class="n">scores</span> <span class="o">=</span> <span class="n">Ttil</span> <span class="o">*</span> <span class="n">resid_full</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># (Lk, m)</span>
         <span class="n">bw</span> <span class="o">=</span> <span class="n">optimal_bandwidth</span><span class="p">(</span><span class="n">resid_full</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;newey_west&quot;</span><span class="p">)</span>
         <span class="n">s_hac</span> <span class="o">=</span> <span class="n">_bartlett_long_run_cov</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">bw</span><span class="p">)</span>
-        <span class="n">_warn_if_ill_conditioned</span><span class="p">(</span><span class="n">gram</span><span class="p">,</span> <span class="s2">&quot;series treatment Gram&quot;</span><span class="p">)</span>
         <span class="n">bread</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">gram</span> <span class="o">/</span> <span class="n">lk</span><span class="p">)</span>
         <span class="n">cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">bread</span> <span class="o">@</span> <span class="n">s_hac</span> <span class="o">@</span> <span class="n">bread</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">lk</span>
 

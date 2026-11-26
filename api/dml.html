@@ -2165,7 +2165,9 @@ EconML expects). Non-contiguous groups raise <code class="docutils literal notra
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – On inconsistent shapes, ragged or non-contiguous panels, or
-    missing <code class="docutils literal notranslate"><span class="pre">groups</span></code> for the panel mode.</p>
+    missing <code class="docutils literal notranslate"><span class="pre">groups</span></code> for the panel mode; when a treatment (a panel
+    period or a series lag) has no residual variation; and in series
+    mode when the residualized lags are linearly dependent.</p>
 </dd>
 </dl>
 </dd></dl>
