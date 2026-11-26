@@ -272,7 +272,8 @@ Part I (a box is ticked when the pull request is merged and its issues are check
 - [x] PR-1b `fix/silent-wrong-slopes-72` (#74, merged 2026-11-25 as `19a8911`; #72 closed, #42 stays open)
 - [x] PR-2 `fix/validation-inference` (#78, merged 2026-11-25 as `dc917cf`; #41, #61, #63 stay open)
 - [ ] PR-1c `fix/series-labels-and-constant-scored-rows` (#75, #76)
-- [ ] PR-3 `fix/applications-pipeline` (#44, #60, #62, #64)
+- [x] PR-3 `fix/applications-pipeline` (#80, merged 2026-11-26 as `8feb54c`; #60 closed, #44, #62, #64 stay open)
+- [ ] PR-1d `fix/one-input-boundary` (#77; the input rule in every estimator but `PanelDML`)
 - [ ] PR-4 `docs/november-audits` (#65, #70)
 - [ ] PR-5 `audit/public-data-extensions-2026-11-21`
 - [ ] Conservation check against the manifest
@@ -939,3 +940,141 @@ Reviewed by Gemini in four calls (21 findings, 4 false on re-run) and by a fresh
 - **Lessons.** A fix the plan prescribes can regress valid inputs (PR-1c converted `X`); compare
   before and after on a matrix of input kinds. A mutation list should hold the conditions a guard
   must not depend on. A held chapter can stop reproducing when a generator it reads is repaired.
+
+## Addendum 4, 2026-11-26: decisions at the third stop, one input rule, and the next stretch
+
+Recorded when the stop of PR-1c (#79) and PR-3 (#80) was closed. The plan above stands; this
+section says what was decided and what is executed next.
+
+### Decisions taken at the third stop (the owner's)
+
+| Decision | Choice |
+|---|---|
+| #80 and Chapter 8 | Merged as it was. Chapter 8's printed numbers stop reproducing until Part III recomputes them; the changelog says so and PR-4's status document repeats it |
+| The monitor's "critical" status for a randomized treatment | Repaired under #64 after the merge, not in #80 |
+| #79 | Reviewed against a long-term standard (the input contract below). Its two departures from Addendum 3 stand: the controls are not converted, and different labels are refused |
+| Index rule, long term | Two pandas inputs with different indexes are refused, in every estimator |
+| Sequence | Independent review of the reworked #79; merge if no regression for a valid input is found; then a follow-up pull request ("PR-1d") carries the rule to the other estimators. `PanelDML` waits for its redesign |
+
+### The input contract (written once)
+
+Measured on 2026-11-26 in the locked environment: for a treatment with the same labels in another
+order, `fwl_estimate`, `robinson_estimator` and `double_ml` on #79 refuse, while `TemporalPLRDML`,
+`RollingWindowDML` and `PanelDML` return -0.18, -0.03 and -0.18 for a slope near 2.1, with no
+error. statsmodels 0.14.6 refuses the same input (`index.equals`); scikit-learn 1.6.1, EconML
+0.16.0, `DoubleMLData.from_arrays` 0.11.3 and linearmodels 7.0 pair by position (about -0.11).
+
+1. **One boundary.** Every public estimator in `dml_ts/dml/` reads its inputs through one
+   function (`_utils.as_validated_arrays`), with one contract and one test matrix (#77).
+2. **`Y` and `T`** are read by value as floats. What conversion would misread is refused by the
+   argument's name: datetime, timedelta, complex, text, masked entries, anything not
+   one-dimensional.
+3. **Rows are paired by position, and unequal pandas indexes are refused.** Labels are never used
+   to reorder rows: a time-series estimator depends on row order. Known cost: an input rebuilt
+   without its index (a fresh `RangeIndex` beside a date index, rows in the same order) is refused
+   too; the message names `.to_numpy()` as the way through.
+4. **Controls.** Handed to a learner unchanged (`robinson_estimator`, `double_ml`): not converted,
+   rows selected by position. Computed on by the estimator (`fwl_estimate`, `TemporalPLRDML`,
+   `DynamicGEstimationDML`): converted to floats under the refusals of point 2.
+5. **Identifiers** (units, periods, groups) are compared as given or refused, never cast. This
+   part belongs to the PanelDML redesign.
+6. **Later, not in this plan:** an entry that takes one DataFrame and column names (the form
+   `DoubleMLData` uses). It is put to the Part II design gate as an option.
+
+### Order from here
+
+1. Merge #80; run the stored check of #60 on `main`; close #60 if it passes.
+2. Independent review of the reworked #79; merge on its outcome; stored checks of #75 and #76.
+3. PR-1d `fix/one-input-boundary` (refs #77), from `origin/main` after step 2.
+4. Licence check, then PR-4 `docs/november-audits`.
+5. PR-5 (the public-data branch's 4 commits), stacked on PR-4's branch.
+6. Stop and report PR-1d, PR-4 and PR-5. None merges without a go-ahead.
+7. Then the exit from Part I and the Part II design gate.
+
+Added to the Part II protocol: `PanelDML`'s inputs pass the same boundary (unequal indexes
+refused; identifiers compared as given or refused, so `1.00 ... 1.29` cannot become one unit),
+and the design gate lists a frame-based entry as an option.
+
+### Record of step 1 (2026-11-26)
+
+- #80 merged as `8feb54c`; the merged tree equals the reviewed head's (`4e24d6b`).
+- The review's stored check of #60 (`pipeline_check.py`, 200 seeds per design), run on the merged
+  `main`, is byte-identical to the result recorded for `7e8fa51`: no errors, SE/SD 0.94 to 0.96
+  and coverage 0.945 to 0.97 in all six designs. #60 was closed by hand; #44, #62 and #64 stay
+  open. The slice worktree was removed.
+
+### Hazards added by this stop
+
+- A stop report must say which version a review covered. "Reviewed" was written for #79 when only
+  its first version had been reviewed independently.
+- A parametrization that leaves an estimator out hides a failure (`double_ml` with a DataFrame of
+  controls). A matrix lists every estimator, and a known failure is an explicit expectation.
+- A rule applied at some entry points is a contract the caller cannot rely on. A new input rule
+  is written once and its remaining entry points are listed in the same pull request.
+
+### Record of the second review of PR-1c (2026-11-26)
+
+The reworked #79 (`6f31d25`) was reviewed by a fresh Claude agent, given the diff and two
+exports and none of the author's conclusions (61 tool calls, a 2,932-cell before-and-after
+matrix, 59 mutations), and by Gemini in one narrow call (9 findings; 2 false on re-run). Every
+finding below was re-run before it was accepted.
+
+**The rule for the merge was not met.** The go-ahead held if no valid input regressed and no
+wrong number was returned by the three functions. The review found wrong numbers that the rework
+had introduced, so #79 was repaired on its branch and waits for a new go-ahead.
+
+- **New misread, repaired.** The reworked reader took an object column to floats with
+  `np.asarray(values, dtype=float)`. NumPy and pandas cast a timezone-aware datetime, and object
+  arrays of `np.complex128`, `np.timedelta64`, `np.datetime64`, `bytearray` or `memoryview`
+  values, without an error: a timezone-aware outcome returned 7,347.87 (seconds), 7.3e6
+  (milliseconds) and 7.3e12 (nanoseconds) where the floats give 2.04, and `main` raised on all
+  of these (33 cells of the matrix). An object column is now judged by its elements: real
+  numbers and missing values pass, anything else is refused by the argument's name and the
+  element's type. An integer too large for a float is refused by name as well.
+- **Equal values under other level names, repaired.** `Index.equals` ignores names. An outcome
+  indexed by (unit, period) and a treatment indexed by (period, unit) over a square panel have
+  equal tuples in other rows: `double_ml` raised `KeyError` on `main` and returned 0.045 for a
+  slope of 1.85 on the reworked branch. Indexes whose levels are named differently are refused.
+- **The refusal's advice, reworded.** The message recommended aligning by label first. For rows
+  that are in the same order under other labels that mispairs them (1.9531 against 2.0335);
+  `.to_numpy()` is now named first.
+- **The intended cost, confirmed and now stated in the changelog.** `fwl_estimate` and
+  `robinson_estimator` refuse calls that were paired correctly before: the same rows under
+  other labels (10 of 168 index combinations).
+- **False statements, corrected in the changelog, the docstrings and the tests.**
+  - "A DataFrame keeps its column names and a sparse matrix stays sparse" holds for
+    `robinson_estimator` only. `double_ml` raises `KeyError` for every DataFrame of controls
+    (before and after), and `fwl_estimate` does not take a sparse matrix. A test pins the
+    `KeyError` until PR-1d selects rows by position.
+  - The changelog said that a constant non-zero dose in a panel "is still fitted". That holds
+    when each scored unit has a dose of its own, the case the first review measured (the
+    demeaned treatment is residue near 1e-16 that differs between units), and for 129 of 200
+    shared doses in an unbalanced panel. It is false for one dose shared by all scored units of
+    a balanced panel: every unit leaves the same residue, so the treatment is constant there
+    and all 200 doses tried are refused. "Is now refused" for the zero-outside panel holds for
+    unit effects only: under time and two-way effects it still returns 4.50 and 4.43 for a
+    slope of 2.
+  - A test docstring gave 4.4 with 1.0 for five treated units; `main` returns 4.32 with 3.16.
+    Another said the three split strategies score different rows; two of them score the same.
+  - The 84.5% coverage belongs to ridge with `n_lags=0`; with the default `n_lags=1` the same
+    design gives 52.8%. "Exact constancy" was written where the check is numerical. The
+    message counted "the other" rows without the lag rows. `pd.NA` in a list is refused, not
+    read as NaN.
+- **Tests that did not bite.** 18 of the reviewer's 59 mutations survived. Tests were added
+  for 14 of them: text other than `str` and text after the first element, unsigned integers, a
+  ragged input, the conversion of a nullable column with a missing value, indexes of dates,
+  strings and repeated labels, a treatment against controls when the outcome has no labels,
+  the check with three lags and with a gap, the row counts of the message, and the edge cases
+  of the constancy helper. Not tested: a non-finite level without its guard gives the same
+  verdict (comparisons with NaN are false), `<` in place of `<=` differs only when the spread
+  equals the bound exactly, and two message mutations that the reviewer called benign.
+- **Not repaired, by scope.** `TemporalPLRDML`, `RollingWindowDML` and `PanelDML` have neither
+  guard (PR-1d, and the redesign for `PanelDML`). An index that was reset after reordering
+  cannot be detected. Masked controls are read under the mask by every entry point and numeric
+  text in controls is parsed by scikit-learn (PR-1d). `RollingWindowDML` returns an empty
+  result with a warning when every window is refused (#42).
+- **Gemini's two false claims:** that `None` in a list is refused (it is read as NaN), and that
+  an integer index beside the same labels as floats is refused (`Index.equals` is true).
+- **Lesson.** Whether a container can be cast is not whether it holds numbers. A reader that
+  falls back on a cast must first look at what it is casting; the matrix of input kinds needs
+  the kinds that libraries cast silently (timezone-aware dates, object arrays of scalars).

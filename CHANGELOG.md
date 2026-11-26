@@ -114,26 +114,39 @@ are the compatibility contract).
   `robinson_estimator` multiplied two residual `Series`, which pandas aligns by label: an
   outcome and a treatment with different labels gave -0.15 for a slope of 2. `Y` and `T` are
   now read as float arrays at entry, so lists and tuples are accepted and the residuals on the
-  result are arrays. A value that is not a number is refused with the argument's name: a
+  result are arrays. A value that is not a real number is refused with the argument's name: a
   datetime or timedelta (as floats it would be integer ticks in its storage unit), a complex
-  value, text, and a masked array with masked entries. Two-dimensional controls reach the
-  nuisance model as given, so a DataFrame keeps its column names and dtypes and a sparse matrix
-  stays sparse. Two pandas inputs whose indexes differ, in value or in order, are refused: read
-  by position, the same units in another order would be paired wrongly. Align them, or pass
-  `.to_numpy()`. (#75)
+  value, text, and a masked array with masked entries. An object column is judged by its
+  elements, because NumPy and pandas cast a timezone-aware datetime, and object arrays of
+  `np.timedelta64` or `np.complex128` scalars, to floats without an error. The shared helper
+  does not convert two-dimensional controls, and what each function does with them is
+  unchanged: `robinson_estimator` hands a DataFrame or a sparse matrix to the nuisance model as
+  given; `double_ml` selects fold rows with `X[rows]`, so it takes arrays and CSR or CSC
+  matrices and raises `KeyError` for a DataFrame; `fwl_estimate` builds a dense design from an
+  array or a DataFrame of numbers. Two pandas inputs whose indexes differ, in value, in order
+  or in the names of their levels, are refused: read by position, the same units in another
+  order would be paired wrongly. This also refuses calls that were paired correctly before,
+  namely the same rows under other labels (controls rebuilt from an array beside an outcome
+  with a date index); pass `.to_numpy()` when the rows are already in the same order. (#75)
 - `TemporalPLRDML` raises when the treatment is constant on the rows it scores. The first block
   of a time-series split is trained on and not scored; for a treatment that varies only there,
   the "residual" on the scored rows is the error of the nuisance prediction. Over 400 draws of
-  a switch at row 60 of 400 the fit returned estimates centered on the true slope with a
-  standard error about 30% too small (95% intervals covered it in 84.5% of draws). The check
-  refuses numerical constancy and nothing more: a treatment that varies on a few scored rows is
-  still fitted, and its interval can be far too short (one treated scored row: 7.5%; #81).
-  `RollingWindowDML` reports a window whose treatment varies only in the window's
-  own first block as skipped, with this reason, where it returned an estimate. `PanelDML` hands
-  unit-major rows to the same split, so its unscored block is the first units; a panel whose
-  treatment is exactly zero outside those units returned 17.2 with a standard error of 5.7 for
-  a slope of 2 and is now refused, but a constant non-zero dose leaves rounding residue after
-  demeaning and is still fitted. (#76)
+  a switch at row 60 of 400, with ridge learners and `n_lags=0`, the fit returned estimates
+  centered on the true slope with a standard error about 30% too small (95% intervals covered
+  it in 84.5% of draws); with the default `n_lags=1` the estimates had a mean of 2.2 and a
+  standard deviation of 3.0, and 52.8% of the intervals covered. The check refuses numerical
+  constancy and nothing more: a treatment that varies on a few scored rows is still fitted, and
+  its interval can be far too short (one treated scored row: 7.5%; #81). `RollingWindowDML`
+  reports a window whose treatment varies only in the window's own first block as skipped,
+  with this reason, where it returned an estimate; when every window is skipped the fit
+  returns an empty result with that warning. `PanelDML` hands unit-major rows to the same
+  split, so its unscored block is the first units. With unit effects, a balanced panel whose
+  treatment outside those units is one constant, zero or a dose shared by all of them, is now
+  refused; with zero it returned 17.2 with a standard error of 5.7 for a slope of 2. Still
+  fitted, on rounding residue of the demeaning, are a panel in which each scored unit has a
+  constant dose of its own and an unbalanced panel with a shared non-zero dose (129 of 200
+  doses tried); and, under time or two-way effects, the zero-outside panel as well (4.50 and
+  4.43, with standard errors of 1.58 and 1.56). (#76)
 
 ## [1.1.4] - 2026-06-14
 
