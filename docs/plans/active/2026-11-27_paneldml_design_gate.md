@@ -1,8 +1,7 @@
 # PanelDML design gate
 
 Date: 2026-11-27. Status: **decided by the owner on 2026-11-27** (§7). The protocol of §5 is frozen
-in [`2026-11-27_paneldml_protocol.md`](2026-11-27_paneldml_protocol.md). Part II, step 1 of the backlog-landing plan
-(`docs/plans/active/2026-11-24_backlog_landing.md`, Addendum 5, step 7).
+in [`2026-11-27_paneldml_protocol.md`](2026-11-27_paneldml_protocol.md). Part II, step 1 of the backlog-landing plan (`docs/plans/active/2026-11-24_backlog_landing.md`). The step is Addendum 5's step 7, which is in the session plan of 2026-11-26 (a copy is in the landing's local backup folder, `plans/`), not in the record.
 
 Nothing was simulated for this note. Only single fits were timed, and no estimate was recorded
 (`part2-design/timing/` in the landing's local backup folder, not in the repository). Every number below is quoted
@@ -10,33 +9,31 @@ from a paper or from an earlier review row, which is named with it.
 
 ## 1. What is wrong with `PanelDML` today
 
-On `main` (`dml_ts/dml/temporal_plr_dml.py`):
+On `main` (`dml_ts/dml/temporal_plr_dml.py` at `c84ce72`):
 
-1. **The controls are demeaned before the learners** (`:983-997`). This is the "approximate"
+1. **The controls are demeaned before the learners** (`:997-1013`). This is the "approximate"
    within-group procedure of Clarke and Polselli (Section 5.1.2 a, eqs 5.1-5.2) and the "early
    demeaning" of Fuhr and Papies (eq 3). Under confounding nonlinear in X it keeps nearly all of
    OLS's bias: in Clarke and Polselli's Table 1, panel C, the bias is 0.977 (Lasso), 0.972
    (forest), 0.918 (boosting) and 0.993 for OLS, for a true effect of 0.5. Filed as #84 (P1):
    default forest, confounder `x**2`, bias +1.07 for a slope of 2 and 0% coverage in 40
    replications.
-2. **Identifiers are cast** to `int64` (`:975-976`). Units 1.00 to 1.29 become one unit; a text
-   identifier raises.
+2. **Identifiers are cast** to `int64` (`:991-992`). Units 1.00 to 1.29 become one unit; text that spells integers is cast silently, and other text raises.
 3. **The folds depend on row order.** The demeaned data go to
-   `TemporalPLRDML(n_lags=0, cv_strategy="time_series_split")` (`:1011-1022`), which splits by
+   `TemporalPLRDML(n_lags=0, cv_strategy="time_series_split")` (`:1027-1038`), which splits by
    position. With unit-major rows the folds are blocks of units and the first block is never
    scored. With date-major rows they are blocks of dates. Nothing in the signature says which.
-4. **Two-way demeaning is one pass** of each mean (`:991-997`). That is the two-way projection
+4. **Two-way demeaning is one pass** of each mean (`:1006-1013`). That is the two-way projection
    only for a balanced panel.
-5. **The input boundary does not apply** (`np.asarray(..., dtype=np.float64)` at `:972-974`):
+5. **The input boundary does not apply** (`np.asarray(..., dtype=np.float64)` at `:988-990`):
    unequal pandas indexes are not refused. `PanelDML` is the one estimator not yet under the
    input contract of #79 and #82.
 
 The uncommitted redesign in the snapshot (`dml_ts/dml/_panel.py`, 133 lines) repairs points 2
 (by `group_codes`), 3 (an explicit `fold_design`: `whole_unit` or `forward_date`) and 4
-(`absorb_twoway` iterates to convergence and checks connectivity). It adds three inference
-options in `panel_standard_error`, checked to 1e-12 against statsmodels, and `PanelDMLResult`.
+(`absorb_twoway` iterates to convergence; `transform_panel_fold` checks connectivity). It adds three inference options in `panel_standard_error`, two of them checked to 1e-12 against statsmodels and `date_hac` against a written-out Bartlett formula, and `PanelDMLResult`.
 **It does not repair point 1:** `transform_panel_fold` still demeans X before the learner. The
-second audit measured that defect on the redesign itself (row F03a: bias +1.0589 at R = 500).
+second audit measured that defect on the redesign itself (row F03b: bias +1.0589 at R = 500).
 
 Two further facts about the snapshot's code, found for this note:
 
@@ -78,7 +75,7 @@ and their interval needs it. The protocol below measures it in a few-units cell.
 
 Each candidate is a way for the nuisance learners to see X. Every one keeps the partialling-out
 score with the treatment residual transformed by the fixed effects, and the absorbed-treatment
-refusal of `main` (`:1004-1008`).
+refusal of `main` (`:1017-1024`).
 
 | | A. Basis first, then within | B. Correlated random effects | C. First difference, exact | D. Hybrid | Z. Within first (`main`, #84) |
 |---|---|---|---|---|---|
@@ -92,7 +89,7 @@ refusal of `main` (`:1004-1008`).
 | Few units | Cluster SE with few clusters; basis dimension limited by N·T | Doubles the predictors; F&P: needs N large beside the number of confounders | Loses one period per unit | As B | n/a |
 | Treatment absorbed by the effects | Raises | Raises (the treatment residual is a within residual: V̂ = (D − D̄) − (m̂ − m̂̄)) | Raises (ΔD ≈ 0) | Raises | Raises (`main`) |
 | Learner restriction | Linear in the basis (ridge, lasso); no trees | None | None, but trees poor in C&P | None | None |
-| Evidence in this repository | F03c: bias +0.024, coverage 0.919 at R = 1,000, quadratic design (basis after demeaning: +1.040) | F03e/S106 tested a CRE **without D̄_i**: +0.663 on the quadratic design with boosting(40), and its linear control failed (+0.0526). The paper's procedure is untested here | F03e/S106: FD with boosting(40) +0.497 (quadratic), +0.0193 (linear control, failed by a too-narrow band) | None | F03a, #84 |
+| Evidence in this repository | F03c: bias +0.024, coverage 0.919 at R = 1,000, quadratic design (basis after demeaning: +1.040) | F03e/S106 tested a CRE **without D̄_i**: +0.663 on the quadratic design with boosting(40), and its linear control failed (+0.0526). The paper's procedure is untested here | F03e/S106: FD with boosting(40) +0.497 (quadratic), +0.0193 (linear control, inside its band of 3 SE + 0.02; that row's control failed on the CRE arm) | None | F03a, #84 |
 
 Z is not a candidate. It stays in the protocol as a known-defective arm, a negative control: a
 study in which it passes the quadratic design is broken.
@@ -124,10 +121,8 @@ study in which it passes the quadratic design is broken.
    three held audit scripts whose other inputs are on `main`:
    `docs/audits/2026-11-19_time_series_dml/retail_check.py`,
    `docs/audits/2026-11-19_time_series_dml/external/questions/minimum_wage.py` and
-   `docs/audits/2026-11-21_evaluation_methods/reproduction/design_probes.py`, with the test of
-   `test/dml/test_temporal_plr_dml.py:825-831`. Their receipts are checked against the held-file
-   list before they land. `replay.py`, `method_checks.py` and `reproduce_audit_probes.py` also
-   need `transform_panel_fold` and stay with the redesign. Recommendation: yes, as one small pull
+   `docs/audits/2026-11-21_evaluation_methods/reproduction/design_probes.py`, with the test at lines 824-831 of the snapshot's `test/dml/test_temporal_plr_dml.py`. Their receipts are checked against the held-file
+   list before they land. `replay.py` and `method_checks.py` also need other parts of the redesign (`absorb_twoway`, `group_means`, and for `method_checks.py` the redesigned `PanelDML`), and `reproduce_audit_probes.py` needs `transform_panel_fold`; they stay with the redesign. Recommendation: yes, as one small pull
    request before the protocol, so the study's variance code is the landed one.
 
 ## 5. Draft protocol (frozen and hashed before any run)
@@ -157,9 +152,7 @@ the reference. Inputs pass the boundary in every arm.
 - An arm **covers** in a cell if its 95% interval covers in at least 92.5% of replications, and
   **fails** below 90% (protocol §11). With R = 1,000 the Monte Carlo SE of a 95% coverage is
   0.69 points.
-- Bias is judged against the sampling SD: |bias| ≤ 0.2 SD. A band of three Monte Carlo SEs around
-  zero failed four controls in the second audit for estimators whose own finite-sample bias was
-  small (`second-audit-review.md:285`). A bias of 0.2 SD alone lowers a 95% interval's coverage
+- Bias is judged against the sampling SD: |bias| ≤ 0.2 SD. Bands of a few Monte Carlo SEs around zero failed controls in the second audit for estimators whose own finite-sample bias was small (`second-audit-review.md:285`): F03b's linear control, −0.0165 against 3 SE = 0.0075, and the CRE arm of F03e and S106, +0.0526 against 3 SE + 0.02 = 0.028. A bias of 0.2 SD alone lowers a 95% interval's coverage
   to 94.5%.
 - A candidate **passes the gate** if it covers and meets the bias rule in every gating cell at
   both sizes, raises in the absorbed cell, and the true-nuisance arm covers everywhere (else the
@@ -171,13 +164,11 @@ replication), draws stored and a second run byte-identical (§2.6).
 **Cost.** Timed single fits (locked environment, one thread): `main`'s `PanelDML` with the
 default forest 0.70 s (N = 80) and 0.76 s (N = 160); with ridge 0.01 s. One boosting(40) fit
 0.02-0.03 s, one forest(100) 0.12-0.20 s, RidgeCV 0.001 s. 12 simulated cell-sizes × 1,000
-replications × about 15 arm-learner pairs ≈ 180,000 fits. Even if every fit took the forest's
-0.76 s, that is about 38 CPU hours. *(As drafted, this line said "about 36 minutes on 64 workers". At
-about 2 GiB per process, 64 workers need the machine's whole memory: on 2026-11-26 the machine
-was powered off after an out-of-memory event while 71 Python processes of about 1.9 GiB ran,
+replications × about 15 arm-learner pairs ≈ 180,000 fits. If the average fit took 0.76 s, the time of one whole-`PanelDML` fit with the forest, that is about 38 CPU hours; the slowest arms take about 1 s a fit (8 nuisance fits of a forest at N = 160, timed by the claims check of 2026-11-27), so the pilot of the protocol's §6 decides. *(As drafted, this line said "about 36 minutes on 64 workers". At the 1.2 GiB per process of the out-of-memory report, 64 workers need about 77 GiB of the machine's 123 GiB, which other work shares: on 2026-11-26 the machine
+was powered off after an out-of-memory event while 71 Python processes ran with 85 GiB resident in all (about 1.2 GiB each),
 attributed by inference to this repository's review agents. Recomputed under the cap that now
 applies to every run:
-at most 16 workers in a 40 GiB memory scope, so about 2.4 hours at worst.)* That is under the protocol's
+at most 16 workers in a 40 GiB memory scope, so about 2.4 hours at an average of 0.76 s a fit.)* That is under the protocol's
 four-hour budget (§2.7). The cost is recomputed from the frozen list before the run.
 
 ## 6. Recommendation
@@ -222,6 +213,6 @@ four-hour budget (§2.7). The cost is recomputed from the frozen list before the
   February 2025 was compared instead.
 - Clarke and Polselli's Online Supplement (S1-S4): DGP details, the tuning strategy and the
   derivations S1.2-S1.3 were taken from the main text's references to them.
-- No candidate was implemented or simulated. The review rows quoted (F03a, F03c, F03e, S106, M14)
+- No candidate was implemented or simulated. The review rows quoted (F03a, F03b, F03c, F03e, S106, M14)
   are from the snapshot's `docs/audits/2026-11-22_end_to_end_review/second-audit-checks.csv`,
   which has not landed.

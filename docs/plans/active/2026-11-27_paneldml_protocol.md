@@ -51,18 +51,17 @@ Fixed effects are `individual` in every cell except two-way. **[F]**
 
 ## 3. Arms
 
-Inputs pass the input boundary in every arm. Folds are `whole_unit` with 4 folds, the setting
-of the review rows this study is compared with (`rep_panel_native`) **[F]**. Inference is
+Inputs pass the input boundary in every arm. Folds are `whole_unit` with 4 folds, the setting of the review rows this study is compared with (`rep_panel_native`) **[F]**, in every arm but Z. Z has no fold option: it splits the rows by position (`time_series_split`), and it is run with `n_folds=4` on the rows in the generator's order, unit-major **[F]**. Inference is
 `unit_cluster` (C&P eq 5.6). In the two-way cell `two_way_cluster` is also reported from the
 same fits; it does not gate.
 
 | Arm | What it is | Learners |
 |---|---|---|
-| Z | `main`'s `PanelDML` at the head that runs the study: demeaned X, the known defect of #84. A negative control | default forest; boosting(40) |
-| S | the snapshot's `PanelDML` (`refs/snapshots/backlog-2026-11-24`): `whole_unit`, `unit_cluster` | default forest; boosting(40) |
+| Z | `main`'s `PanelDML` at the head that runs the study: demeaned X, the known defect of #84. A negative control | forest; boosting |
+| S | the snapshot's `PanelDML` (`refs/snapshots/backlog-2026-11-24`): `whole_unit`, `unit_cluster` | forest; boosting |
 | A | basis B(X_it) on levels, then the within (or two-way) transform with Y and T; a linear fit | ridge; lasso |
-| B | (X_it, X̄_i) on levels (in the two-way cell, period means too, F&P 4.5.4); treatment residual V̂ = (D − D̄) − (m̂ − m̂̄) (C&P 5.1.1) | lasso on the dictionary; boosting(40); forest(100) |
-| C | ΔY and ΔD learned on (X_it, X_i,t−1); in the two-way cell, period dummies added to the learners' inputs | lasso on the dictionary; boosting(40); forest(100) |
+| B | (X_it, X̄_i) on levels (in the two-way cell, period means too, F&P 4.5.4); treatment residual V̂ = (D − D̄) − (m̂ − m̂̄) (C&P 5.1.1) | lasso on the dictionary; boosting; forest |
+| C | ΔY and ΔD learned on (X_it, X_i,t−1); in the two-way cell, period dummies added to the learners' inputs | lasso on the dictionary; boosting; forest |
 | T | true nuisance: the generator's conditional means of Y and T given X and the unit effect, through the transform of each of A, B and C, the same folds and score | none (3 arms: within, CRE, FD) |
 
 That is 15 arm-learner pairs. **[F]** The learners:
@@ -71,9 +70,7 @@ That is 15 arm-learner pairs. **[F]** The learners:
   learner inputs.
 - **ridge:** `RidgeCV(alphas=np.logspace(-3, 3, 13))` on the dictionary.
 - **lasso:** `LassoCV(cv=5, n_alphas=50, max_iter=10_000)` on the dictionary.
-- **boosting(40):** `GradientBoostingRegressor(n_estimators=40, max_depth=3)`.
-- **forest(100):** `RandomForestRegressor(n_estimators=100, min_samples_leaf=5)`.
-- **default forest:** the estimator's own default learner at the head that runs the study.
+- **forest** and **boosting:** the package's own learners, `get_nuisance_model("random_forest")` and `get_nuisance_model("gradient_boosting")` (`dml_ts/dml/_utils.py`) at the head that runs the study. Z and S take learners only by these names; A, B and C are given the same objects, so every arm is compared with the same learner. The note's "gradient boosting and the default forest" are these two; the review's own CRE and FD arms (F03e) used 40 trees, which is not repeated here.
 
 Each learner's `random_state` comes from the replication's seed (§5).
 
@@ -84,13 +81,9 @@ Each learner's `random_state` comes from the replication's seed (§5).
   reported as marginal. At R = 1,000 the Monte Carlo SE of a 95% coverage is 0.69 points.
 - **Bias:** |mean(θ̂) − 2| ≤ 0.2 × SD(θ̂) in the cell. A bias of 0.2 SD alone lowers a 95%
   interval's coverage to 94.5%.
-- **A candidate passes** if, with at least one of its learners, it covers and meets the bias
-  rule in every gating cell at every size listed, and every arm raises `ValueError` in the
-  absorbed cell. **[F: "with at least one of its learners"; the release then names that learner
-  class.]**
+- **A candidate passes** if, with at least one of its learners, it covers and meets the bias rule in every gating cell at every size listed, and the candidate raises `ValueError` in the absorbed cell with every learner. **[F: "with at least one of its learners"; the release then names that learner class.]** Every other arm is expected to raise there too; one that does not is reported, and it does not change a candidate's verdict **[F]**.
 - **The study is valid** only if the true-nuisance arms cover and meet the bias rule in every
-  gating cell, and Z fails the quadratic cell (coverage below 90%) with both learners. If either
-  check fails, the study is broken: it is reported and no verdict is drawn.
+  gating cell, and Z fails the quadratic cell (coverage below 90%) with both learners. If either check fails, the study is broken: it is reported and no verdict is drawn. **[F: the note asks the true-nuisance arm to cover "everywhere"; here that means every gating cell (the feedback cell is a violation and the few-units cell is reported only), with the bias rule added, and Z failing with each of its two learners.]**
 - A replication that raises counts against coverage as a non-covering interval. Raises are
   reported by cell, arm and message. **[F]**
 
@@ -110,16 +103,12 @@ Each learner's `random_state` comes from the replication's seed (§5).
 
 - 12 cell-sizes × 1,000 replications × 15 arm-learner pairs = 180,000 fits, plus 300 fits in
   the absorbed cell.
-- Timed single fits (design gate §5, locked environment, one thread): the default forest
-  0.70-0.76 s, boosting(40) 0.02-0.03 s, forest(100) 0.12-0.20 s, RidgeCV 0.001 s. If every fit
-  took 0.76 s, the study would be about 38 CPU hours.
+- Timed single fits (design gate §5, locked environment, one thread): one whole `PanelDML` fit with the forest 0.70-0.76 s; RidgeCV 0.001 s. At an average of 0.76 s a fit the study is about 38 CPU hours. The slowest arms take about 1 s a fit (B or C: 8 nuisance fits of the forest at N = 160, timed by the claims check of 2026-11-27); boosting and lasso were not timed.
 - **Under the cap:** at most 16 worker processes (one thread each) in one
   `systemd-run --user --scope -p MemoryMax=40G -p MemorySwapMax=0` scope. A run starts only with
   at least 60 GiB available, and no other heavy job of this repository runs at the same time.
-  The worst case is 38/16 ≈ 2.4 hours, within the four-hour budget. At about 2 GiB per process,
-  16 workers use about 32 GiB.
-- Before the full run, a pilot of 20 replications per cell, size and arm is timed. If it projects
-  more than four hours, the run stops and is reported. It is not trimmed silently.
+  At an average of 0.76 s a fit that is 38/16 ≈ 2.4 hours, within the four-hour budget; the pilot below measures the real figure. At the 1.2 GiB resident per process of the out-of-memory report of 2026-11-26 (2.4 GiB virtual), 16 workers use about 20 GiB.
+- Before the full run, a pilot of 20 replications per cell, size and arm is timed. If it projects more than four hours, the run stops and is reported. It is not trimmed silently. **[F: the review's protocol, §2.7, cuts replications instead; here the owner decides.]**
 
 ## 7. What is reported
 

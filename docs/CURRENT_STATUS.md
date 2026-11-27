@@ -3,7 +3,7 @@
 Last updated: 2026-11-27
 
 This file is the canonical project-status source: one baseline and one roadmap. Historical
-reports and roadmaps are in `docs/archive/`. The current audits are listed in
+reports and roadmaps are in `docs/archive/`, older plans in `docs/plans/archive/`. The current audits are listed in
 [`docs/audits/README.md`](audits/README.md); the first to read is the
 [time-series DML audit of 2026-11-19](audits/2026-11-19_time_series_dml/README.md).
 
@@ -12,8 +12,7 @@ deployable production software and not a stable public package.
 
 ## Where the work stands
 
-The November 2026 work was held in one uncommitted working copy and has been landed in
-reviewed pull requests ([plan](plans/active/2026-11-24_backlog_landing.md)). Part I of that
+The November 2026 work was held in one uncommitted working copy and is being landed in reviewed pull requests ([plan](plans/active/2026-11-24_backlog_landing.md)). Part I of that
 plan lands what does not depend on the panel estimator: nine of its pull requests and #79 are
 merged, and two are open (#82, #89). Its conservation check passed on 2026-11-27: every path in
 which the working copy differs from `main` is landed, in an open pull request, or recorded as
@@ -92,7 +91,22 @@ Part III lands what waits for it.
 
 ## Baseline
 
-The gate numbers of this commit are added in the next commit, which changes only this section.
+Gate on `35eb6fe` in the locked environment (`uv sync --locked --all-extras`, Python 3.13),
+run under a 40 GiB memory scope (later commits of this branch change only documents):
+
+| Gate | Result |
+| --- | --- |
+| `ruff check`, `ruff format --check` | pass (145 files) |
+| `mypy dml_ts/` | no issues in 45 source files |
+| Test collection | 1,713 collected |
+| Tier 1 | 603 passed, 2 skipped |
+| Tier 1 + Tier 2, coverage | 1,497 passed, 6 skipped; coverage 85.88% (gate 70%) |
+| Examples | 8 of 8 run |
+| Doctests | 58 passed, 12 skipped |
+| Sphinx `-W` | build succeeded |
+| Book (`make`) | 190 pages, no fatal TeX errors; overfull and underfull boxes are reported, not blocking |
+| Web (`npm run validate`) | 10 chapters, no errors |
+| Drift guard | every ported chapter matches its `.tex` |
 
 Not run: tier 3 and tier 4 (nightly only); the test cases that replay external archives
 (`DML_TS_EXTERNAL_REPLAY=1`); `npm run build`.
@@ -102,10 +116,10 @@ Not run: tier 3 and tier 4 (nightly only); the test cases that replay external a
 | Stage | Content | Gate |
 |---|---|---|
 | **Part II** | `PanelDML` rebuilt with the nuisance treatment a required argument: A (basis first), B (correlated random effects with the treatment-mean correction) and C (exact first difference); `whole_unit` folds, unit-clustered inference by default, identifiers compared as given. `panel_standard_error` lands first, on its own. The study runs under the frozen protocol, then an independent challenge and an adversarial review | the owner decides from the study |
-| Alongside Part II | The manuscript errata that do not depend on `PanelDML`: #65, then #85, #57, #59 (the Chapter 7 parts), #49; the web scaffold to `^4.26.x` (#46); FRED under pandas 3 (#62); the comments of `main.tex` | one pull request each |
+| Alongside Part II | The manuscript errata that do not depend on `PanelDML`: #65, then #85, #57, #59 (the Chapter 7 parts), #49; the web scaffold to `^4.26.2`, which carries the overflow fix of #46; FRED under pandas 3 (#62); the comments of `main.tex` | one pull request each |
 | **Part III** | `PanelDML` landed; the insurance panel and the falsification study; the held audits and tests; the end-to-end review; Chapters 6 and 8 recomputed | as planned |
 | Close | A final conservation check against the snapshot; the mirror backups and the retired working copy removed; whether to release 1.2.0 | the owner |
-| Methodology | #51, #81 and #54, #50, #56, #52, #53, #55; then #61, #63, #44, #41, #42, #58, #66, #21, #70, #71, #86 | P1 first, then by what printed numbers depend on |
+| Methodology | #51, #50; then #81 and #54, #56, #52, #53, #55; then #61, #63, #44, #41, #42, #58, #66, #21, #70, #71, #86 | P1 first, then by what printed numbers depend on |
 | Deferred | EconML heterogeneity examples as tested features; blocking stationarity, cointegration and overlap diagnostics, opt-in and built on temporalcv; heterogeneous `theta_t(X)`; book content expansion from a new baseline | after the methodology stage |
 
 ## History
@@ -113,10 +127,7 @@ Not run: tier 3 and tier 4 (nightly only); the test cases that replay external a
 From May to June 2026 the repository went through a truth-first remediation (2026-05-02:
 overclaims removed, toolchains gated in CI), the web companion (`web/`, all ten chapters ported
 by 2026-06-01, drift-guarded), the `dml_ts` namespace (2026-06-01), `DynamicGEstimationDML`
-(2026-06-04) and the move onto temporalcv 2.2.0 (golden-neutral, 1.1.3 and 1.1.4). Its
-baselines and decisions are in the
-[2026-05-30 audit](audits/2026-05-30_repo_quality_methodology_audit.md), the CHANGELOG
-and `docs/archive/`. The web companion's working notes are in `web/CLAUDE.md` and
+(2026-06-04) and the move onto temporalcv 2.2.0 (golden-neutral, 1.1.3 and 1.1.4). Its decisions are in the [2026-05-30 audit](audits/2026-05-30_repo_quality_methodology_audit.md), the CHANGELOG and `docs/archive/`; its last baseline (2026-06-14: 851 tests collected, a 209-page book) is in the version of this file before 2026-11-27 (`git show c84ce72:docs/CURRENT_STATUS.md`). The web companion's working notes are in `web/CLAUDE.md` and
 `web/UPSTREAM_ISSUES.md`.
 
 ## Canonical References
@@ -125,7 +136,7 @@ and `docs/archive/`. The web companion's working notes are in `web/CLAUDE.md` an
 - Data sources, licences and held files: `docs/audits/DATA_SOURCES.md`
 - Superseded audits: `docs/audits/2026-05-30_repo_quality_methodology_audit.md`,
   `docs/audits/2026-05-02_repo_quality_methodology_audit.md`
-- Historical status, reports and plans: `docs/archive/`
+- Historical status and reports: `docs/archive/`; older plans: `docs/plans/archive/`
 - Active plans: `docs/plans/active/`
 - Web companion: `web/CLAUDE.md`, `web/UPSTREAM_ISSUES.md`
 

@@ -274,8 +274,8 @@ Part I (a box is ticked when the pull request is merged and its issues are check
 - [x] PR-1c `fix/series-labels-and-constant-scored-rows` (#79, merged 2026-11-27 as `c84ce72`; #75, #76 closed)
 - [x] PR-3 `fix/applications-pipeline` (#80, merged 2026-11-26 as `8feb54c`; #60 closed, #44, #62, #64 stay open)
 - [ ] PR-1d `fix/one-input-boundary` (#82, open, held for the owner's decision; #77; the input rule in every estimator but `PanelDML`)
-- [x] PR-4 `docs/november-audits` (#83, merged 2026-11-27 as `4e61710`; #65, #70, #86 stay open)
-- [x] PR-5 `audit/public-data-extensions` (#87, merged 2026-11-27 as `2415b95`)
+- [x] PR-4 `docs/november-audits` (#83, merged 2026-11-26 as `4e61710`; #65, #70, #86 stay open)
+- [x] PR-5 `audit/public-data-extensions` (#87, merged 2026-11-26 as `2415b95`)
 - [ ] PR-6 `fix/monitor-alerts-64` (#89, open; #64)
 - [x] Conservation check against the manifest (2026-11-27, against `c84ce72`: 234 paths, none unlisted)
 - [x] Part III residual patch saved (2026-11-27: 179 patches, local backup folder)
@@ -1123,11 +1123,10 @@ with it.
 ### The interruption
 
 At 20:17 EST on 2026-11-26 the machine was powered off after a global out-of-memory event,
-while step 2 (the review of the final heads) and the PR-6 mutation run were in progress. 71
-Python processes of about 1.9 GiB each were running; another session's log attributes them,
+while step 2 (the review of the final heads) and the PR-6 mutation run were in progress. 71 Python processes were running, with 85 GiB resident in all (about 1.2 GiB each, by the kernel's out-of-memory report); another session's log attributes them,
 by inference, to this repository's review agents, and the review's own driver started 20
 workers per state for three or four states. The stop report of this addendum was never
-written; Addendum 6 completed its steps.
+written; Addendum 6 completed its steps, apart from the merge of #82, which is held.
 
 ## Addendum 6, 2026-11-27: review of the work, the guard, and the exit from Part I
 
@@ -1138,8 +1137,7 @@ The full text is in the session's plan file (copy in the local backup folder, `p
 1. The interruption left three things at risk: PR-6 on one disk, Addendum 5's record and the
    design note outside the repository, and the merge rule of #79 and #82 unmet while half of
    their review was unjudged.
-2. The workflow's parallelism can take the machine down: the design note's cost line assumed 64
-   workers, about the whole memory.
+2. The workflow's parallelism can take the machine down: the design note's cost line assumed 64 workers, about 77 GiB of the machine's 123 GiB at the 1.2 GiB per process measured on 2026-11-26, on a machine that other work shares.
 3. The input-contract work has reached diminishing returns: each review round of #79 found a
    regression in the previous repair. After #82 the contract is frozen; new edge cases become
    comments on #77.
@@ -1149,7 +1147,7 @@ The full text is in the session's plan file (copy in the local backup folder, `p
 6. Readers see known errors: Chapter 6 (#84), Chapter 8's numbers, #65.
 7. The design note's method is sound; its cost line needs a memory budget.
 8. Two older plans were stale (content expansion, the Track 3 handoff).
-9. #46 can be closed by a scaffold bump to `^4.26.x`.
+9. #46's overflow item can be closed by a scaffold bump to `^4.26.2` (the fix, scaffold #171, was published in 4.26.2; no 4.26.1 was released). Its other items stay open.
 
 ### Decisions taken on 2026-11-27 (the owner's)
 
@@ -1158,7 +1156,7 @@ The full text is in the session's plan file (copy in the local backup folder, `p
 | Part II design gate | The note's bundle: B and C, with A; the nuisance treatment a required argument; `forward_date` out of the first release; `fit_frame` after the estimator passes; `panel_standard_error` early, in its own pull request; the protocol as drafted, with the cost recomputed under a memory cap |
 | Chapter 10's monitor listings | Updated in both editions inside PR-6 |
 | Manuscript | A parallel track during Part II; known-issue callouts in Chapters 6 and 8 now |
-| The working copy | Retired at the exit from Part I: verified, moved aside, never deleted; a fresh clone takes its path |
+| The working copy | Retired at the exit from Part I: verified and moved aside, not deleted before the close of the landing; a fresh clone takes its path |
 
 ### The guard (applies to every run)
 
@@ -1176,9 +1174,7 @@ The full text is in the session's plan file (copy in the local backup folder, `p
 - **Final-heads review of #79 and #82.** A fresh agent judged the unjudged differences and
   finding scripts; each finding was re-run. One regression in #82: a one-field structured float
   array as Y or T (`dtype=[("a", "f8")]`), which `main` and #79 read (2.109180), is refused by
-  `TemporalPLRDML`, `RollingWindowDML` and `DynamicGEstimationDML`. #82's changelog also omits
-  that object arrays with datetime or timedelta columns beside numeric ones returned a number on
-  `main`. No wrong number was found. #79 was closed and reopened for CI against `main`, merged
+  `TemporalPLRDML`, `RollingWindowDML` and `DynamicGEstimationDML`. #82's changelog says that two kinds of call returned a number before and are refused now; object arrays with datetime or timedelta columns beside numeric ones were a third. No new wrong number was found: the two the judge found are wrong on `main` as well (`PanelDML` with identifiers that are not integers, #77; the R² at extreme scales, which #79 turns from `main`'s 0.0 into NaN, #90). #79 was closed and reopened for CI against `main`, merged
   as `c84ce72`; `stored_checks.py` passes on `main`, and #75 and #76 are closed. #82 is held for
   the owner: (a) a documentation commit that lists the refusal, then merge, or (b) a code repair
   and a new review. Pre-existing on `main` and filed: the R² at extreme scales (#90).
@@ -1191,10 +1187,7 @@ The full text is in the session's plan file (copy in the local backup folder, `p
   were classified one by one (a fresh agent, then re-checked): none is unlisted. Held whole
   files equal the pre-landing `main`; held new files are absent from `main`; the held parts of
   split files equal the pre-landing `main` apart from recorded deviations.
-- **Part III residual.** 179 patches in the local backup folder (`part3-residual/`): 143 new
-  files, 12 whole files, the held hunks of 8 split files, and the two cricket tests held for
-  #86. Each passes `git apply --3way --check` against `c84ce72`; applied together they
-  reproduce the snapshot's files. One hunk differs from the snapshot's side: it keeps
+- **Part III residual.** 179 patches in the local backup folder (`part3-residual/`): 143 for new files, 12 for whole files, 20 for the held hunks of 8 split files (one per file and one per hunk), and 4 for the two cricket tests held for #86 (likewise). Each passes `git apply --3way --check` against `c84ce72`. Applied, the new and whole patches reproduce the snapshot's 155 files, and the hunk patches give `main` with the held hunks. One hunk differs from the snapshot's side: it keeps
   `is_numerically_constant` for #79's refusal. The snapshot's `PanelDML` does not carry
   `main`'s absorbed-treatment guard (#69): Part II must carry that case.
 - **Nightly.** Dispatched once (run 46024713734): tier 3 passed in 43 minutes; tier 4 runs only
@@ -1204,5 +1197,5 @@ The full text is in the session's plan file (copy in the local backup folder, `p
   and local settings are copied aside. The move was not made: an editor had the folder open.
   A fresh clone is staged and takes the path when the move is made.
 - **Protocol.** `docs/plans/active/2026-11-27_paneldml_protocol.md`, SHA-256
-  `b7cce6c29e00458eb2e9b7b2a60d644bcb1d2bf2e05c95b66b14c459340e1cd1`, frozen in this pull
+  `bd5bf7407ef92cac706569eff9fd1cdaf54411d36c3c9b7fb32b6f939ad00bd2`, frozen in this pull
   request before any study run.
