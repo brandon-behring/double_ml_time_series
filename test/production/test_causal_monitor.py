@@ -641,7 +641,7 @@ class TestAlertsFollowTheStandardErrors:
         assert result.details["z_score"] == pytest.approx(-1.5 / np.sqrt(2e-4))
         assert round(result.details["z_score"]) == -106
         assert result.details["relative_change"] == pytest.approx(0.15)
-        assert "-106.07 standard errors, 15% relative" in result.message
+        assert "-106.06 standard errors, 15% relative" in result.message
 
     @pytest.mark.parametrize(
         ("change", "level"),
@@ -869,10 +869,37 @@ class TestAlertsFollowTheStandardErrors:
         )
 
         assert result.level == AlertLevel.OK
-        assert "+1.77 standard errors, relative change undefined at a zero baseline" in (
+        assert "+1.76 standard errors, relative change undefined at a zero baseline" in (
             result.message
         )
         assert "inf%" not in result.message
+
+    @pytest.mark.parametrize(
+        ("change", "level", "shown"),
+        [
+            (1.9552, AlertLevel.OK, "+1.95"),
+            (np.nextafter(1.96, 0.0), AlertLevel.OK, "+1.95"),
+            (1.96, AlertLevel.WARNING, "+1.96"),
+            (np.nextafter(3.0, 0.0), AlertLevel.WARNING, "+2.99"),
+            (-1.9552, AlertLevel.OK, "-1.95"),
+        ],
+    )
+    def test_a_z_below_a_threshold_never_prints_as_reaching_it(self, change, level, shown):
+        # Rounded to nearest, 1.9552 printed as +1.96 beside a level of ok.
+        result = CausalMonitor().check_effect_stability(
+            current_effect=change, baseline_effect=0.0, current_se=1.0, baseline_se=0.0
+        )
+
+        assert result.level == level
+        assert f"moved {shown} standard errors" in result.message
+
+    def test_a_very_large_z_prints_in_exponent_form(self):
+        result = CausalMonitor().check_effect_stability(
+            current_effect=1.0, baseline_effect=0.9, current_se=1e-170, baseline_se=1e-170
+        )
+
+        assert result.level == AlertLevel.CRITICAL
+        assert "moved +7.07e+168 standard errors, 11% relative" in result.message
 
     @pytest.mark.parametrize(("change", "significant"), [(2.0, True), (1.9, False)])
     def test_significance_is_judged_at_five_percent(self, change, significant):

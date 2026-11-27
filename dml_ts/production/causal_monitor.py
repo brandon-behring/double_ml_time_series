@@ -28,11 +28,25 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from decimal import ROUND_DOWN, Decimal
 from enum import Enum
 from typing import Any
 
 import numpy as np
 from scipy import stats
+
+
+def _format_z(z: float) -> str:
+    """Format a z-score for a message, rounded toward zero to two decimals.
+
+    Two decimals are the precision of the default thresholds (1.96 and 3.0). Rounding
+    toward zero means a z below such a threshold never prints as reaching it: 1.9552
+    prints as +1.95, not +1.96. From 1e4 on, three significant digits are printed.
+    """
+    if abs(z) >= 1e4:
+        return f"{z:+.3g}"
+    shown = Decimal(repr(float(z))).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    return f"{shown:+.2f}"
 
 
 class AlertLevel(Enum):
@@ -518,13 +532,12 @@ class CausalMonitor:
             details["rule"] = "standard_errors"
             value = abs(float(z_score))
             threshold = self.config.effect_z_warning
-            # Two decimals, the precision of the default thresholds (1.96 and 3.0).
             relative = (
                 f"{relative_change:.0%} relative"
                 if np.isfinite(relative_change)
                 else "relative change undefined at a zero baseline"
             )
-            moved = f"{z_score:+.2f} standard errors, {relative}"
+            moved = f"{_format_z(z_score)} standard errors, {relative}"
             if value >= self.config.effect_z_critical:
                 level = AlertLevel.CRITICAL
                 message = (
