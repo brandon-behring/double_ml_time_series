@@ -355,7 +355,7 @@ def check_treatment_shift(
 
 \subsection{Nuisance Model Degradation}
 
-DML validity requires well-fitting nuisance models. We monitor nuisance $R^2$, not treatment effect accuracy (which is unknowable). The two models are judged separately. An outcome $R^2$ below 0.30 is critical, because a poor outcome model can bias the effect. A treatment $R^2$ below 0.50 is only a warning: a randomized treatment has an $R^2$ near zero, and the monitor cannot tell that case from a treatment model that misses confounders.
+DML validity requires well-fitting nuisance models. We monitor nuisance $R^2$, not treatment effect accuracy (which is unknowable). The two models are judged separately. An outcome $R^2$ below 0.30 is critical and one below 0.50 a warning, the thresholds of earlier versions; a low outcome $R^2$ can mean a poor outcome model or an outcome that is mostly noise, and the monitor cannot tell the two apart. A treatment $R^2$ below 0.50 is only a warning, never critical: a randomized treatment has an $R^2$ near zero by design, and the monitor cannot tell that case from a treatment model that misses confounders.
 
 % Nuisance degradation monitoring
 \begin{minted}[fontsize=\small]{python}

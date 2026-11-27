@@ -641,7 +641,7 @@ class TestAlertsFollowTheStandardErrors:
         assert result.details["z_score"] == pytest.approx(-1.5 / np.sqrt(2e-4))
         assert round(result.details["z_score"]) == -106
         assert result.details["relative_change"] == pytest.approx(0.15)
-        assert "-106.1 standard errors" in result.message
+        assert "-106.07 standard errors, 15% relative" in result.message
 
     @pytest.mark.parametrize(
         ("change", "level"),
@@ -786,3 +786,109 @@ class TestAlertsFollowTheStandardErrors:
         trigger = scheduler.evaluate_monitoring_results([poor_outcome], n_samples=200)
         assert trigger is not None
         assert trigger.trigger_type.value == "nuisance_degradation"
+
+    @pytest.mark.parametrize(
+        ("kwargs", "name"),
+        [
+            ({"r2_propensity": 0.9, "r2_outcome": float("nan")}, "r2_outcome"),
+            ({"r2_propensity": float("nan"), "r2_outcome": 0.1}, "r2_propensity"),
+            ({"r2_propensity": 0.9, "r2_outcome": float("inf")}, "r2_outcome"),
+            (
+                {"r2_propensity": 0.9, "r2_outcome": 0.9, "r2_outcome_baseline": float("nan")},
+                "r2_outcome_baseline",
+            ),
+            (
+                {"r2_propensity": 0.9, "r2_outcome": 0.9, "r2_propensity_baseline": float("-inf")},
+                "r2_propensity_baseline",
+            ),
+        ],
+    )
+    def test_an_r2_that_is_not_finite_is_refused(self, kwargs, name):
+        # A NaN failed every comparison and was reported as a good fit.
+        with pytest.raises(ValueError, match=f"{name} must be a finite number"):
+            CausalMonitor().check_nuisance_degradation(**kwargs)
+
+    @pytest.mark.parametrize(
+        ("r2_propensity", "r2_outcome", "level"),
+        [
+            (0.90, 0.30, AlertLevel.WARNING),  # outcome at the critical threshold
+            (0.90, 0.50, AlertLevel.OK),  # outcome at the warning threshold
+            (0.50, 0.90, AlertLevel.OK),  # treatment at the warning threshold
+        ],
+    )
+    def test_an_r2_equal_to_a_threshold_meets_it(self, r2_propensity, r2_outcome, level):
+        result = CausalMonitor().check_nuisance_degradation(
+            r2_propensity=r2_propensity, r2_outcome=r2_outcome
+        )
+
+        assert result.level == level
+
+    def test_the_r2_thresholds_come_from_the_config(self):
+        monitor = CausalMonitor(
+            CausalMonitorConfig(nuisance_r2_warning=0.8, nuisance_r2_critical=0.6)
+        )
+
+        assert monitor.check_nuisance_degradation(0.9, 0.55).level == AlertLevel.CRITICAL
+        assert monitor.check_nuisance_degradation(0.9, 0.70).level == AlertLevel.WARNING
+        assert monitor.check_nuisance_degradation(0.70, 0.9).level == AlertLevel.WARNING
+        assert monitor.check_nuisance_degradation(0.9, 0.9).level == AlertLevel.OK
+
+    def test_a_degraded_baseline_keeps_a_critical_level(self):
+        result = CausalMonitor().check_nuisance_degradation(
+            r2_propensity=0.9, r2_outcome=0.1, r2_outcome_baseline=0.8
+        )
+
+        assert result.level == AlertLevel.CRITICAL
+        assert "decreased" in result.message
+
+    @pytest.mark.parametrize(
+        ("current", "baseline", "relative", "level"),
+        [(6.0, 5.0, 0.2, AlertLevel.WARNING), (3.0, 2.0, 0.5, AlertLevel.CRITICAL)],
+    )
+    def test_a_relative_change_equal_to_a_threshold_meets_it(
+        self, current, baseline, relative, level
+    ):
+        # 1/5 and 1/2 are computed exactly, so the change equals the threshold.
+        result = CausalMonitor().check_effect_stability(
+            current_effect=current, baseline_effect=baseline
+        )
+
+        assert result.details["relative_change"] == relative
+        assert result.level == level
+
+    def test_the_relative_thresholds_come_from_the_config(self):
+        config = CausalMonitorConfig(effect_change_warning=0.05, effect_change_critical=0.25)
+        monitor = CausalMonitor(config)
+
+        assert monitor.check_effect_stability(1.1, 1.0).level == AlertLevel.WARNING
+        assert monitor.check_effect_stability(1.3, 1.0).level == AlertLevel.CRITICAL
+
+    def test_a_zero_baseline_says_the_relative_change_is_undefined(self):
+        result = CausalMonitor().check_effect_stability(
+            current_effect=0.5, baseline_effect=0.0, current_se=0.2, baseline_se=0.2
+        )
+
+        assert result.level == AlertLevel.OK
+        assert "+1.77 standard errors, relative change undefined at a zero baseline" in (
+            result.message
+        )
+        assert "inf%" not in result.message
+
+    @pytest.mark.parametrize(("change", "significant"), [(2.0, True), (1.9, False)])
+    def test_significance_is_judged_at_five_percent(self, change, significant):
+        # z = 2.0 gives p = 0.046 and z = 1.9 gives p = 0.057.
+        result = CausalMonitor().check_effect_stability(
+            current_effect=change, baseline_effect=0.0, current_se=1.0, baseline_se=0.0
+        )
+
+        assert result.details["statistically_significant"] is significant
+
+    @pytest.mark.parametrize("scale", [1e-170, 1e200])
+    def test_standard_errors_far_from_one_are_combined_without_underflow_or_overflow(self, scale):
+        # Squaring 1e-170 gives zero, and squaring the Python float 1e200 overflows.
+        result = CausalMonitor().check_effect_stability(
+            current_effect=4 * scale, baseline_effect=scale, current_se=scale, baseline_se=scale
+        )
+
+        assert result.details["z_score"] == pytest.approx(3 / np.sqrt(2))
+        assert result.level == AlertLevel.WARNING

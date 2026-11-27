@@ -115,14 +115,21 @@ are the compatibility contract).
   An effect moving from 0.05 to 0.08 with standard errors of 0.20 was critical (a 60% change of
   0.11 standard errors) and is ok; one moving from 10.0 to 8.5 with standard errors of 0.01 was
   ok (15%) and is critical (−106 standard errors). Without both standard errors the relative
-  rule applies as before, and the message names the one that is missing. A standard error that
-  is given and is negative or not finite, or two of zero, raises `ValueError`, and so does a NaN
-  or infinite effect, which was reported as stable. A low treatment-model R² is a warning and
-  never critical: a randomized treatment has an R² near zero. The outcome model's thresholds are
-  unchanged. Consequence for `RetrainScheduler`, which by default retrains on critical results
-  only: a low treatment R² beside a good outcome model no longer triggers a retrain (effect
-  stability is not among its default triggers). Chapter 10's listings of the two checks, in
-  both editions, show the new rules.
+  rule applies as before, and the message names the one that is missing. The two standard
+  errors are combined with `np.hypot`, so values such as 1e-170 or 1e200 neither underflow to a
+  refusal nor overflow. A standard error that is given and is negative or not finite, or two of
+  zero, raises `ValueError`, and so does a NaN or infinite effect: a NaN effect, or an infinite
+  baseline, was reported as stable (an infinite current effect was critical). A NaN or infinite
+  R² (current, or a baseline that is given) raises `ValueError` as well; a NaN outcome R² was
+  reported as a good fit. A low treatment-model R² is a warning and never critical: a
+  randomized treatment has an R² near zero. The outcome model's thresholds are unchanged, and
+  the check's `value` is still the smaller of the two R² values. Consequence for
+  `RetrainScheduler`, which by default retrains on critical results only: a low treatment R² no
+  longer triggers a retrain unless the outcome R² is below 0.30 (on `main`, the smaller of the
+  two below 0.30 did; effect stability is not among its default triggers). Consequence for
+  `InsuranceDMLPipeline.fit` with a baseline: a NaN baseline effect or a negative baseline
+  standard error now raises `ValueError` after cross-fitting, where it was reported as stable.
+  Chapter 10's listings of the two checks, in both editions, show the new rules.
 - The DML bias validator and six baselines now test mean error across independent
   Monte Carlo draws. Bootstrap resamples supply the bias interval. Validation
   intervals and the DML coverage null use the configured confidence level.

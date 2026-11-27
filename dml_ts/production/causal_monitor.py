@@ -333,6 +333,9 @@ class CausalMonitor:
         Details report the decrease in R² points. A relative decrease
         uses the absolute baseline magnitude and is undefined at zero.
 
+        ``value`` is the smaller of the two R² values, as before, and ``details`` holds
+        both; the level is set per model, so ``value`` alone does not explain it.
+
         Args:
             r2_propensity: Current propensity model R² (or pseudo-R² for classification)
             r2_outcome: Current outcome model R²
@@ -341,7 +344,20 @@ class CausalMonitor:
 
         Returns:
             MonitoringResult with degradation assessment
+
+        Raises:
+            ValueError: If an R² value, or a baseline that is given, is NaN or infinite.
         """
+        for name, r2 in (
+            ("r2_propensity", r2_propensity),
+            ("r2_outcome", r2_outcome),
+            ("r2_propensity_baseline", r2_propensity_baseline),
+            ("r2_outcome_baseline", r2_outcome_baseline),
+        ):
+            # A NaN fails every comparison below and would be reported as a good fit.
+            if r2 is not None and not np.isfinite(r2):
+                raise ValueError(f"{name} must be a finite number, got {r2!r}")
+
         # The smaller of the two stays the reported value; the level is set per model.
         min_r2 = min(r2_propensity, r2_outcome)
 
@@ -483,7 +499,9 @@ class CausalMonitor:
         if current_se is not None and baseline_se is not None:
             # The change in standard errors decides the level: a large relative
             # change can be noise, and a small one can be many standard errors.
-            combined_se = float(np.sqrt(current_se**2 + baseline_se**2))
+            # hypot does not underflow or overflow where the squares would
+            # (standard errors of 1e-170, or Python floats of 1e200).
+            combined_se = float(np.hypot(current_se, baseline_se))
             if combined_se == 0.0:
                 raise ValueError(
                     "current_se and baseline_se are both zero, so the change cannot be "
@@ -500,7 +518,13 @@ class CausalMonitor:
             details["rule"] = "standard_errors"
             value = abs(float(z_score))
             threshold = self.config.effect_z_warning
-            moved = f"{z_score:+.1f} standard errors, {relative_change:.0%} relative"
+            # Two decimals, the precision of the default thresholds (1.96 and 3.0).
+            relative = (
+                f"{relative_change:.0%} relative"
+                if np.isfinite(relative_change)
+                else "relative change undefined at a zero baseline"
+            )
+            moved = f"{z_score:+.2f} standard errors, {relative}"
             if value >= self.config.effect_z_critical:
                 level = AlertLevel.CRITICAL
                 message = (

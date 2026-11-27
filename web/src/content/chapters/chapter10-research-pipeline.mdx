@@ -9,7 +9,7 @@ description: "Research-pipeline patterns for deployed causal inference (book-com
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_10.tex
-source_sha256: 8a261dac971edf5a1a39b9b62f62132ac2138ca53d53b892955febb2edaa4489
+source_sha256: 1741e6f2dc69b06e4dc08d97a81c100f081cf3498fb692df3a261bd8dd52341c
 provenance:
   ai_tools:
     - Claude Code
@@ -333,7 +333,7 @@ def check_treatment_shift(
 
 ### Nuisance model degradation
 
-DML validity requires well-fitting nuisance models. We monitor nuisance $R^2$, not treatment effect accuracy (which is unknowable). The two models are judged separately. An outcome $R^2$ below 0.30 is critical, because a poor outcome model can bias the effect. A treatment $R^2$ below 0.50 is only a warning: a randomized treatment has an $R^2$ near zero, and the monitor cannot tell that case from a treatment model that misses confounders.
+DML validity requires well-fitting nuisance models. We monitor nuisance $R^2$, not treatment effect accuracy (which is unknowable). The two models are judged separately. An outcome $R^2$ below 0.30 is critical and one below 0.50 a warning, the thresholds of earlier versions; a low outcome $R^2$ can mean a poor outcome model or an outcome that is mostly noise, and the monitor cannot tell the two apart. A treatment $R^2$ below 0.50 is only a warning, never critical: a randomized treatment has an $R^2$ near zero by design, and the monitor cannot tell that case from a treatment model that misses confounders.
 
 ```python
 def check_nuisance_degradation(
