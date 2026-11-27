@@ -16,12 +16,16 @@ option set; their public signatures document it.
 their own machinery.
 """
 
+import decimal
+import numbers
 import os
 from collections.abc import Iterable
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
+import pandas as pd
 from numpy.typing import NDArray
+from scipy import sparse
 from sklearn.base import BaseEstimator, clone, is_classifier
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import Lasso, Ridge
@@ -91,11 +95,26 @@ def is_numerically_constant(values: NDArray[np.float64]) -> bool:
 
     The mean of a constant array need not equal the constant (``np.full(100, 0.1)``
     has a mean one ulp away), so the centered values are compared with the level
-    of the array and never with exact zero.
+    of the array and never with exact zero. The values are first divided by their
+    largest magnitude: a norm of values near 1e300 overflows, and one of values near
+    1e-300 underflows, and either would make a varying array look constant.
+
+    Examples:
+        >>> import numpy as np
+        >>> is_numerically_constant(np.full(100, 0.1))
+        True
+        >>> is_numerically_constant(1e300 * np.array([1.0, 2.0, 3.0]))
+        False
     """
     values = np.asarray(values, dtype=float)
-    spread = np.linalg.norm(values - values.mean())
-    return bool(spread <= np.linalg.norm(values) * values.size * _EPS)
+    scale = float(np.max(np.abs(values))) if values.size else 0.0
+    if not np.isfinite(scale):
+        return False
+    if scale == 0.0:
+        return True
+    scaled = values / scale
+    spread = np.linalg.norm(scaled - scaled.mean())
+    return bool(spread <= np.linalg.norm(scaled) * scaled.size * _EPS)
 
 
 def no_variation_tolerance(treatment: NDArray[np.float64]) -> float:
@@ -260,6 +279,242 @@ def cross_fit_predictions(
         T_hat[test_idx] = predict_conditional_mean(treatment_mod, X_test)
 
     return Y_hat, T_hat
+
+
+_NOTHING = object()
+
+
+def _is_real_number_or_missing(value: object) -> bool:
+    """Whether one element of an object array is a real number or a missing value.
+
+    ``np.timedelta64`` is excluded by name: NumPy derives it from its signed integers, so
+    it passes for a number.
+
+    Examples:
+        >>> import decimal
+        >>> import numpy as np
+        >>> [_is_real_number_or_missing(v) for v in (1, 2.5, True, None, decimal.Decimal("1"))]
+        [True, True, True, True, True]
+        >>> [_is_real_number_or_missing(v) for v in (1j, np.timedelta64(1, "s"), b"1")]
+        [False, False, False]
+    """
+    if value is None or value is pd.NA:
+        return True
+    if isinstance(value, np.timedelta64):
+        return False
+    if isinstance(value, np.ndarray):
+        return value.ndim == 0 and value.dtype.kind in "fiub"
+    return isinstance(value, (numbers.Real, decimal.Decimal, np.bool_))
+
+
+def _example(value: object, limit: int = 60) -> str:
+    """A value as it is shown in a refusal: its ``repr``, cut at ``limit`` characters."""
+    text = repr(value)
+    return text if len(text) <= limit else text[:limit] + "..."
+
+
+def _read_as_floats(name: str, values: object) -> NDArray[np.float64]:
+    """Read an outcome or a treatment as a float array, or say why it is not one.
+
+    Numbers (floats, integers, booleans, and objects such as ``Decimal``) are read by their
+    values. ``None``, NaN and the missing values of a pandas column become NaN; ``pd.NA``
+    inside a list or a NumPy object array is refused. Anything whose conversion would
+    change its meaning is refused: a datetime or timedelta would become integer ticks in
+    its storage unit, a complex value would lose its imaginary part, a masked array would
+    be read under its mask, and text is a label even when it spells a number.
+
+    An object array is judged by its elements and not by whether it can be cast:
+    ``np.asarray(values, dtype=float)`` turns a timezone-aware pandas column into ticks,
+    and an object array of ``np.timedelta64`` or ``np.complex128`` scalars into floats,
+    without an error. An element must be a real number (``numbers.Real``, ``Decimal``, a
+    NumPy boolean, a zero-dimensional array of numbers) or a missing value.
+
+    Examples:
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> _read_as_floats("T", [0, 10, None]).tolist()
+        [0.0, 10.0, nan]
+        >>> _read_as_floats("Y", np.array([1, 2], dtype="timedelta64[s]"))  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: Y has dtype timedelta64[s], which is not a number. ...
+        >>> stamps = pd.Series(pd.to_datetime(["2020-01-01", "2020-01-02"], utc=True))
+        >>> _read_as_floats("Y", stamps)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: Y holds Timestamp values (for example ...), not real numbers. ...
+    """
+    if isinstance(values, np.ma.MaskedArray) and np.ma.is_masked(values):
+        raise ValueError(
+            f"{name} is a masked array with masked entries. Its values would be read under "
+            "the mask; drop or fill those rows first."
+        )
+    try:
+        array = np.asarray(values)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} could not be read as an array: {exc}") from exc
+    if array.dtype.kind == "O":
+        text = next((v for v in array.ravel() if isinstance(v, (str, bytes))), None)
+        if text is not None:
+            raise ValueError(
+                f"{name} holds text (for example {_example(text)}), not numbers. "
+                "Convert it to floats first."
+            )
+        # A default of None would hide an element that is None.
+        other = next((v for v in array.ravel() if not _is_real_number_or_missing(v)), _NOTHING)
+        if other is not _NOTHING:
+            raise ValueError(
+                f"{name} holds {type(other).__name__} values (for example {_example(other)}), not real "
+                "numbers. Convert it to floats in the unit you mean: a datetime or timedelta "
+                "would be read as integer ticks, and a complex value would lose its "
+                "imaginary part."
+            )
+        try:
+            # From the input, not from the object array: pandas turns the missing values
+            # of its columns into NaN when it is asked to.
+            if isinstance(values, (pd.Series, pd.DataFrame)):
+                array = values.to_numpy(dtype=float, na_value=np.nan)
+            else:
+                array = np.asarray(values, dtype=float)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError(f"{name} could not be read as a float array: {exc}") from exc
+    if array.dtype.kind not in "fiub":
+        raise ValueError(
+            f"{name} has dtype {array.dtype}, which is not a number. Convert it to floats in "
+            "the unit you mean: a datetime or timedelta would be read as integer ticks, a "
+            "complex value would lose its imaginary part, and text is a label."
+        )
+    return array.astype(float)
+
+
+def _refuse_different_indexes(labelled: list[tuple[str, Any]]) -> None:
+    """Refuse indexes that differ in value or order, or that name their levels differently.
+
+    An index is anything with an ``equals`` method: a pandas index, or that of a container
+    that follows pandas.
+
+    ``Index.equals`` compares values and order and ignores names. Two indexes whose levels
+    are named differently label different things even when their values agree: an outcome
+    indexed by (unit, period) and a treatment indexed by (period, unit) over a square panel
+    have equal tuples in other rows.
+    """
+    first_name, first = labelled[0]
+    for name, index in labelled[1:]:
+        if not index.equals(first):
+            raise ValueError(
+                f"{first_name} and {name} carry different pandas indexes. Rows are paired by "
+                "position, and labels are not used to reorder them. If the rows are already "
+                "in the same order, pass arrays with .to_numpy(). If they are not, bring "
+                "them into one order first (for example with .loc or .reindex on labels "
+                "that mean the same thing in both)."
+            )
+    # Equal values are transitive; agreement of names is not, because an unnamed level
+    # agrees with every name. So the names are compared for every pair.
+    named = [
+        (name, list(index.names))
+        for name, index in labelled
+        if getattr(index, "names", None) is not None
+    ]
+    for position, (first_name, names) in enumerate(named):
+        for name, other in named[position + 1 :]:
+            clash = any(
+                a is not None and b is not None and a != b
+                for a, b in zip(names, other, strict=False)
+            )
+            if clash:
+                raise ValueError(
+                    f"{first_name} and {name} carry different pandas indexes: their values "
+                    f"are equal, but their levels are named {names} and {other}. Rows are "
+                    "paired by position; pass arrays with .to_numpy() if the rows are in "
+                    "the same order."
+                )
+
+
+def as_validated_arrays(
+    Y: object, T: object, X: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """Read Y and T as float arrays, check the shapes, and make a flat X a column.
+
+    Rows are paired by position. ``double_ml`` indexed a pandas ``Series`` by label where
+    it indexed the controls by position: with a reordered frame its slope was wrong with
+    no error, and with other labels it raised ``KeyError``. ``fwl_estimate`` and
+    ``robinson_estimator`` multiplied two residual ``Series`` that pandas aligned by label:
+    they were right for a reordered frame and wrong, with no error, when the outcome and
+    the treatment carried different labels (#75). Reading Y and T by value removes the
+    labels.
+
+    Pairing by position is only right when the labels agree. Two pandas inputs whose
+    indexes differ in value or in order are therefore refused, and so are two whose levels
+    are named differently: the same units in another order would be paired wrongly, and
+    nothing in the numbers would show it. What the check cannot see: an input whose index
+    was reset after it was reordered; rows permuted among repeated labels; a level that
+    one input names and the other does not; and a container whose ``index`` has no
+    ``equals`` method, which is read by position.
+
+    This function does not convert a two-dimensional X; it checks its row count and
+    returns it as given. A list is read as an array, and a one-dimensional X becomes one
+    column of an array, also when it was a ``Series``. What then happens to X is the
+    caller's affair: ``robinson_estimator`` hands it to the nuisance model, so a DataFrame
+    keeps its column names and dtypes and a sparse matrix stays sparse there;
+    ``double_ml`` selects fold rows with ``X[rows]``, which works for an array and a CSR
+    or CSC matrix and raises ``KeyError`` for a DataFrame; ``fwl_estimate`` stacks X into a
+    dense design, which a DataFrame of numbers survives and a sparse matrix does not.
+
+    Args:
+        Y: Outcome: a one-dimensional sequence of numbers.
+        T: Treatment: likewise.
+        X: Controls with one row per observation.
+
+    Returns:
+        ``(Y, T, X)``: Y and T as float arrays; X as given, or as an array if it was a
+        list, or as one column if it was one-dimensional.
+
+    Raises:
+        ValueError: If Y or T is not numeric, is masked, or cannot be read; if Y or T is
+            not one-dimensional or the lengths disagree (see ``validate_lengths``); if X
+            has no rows to count; or if two of the inputs are pandas objects whose indexes
+            differ in value, in order or in the names of their levels.
+
+    Examples:
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> y = pd.Series([1.0, 2.0, 3.0], index=[2, 0, 1])
+        >>> Y, T, X = as_validated_arrays(y, [0, 1, 0], np.array([5.0, 6.0, 7.0]))
+        >>> Y.tolist(), T.tolist(), X.shape
+        ([1.0, 2.0, 3.0], [0.0, 1.0, 0.0], (3, 1))
+        >>> as_validated_arrays(y, y.sort_index(), X)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+            ...
+        ValueError: Y and T carry different pandas indexes. ...
+    """
+    Y_arr = _read_as_floats("Y", Y)
+    T_arr = _read_as_floats("T", T)
+    given = X
+    if not hasattr(X, "shape"):
+        X = np.asarray(X)
+    if len(X.shape) == 0:
+        raise ValueError(
+            f"X must hold the controls with one row per observation, got an object of type "
+            f"{type(given).__name__} without rows."
+        )
+    validate_lengths(Y_arr, T_arr, X)
+    # A pandas Series or DataFrame is recognized by an index that can be compared;
+    # a list also has an ``index`` attribute, which is a method.
+    labelled = [
+        (name, index)
+        for name, index in (
+            ("Y", getattr(Y, "index", None)),
+            ("T", getattr(T, "index", None)),
+            ("X", getattr(X, "index", None)),
+        )
+        if hasattr(index, "equals")
+    ]
+    if labelled:
+        _refuse_different_indexes(labelled)
+    if len(X.shape) == 1:
+        # np.asarray of a sparse array is a zero-dimensional object, not its values.
+        X = X.reshape((-1, 1)) if sparse.issparse(X) else np.asarray(X).reshape(-1, 1)
+    return Y_arr, T_arr, X
 
 
 def validate_lengths(
