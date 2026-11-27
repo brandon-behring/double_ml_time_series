@@ -377,6 +377,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ModelType</span><span class="p">,</span>
     <span class="n">cross_fit_predictions</span><span class="p">,</span>
+    <span class="n">is_numerically_constant</span><span class="p">,</span>
     <span class="n">no_variation_tolerance</span><span class="p">,</span>
     <span class="n">theta_via_fwl</span><span class="p">,</span>
     <span class="n">validate_lengths</span><span class="p">,</span>
@@ -830,6 +831,21 @@
         <span class="n">Y_hat_used</span> <span class="o">=</span> <span class="n">Y_hat</span><span class="p">[</span><span class="n">valid_oof_mask</span><span class="p">]</span>
         <span class="n">T_hat_used</span> <span class="o">=</span> <span class="n">T_hat</span><span class="p">[</span><span class="n">valid_oof_mask</span><span class="p">]</span>
         <span class="n">n_used</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y_used</span><span class="p">)</span>
+
+        <span class="c1"># Only scored rows carry out-of-fold treatment variation. If the treatment is</span>
+        <span class="c1"># constant on all of them, its &quot;residual&quot; there is the error of the nuisance</span>
+        <span class="c1"># prediction alone: the slope then rests on how the two nuisance fits err together</span>
+        <span class="c1"># and not on any held-out variation, and its standard error is too small (#76).</span>
+        <span class="c1"># This refuses numerical constancy only (a spread within rounding of the level); a</span>
+        <span class="c1"># treatment that varies on a few scored rows is fitted, and its interval can be far</span>
+        <span class="c1"># too short (#81).</span>
+        <span class="k">if</span> <span class="n">is_numerically_constant</span><span class="p">(</span><span class="n">T_used</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Treatment has no variation on the scored rows: the treatment is constant &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">T_used</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">) on the </span><span class="si">{</span><span class="n">n_used</span><span class="si">}</span><span class="s2"> rows that have an out-of-fold prediction. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;The other </span><span class="si">{</span><span class="n">n_samples</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">n_used</span><span class="si">}</span><span class="s2"> rows have none and are not scored, so &quot;</span>
+                <span class="s2">&quot;variation there does not identify the effect&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Compute cross-validated R² on rows with valid OOF predictions.</span>
         <span class="n">outcome_r2_cv</span> <span class="o">=</span> <span class="n">_compute_r2</span><span class="p">(</span><span class="n">Y_used</span><span class="p">,</span> <span class="n">Y_hat_used</span><span class="p">)</span>

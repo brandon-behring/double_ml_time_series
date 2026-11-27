@@ -362,13 +362,18 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">clone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">temporalcv</span><span class="w"> </span><span class="kn">import</span> <span class="n">finite_se</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">as_validated_arrays</span><span class="p">,</span>
+    <span class="n">get_nuisance_model</span><span class="p">,</span>
+    <span class="n">predict_conditional_mean</span><span class="p">,</span>
+    <span class="n">theta_via_fwl</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_r2</span> <span class="k">as</span> <span class="n">_compute_r2</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_nuisance_model</span><span class="p">,</span> <span class="n">predict_conditional_mean</span><span class="p">,</span> <span class="n">theta_via_fwl</span><span class="p">,</span> <span class="n">validate_lengths</span>
 
 
 <div class="viewcode-block" id="RobinsonResult">
@@ -432,8 +437,8 @@
 <div class="viewcode-block" id="robinson_estimator">
 <a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.robinson.robinson_estimator">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">robinson_estimator</span><span class="p">(</span>
-    <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">Y</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">BaseEstimator</span>
     <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ridge&quot;</span><span class="p">,</span> <span class="s2">&quot;lasso&quot;</span><span class="p">,</span> <span class="s2">&quot;random_forest&quot;</span><span class="p">,</span> <span class="s2">&quot;gradient_boosting&quot;</span><span class="p">]</span>
@@ -491,11 +496,8 @@
 <span class="sd">    &gt;&gt;&gt; bool(abs(result.theta - 2.0) &lt; 0.3)  # Should recover ~2.0</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Validate inputs</span>
-    <span class="n">validate_lengths</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Read the inputs by position (a pandas Series would be indexed by label) and validate.</span>
+    <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="n">as_validated_arrays</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
 
     <span class="c1"># Get nuisance model</span>
     <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

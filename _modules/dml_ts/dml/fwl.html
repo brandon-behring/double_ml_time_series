@@ -361,11 +361,11 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">temporalcv</span><span class="w"> </span><span class="kn">import</span> <span class="n">coverage_in_unit</span><span class="p">,</span> <span class="n">finite_se</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._results</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultBase</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_numerically_constant</span><span class="p">,</span> <span class="n">theta_via_fwl</span><span class="p">,</span> <span class="n">validate_lengths</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_validated_arrays</span><span class="p">,</span> <span class="n">is_numerically_constant</span><span class="p">,</span> <span class="n">theta_via_fwl</span>
 
 
 <div class="viewcode-block" id="FWLResult">
@@ -514,8 +514,8 @@
 <div class="viewcode-block" id="fwl_estimate">
 <a class="viewcode-back" href="../../../api/dml.html#dml_ts.dml.fwl.fwl_estimate">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fwl_estimate</span><span class="p">(</span>
-    <span class="n">Y</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
-    <span class="n">T</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+    <span class="n">Y</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="n">add_intercept</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ols&quot;</span><span class="p">,</span> <span class="s2">&quot;qr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;qr&quot;</span><span class="p">,</span>
@@ -570,11 +570,9 @@
 <span class="sd">    &gt;&gt;&gt; bool(abs(result.theta - 2.0) &lt; 0.1)  # Should recover ~2.0</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">validate_lengths</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+    <span class="c1"># Read the inputs by position (a pandas Series would be indexed by label) and validate.</span>
+    <span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="n">as_validated_arrays</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Add intercept if requested</span>
     <span class="k">if</span> <span class="n">add_intercept</span><span class="p">:</span>
