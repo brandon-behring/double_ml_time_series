@@ -116,8 +116,8 @@ are the compatibility contract).
   never critical: a randomized treatment has an R² near zero. The outcome model's thresholds are
   unchanged. Consequence for `RetrainScheduler`, which by default retrains on critical results
   only: a low treatment R² beside a good outcome model no longer triggers a retrain (effect
-  stability is not among its default triggers). Chapter 10's listings of the two checks still
-  show the old rules.
+  stability is not among its default triggers). Chapter 10's listings of the two checks, in
+  both editions, show the new rules.
 - The DML bias validator and six baselines now test mean error across independent
   Monte Carlo draws. Bootstrap resamples supply the bias interval. Validation
   intervals and the DML coverage null use the configured confidence level.
