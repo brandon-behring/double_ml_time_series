@@ -27,6 +27,11 @@ are the compatibility contract).
   set. Two tests that replay the archived cricket forecast are held: its fold assignment
   depends on the CPU through an unstable sort, so the forecast reproduces only on some
   machines (#86). (#65)
+- The public-data experiments under `docs/audits/2026-11-21_public_data_extensions/`: recovery
+  of known effects on bicycle demand, an observed household electricity offer, switchback
+  designs on ride counts, and randomization inference for a repeated cooperation game, with
+  their scripts, reference outputs and input digests. The reference files hold estimates
+  computed here; their sources and licences are in `docs/audits/DATA_SOURCES.md`.
 
 ### Changed
 
