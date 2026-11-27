@@ -54,7 +54,7 @@ from dataclasses import dataclass
 from typing import Literal, cast
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 from scipy import stats
 from sklearn.base import BaseEstimator, clone
 from sklearn.model_selection import KFold
@@ -62,11 +62,11 @@ from temporalcv import ci_ordered, coverage_in_unit, finite_se
 
 from ._results import ResultBase
 from ._utils import (
+    as_validated_arrays,
     compute_r2,
     cross_fit_predictions,
     get_nuisance_model,
     theta_via_fwl,
-    validate_lengths,
 )
 
 
@@ -213,8 +213,8 @@ def _influence_function_se(
 
 
 def double_ml(
-    Y: NDArray[np.float64],
-    T: NDArray[np.float64],
+    Y: ArrayLike,
+    T: ArrayLike,
     X: NDArray[np.float64],
     n_folds: int = 5,
     model: BaseEstimator
@@ -291,11 +291,8 @@ def double_ml(
     >>> bool(result.ci_lower < result.theta < result.ci_upper)
     True
     """
-    # Validate inputs
-    validate_lengths(Y, T, X)
-
-    if X.ndim == 1:
-        X = X.reshape(-1, 1)
+    # Read the inputs by position (a pandas Series would be indexed by label) and validate.
+    Y, T, X = as_validated_arrays(Y, T, X)
 
     # Set up models
     if model is None:

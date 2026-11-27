@@ -64,6 +64,7 @@ from ._results import ResultBase
 from ._utils import (
     ModelType,
     cross_fit_predictions,
+    is_numerically_constant,
     no_variation_tolerance,
     theta_via_fwl,
     validate_lengths,
@@ -504,6 +505,21 @@ class TemporalPLRDML:
         Y_hat_used = Y_hat[valid_oof_mask]
         T_hat_used = T_hat[valid_oof_mask]
         n_used = len(Y_used)
+
+        # Only scored rows carry out-of-fold treatment variation. If the treatment is
+        # constant on all of them, its "residual" there is the error of the nuisance
+        # prediction alone: the slope then rests on how the two nuisance fits err together
+        # and not on any held-out variation, and its standard error is too small (#76).
+        # This refuses numerical constancy only (a spread within rounding of the level); a
+        # treatment that varies on a few scored rows is fitted, and its interval can be far
+        # too short (#81).
+        if is_numerically_constant(T_used):
+            raise ValueError(
+                f"Treatment has no variation on the scored rows: the treatment is constant "
+                f"({T_used[0]:.6g}) on the {n_used} rows that have an out-of-fold prediction. "
+                f"The other {n_samples - n_used} rows have none and are not scored, so "
+                "variation there does not identify the effect"
+            )
 
         # Compute cross-validated R² on rows with valid OOF predictions.
         outcome_r2_cv = _compute_r2(Y_used, Y_hat_used)

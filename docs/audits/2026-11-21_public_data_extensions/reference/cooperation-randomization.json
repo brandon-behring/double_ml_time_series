@@ -1,0 +1,54 @@
+{
+  "pair_coins": 6,
+  "treatment_probability": "5/11",
+  "alpha": "1/20",
+  "outcomes_hundredths": [
+    28,
+    31,
+    34,
+    37,
+    38,
+    41,
+    44,
+    47,
+    48,
+    51,
+    54,
+    57
+  ],
+  "two_sided": "absolute HT; inclusive ties",
+  "tests": [
+    {
+      "lag": 0,
+      "reference": "pair_round",
+      "size": "81031/1771561",
+      "size_decimal": 0.04573988702618764,
+      "distinct_absolute_statistics": 48,
+      "assignments": 64
+    },
+    {
+      "lag": 0,
+      "reference": "individual_round",
+      "size": "313921/1771561",
+      "size_decimal": 0.17720022059641186,
+      "distinct_absolute_statistics": 389,
+      "assignments": 4096
+    },
+    {
+      "lag": 1,
+      "reference": "pair_round",
+      "size": "625/14641",
+      "size_decimal": 0.04268834096031692,
+      "distinct_absolute_statistics": 55,
+      "assignments": 64
+    },
+    {
+      "lag": 1,
+      "reference": "individual_round",
+      "size": "28631/161051",
+      "size_decimal": 0.17777598400506672,
+      "distinct_absolute_statistics": 2569,
+      "assignments": 4096
+    }
+  ]
+}

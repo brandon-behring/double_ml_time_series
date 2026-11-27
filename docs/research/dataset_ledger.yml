@@ -1771,3 +1771,63 @@ entries:
   files: the heartsteps entry of 2026-11-21_evaluation_methods/reproduction/standalone-stdout.json.gz
   content: printed estimates computed here
   verdict: landed with attribution
+
+- bibkey: uci2013bikesharing
+  primary_url: https://doi.org/10.24432/C5W894
+  terms_url: https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset
+  terms_read: 2026-11-26
+  name: Bike Sharing dataset (Fanaee-T), UCI Machine Learning Repository
+  source: uci
+  status: verified
+  task_family: time_series
+  license: CC BY 4.0
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-21_public_data_extensions/reference/bike-*.json
+  content: estimates and coverage computed here on the hourly histories
+  verdict: landed with attribution
+
+- bibkey: hofmann2023iflex
+  primary_url: https://zenodo.org/records/8248802
+  terms_url: https://zenodo.org/records/8248802
+  terms_read: 2026-11-26
+  name: iFlex dynamic electricity-price experiment (Hofmann and Siebenbrunner)
+  source: zenodo
+  status: verified
+  task_family: time_series
+  license: CC BY 4.0
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-21_public_data_extensions/reference/iflex-results.txt
+  content: arm counts and estimates computed here
+  verdict: landed with attribution
+
+- bibkey: blanchet2022ridecounts
+  primary_url: https://github.com/wenqian-xing/conservative-inference-switchback-experiments
+  terms_url: https://github.com/wenqian-xing/conservative-inference-switchback-experiments
+  terms_read: 2026-11-26
+  name: Quarter-hour ride counts of January 2022, released by Blanchet, Glynn, Johari, Wu and Xing with their code on switchback experiments
+  source: github
+  status: verified
+  task_family: time_series
+  license: none stated; the README asks users of the repository to cite the authors
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-21_public_data_extensions/reference/ride-switchback.json
+  content: estimates and design summaries computed here on the count series, and the digest of the input; no count is stored
+  verdict: landed (no third-party rows); the source is cited in the folder's notes
+
+- bibkey: bojinov2021panelsupplement
+  primary_url: https://www.econometricsociety.org/publications/quantitative-economics/2021/11/01/Panel-experiments-and-dynamic-causal-effects-A-finite-population-perspective/supp/1598-7412-1-SP.zip
+  terms_url: none read for the supplement
+  terms_read: not read; the archive was not opened on 2026-11-26
+  name: Data-and-code supplement of Bojinov, Rambachan and Shephard, "Panel experiments and dynamic causal effects - a finite population perspective", Quantitative Economics (2021)
+  source: other
+  status: unverified
+  task_family: regression
+  license: not determined; the folder's own note records that the participant workbook asks for the original authors' permission for scientific use
+  access_method: direct download
+  auth_required: false
+  files: 2026-11-21_public_data_extensions/reference/inputs.sha256, cooperation-randomization.json, cooperation-synthetic.txt
+  content: the digest and name of the archive; the cooperation outputs are synthetic outcomes and assignments computed here. No participant value is stored
+  verdict: landed (no third-party values)
