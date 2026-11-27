@@ -14,14 +14,18 @@ are the compatibility contract).
   score clustered by unit, by unit and date (Cameron, Gelbach and Miller), or by date with a
   Newey-West correction, checked against statsmodels to 1e-12. Identifiers are compared as
   given: `group_codes` keeps the unit `1` and the unit `"1"` apart and does not round floats,
-  where converting first would have merged them. An unknown method, scores that are not a
-  finite vector, and a standard error that is not finite and positive (a zero date-HAC
-  standard error among them) are refused. `PanelDML` does not use the module yet; its
-  redesign will. With it land three audit scripts that need only these standard errors, each
-  reproducing its stored output: `retail_check.py` (the Chapter 4 retail tables, byte for
-  byte), `external/questions/minimum_wage.py` (to 3.2e-14) and the evaluation audit's
-  `design_probes.py` (byte for byte), with the two tests that import them. One test of the
-  minimum-wage case stays held: it expects a zero date-HAC standard error to be returned.
+  where converting first would have merged them; a categorical is coded in the order of its
+  categories. An unknown method, scores that are not a finite real vector (complex, text or
+  masked among them), identifiers that are not one per observation (a string, a set, a
+  mapping, a DataFrame or a masked array among them), and a standard error that is not
+  finite and positive (a zero date-HAC standard error among them) are refused. `PanelDML`
+  does not use the module yet; its redesign will. With it land three audit scripts that need
+  only these standard errors, each reproducing its stored output: `retail_check.py` (the
+  Chapter 4 retail tables, byte for byte), `external/questions/minimum_wage.py` (exactly with
+  one BLAS thread; within 4e-16 with several, where the regressions round differently) and
+  the evaluation audit's `design_probes.py` (byte for byte), with the two tests that import
+  them. One test of the minimum-wage case stays held: it expects a zero date-HAC standard
+  error to be returned.
 - `dml_ts.validation.effect_forecast` freezes a set of effect forecasts with their protocol
   under a digest, and scores them against experimental estimates that are supplied later.
 - The November audits under `docs/audits/`, with 33 test files: the time-series DML audit and
