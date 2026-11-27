@@ -597,7 +597,7 @@ class TestAlertsFollowTheStandardErrors:
         assert "randomized" in result.message
         assert result.value == pytest.approx(0.01)
 
-    @pytest.mark.parametrize("r2_propensity", [0.29, 0.49])
+    @pytest.mark.parametrize("r2_propensity", [0.0, 0.29])
     def test_the_treatment_r2_alone_is_never_critical(self, r2_propensity):
         result = CausalMonitor().check_nuisance_degradation(
             r2_propensity=r2_propensity, r2_outcome=0.90
@@ -743,3 +743,46 @@ class TestAlertsFollowTheStandardErrors:
 
         assert result.level == level
         assert "current_se and baseline_se not given" in result.message
+
+    @pytest.mark.parametrize(
+        ("current_se", "baseline_se"), [(-0.5, None), (None, float("nan")), (float("inf"), None)]
+    )
+    def test_a_standard_error_is_checked_when_the_other_is_missing(self, current_se, baseline_se):
+        with pytest.raises(ValueError, match="finite, non-negative"):
+            CausalMonitor().check_effect_stability(
+                current_effect=0.08,
+                baseline_effect=0.05,
+                current_se=current_se,
+                baseline_se=baseline_se,
+            )
+
+    @pytest.mark.parametrize(
+        ("current", "baseline", "name"),
+        [
+            (float("nan"), 1.0, "current_effect"),
+            (1.0, float("nan"), "baseline_effect"),
+            (float("inf"), 1.0, "current_effect"),
+            (float("inf"), float("inf"), "current_effect"),
+        ],
+    )
+    @pytest.mark.parametrize("se", [None, 0.1])
+    def test_an_effect_that_is_not_finite_is_refused(self, current, baseline, name, se):
+        # A NaN failed every comparison and was reported as a stable effect.
+        with pytest.raises(ValueError, match=f"{name} must be a finite number"):
+            CausalMonitor().check_effect_stability(
+                current_effect=current, baseline_effect=baseline, current_se=se, baseline_se=se
+            )
+
+    def test_a_low_treatment_r2_no_longer_triggers_a_default_retrain(self):
+        # Stated consequence: the default scheduler retrains on critical results only.
+        from dml_ts.production.retrain_pipeline import RetrainScheduler, RetrainSchedulerConfig
+
+        scheduler = RetrainScheduler(config=RetrainSchedulerConfig(scheduled_interval_days=0))
+        monitor = CausalMonitor()
+        randomized = monitor.check_nuisance_degradation(r2_propensity=0.05, r2_outcome=0.85)
+        poor_outcome = monitor.check_nuisance_degradation(r2_propensity=0.85, r2_outcome=0.05)
+
+        assert scheduler.evaluate_monitoring_results([randomized], n_samples=200) is None
+        trigger = scheduler.evaluate_monitoring_results([poor_outcome], n_samples=200)
+        assert trigger is not None
+        assert trigger.trigger_type.value == "nuisance_degradation"

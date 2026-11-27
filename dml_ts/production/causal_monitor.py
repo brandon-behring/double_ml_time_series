@@ -427,8 +427,9 @@ class CausalMonitor:
         ``z = (current - baseline) / sqrt(current_se**2 + baseline_se**2)``, against
         ``effect_z_warning`` and ``effect_z_critical``; the relative change is reported
         beside it. Without both, the level follows the relative change, and the message
-        says which standard error is missing. ``value`` and ``threshold`` are those of
-        the rule that set the level (``details["rule"]``).
+        says which standard error is missing. ``value`` is the metric of the rule that set
+        the level (``details["rule"]``): |z| or the relative change. ``threshold`` is that
+        rule's warning threshold, also on a critical result, as in the other checks.
 
         Args:
             current_effect: Current period ATE estimate
@@ -440,7 +441,8 @@ class CausalMonitor:
             MonitoringResult with effect change assessment
 
         Raises:
-            ValueError: If a standard error is negative or not finite, or both are zero.
+            ValueError: If an effect is NaN or infinite; if a standard error that is given
+                is negative or not finite; or if both are zero.
 
         Examples:
             >>> monitor = CausalMonitor()
@@ -449,6 +451,14 @@ class CausalMonitor:
             >>> monitor.check_effect_stability(8.5, 10.0, 0.01, 0.01).level.value
             'critical'
         """
+        for name, effect in (
+            ("current_effect", current_effect),
+            ("baseline_effect", baseline_effect),
+        ):
+            # A NaN fails every comparison below and would be reported as stable.
+            if not np.isfinite(effect):
+                raise ValueError(f"{name} must be a finite number, got {effect!r}")
+
         # Compute relative change (handle zero baseline)
         if abs(baseline_effect) < 1e-10:
             if abs(current_effect) < 1e-10:
@@ -466,12 +476,13 @@ class CausalMonitor:
         }
 
         change = f"({baseline_effect:.3f} -> {current_effect:.3f})"
+        for name, se in (("current_se", current_se), ("baseline_se", baseline_se)):
+            # Checked whenever given, also when the other is missing.
+            if se is not None and (not np.isfinite(se) or se < 0):
+                raise ValueError(f"{name} must be a finite, non-negative number, got {se!r}")
         if current_se is not None and baseline_se is not None:
             # The change in standard errors decides the level: a large relative
             # change can be noise, and a small one can be many standard errors.
-            for name, se in (("current_se", current_se), ("baseline_se", baseline_se)):
-                if not np.isfinite(se) or se < 0:
-                    raise ValueError(f"{name} must be a finite, non-negative number, got {se!r}")
             combined_se = float(np.sqrt(current_se**2 + baseline_se**2))
             if combined_se == 0.0:
                 raise ValueError(

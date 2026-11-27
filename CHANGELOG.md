@@ -110,10 +110,14 @@ are the compatibility contract).
   An effect moving from 0.05 to 0.08 with standard errors of 0.20 was critical (a 60% change of
   0.11 standard errors) and is ok; one moving from 10.0 to 8.5 with standard errors of 0.01 was
   ok (15%) and is critical (−106 standard errors). Without both standard errors the relative
-  rule applies as before, and the message names the one that is missing. A negative or
-  non-finite standard error, or two of zero, raises `ValueError`. A low treatment-model R² is a
-  warning and never critical: a randomized treatment has an R² near zero. The outcome model's
-  thresholds are unchanged. Chapter 10's listings of the two checks still show the old rules.
+  rule applies as before, and the message names the one that is missing. A standard error that
+  is given and is negative or not finite, or two of zero, raises `ValueError`, and so does a NaN
+  or infinite effect, which was reported as stable. A low treatment-model R² is a warning and
+  never critical: a randomized treatment has an R² near zero. The outcome model's thresholds are
+  unchanged. Consequence for `RetrainScheduler`, which by default retrains on critical results
+  only: a low treatment R² beside a good outcome model no longer triggers a retrain (effect
+  stability is not among its default triggers). Chapter 10's listings of the two checks still
+  show the old rules.
 - The DML bias validator and six baselines now test mean error across independent
   Monte Carlo draws. Bootstrap resamples supply the bias interval. Validation
   intervals and the DML coverage null use the configured confidence level.
