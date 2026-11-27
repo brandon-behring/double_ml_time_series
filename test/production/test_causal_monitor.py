@@ -243,28 +243,33 @@ class TestNuisanceDegradation:
         assert result.level == AlertLevel.WARNING
 
     def test_severe_degradation_returns_critical(self):
-        """Test that very low R² returns CRITICAL."""
+        """An outcome R² below the critical threshold returns CRITICAL."""
         monitor = CausalMonitor()
 
         result = monitor.check_nuisance_degradation(
-            r2_propensity=0.25,  # Below critical threshold
-            r2_outcome=0.20,
+            r2_propensity=0.25,  # alone only a warning
+            r2_outcome=0.20,  # below the critical threshold
         )
 
         assert result.level == AlertLevel.CRITICAL
+        assert result.message.startswith("CRITICAL: Outcome model fit very poor")
         assert result.value < 0.30
 
-    def test_uses_minimum_r2(self):
-        """Test that check uses minimum of propensity and outcome R²."""
-        monitor = CausalMonitor()
+    @pytest.mark.parametrize(("r2_propensity", "r2_outcome"), [(0.85, 0.25), (0.05, 0.25)])
+    def test_value_is_the_smaller_r2_and_the_outcome_sets_the_level(
+        self, r2_propensity, r2_outcome
+    ):
+        """``value`` reports the smaller R²; the level is set per model.
 
-        # Propensity is good, outcome is bad
-        result = monitor.check_nuisance_degradation(
-            r2_propensity=0.85,
-            r2_outcome=0.25,  # Bad
+        In the second case the treatment R² is the smaller one, and the level is still
+        critical because of the outcome R²: a treatment R² alone is never critical.
+        """
+        result = CausalMonitor().check_nuisance_degradation(
+            r2_propensity=r2_propensity, r2_outcome=r2_outcome
         )
 
-        assert result.value == 0.25  # Uses minimum
+        assert result.value == min(r2_propensity, r2_outcome)
+        assert result.details["r2_outcome"] == r2_outcome
         assert result.level == AlertLevel.CRITICAL
 
     def test_relative_degradation_detection(self):
