@@ -1,7 +1,7 @@
 """Standard errors of a scalar panel score: unit clusters, two-way clusters, date HAC.
 
-Private module. ``PanelDML`` does not use it yet; its redesign will (see
-``docs/plans/active/2026-11-27_paneldml_design_gate.md``, §4.7).
+Private module. ``PanelDML`` does not use it yet; its redesign will (Part II of
+``docs/plans/active/2026-11-24_backlog_landing.md``).
 """
 
 from typing import Literal
@@ -22,11 +22,14 @@ def group_codes(labels: ArrayLike, n: int, name: str) -> NDArray[np.int64]:
     The identifiers are not converted first: the unit ``1`` and the unit ``"1"`` are two
     units, and the units 1.00, 1.01, ..., 1.29 are thirty. Identifiers that Python treats as
     equal (``1``, ``1.0`` and ``True``) are one unit. Codes follow the identifiers' sorted
-    order, numbers before strings when both occur, so dates are coded in time order; a
-    pandas categorical is sorted in the order of its categories.
+    order, numbers before strings when both occur: dates given as dates or numbers are coded
+    in time order, dates given as text in text order, and a pandas categorical in the order
+    of its categories.
 
     Args:
-        labels: One identifier per observation (list, array, Series or Index).
+        labels: One identifier per observation: a list, tuple or range, a numpy array, a
+            pandas Series, Index or Categorical, or an object that numpy converts to an
+            array. A string, bytes, a set or a mapping is refused, and so is a masked array.
         n: Number of observations.
         name: Argument name used in error messages.
 
@@ -43,18 +46,21 @@ def group_codes(labels: ArrayLike, n: int, name: str) -> NDArray[np.int64]:
         >>> len(set(group_codes([1 + k / 100 for k in range(30)], 30, "unit")))
         30
     """
-    if isinstance(labels, (pd.Series, pd.Index)):
+    if isinstance(labels, np.ma.MaskedArray):
+        # np.asarray would drop the mask. A string, bytes, a set or a mapping becomes a
+        # 0-d array there, and the shape check below refuses it.
+        raise ValueError(f"{name} must contain one identifier per observation")
+    values: np.ndarray | pd.Categorical
+    if isinstance(getattr(labels, "dtype", None), pd.CategoricalDtype):
         # A categorical keeps its own order of categories, as pandas sorts it.
-        is_categorical = isinstance(labels.dtype, pd.CategoricalDtype)
-        values = labels.array if is_categorical else labels.to_numpy()
-    elif isinstance(labels, np.ndarray):
-        values = labels
+        values = pd.Categorical(labels)
+    elif isinstance(labels, (pd.Series, pd.Index)):
+        values = labels.to_numpy()
+    elif isinstance(labels, (list, tuple, range)):
+        # np.asarray would turn [1, "1"] into two equal strings.
+        values = pd.Series(list(labels), dtype=object).to_numpy()
     else:
-        try:
-            # np.asarray would turn [1, "1"] into two equal strings.
-            values = pd.Series(list(labels), dtype=object).to_numpy()  # type: ignore[arg-type]
-        except TypeError:
-            raise ValueError(f"{name} must contain one identifier per observation") from None
+        values = np.asarray(labels)
     if values.shape != (n,):
         raise ValueError(f"{name} must contain one identifier per observation")
     try:
@@ -86,8 +92,10 @@ def panel_standard_error(
     """Standard error of the mean of a scalar score, and the HAC bandwidth.
 
     ``scores`` are the influence-function values ``psi_i`` of an estimate ``theta``, so that
-    ``theta - theta_0`` is approximately ``mean(psi)``. The variance of that mean is estimated
-    as follows.
+    ``theta - theta_0`` is approximately ``mean(psi)``; at the estimate they sum to zero. The
+    variance of that mean is estimated as follows. The cluster methods use the scores as
+    given, and the date HAC centres the date sums, as Newey-West does; for scores that do not
+    sum to zero the two differ.
 
     - ``unit_cluster``: ``g / (g - 1) * sum_c (sum_{i in c} psi_i)**2 / n**2`` over the ``g``
       units (CR1 with the group-count factor only).
@@ -108,9 +116,11 @@ def panel_standard_error(
         ``(se, bandwidth)``.
 
     Raises:
-        ValueError: For an unknown method, scores that are not a finite vector, identifiers
+        ValueError: For an unknown method, scores that are not a finite real vector, identifiers
             that ``group_codes`` refuses, fewer than two clusters or dates, or a variance that
-            is not finite and positive.
+            is not finite and positive. Only an exact zero or a negative value is refused: a
+            variance that is zero in exact arithmetic can come out as a tiny positive number
+            after rounding (about 1e-17 for scores of order one), and it is returned.
 
     Examples:
         >>> se, bandwidth = panel_standard_error(
@@ -121,9 +131,12 @@ def panel_standard_error(
     """
     if inference not in _INFERENCE:
         raise ValueError(f"Unknown panel inference method {inference!r}")
-    psi = np.asarray(scores, dtype=np.float64)
+    raw = np.asarray(scores)
+    if isinstance(scores, np.ma.MaskedArray) or raw.dtype.kind not in "iuf":
+        raise ValueError("scores must be a finite vector of real numbers")
+    psi = raw.astype(np.float64)
     if psi.ndim != 1 or not np.all(np.isfinite(psi)):
-        raise ValueError("scores must be a finite vector, one value per observation")
+        raise ValueError("scores must be a finite vector of real numbers")
     n = len(psi)
     if inference == "date_hac":
         date_codes = group_codes(date, n, "date")

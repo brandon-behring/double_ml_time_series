@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-11-26
+Last updated: 2026-11-27
 
 This file is the canonical project-status source. Historical reports and roadmaps
 were moved to `docs/archive/superseded_2026-05-02/` during the 2026-05-02 truth-first
@@ -25,7 +25,8 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
 | Validation inference (#68, #78) | The bias test of the seven validators tests mean error across independent simulations; the six baselines also give a coverage verdict; the 401(k) comparison uses the published fivefold benchmarks |
 | Applications (#80) | The insurance pipeline scores held-out rows in the treatment's units; the insurance generator returns its rows in one product-major order; the sensitivity module's docstrings call its curve a log-gamma bias curve (its printed summary is still headed "Rosenbaum Bounds"); the orange-juice loader checks a pinned digest; the registry and the result store write atomically |
 | Continuous integration (#73) | Installs from `uv.lock`; a weekly job with unpinned dependencies reports drift and blocks nothing |
-| Audits and Chapters 2 and 5 (this change) | The four November audit folders with 31 test files, the effect-forecast module with its test, and both editions of Chapters 2 and 5 |
+| Panel standard errors (this change) | `panel_standard_error` and `group_codes` in the private module `dml_ts/dml/_panel.py`, which `PanelDML` does not use yet; three audit scripts that need only them, with two test files |
+| Audits and Chapters 2 and 5 (#83) | The four November audit folders with 31 test files, the effect-forecast module with its test, and both editions of Chapters 2 and 5 |
 | Public-data experiments | `docs/audits/2026-11-21_public_data_extensions/`: four experiments on public data (bicycle demand, household electricity offers, ride counts, a repeated cooperation game) with their scripts and reference outputs. Its comparison of `TemporalPLRDML` on matched bike hours reproduces its stored output byte for byte on `main`'s code |
 
 ### Not on `main`, and what follows from it
@@ -49,7 +50,7 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
   estimator or report numbers from the rejected design. The audit reports refer to them, and
   also to the fold transformations of `dml_ts/dml/_panel.py` (of that module only the
   standard errors are landed), to `scripts/validate_falsification.py`
-  and to three of the held tests. The reports were written against the November working
+  and to two of the held tests. The reports were written against the November working
   copy: where they say that Chapters 6 and 8 report corrected panel designs, that is not true
   of `main`. Two landed receipts of the 2026-11-21 reproduction,
   `standalone-stdout.json.gz` and `execution-code-sha256.json.gz`, contain the printed output

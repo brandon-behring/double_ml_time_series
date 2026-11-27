@@ -24,7 +24,7 @@ are the compatibility contract).
   minimum-wage case stays held: it expects a zero date-HAC standard error to be returned.
 - `dml_ts.validation.effect_forecast` freezes a set of effect forecasts with their protocol
   under a digest, and scores them against experimental estimates that are supplied later.
-- The November audits under `docs/audits/`, with 31 test files: the time-series DML audit and
+- The November audits under `docs/audits/`, with 33 test files: the time-series DML audit and
   its replays of published experiments (2026-11-19), the evaluation-methods audit (2026-11-21),
   the ACIC coverage study and the mathematical review (2026-11-22). 24 files of these folders
   are not in the repository: 21 depend on the pending redesign of `PanelDML` (listed in
@@ -34,8 +34,7 @@ are the compatibility contract).
   redistribution are in the repository by the owner's decision of 2026-11-26: three ACIC
   result files with the organizers' true effect for each contest file, and six announced
   cricket fixtures. The reports were written against the November working copy and
-  refer to the files that are not here, and to the fold transformations of a module, a script and three tests that are
-  not landed either. 31 test cases replay external archives and skip unless `DML_TS_EXTERNAL_REPLAY=1` is
+  refer to the files that are not here, and to the fold transformations of a module, a script and two tests that are not landed either. 32 test cases replay external archives and skip unless `DML_TS_EXTERNAL_REPLAY=1` is
   set. Two tests that replay the archived cricket forecast are held: its fold assignment
   depends on the CPU through an unstable sort, so the forecast reproduces only on some
   machines (#86). (#65)

@@ -113,6 +113,15 @@ class TestIdentifiersComparedAsGiven:
     def test_equal_identifiers_are_one_unit(self):
         assert group_codes([1, 1.0, 2], 3, "unit").tolist() == [0, 0, 1]
 
+    def test_tuples_ranges_and_arrays_that_numpy_converts(self):
+        class Wrapped:
+            def __array__(self, dtype=None, copy=None):
+                return np.array([3, 1, 3])
+
+        assert group_codes((3, 1, 3), 3, "unit").tolist() == [1, 0, 1]
+        assert group_codes(range(3), 3, "unit").tolist() == [0, 1, 2]
+        assert group_codes(Wrapped(), 3, "unit").tolist() == [1, 0, 1]
+
     def test_codes_follow_the_sorted_identifiers_and_ignore_a_series_index(self):
         dates = pd.Series(
             pd.to_datetime(["2026-01-03", "2026-01-01", "2026-01-02"]), index=[5, 4, 3]
@@ -126,8 +135,9 @@ class TestIdentifiersComparedAsGiven:
             ["Mar", "Jan", "Feb", "Mar"], categories=["Jan", "Feb", "Mar"], ordered=True
         )
 
-        assert group_codes(pd.Series(months), 4, "date").tolist() == [2, 0, 1, 2]
-        assert group_codes(pd.CategoricalIndex(months), 4, "date").tolist() == [2, 0, 1, 2]
+        for labels in (months, pd.Series(months), pd.CategoricalIndex(months)):
+            assert group_codes(labels, 4, "date").tolist() == [2, 0, 1, 2]
+        assert group_codes(pd.Series(months).array, 4, "date").tolist() == [2, 0, 1, 2]
 
     def test_date_hac_of_categorical_dates_follows_the_categories(self):
         _, _, unit, date, psi = _regression(n_dates=40)
@@ -157,6 +167,14 @@ class TestRefusals:
             (np.zeros((3, 2)), "one identifier per observation"),
             (5, "one identifier per observation"),
             ([1, [2], 3], "cannot be compared and sorted"),
+            ("abc", "one identifier per observation"),
+            (b"abc", "one identifier per observation"),
+            ({3, 1, 2}, "one identifier per observation"),
+            ({"a": 1, "b": 2, "c": 3}, "one identifier per observation"),
+            (np.ma.array([1, 2, 3], mask=[False, True, False]), "one identifier per observation"),
+            ((k for k in range(3)), "one identifier per observation"),
+            (pd.DataFrame({"a": [1, 2, 3]}), "one identifier per observation"),
+            (pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6], "c": [7, 8, 9]}), "one identifier"),
         ],
     )
     def test_identifiers(self, labels, message):
@@ -167,7 +185,17 @@ class TestRefusals:
         with pytest.raises(ValueError, match="Unknown panel inference method 'hac'"):
             panel_standard_error([1.0, 2.0], [0, 1], [0, 1], "hac")  # type: ignore[arg-type]
 
-    @pytest.mark.parametrize("scores", [[1.0, np.nan, 2.0], [1.0, np.inf, 2.0], np.ones((3, 1))])
+    @pytest.mark.parametrize(
+        "scores",
+        [
+            [1.0, np.nan, 2.0],
+            [1.0, np.inf, 2.0],
+            np.ones((3, 1)),
+            np.array([1 + 5j, -1, 2]),
+            np.array(["1", "2", "3"]),
+            np.ma.array([1.0, 2.0, 3.0], mask=[False, True, False]),
+        ],
+    )
     def test_scores_that_are_not_a_finite_vector(self, scores):
         with pytest.raises(ValueError, match="scores must be a finite vector"):
             panel_standard_error(scores, [0, 1, 2], [0, 1, 2], "unit_cluster")
