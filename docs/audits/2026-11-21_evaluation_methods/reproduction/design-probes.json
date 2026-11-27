@@ -1,0 +1,77 @@
+{
+  "attrition": {
+    "true_effect": 0,
+    "eligible": 400,
+    "retained_by_arm": [
+      0.5,
+      0.5
+    ],
+    "complete_case_effect": 2.0
+  },
+  "clock": {
+    "regular": {
+      "se": 0.1839979472120928,
+      "bandwidth_in_observed_dates": 4
+    },
+    "gap_of_300_days": {
+      "se": 0.1839979472120928,
+      "bandwidth_in_observed_dates": 4
+    },
+    "training_labels_unavailable_at_origin": {
+      "horizon": 4,
+      "without_gap": 4,
+      "with_horizon_gap": 0
+    }
+  },
+  "prediction": {
+    "y": [
+      8.0,
+      10.0,
+      12.0
+    ],
+    "predictions": [
+      6.0,
+      8.0,
+      10.0
+    ],
+    "rmse": 2.0,
+    "pooled_test_r2": -0.5,
+    "mse_skill_over_frozen_zero": 0.961038961038961
+  },
+  "archived_method_ranking": {
+    "old_baseline": "NaiveOLS",
+    "old_bias_reduction_percent": 82.14778458831222,
+    "corrected_baseline": "OLSWithControls",
+    "corrected_bias_reduction_percent": -359.1022196290704,
+    "corrected_aggregate_ranking": {
+      "lowest_mean_bias": {
+        "Method": "OLSWithControls",
+        "Abs_Bias": 0.006657659609802216,
+        "MSE": 0.00851329491816245,
+        "Coverage": 0.7666666666666666,
+        "Coverage_Error": 0.18333333333333326
+      },
+      "lowest_mse": {
+        "Method": "OLSWithControls",
+        "Abs_Bias": 0.006657659609802216,
+        "MSE": 0.00851329491816245,
+        "Coverage": 0.7666666666666666,
+        "Coverage_Error": 0.18333333333333326
+      },
+      "highest_coverage": {
+        "Method": "DML",
+        "Abs_Bias": 0.03056546304395037,
+        "MSE": 0.11934015991130614,
+        "Coverage": 1.0,
+        "Coverage_Error": 0.050000000000000044
+      },
+      "closest_to_nominal_coverage": {
+        "Method": "DML",
+        "Abs_Bias": 0.03056546304395037,
+        "MSE": 0.11934015991130614,
+        "Coverage": 1.0,
+        "Coverage_Error": 0.050000000000000044
+      }
+    }
+  }
+}

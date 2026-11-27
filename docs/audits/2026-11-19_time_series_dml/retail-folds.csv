@@ -1,0 +1,6 @@
+fold,train_rows,test_rows,train_weeks,test_weeks,last_train_week,first_test_week,last_test_week
+1,4839,4824,21,20,60,61,80
+2,9663,4740,41,20,80,81,100
+3,14403,4863,61,20,100,101,120
+4,19266,4926,81,20,120,121,140
+5,24192,4755,101,20,140,141,160

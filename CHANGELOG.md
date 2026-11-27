@@ -10,19 +10,31 @@ are the compatibility contract).
 
 ### Added
 
+- `dml_ts/dml/_panel.py` (private): `panel_standard_error`, the standard error of a scalar panel
+  score clustered by unit, by unit and date (Cameron, Gelbach and Miller), or by date with a
+  Newey-West correction, checked against statsmodels to 1e-12. Identifiers are compared as
+  given: `group_codes` keeps the unit `1` and the unit `"1"` apart and does not round floats,
+  where converting first would have merged them. An unknown method, scores that are not a
+  finite vector, and a standard error that is not finite and positive (a zero date-HAC
+  standard error among them) are refused. `PanelDML` does not use the module yet; its
+  redesign will. With it land three audit scripts that need only these standard errors, each
+  reproducing its stored output: `retail_check.py` (the Chapter 4 retail tables, byte for
+  byte), `external/questions/minimum_wage.py` (to 3.2e-14) and the evaluation audit's
+  `design_probes.py` (byte for byte), with the two tests that import them. One test of the
+  minimum-wage case stays held: it expects a zero date-HAC standard error to be returned.
 - `dml_ts.validation.effect_forecast` freezes a set of effect forecasts with their protocol
   under a digest, and scores them against experimental estimates that are supplied later.
 - The November audits under `docs/audits/`, with 31 test files: the time-series DML audit and
   its replays of published experiments (2026-11-19), the evaluation-methods audit (2026-11-21),
-  the ACIC coverage study and the mathematical review (2026-11-22). 31 files of these folders
-  are not in the repository: 28 depend on the pending redesign of `PanelDML` (listed in
+  the ACIC coverage study and the mathematical review (2026-11-22). 24 files of these folders
+  are not in the repository: 21 depend on the pending redesign of `PanelDML` (listed in
   `docs/CURRENT_STATUS.md`), and 3 reproduce a provider's rows under terms that do not grant
   redistribution (listed in `docs/audits/DATA_SOURCES.md`, with the licences and attributions
   of the data files that are here). Four files whose sources state no licence that grants
   redistribution are in the repository by the owner's decision of 2026-11-26: three ACIC
   result files with the organizers' true effect for each contest file, and six announced
   cricket fixtures. The reports were written against the November working copy and
-  refer to the files that are not here, and to a module, a script and three tests that are
+  refer to the files that are not here, and to the fold transformations of a module, a script and three tests that are
   not landed either. 31 test cases replay external archives and skip unless `DML_TS_EXTERNAL_REPLAY=1` is
   set. Two tests that replay the archived cricket forecast are held: its fold assignment
   depends on the CPU through an unstable sort, so the forecast reproduces only on some
