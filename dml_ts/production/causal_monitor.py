@@ -428,7 +428,7 @@ class CausalMonitor:
         ``effect_z_warning`` and ``effect_z_critical``; the relative change is reported
         beside it. Without both, the level follows the relative change, and the message
         says which standard error is missing. ``value`` is the metric of the rule that set
-        the level (``details["rule"]``): |z| or the relative change. ``threshold`` is that
+        the level (``details["rule"]``): ``abs(z)`` or the relative change. ``threshold`` is that
         rule's warning threshold, also on a critical result, as in the other checks.
 
         Args:
