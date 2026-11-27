@@ -584,3 +584,162 @@ class TestGetSummary:
 
         assert summary["n_checks"] >= 1
         assert "checks" in summary
+
+
+class TestAlertsFollowTheStandardErrors:
+    """The three cases of #64, and the rules that replace the ones they broke."""
+
+    def test_a_randomized_treatment_is_a_warning_not_critical(self):
+        # Under randomization the treatment model's R² is near zero by design.
+        result = CausalMonitor().check_nuisance_degradation(r2_propensity=0.01, r2_outcome=0.80)
+
+        assert result.level == AlertLevel.WARNING
+        assert "randomized" in result.message
+        assert result.value == pytest.approx(0.01)
+
+    @pytest.mark.parametrize("r2_propensity", [0.29, 0.49])
+    def test_the_treatment_r2_alone_is_never_critical(self, r2_propensity):
+        result = CausalMonitor().check_nuisance_degradation(
+            r2_propensity=r2_propensity, r2_outcome=0.90
+        )
+
+        assert result.level == AlertLevel.WARNING
+
+    def test_a_poor_outcome_model_is_still_critical(self):
+        result = CausalMonitor().check_nuisance_degradation(r2_propensity=0.90, r2_outcome=0.29)
+
+        assert result.level == AlertLevel.CRITICAL
+        assert "Outcome model" in result.message
+
+    def test_both_models_are_named_when_both_are_low(self):
+        result = CausalMonitor().check_nuisance_degradation(r2_propensity=0.10, r2_outcome=0.40)
+
+        assert result.level == AlertLevel.WARNING
+        assert "Outcome model" in result.message
+        assert "Treatment model" in result.message
+
+    def test_a_change_at_noise_level_is_ok(self):
+        # 0.05 -> 0.08 is a 60% relative change, but 0.11 standard errors (p = 0.9155).
+        result = CausalMonitor().check_effect_stability(
+            current_effect=0.08, baseline_effect=0.05, current_se=0.20, baseline_se=0.20
+        )
+
+        assert result.level == AlertLevel.OK
+        assert result.details["rule"] == "standard_errors"
+        assert result.details["z_score"] == pytest.approx(0.03 / np.sqrt(0.08))
+        assert result.details["p_value"] == pytest.approx(0.9155, abs=1e-4)
+        assert result.details["relative_change"] == pytest.approx(0.6)
+        assert result.value == pytest.approx(0.03 / np.sqrt(0.08))
+
+    def test_a_move_of_106_standard_errors_is_critical(self):
+        # 10.0 -> 8.5 is a 15% relative change, which the relative rule marks ok.
+        result = CausalMonitor().check_effect_stability(
+            current_effect=8.5, baseline_effect=10.0, current_se=0.01, baseline_se=0.01
+        )
+
+        assert result.level == AlertLevel.CRITICAL
+        assert result.details["z_score"] == pytest.approx(-1.5 / np.sqrt(2e-4))
+        assert round(result.details["z_score"]) == -106
+        assert result.details["relative_change"] == pytest.approx(0.15)
+        assert "-106.1 standard errors" in result.message
+
+    @pytest.mark.parametrize(
+        ("change", "level"),
+        [
+            (1.9375, AlertLevel.OK),
+            (1.96, AlertLevel.WARNING),
+            (2.9375, AlertLevel.WARNING),
+            (3.0, AlertLevel.CRITICAL),
+            (-3.0, AlertLevel.CRITICAL),
+        ],
+    )
+    def test_the_level_follows_the_thresholds_in_standard_errors(self, change, level):
+        # SEs 1 and 0 combine to exactly 1, so z equals the change, and a change equal
+        # to a threshold meets it.
+        result = CausalMonitor().check_effect_stability(
+            current_effect=change, baseline_effect=0.0, current_se=1.0, baseline_se=0.0
+        )
+
+        assert result.details["z_score"] == change
+        assert result.level == level
+        assert result.threshold == CausalMonitorConfig().effect_z_warning
+
+    @pytest.mark.parametrize(
+        ("critical", "level"), [(1.5, AlertLevel.CRITICAL), (2.5, AlertLevel.WARNING)]
+    )
+    def test_the_thresholds_in_standard_errors_are_configurable(self, critical, level):
+        config = CausalMonitorConfig(effect_z_warning=1.0, effect_z_critical=critical)
+        result = CausalMonitor(config).check_effect_stability(
+            current_effect=2.0, baseline_effect=0.0, current_se=1.0, baseline_se=0.0
+        )
+
+        assert result.level == level
+        assert result.threshold == 1.0
+
+    @pytest.mark.parametrize(
+        ("current_se", "baseline_se", "missing"),
+        [
+            (None, None, "current_se and baseline_se"),
+            (0.01, None, "baseline_se"),
+            (None, 0.01, "current_se"),
+        ],
+    )
+    def test_without_both_standard_errors_the_relative_rule_applies_and_says_so(
+        self, current_se, baseline_se, missing
+    ):
+        # 10.0 -> 8.5 with SE 0.01 is critical; without both SEs it is judged by 15%.
+        result = CausalMonitor().check_effect_stability(
+            current_effect=8.5,
+            baseline_effect=10.0,
+            current_se=current_se,
+            baseline_se=baseline_se,
+        )
+
+        assert result.level == AlertLevel.OK
+        assert result.details["rule"] == "relative_change"
+        assert "z_score" not in result.details
+        assert f"{missing} not given" in result.message
+        assert result.value == pytest.approx(0.15)
+        assert result.threshold == CausalMonitorConfig().effect_change_warning
+
+    @pytest.mark.parametrize(
+        ("current_se", "baseline_se"),
+        [(-0.1, 0.1), (0.1, float("nan")), (float("inf"), 0.1), (0.0, 0.0)],
+    )
+    def test_standard_errors_that_cannot_measure_a_change_are_refused(
+        self, current_se, baseline_se
+    ):
+        with pytest.raises(ValueError, match="se"):
+            CausalMonitor().check_effect_stability(
+                current_effect=1.0,
+                baseline_effect=0.9,
+                current_se=current_se,
+                baseline_se=baseline_se,
+            )
+
+    def test_one_standard_error_of_zero_is_measured_by_the_other(self):
+        result = CausalMonitor().check_effect_stability(
+            current_effect=1.0, baseline_effect=0.9, current_se=0.0, baseline_se=0.05
+        )
+
+        assert result.details["z_score"] == pytest.approx(2.0)
+        assert result.level == AlertLevel.WARNING
+
+    def test_run_all_checks_hands_on_the_standard_errors(self):
+        results = CausalMonitor().run_all_checks(
+            current_effect=8.5, baseline_effect=10.0, current_se=0.01, baseline_se=0.01
+        )
+
+        (stability,) = [r for r in results if r.check_name == "effect_stability"]
+        assert stability.level == AlertLevel.CRITICAL
+
+    @pytest.mark.parametrize(
+        ("current", "level"), [(0.25, AlertLevel.CRITICAL), (0.13, AlertLevel.WARNING)]
+    )
+    def test_a_relative_alert_without_standard_errors_names_them(self, current, level):
+        result = CausalMonitor().check_effect_stability(
+            current_effect=current, baseline_effect=0.10
+        )
+
+        assert result.level == level
+        assert "current_se and baseline_se not given" in result.message

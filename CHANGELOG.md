@@ -103,6 +103,17 @@ are the compatibility contract).
 
 ### Fixed
 
+- `CausalMonitor`'s alerts use the standard errors they are given (#64). With both standard
+  errors, the effect-stability level follows the change in standard errors,
+  `z = (current - baseline) / sqrt(current_se**2 + baseline_se**2)`: a warning from 1.96, critical
+  from 3.0 (`effect_z_warning`, `effect_z_critical`), with the relative change reported beside it.
+  An effect moving from 0.05 to 0.08 with standard errors of 0.20 was critical (a 60% change of
+  0.11 standard errors) and is ok; one moving from 10.0 to 8.5 with standard errors of 0.01 was
+  ok (15%) and is critical (−106 standard errors). Without both standard errors the relative
+  rule applies as before, and the message names the one that is missing. A negative or
+  non-finite standard error, or two of zero, raises `ValueError`. A low treatment-model R² is a
+  warning and never critical: a randomized treatment has an R² near zero. The outcome model's
+  thresholds are unchanged. Chapter 10's listings of the two checks still show the old rules.
 - The DML bias validator and six baselines now test mean error across independent
   Monte Carlo draws. Bootstrap resamples supply the bias interval. Validation
   intervals and the DML coverage null use the configured confidence level.
