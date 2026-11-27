@@ -22,7 +22,8 @@ def group_codes(labels: ArrayLike, n: int, name: str) -> NDArray[np.int64]:
     The identifiers are not converted first: the unit ``1`` and the unit ``"1"`` are two
     units, and the units 1.00, 1.01, ..., 1.29 are thirty. Identifiers that Python treats as
     equal (``1``, ``1.0`` and ``True``) are one unit. Codes follow the identifiers' sorted
-    order, numbers before strings when both occur, so dates are coded in time order.
+    order, numbers before strings when both occur, so dates are coded in time order; a
+    pandas categorical is sorted in the order of its categories.
 
     Args:
         labels: One identifier per observation (list, array, Series or Index).
@@ -43,7 +44,9 @@ def group_codes(labels: ArrayLike, n: int, name: str) -> NDArray[np.int64]:
         30
     """
     if isinstance(labels, (pd.Series, pd.Index)):
-        values = labels.to_numpy()
+        # A categorical keeps its own order of categories, as pandas sorts it.
+        is_categorical = isinstance(labels.dtype, pd.CategoricalDtype)
+        values = labels.array if is_categorical else labels.to_numpy()
     elif isinstance(labels, np.ndarray):
         values = labels
     else:

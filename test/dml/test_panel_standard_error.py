@@ -121,6 +121,23 @@ class TestIdentifiersComparedAsGiven:
         assert group_codes(dates, 3, "date").tolist() == [2, 0, 1]
         assert group_codes(["b", "a", "b"], 3, "unit").tolist() == [1, 0, 1]
 
+    def test_a_categorical_is_coded_in_the_order_of_its_categories(self):
+        months = pd.Categorical(
+            ["Mar", "Jan", "Feb", "Mar"], categories=["Jan", "Feb", "Mar"], ordered=True
+        )
+
+        assert group_codes(pd.Series(months), 4, "date").tolist() == [2, 0, 1, 2]
+        assert group_codes(pd.CategoricalIndex(months), 4, "date").tolist() == [2, 0, 1, 2]
+
+    def test_date_hac_of_categorical_dates_follows_the_categories(self):
+        _, _, unit, date, psi = _regression(n_dates=40)
+        names = [f"d{k}" for k in range(40)]  # "d10" sorts before "d2" as text
+        labels = pd.Series(pd.Categorical(np.array(names)[date], categories=names))
+
+        assert panel_standard_error(psi, unit, labels, "date_hac") == pytest.approx(
+            panel_standard_error(psi, unit, date, "date_hac"), rel=1e-12
+        )
+
     def test_cluster_variance_does_not_depend_on_the_row_order(self):
         _, _, unit, date, psi = _regression()
         order = np.random.default_rng(1).permutation(len(psi))
