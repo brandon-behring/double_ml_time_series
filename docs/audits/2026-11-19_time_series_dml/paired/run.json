@@ -1,0 +1,15 @@
+{
+  "seed": 20261121,
+  "draws_per_cell": 500,
+  "data_paths": 4000,
+  "estimates": 48000,
+  "rolling_forecasts": 36000,
+  "workers": 24,
+  "threads_per_worker": 1,
+  "serial_replay_path": [
+    300,
+    0,
+    "iid"
+  ],
+  "seconds": 80.5
+}

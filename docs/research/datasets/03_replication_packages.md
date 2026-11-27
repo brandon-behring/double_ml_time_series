@@ -4,15 +4,9 @@ Published-paper replication packages used as DML test-beds — 401(k) eligibilit
 
 ---
 
-## C1. 1991 SIPP 401(k) eligibility data (sipp1991.dta, DML-on-GitHub distribution)
+## C1. 1991 SIPP 401(k) eligibility and participation
 
-- **1991 SIPP 401(k) eligibility data (sipp1991.dta, DML-on-GitHub distribution)** — GitHub (2018).
-  - **Source:** https://github.com/VC2015/DMLonGitHub/raw/master/sipp1991.dta
-  - **Access:** direct; auth_required: N
-  - **Schema:** rows: 9915, task_family: tabular
-  - **Size+License:** license: unknown
-  - **Tasks:** Chernozhukov, V. et al. (2018). "Double/debiased machine learning for treatment and structural parameters," Econometrics Journal 21: C1-C68.
-  - **Status:** Verified.
+The pinned author extract has 9,915 records and 14 columns. All values and their row order agree with the repository fixture. Table 2 estimates the effect of eligibility on net financial assets. Table 3 uses eligibility as an instrument for participation. [Author data](https://raw.githubusercontent.com/VC2015/DMLonGitHub/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/sipp1991.dta) · [Comparison of all 42 cells](../../audits/2026-11-19_time_series_dml/07-401k-replication.md)
 
 ## C2. Card 1995 NLS Young Men college-proximity IV data (proximity.zip)
 
@@ -34,25 +28,13 @@ Published-paper replication packages used as DML test-beds — 401(k) eligibilit
   - **Tasks:** Card, D., Krueger, A.B. (1994). "Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania," AER 84(4): 772-793.
   - **Status:** Verified.
 
-## C4. DoubleML python package fetch_401K loader (downloads sipp1991.dta)
+## C4. DoubleML Python loader for the 1991 SIPP extract
 
-- **DoubleML python package fetch_401K loader (downloads sipp1991.dta)** — GitHub (2020).
-  - **Source:** https://github.com/DoubleML/doubleml-for-py/blob/main/doubleml/datasets/fetch_401K.py
-  - **Access:** api; auth_required: N
-  - **Schema:** task_family: tabular
-  - **Size+License:** license: BSD-3-Clause
-  - **Tasks:** Bach, P., Chernozhukov, V., Kurz, M.S., Spindler, M. (2022). "DoubleML — An Object-Oriented Implementation of Double Machine Learning in Python," JMLR.
-  - **Status:** Verified.
+`fetch_401K(return_type="DataFrame")` downloads the empirical data. The published Python package description is Bach, Chernozhukov, Kurz and Spindler (2022). [Loader documentation](https://docs.doubleml.org/stable/api/generated/doubleml.datasets.fetch_401K.html) · [JMLR paper](https://jmlr.org/papers/v23/21-0862.html)
 
-## C5. DoubleML R package fetch_401k loader function
+## C5. DoubleML R loader for the 1991 SIPP extract
 
-- **DoubleML R package fetch_401k loader function** — institutional / other (2020).
-  - **Source:** https://search.r-project.org/CRAN/refmans/DoubleML/html/fetch_401k.html
-  - **Access:** r_package; auth_required: N
-  - **Schema:** task_family: tabular
-  - **Size+License:** license: MIT
-  - **Tasks:** Bach, P., Kurz, M.S., Spindler, M., Klaassen, S. (2021). "DoubleML — An Object-Oriented Implementation of Double Machine Learning in R," J. Statistical Software.
-  - **Status:** Verified.
+`fetch_401k()` sets eligibility as the treatment by default. With `instrument=TRUE`, the returned DoubleMLData object sets eligibility as the instrument for participation. [Loader documentation](https://docs.doubleml.org/r/stable/reference/fetch_401k.html) · [R package paper](https://www.jstatsoft.org/article/view/v108i03)
 
 ## C6. GRF causal-forest application replication (Athey-Wager 2019 / ACIC 2018 synthetic NSLM)
 
@@ -154,15 +136,9 @@ Published-paper replication packages used as DML test-beds — 401(k) eligibilit
   - **Tasks:** Bilias, Y. (2000). "Sequential Testing of Duration Data: The Case of the Pennsylvania Reemployment Bonus Experiment," J. Applied Econometrics 15(6): 575-594.
   - **Status:** Verified.
 
-## C16. Poterba-Venti-Wise 1995 SIPP-derived 401(k) eligibility data (NBER WP 5287)
+## C16. Poterba–Venti–Wise study of SIPP eligibility and saving
 
-- **Poterba-Venti-Wise 1995 SIPP-derived 401(k) eligibility data (NBER WP 5287)** — institutional / other (1995).
-  - **Source:** https://www.nber.org/papers/w5287
-  - **Access:** direct; auth_required: N
-  - **Schema:** task_family: tabular
-  - **Size+License:** license: unknown
-  - **Tasks:** Poterba, J., Venti, S., Wise, D. (1995). "Do 401(k) Contributions Crowd Out Other Personal Saving?" NBER WP 5287.
-  - **Status:** Unverified.
+The 1995 *Journal of Public Economics* paper uses the 1984, 1987 and 1991 SIPP surveys. Its working-paper version is NBER 4391 (1993). The pinned 1991 extract used in the DML replication is listed in C1. [NBER working paper and publication record](https://www.nber.org/papers/w4391)
 
 ## C17. RAND Health Insurance Experiment [in Metropolitan and Non-Metropolitan Areas of the United States], 1974-1982
 

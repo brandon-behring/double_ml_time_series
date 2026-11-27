@@ -1,0 +1,279 @@
+{
+  "protocol_sha256": "56aa92f1a7a7d9a5c053318bf22c9a7b38a4079a6d52cfeaf713b1ef925b9c4d",
+  "source_sha256": "3607617e265ec3eac11436f3f19a25e43e3ecf53ba6de6b98a9dede53cc3a76b",
+  "issuances": {
+    "1": {
+      "sha256": "fbb32bf533ff81cd7aba687ae8fd95ff14760baddc94e86f0ac4f04c52d8d1a3",
+      "training": {
+        "assigned": {
+          "control": 1286,
+          "offer": 2679
+        },
+        "covered_sites": {
+          "control": 1058,
+          "offer": 2195
+        },
+        "linked": {
+          "control": 1058,
+          "offer": 2195
+        },
+        "valid_link": {
+          "control": 1041,
+          "offer": 2175
+        },
+        "observed": {
+          "control": 1035,
+          "offer": 2156
+        },
+        "observed_zeros": {
+          "control": 443,
+          "offer": 788
+        },
+        "site_observed": {
+          "CC": 250,
+          "CI": 23,
+          "CV": 631,
+          "HF": 101,
+          "IN": 850,
+          "JK": 324,
+          "LC": 215,
+          "MD": 386,
+          "PR": 301,
+          "SM": 110
+        }
+      },
+      "latest_assignment": "1988-06-30"
+    },
+    "2": {
+      "sha256": "6255fc89b1c3200ee878f1a77cbe7290149b3c6e6b16880444449fe8462c09b5",
+      "training": {
+        "assigned": {
+          "control": 727,
+          "offer": 1507
+        },
+        "covered_sites": {
+          "control": 606,
+          "offer": 1252
+        },
+        "linked": {
+          "control": 606,
+          "offer": 1252
+        },
+        "valid_link": {
+          "control": 594,
+          "offer": 1235
+        },
+        "observed": {
+          "control": 588,
+          "offer": 1216
+        },
+        "observed_zeros": {
+          "control": 244,
+          "offer": 442
+        },
+        "site_observed": {
+          "CC": 196,
+          "CV": 356,
+          "IN": 475,
+          "JK": 171,
+          "LC": 118,
+          "MD": 288,
+          "PR": 200
+        }
+      },
+      "latest_assignment": "1988-03-31"
+    }
+  },
+  "holdout": {
+    "assigned": {
+      "control": 842,
+      "offer": 1813
+    },
+    "covered_sites": {
+      "control": 614,
+      "offer": 1259
+    },
+    "linked": {
+      "control": 614,
+      "offer": 1259
+    },
+    "valid_link": {
+      "control": 596,
+      "offer": 1238
+    },
+    "observed": {
+      "control": 595,
+      "offer": 1237
+    },
+    "observed_zeros": {
+      "control": 194,
+      "offer": 444
+    },
+    "site_observed": {
+      "CC": 66,
+      "CI": 83,
+      "IN": 493,
+      "JK": 213,
+      "LC": 153,
+      "MN": 182,
+      "NE": 246,
+      "PR": 161,
+      "SM": 235
+    }
+  },
+  "estimate": -14.285142286502378,
+  "se": 61.77441121169787,
+  "scores": [
+    {
+      "origin": "1989-01-01",
+      "method": "zero",
+      "forecast": 0.0,
+      "estimate": -14.285142286502378,
+      "signed_error": 14.285142286502378,
+      "squared_error": 204.06529014561838,
+      "reason": null,
+      "gain_vs_zero": 0.0,
+      "gain_vs_historical": 21002.389749741724,
+      "reporting_lag_quarters": 1,
+      "ci95_fixed_forecast": [
+        -106.79047885459273,
+        135.36076342759748
+      ],
+      "ci90_fixed_forecast": [
+        -87.3247220478505,
+        115.89500662085526
+      ],
+      "equivalent": {
+        "50": false,
+        "100": false,
+        "250": true
+      }
+    },
+    {
+      "origin": "1989-01-01",
+      "method": "historical",
+      "forecast": 131.33922051,
+      "estimate": -14.285142286502378,
+      "signed_error": 145.62436279650237,
+      "squared_error": 21206.455039887343,
+      "reason": null,
+      "gain_vs_zero": -21002.389749741724,
+      "gain_vs_historical": 0.0,
+      "reporting_lag_quarters": 1,
+      "ci95_fixed_forecast": [
+        24.548741655407255,
+        266.6999839375975
+      ],
+      "ci90_fixed_forecast": [
+        44.01449846214949,
+        247.23422713085523
+      ],
+      "equivalent": {
+        "50": false,
+        "100": false,
+        "250": true
+      }
+    },
+    {
+      "origin": "1989-01-01",
+      "method": "dml",
+      "forecast": 138.45040052,
+      "estimate": -14.285142286502378,
+      "signed_error": 152.73554280650237,
+      "squared_error": 23328.146036396916,
+      "reason": null,
+      "gain_vs_zero": -23124.080746251297,
+      "gain_vs_historical": -2121.690996509573,
+      "reporting_lag_quarters": 1,
+      "ci95_fixed_forecast": [
+        31.659921665407253,
+        273.8111639475975
+      ],
+      "ci90_fixed_forecast": [
+        51.12567847214949,
+        254.34540714085523
+      ],
+      "equivalent": {
+        "50": false,
+        "100": false,
+        "250": false
+      }
+    },
+    {
+      "origin": "1989-01-01",
+      "method": "zero",
+      "forecast": 0.0,
+      "estimate": -14.285142286502378,
+      "signed_error": 14.285142286502378,
+      "squared_error": 204.06529014561838,
+      "reason": null,
+      "gain_vs_zero": 0.0,
+      "gain_vs_historical": 35082.74498362719,
+      "reporting_lag_quarters": 2,
+      "ci95_fixed_forecast": [
+        -106.79047885459273,
+        135.36076342759748
+      ],
+      "ci90_fixed_forecast": [
+        -87.3247220478505,
+        115.89500662085526
+      ],
+      "equivalent": {
+        "50": false,
+        "100": false,
+        "250": true
+      }
+    },
+    {
+      "origin": "1989-01-01",
+      "method": "historical",
+      "forecast": 173.5626958,
+      "estimate": -14.285142286502378,
+      "signed_error": 187.84783808650238,
+      "squared_error": 35286.81027377281,
+      "reason": null,
+      "gain_vs_zero": -35082.74498362719,
+      "gain_vs_historical": 0.0,
+      "reporting_lag_quarters": 2,
+      "ci95_fixed_forecast": [
+        66.77221694540727,
+        308.9234592275975
+      ],
+      "ci90_fixed_forecast": [
+        86.2379737521495,
+        289.45770242085524
+      ],
+      "equivalent": {
+        "50": false,
+        "100": false,
+        "250": false
+      }
+    },
+    {
+      "origin": "1989-01-01",
+      "method": "dml",
+      "forecast": 177.12900377,
+      "estimate": -14.285142286502378,
+      "signed_error": 191.41414605650237,
+      "squared_error": 36639.375310540025,
+      "reason": null,
+      "gain_vs_zero": -36435.310020394405,
+      "gain_vs_historical": -1352.5650367672133,
+      "reporting_lag_quarters": 2,
+      "ci95_fixed_forecast": [
+        70.33852491540726,
+        312.4897671975975
+      ],
+      "ci90_fixed_forecast": [
+        89.8042817221495,
+        293.02401039085527
+      ],
+      "equivalent": {
+        "50": false,
+        "100": false,
+        "250": false
+      }
+    }
+  ],
+  "status": "Post-unblinding source-coding correction"
+}

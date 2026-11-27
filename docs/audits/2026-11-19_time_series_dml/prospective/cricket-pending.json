@@ -1,0 +1,745 @@
+{
+  "evaluated_as_of_utc": "2026-11-21",
+  "windows": {
+    "annual": {
+      "role": "primary",
+      "period_start": "2026-12-01",
+      "period_end_exclusive": "2027-12-01",
+      "scores": [
+        {
+          "origin": "2026-11-21",
+          "method": "zero",
+          "forecast": 0.0,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.0,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "historical": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "historical",
+          "forecast": 1.3166894665,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.3166894665,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "half_history": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "unchanged"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "half_history",
+          "forecast": 0.65834473325,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "dml",
+          "forecast": 0.7315953616,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.3657976808,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.02414241405,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.694970047425,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        }
+      ],
+      "dml_vs_half": {
+        "midpoint": 0.694970047425,
+        "gain": null,
+        "gain_ci95": null,
+        "status": "pending"
+      },
+      "status": "pending",
+      "reason": "window has not closed",
+      "benchmark": null
+    },
+    "q1": {
+      "role": "descriptive",
+      "period_start": "2026-12-01",
+      "period_end_exclusive": "2027-03-01",
+      "scores": [
+        {
+          "origin": "2026-11-21",
+          "method": "zero",
+          "forecast": 0.0,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.0,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "historical": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "historical",
+          "forecast": 1.3166894665,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.3166894665,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "half_history": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "unchanged"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "half_history",
+          "forecast": 0.65834473325,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "dml",
+          "forecast": 0.7315953616,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.3657976808,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.02414241405,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.694970047425,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        }
+      ],
+      "dml_vs_half": {
+        "midpoint": 0.694970047425,
+        "gain": null,
+        "gain_ci95": null,
+        "status": "pending"
+      },
+      "status": "pending",
+      "reason": "window has not closed",
+      "benchmark": null
+    },
+    "q2": {
+      "role": "descriptive",
+      "period_start": "2027-03-01",
+      "period_end_exclusive": "2027-06-01",
+      "scores": [
+        {
+          "origin": "2026-11-21",
+          "method": "zero",
+          "forecast": 0.0,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.0,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "historical": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "historical",
+          "forecast": 1.3166894665,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.3166894665,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "half_history": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "unchanged"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "half_history",
+          "forecast": 0.65834473325,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "dml",
+          "forecast": 0.7315953616,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.3657976808,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.02414241405,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.694970047425,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        }
+      ],
+      "dml_vs_half": {
+        "midpoint": 0.694970047425,
+        "gain": null,
+        "gain_ci95": null,
+        "status": "pending"
+      },
+      "status": "pending",
+      "reason": "window has not closed",
+      "benchmark": null
+    },
+    "q3": {
+      "role": "descriptive",
+      "period_start": "2027-06-01",
+      "period_end_exclusive": "2027-09-01",
+      "scores": [
+        {
+          "origin": "2026-11-21",
+          "method": "zero",
+          "forecast": 0.0,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.0,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "historical": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "historical",
+          "forecast": 1.3166894665,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.3166894665,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "half_history": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "unchanged"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "half_history",
+          "forecast": 0.65834473325,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "dml",
+          "forecast": 0.7315953616,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.3657976808,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.02414241405,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.694970047425,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        }
+      ],
+      "dml_vs_half": {
+        "midpoint": 0.694970047425,
+        "gain": null,
+        "gain_ci95": null,
+        "status": "pending"
+      },
+      "status": "pending",
+      "reason": "window has not closed",
+      "benchmark": null
+    },
+    "q4": {
+      "role": "descriptive",
+      "period_start": "2027-09-01",
+      "period_end_exclusive": "2027-12-01",
+      "scores": [
+        {
+          "origin": "2026-11-21",
+          "method": "zero",
+          "forecast": 0.0,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.0,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "historical": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "historical",
+          "forecast": 1.3166894665,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.3166894665,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            },
+            "half_history": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "unchanged"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "half_history",
+          "forecast": 0.65834473325,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.329172366625,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 0.987517099875,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.65834473325,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "identical"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        },
+        {
+          "origin": "2026-11-21",
+          "method": "dml",
+          "forecast": 0.7315953616,
+          "estimate": null,
+          "signed_error": null,
+          "squared_error": null,
+          "reason": "window has not closed",
+          "gain_vs_zero": null,
+          "gain_vs_historical": null,
+          "gain_vs_half_history": null,
+          "comparisons": {
+            "zero": {
+              "midpoint": 0.3657976808,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "historical": {
+              "midpoint": 1.02414241405,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            },
+            "half_history": {
+              "midpoint": 0.694970047425,
+              "gain": null,
+              "gain_ci95": null,
+              "status": "pending"
+            }
+          },
+          "direction_vs_historical": "toward_zero"
+        }
+      ],
+      "dml_vs_half": {
+        "midpoint": 0.694970047425,
+        "gain": null,
+        "gain_ci95": null,
+        "status": "pending"
+      },
+      "status": "pending",
+      "reason": "window has not closed",
+      "benchmark": null
+    }
+  }
+}

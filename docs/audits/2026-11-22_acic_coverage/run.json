@@ -1,0 +1,25 @@
+{
+  "inputs_sha256": {
+    "observed": "c728f9b9fd23fc5f2ee7bcdbb23b84ae49c59106d3466c3c0955e9ef3bcbaba4",
+    "organizer_results": "f8628ff1b4109c46a7906881f9c9f2d37e22fe75b07a08d183ab63d4e0e16645"
+  },
+  "protocol_sha256": "80ad02545b6232c0ff6977a854016de11b84415f71e2765bc2a575c18e50dca4",
+  "jobs": 10,
+  "threads_per_job": 1,
+  "elapsed_seconds": 22.23,
+  "versions": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "scikit-learn": "1.6.1",
+    "scipy": "1.17.1"
+  },
+  "files": 3200,
+  "status": {
+    "ok": 3200
+  },
+  "designs": 32,
+  "covered": 2869,
+  "rejected_designs": 3,
+  "files_with_convergence_warning": 0,
+  "warnings": 0
+}

@@ -1,0 +1,26 @@
+{
+  "current": {
+    "fair_assignment_oracle_propensity_r2": 0.0,
+    "propensity_alert": "critical",
+    "scheduler_trigger": "nuisance_degradation",
+    "zero_baseline_r2_exception": null,
+    "change_from_zero": 1e-06,
+    "drift_alert": "critical",
+    "drift_p_assuming_independent": 0.9999994358104165
+  },
+  "zero_baseline_details": {
+    "r2_propensity": 0.0,
+    "r2_outcome": 0.8,
+    "propensity_r2_decrease": 0.0,
+    "propensity_degradation": null
+  },
+  "archived": {
+    "fair_assignment_oracle_propensity_r2": 0.0,
+    "propensity_alert": "critical",
+    "scheduler_trigger": "nuisance_degradation",
+    "zero_baseline_r2_exception": "ZeroDivisionError",
+    "change_from_zero": 1e-06,
+    "drift_alert": "critical",
+    "drift_p_assuming_independent": 0.9999994358104165
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "design": "Conditional on the fixed data generator, folds and hyperparameters of the paired time-split audit.",
+  "source_seed": 20261121,
+  "archived_path_ids": [0, 499],
+  "fresh_path_ids": [500, 999],
+  "selection_size": 1200,
+  "selection_regimes": ["iid", "serial", "break", "hidden"],
+  "split": "past_buffer",
+  "learner_tie_order": ["linear", "spline", "trees"],
+  "candidate_pairs": "Outcome family first; take the Cartesian product in learner tie order.",
+  "rules": ["fixed_trees", "outcome_mse_diagonal", "treatment_mse_diagonal", "separate_mse", "common_rloss_diagonal", "common_rloss_all"],
+  "observable_at_selection": "At the start of block k+1, rank candidates using losses from completed block k. Use k=1,2 (zero-based). Outcome and treatment MSEs score that role on k. For R-loss, compute each candidate slope only on earlier contiguous out-of-fold rows before k. Score its frozen slope on k with one common pair of pre-k tree nuisance models. No block-k+1 outcome enters selection. Resolve ties by the listed order.",
+  "primary_endpoint": "Squared error of the selected candidate's re-estimated scalar slope on block k+1 against the planted block-average structural effect. This is estimation accuracy for a later block after its outcomes mature.",
+  "secondary_endpoint": "Squared error on the same truth of the selected candidate slope frozen using all scored dates before k+1.",
+  "uncertainty": "Average both originating block differences within each simulation path before computing paired Monte Carlo standard errors against fixed_trees. Report all rules and regimes. Intervals are descriptive, pointwise 1.96-MCSE summaries.",
+  "scope": "Confirm whether the retrospective outcome-selection penalty recurs in the same break data generator. Fresh seeds are independent simulations. The stable, iid and hidden regimes assess generality within the declared generator family."
+}

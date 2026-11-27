@@ -1,0 +1,89 @@
+{
+  "forecasts": [
+    {
+      "method": "zero",
+      "origin": "2026-11-21",
+      "value": 0.0
+    },
+    {
+      "method": "historical",
+      "origin": "2026-11-21",
+      "value": 42.287214013
+    },
+    {
+      "method": "half_history",
+      "origin": "2026-11-21",
+      "value": 21.1436070065
+    },
+    {
+      "method": "dml",
+      "origin": "2026-11-21",
+      "value": 42.441534778
+    }
+  ],
+  "protocol": {
+    "comparator": "Form X with welfare",
+    "comparators": [
+      "zero",
+      "historical",
+      "half_history"
+    ],
+    "compatibility_checks": [
+      "random_half_xy",
+      "same_form_wordings",
+      "same_ballots_and_population",
+      "same_response_codes",
+      "compatible_survey_weights_and_variance_design"
+    ],
+    "decision_threshold": null,
+    "endpoint": "Recorded too-little response among all eligible assigned respondents; nonresponse is non-endorsement",
+    "exploratory_accuracy_margins_pp": [
+      2,
+      5,
+      10
+    ],
+    "fit": "Equal prior-wave mean of WTSSPS-weighted arm contrasts; DML averages five PSU-fold known-p=0.5 ridge-AIPW contrasts, alpha=1. Age, age squared, sex, region, ballot and missing indicators.",
+    "history_waves": [
+      2000,
+      2004,
+      2006,
+      2008,
+      2014,
+      2021,
+      2022,
+      2024
+    ],
+    "horizon": "same 2028 GSS cross-sectional interview",
+    "intervention": "Form Y with assistance to the poor",
+    "issued_at_utc": "2026-11-21T02:18:33+00:00",
+    "known_assignment_errors_excluded": [
+      2002,
+      2010,
+      2012,
+      2016,
+      2018
+    ],
+    "methods": [
+      "zero",
+      "historical",
+      "half_history",
+      "dml"
+    ],
+    "origins": [
+      "2026-11-21"
+    ],
+    "population": "Cross-sectional respondents assigned forms X/Y on standard ballots A/B/C",
+    "primary": "dml vs half_history",
+    "scoring": "Later WTSSPS H\u00e1jek arm difference, Taylor variance using VSTRAT/VPSU and design-t 95% interval. Missing design support yields a point only.",
+    "sources": {
+      "history_sha256": "d4fd4e5057d53d6023e55d5114685430321c3ab00ef2bc11099c2358efc65dfe",
+      "history_url": "https://gss.norc.org/content/dam/gss/get-the-data/documents/stata/GSS_stata.zip",
+      "member": "GSS_stata/gss7224_r3a.dta",
+      "release": "3a, July 2026"
+    },
+    "study": "GSS 2028 cross-sectional wording experiment",
+    "target": "assistance-to-the-poor form minus welfare form, recorded too-little endorsement",
+    "unit": "percentage points"
+  },
+  "version": 1
+}

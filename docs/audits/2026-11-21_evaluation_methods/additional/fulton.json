@@ -1,0 +1,64 @@
+{
+  "author_stata": {
+    "sha256": "3e9835e401ed5b8ef0ed5bd00d8c95d6fb13a5a58b8abb5ff03fd91446b3f308",
+    "rows": 97,
+    "fields": [
+      "price_a",
+      "price_w",
+      "qty_a",
+      "qty_w",
+      "day1",
+      "day2",
+      "day3",
+      "day4",
+      "speed2",
+      "wave2",
+      "speed3",
+      "wave3",
+      "avgprice",
+      "totalqty"
+    ]
+  },
+  "dated_teaching_file": {
+    "sha256": "9509671e5ce61f790a91b32dba906b1f936a698eda3b20defd160f3479d4d9e5",
+    "rows": 111,
+    "first_date": "1991-12-02",
+    "last_date": "1992-05-08",
+    "stormy": 32,
+    "mixed": 34,
+    "fair": 45
+  },
+  "weekday_adjusted": {
+    "ols": -0.5625496395111006,
+    "first_stage": 0.34640553559072496,
+    "reduced_form": -0.3877722270887007,
+    "storm_iv_ratio": -1.1194169470399287
+  },
+  "five_date_blocks": [
+    {
+      "dates": 23,
+      "stormy": 9,
+      "fair": 8
+    },
+    {
+      "dates": 22,
+      "stormy": 10,
+      "fair": 6
+    },
+    {
+      "dates": 22,
+      "stormy": 8,
+      "fair": 5
+    },
+    {
+      "dates": 22,
+      "stormy": 5,
+      "fair": 8
+    },
+    {
+      "dates": 22,
+      "stormy": 0,
+      "fair": 18
+    }
+  ]
+}

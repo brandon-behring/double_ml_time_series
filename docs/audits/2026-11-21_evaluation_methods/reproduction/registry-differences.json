@@ -1,0 +1,291 @@
+{
+  "fields": {
+    "rolling-bootstrap": [
+      {
+        "path": [
+          "0",
+          "any_alert_four_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "0",
+          "any_alert_four_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "0",
+          "any_alert_two_postbreak_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "0",
+          "any_alert_two_postbreak_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "0",
+          "complete_panels"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "1",
+          "any_alert_four_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "1",
+          "any_alert_four_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "1",
+          "any_alert_two_postbreak_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "1",
+          "any_alert_two_postbreak_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "1",
+          "complete_panels"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "2",
+          "any_alert_four_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "2",
+          "any_alert_four_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "2",
+          "any_alert_two_postbreak_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "2",
+          "any_alert_two_postbreak_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "2",
+          "complete_panels"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "3",
+          "any_alert_four_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "3",
+          "any_alert_four_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "3",
+          "any_alert_two_postbreak_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "3",
+          "any_alert_two_postbreak_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "3",
+          "complete_panels"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "4",
+          "any_alert_four_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "4",
+          "any_alert_four_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "4",
+          "any_alert_two_postbreak_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "4",
+          "any_alert_two_postbreak_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "4",
+          "complete_panels"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "5",
+          "any_alert_four_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "5",
+          "any_alert_four_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "5",
+          "any_alert_two_postbreak_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "5",
+          "any_alert_two_postbreak_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "5",
+          "complete_panels"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "6",
+          "any_alert_four_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "6",
+          "any_alert_four_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "6",
+          "any_alert_two_postbreak_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "6",
+          "any_alert_two_postbreak_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "6",
+          "complete_panels"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "7",
+          "any_alert_four_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "7",
+          "any_alert_four_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "7",
+          "any_alert_two_postbreak_dates"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "7",
+          "any_alert_two_postbreak_dates_mcse"
+        ],
+        "kind": "missing field"
+      },
+      {
+        "path": [
+          "7",
+          "complete_panels"
+        ],
+        "kind": "missing field"
+      }
+    ]
+  },
+  "retry_errors": {
+    "electricity-shifting": [
+      "urllib.error.HTTPError: HTTP Error 500: INTERNAL SERVER ERROR"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "regressor": {
+    "ate": 2.0123828861714284,
+    "lower": 1.831450746128737,
+    "upper": 2.1933150262141194
+  },
+  "classifier": {
+    "ate": 2.0123828861714284,
+    "lower": 1.831450746128737,
+    "upper": 2.1933150262141194
+  },
+  "largest_treatment_residual_difference": 0.0,
+  "default_forest_max_features": {
+    "classifier": "sqrt",
+    "regressor": 1.0
+  }
+}

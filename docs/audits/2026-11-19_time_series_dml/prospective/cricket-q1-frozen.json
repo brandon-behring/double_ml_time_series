@@ -1,0 +1,61 @@
+{
+  "forecasts": [
+    {
+      "method": "zero",
+      "origin": "2026-11-21",
+      "value": 0.0
+    },
+    {
+      "method": "historical",
+      "origin": "2026-11-21",
+      "value": 1.3166894665
+    },
+    {
+      "method": "half_history",
+      "origin": "2026-11-21",
+      "value": 0.65834473325
+    },
+    {
+      "method": "dml",
+      "origin": "2026-11-21",
+      "value": 0.7315953616
+    }
+  ],
+  "protocol": {
+    "archive_sha256": "956f29df9d2b95dd6fe12de5bc70d4522f23693e5e7e2ac4c1a004e1b541ad8e",
+    "assignment_probability": 0.5,
+    "comparator": "opponent wins right to choose",
+    "comparators": [
+      "zero",
+      "historical",
+      "half_history"
+    ],
+    "credit": "one for final win including eliminator or bowl-out, half for unresolved tie/draw or post-toss no-result, zero for loss",
+    "eligibility": "senior men's and women's international T20 matches with a contested toss; exclude Afghanistan coverage, youth teams and pre-toss cancellations",
+    "end_exclusive": "2027-03-01",
+    "fit": "five whole-event/season folds; arm-specific ridge alpha 1 with intercept; gender-specific focal and opponent, venue, gender, month, numeric year; predictions clipped to [0,1]; known-p AIPW",
+    "focal_team": "alphabetically first of the two archived team names",
+    "history_sha256": "6ed9c19769f0a8430fbd3fd5d6762990e5ace58b66220809b4f811f6e20d876c",
+    "horizon": "match-local start dates in [2026-12-01, 2027-03-01)",
+    "intervention": "fair toss awards choice of innings order to focal team",
+    "issued_utc": "2026-11-21T02:17:47+00:00",
+    "methods": [
+      "zero",
+      "historical",
+      "half_history",
+      "dml"
+    ],
+    "missing": "require reconciliation with independent full fixture roster before final score; report provisional covered-sample estimate and worst-case bounds when matches unresolved",
+    "origins": [
+      "2026-11-21"
+    ],
+    "ranking": "DML against half-history using paired squared error and transformed two-sided 95% target interval; quarterly estimates descriptive",
+    "role": "descriptive",
+    "score": "mean centered randomized win-credit contrast; series-clustered t interval; fixed 28-day calendar-block sensitivity; later eligible matches receive equal weights",
+    "start": "2026-12-01",
+    "target": "ITT of winning the right to choose innings order on the prespecified focal team's win credit",
+    "unit": "percentage points of win credit",
+    "window": "q1"
+  },
+  "version": 1
+}

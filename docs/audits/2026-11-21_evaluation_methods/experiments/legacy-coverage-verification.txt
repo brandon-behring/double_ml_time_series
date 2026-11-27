@@ -1,0 +1,27 @@
+================================================================================
+COVERAGE BUG FIX VERIFICATION
+================================================================================
+
+DGP Configuration:
+  n = 2000
+  p = 5
+  true_effect = 2.0
+  confounding_strength = 0.5
+
+Running validation (100 simulations)...
+Independent fit workers: 5
+
+================================================================================
+RESULTS
+================================================================================
+
+Status: PASS
+Bias: -0.0096 (95% CI: [-0.0211, 0.0018])
+MSE: 0.0031
+RMSE: 0.0558
+
+Coverage: 92.00%
+
+Marginal ATE interval hits: 92/100
+Exact binomial p for nominal 95% coverage: 0.165042
+Within-scenario coverage verdict: PASS

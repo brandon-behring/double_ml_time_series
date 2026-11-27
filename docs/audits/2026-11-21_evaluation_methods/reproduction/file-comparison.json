@@ -1,0 +1,170 @@
+[
+  {
+    "file": "classical/impulse-draws.csv.gz",
+    "role": "fresh output",
+    "archived": "9a1777a5487f658b25869337e0e00419df93407369797fae1fa70cc9b4c5f497",
+    "snapshot": "9a1777a5487f658b25869337e0e00419df93407369797fae1fa70cc9b4c5f497"
+  },
+  {
+    "file": "classical/impulse-summary.csv",
+    "role": "fresh output",
+    "archived": "85dcedee052cfba092308a11355f139a3f77dca8798227e1ff4dd1bc5b577777",
+    "snapshot": "85dcedee052cfba092308a11355f139a3f77dca8798227e1ff4dd1bc5b577777"
+  },
+  {
+    "file": "field/london/calibration.csv",
+    "role": "fresh output",
+    "archived": "ed08fd2df077f8ab35dd3298d744ef38fc9808434f88074520b495c2877f938a",
+    "snapshot": "ed08fd2df077f8ab35dd3298d744ef38fc9808434f88074520b495c2877f938a"
+  },
+  {
+    "file": "field/london/draws.csv.gz",
+    "role": "fresh output",
+    "archived": "5c1ed0184a68af1e8562fc1bcafb0ccddfdf1fae14cfb771118a9e92284ca8c0",
+    "snapshot": "5c1ed0184a68af1e8562fc1bcafb0ccddfdf1fae14cfb771118a9e92284ca8c0"
+  },
+  {
+    "file": "field/london/effects.csv",
+    "role": "fresh output",
+    "archived": "a70b7f72908f21e27395d71903367aa61b65c7f8b477360f224984cdd7b74b4c",
+    "snapshot": "a70b7f72908f21e27395d71903367aa61b65c7f8b477360f224984cdd7b74b4c"
+  },
+  {
+    "file": "field/london/events.csv",
+    "role": "fresh output",
+    "archived": "e60569acff19248d0bf18030bc491e91a2638900fcd6d4a09282e0c4a88f1358",
+    "snapshot": "e60569acff19248d0bf18030bc491e91a2638900fcd6d4a09282e0c4a88f1358"
+  },
+  {
+    "file": "field/london/run.json",
+    "role": "fresh output",
+    "archived": "503f35629fc3de377a2aa0f412367eb1ee5fcaa1d296e59950af0f63c9ad75c5",
+    "snapshot": "503f35629fc3de377a2aa0f412367eb1ee5fcaa1d296e59950af0f63c9ad75c5"
+  },
+  {
+    "file": "paired/draws.csv.gz",
+    "role": "fresh output",
+    "archived": "af54d2ada0fa4ddf99cea9e7889893c76e1aee76ed7b0bbf758c29800c28998d",
+    "snapshot": "af54d2ada0fa4ddf99cea9e7889893c76e1aee76ed7b0bbf758c29800c28998d"
+  },
+  {
+    "file": "paired/folds.json",
+    "role": "fresh output",
+    "archived": "2ca2d22f27b9901a77d814bffba71726e7fb8ea1685a7e762611464237df10cf",
+    "snapshot": "2ca2d22f27b9901a77d814bffba71726e7fb8ea1685a7e762611464237df10cf"
+  },
+  {
+    "file": "paired/oracle-draws.csv.gz",
+    "role": "fresh output",
+    "archived": "a7ad86861974e8a3e45b981249dcfc5c9b0b6b7158d458b8c2ea5a82e51597b6",
+    "snapshot": "a7ad86861974e8a3e45b981249dcfc5c9b0b6b7158d458b8c2ea5a82e51597b6"
+  },
+  {
+    "file": "paired/oracle.csv",
+    "role": "fresh output",
+    "archived": "4e9807359c3da129b49e47c04d22c91a577dd37bfc5fd728488f18e7cd2e4dba",
+    "snapshot": "4e9807359c3da129b49e47c04d22c91a577dd37bfc5fd728488f18e7cd2e4dba"
+  },
+  {
+    "file": "paired/paired.csv",
+    "role": "fresh output",
+    "archived": "34adfaebce4859120edad47b687704d7bf04ba8930fcb88a56be4c693ad69872",
+    "snapshot": "34adfaebce4859120edad47b687704d7bf04ba8930fcb88a56be4c693ad69872"
+  },
+  {
+    "file": "paired/rolling-draws.csv.gz",
+    "role": "fresh output",
+    "archived": "38df72d7e7f370b9962c231ce7b3714637cdaf2329712264180d23950efd11a2",
+    "snapshot": "38df72d7e7f370b9962c231ce7b3714637cdaf2329712264180d23950efd11a2"
+  },
+  {
+    "file": "paired/rolling.csv",
+    "role": "fresh output",
+    "archived": "5c65e138365d890a30421c693cbf289c57508c6a11ccf157042a198c01d7d3dc",
+    "snapshot": "5c65e138365d890a30421c693cbf289c57508c6a11ccf157042a198c01d7d3dc"
+  },
+  {
+    "file": "paired/summary.csv",
+    "role": "fresh output",
+    "archived": "7c082f86b01b9fc051dba09e72a7e1de1707ebe87cf19a0f313291559fd7044e",
+    "snapshot": "7c082f86b01b9fc051dba09e72a7e1de1707ebe87cf19a0f313291559fd7044e"
+  },
+  {
+    "file": "prospective/cricket-annual-frozen.json",
+    "role": "preserved original",
+    "archived": "e9c2acf2ef96df10c741fc440f18cf87fede061266e28a7dda76f51c29314ddc",
+    "snapshot": "e9c2acf2ef96df10c741fc440f18cf87fede061266e28a7dda76f51c29314ddc"
+  },
+  {
+    "file": "prospective/cricket-issuance.json",
+    "role": "preserved original",
+    "archived": "079a1bb1c38fcb31f4d2b50e2e381a99485b4702913d2abf8c051d6e30f22885",
+    "snapshot": "079a1bb1c38fcb31f4d2b50e2e381a99485b4702913d2abf8c051d6e30f22885"
+  },
+  {
+    "file": "prospective/cricket-q1-frozen.json",
+    "role": "preserved original",
+    "archived": "83b5a6a0638af3207f7a73ce680f9dd1ec50aaa70212f31f1521a13292c1ada6",
+    "snapshot": "83b5a6a0638af3207f7a73ce680f9dd1ec50aaa70212f31f1521a13292c1ada6"
+  },
+  {
+    "file": "prospective/cricket-q2-frozen.json",
+    "role": "preserved original",
+    "archived": "5a99c652257a381ed81b5fb417bce7f9d1b9be26eb83bd0e8e4ad5d04f3f5a50",
+    "snapshot": "5a99c652257a381ed81b5fb417bce7f9d1b9be26eb83bd0e8e4ad5d04f3f5a50"
+  },
+  {
+    "file": "prospective/cricket-q3-frozen.json",
+    "role": "preserved original",
+    "archived": "b26b193455fbe1362ef057b07c9e40001ef6adad6946d79aa35e605f15168081",
+    "snapshot": "b26b193455fbe1362ef057b07c9e40001ef6adad6946d79aa35e605f15168081"
+  },
+  {
+    "file": "prospective/cricket-q4-frozen.json",
+    "role": "preserved original",
+    "archived": "d631085b33881b4746f63636ee625644907915623d93c5ff83d56292fe746056",
+    "snapshot": "d631085b33881b4746f63636ee625644907915623d93c5ff83d56292fe746056"
+  },
+  {
+    "file": "prospective/gss-frozen.json",
+    "role": "preserved original",
+    "archived": "163640289ef6a76d3537e9240fd8389435df846fb500e11fbba30994ad5b831c",
+    "snapshot": "163640289ef6a76d3537e9240fd8389435df846fb500e11fbba30994ad5b831c"
+  },
+  {
+    "file": "prospective/gss-issuance.json",
+    "role": "preserved original",
+    "archived": "aae1126aade43c56088c2744732b759eb1fd891a59c2c766c2143f20bdfec59b",
+    "snapshot": "aae1126aade43c56088c2744732b759eb1fd891a59c2c766c2143f20bdfec59b"
+  },
+  {
+    "file": "rolling/jtpa-corrected-lag1-frozen.json",
+    "role": "preserved original",
+    "archived": "fbb32bf533ff81cd7aba687ae8fd95ff14760baddc94e86f0ac4f04c52d8d1a3",
+    "snapshot": "fbb32bf533ff81cd7aba687ae8fd95ff14760baddc94e86f0ac4f04c52d8d1a3"
+  },
+  {
+    "file": "rolling/jtpa-corrected-lag2-frozen.json",
+    "role": "preserved original",
+    "archived": "6255fc89b1c3200ee878f1a77cbe7290149b3c6e6b16880444449fe8462c09b5",
+    "snapshot": "6255fc89b1c3200ee878f1a77cbe7290149b3c6e6b16880444449fe8462c09b5"
+  },
+  {
+    "file": "rolling/jtpa-issuance.json",
+    "role": "preserved original",
+    "archived": "a15b536681b76b375df940e780e65193db03b83160b95f5303633860690a78e3",
+    "snapshot": "a15b536681b76b375df940e780e65193db03b83160b95f5303633860690a78e3"
+  },
+  {
+    "file": "rolling/jtpa-lag1-frozen.json",
+    "role": "preserved original",
+    "archived": "389264166c22f0320fde67acaa99a6d86f9004a41ef3f1f2b007271d697a7f54",
+    "snapshot": "389264166c22f0320fde67acaa99a6d86f9004a41ef3f1f2b007271d697a7f54"
+  },
+  {
+    "file": "rolling/jtpa-lag2-frozen.json",
+    "role": "preserved original",
+    "archived": "d8fd0234aeea829dde5ff3d2748881f813a1662e064591b2070551f6a5b6018c",
+    "snapshot": "d8fd0234aeea829dde5ff3d2748881f813a1662e064591b2070551f6a5b6018c"
+  }
+]

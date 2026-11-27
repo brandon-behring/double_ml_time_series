@@ -1,0 +1,32 @@
+{
+  "sampling_unit": "Original fixture row, identified by its zero-based source index",
+  "rows_per_draw": 9915,
+  "draws": 1000,
+  "folds_per_draw": 5,
+  "original_econml_fold_arrays_checked_on_zero_based_draws": [
+    0,
+    499,
+    999
+  ],
+  "index_sha256": "e78f6f31a589bfa8b01757f92313b05e20c3450ae91de89028924cfa16e1297c",
+  "original_ids_per_draw_mean": 6266.856,
+  "scored_bootstrap_rows": 9915000,
+  "copies_in_training_total": 5461400,
+  "copies_in_training_fraction": 0.5508219868885527,
+  "fraction_by_draw_range": [
+    0.534947049924357,
+    0.567523953605648
+  ],
+  "inherited_original_unit_folds_copies_in_training_total": 0,
+  "memorized_random_label_mse_bootstrap_position_folds": 0.4491780131114473,
+  "memorized_random_label_mse_inherited_original_unit_folds": 1.0,
+  "randomized_planted_eligibility_effect": 2.0,
+  "plr_with_known_assignment_and_lookup_outcome_nuisance": {
+    "bootstrap_position_folds_mean": 0.8983560262228946,
+    "bootstrap_position_folds_range": [
+      0.864952092788704,
+      0.9301059001512859
+    ],
+    "inherited_original_unit_folds_mean": 2.0
+  }
+}

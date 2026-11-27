@@ -1,18 +1,148 @@
 # Current Status
 
-Last updated: 2026-06-14
+Last updated: 2026-11-26
 
 This file is the canonical project-status source. Historical reports and roadmaps
 were moved to `docs/archive/superseded_2026-05-02/` during the 2026-05-02 truth-first
-remediation. The current audit is
-`docs/audits/2026-05-30_repo_quality_methodology_audit.md` (all gates re-run live).
+remediation. The current audits are listed in [`docs/audits/README.md`](audits/README.md);
+the first to read is the
+[time-series DML audit of 2026-11-19](audits/2026-11-19_time_series_dml/README.md).
 
-## Status
+The repository is a book-grade companion to a Double Machine Learning manuscript. It is not
+deployable production software and not a stable public package.
+
+## November 2026: where the landing of the November work stands
+
+Work done in November 2026 was held in one uncommitted working copy and is being landed in
+reviewed pull requests ([plan](plans/active/2026-11-24_backlog_landing.md)). This section says
+what is on `main`, what is not, and what a reader must not rely on meanwhile.
+
+### On `main`
+
+| Subject | State |
+|---|---|
+| Core numerics (#69, #74) | The "no treatment variation" check is relative to the treatment's size; a column vector as outcome or treatment is refused by `fwl_estimate`, `robinson_estimator`, `double_ml`, `TemporalPLRDML`, `RollingWindowDML` and `PanelDML` (`DynamicGEstimationDML` flattens it); series-mode `DynamicGEstimationDML` refuses lags that are not identified |
+| Validation inference (#68, #78) | The bias test of the seven validators tests mean error across independent simulations; the six baselines also give a coverage verdict; the 401(k) comparison uses the published fivefold benchmarks |
+| Applications (#80) | The insurance pipeline scores held-out rows in the treatment's units; the insurance generator returns its rows in one product-major order; the sensitivity module's docstrings call its curve a log-gamma bias curve (its printed summary is still headed "Rosenbaum Bounds"); the orange-juice loader checks a pinned digest; the registry and the result store write atomically |
+| Continuous integration (#73) | Installs from `uv.lock`; a weekly job with unpinned dependencies reports drift and blocks nothing |
+| Audits and Chapters 2 and 5 (this change) | The four November audit folders with 31 test files, the effect-forecast module with its test, and both editions of Chapters 2 and 5 |
+
+### Not on `main`, and what follows from it
+
+- **`PanelDML` is the estimator of June, and it is biased when confounding is nonlinear in the
+  controls.** It removes the fixed effects from the controls before a learner sees them, so a
+  learner cannot represent a confounder that depends on the controls' levels. On `main`, with
+  40 units, 15 periods and a confounder `x**2`, the default forest gives a bias of +1.07 for a
+  slope of 2 and 0% coverage in 40 replications; with a confounder linear in `x` it gives
+  +0.01 and 90% (#84). A November redesign has the same property (the end-to-end review, which
+  is not landed, measured about +1.04 and 0.3% for it) and is not landed. A new design is
+  chosen and validated under a protocol fixed in advance before any change to `PanelDML`
+  lands. Until then:
+  - Chapter 6 and its listings describe the June estimator.
+  - **Chapter 8's printed numbers do not reproduce.** They were computed before the insurance
+    generator's rows were aligned. The chapter's `PanelDML` listing prints -0.8553 with a
+    standard error of 0.0330; on `main` the same call returns -0.8531 with 0.0175, and that
+    interval excludes the true -0.8. Its exercise prints 93.0% coverage and reaches 21% in 100
+    draws. The chapter is recomputed when the panel estimator is settled.
+  - Chapter 4 cites `retail_check.py`, which is one of the held files below.
+- **28 files of the audit folders are held with it**, because they call the redesigned
+  estimator or report numbers from the rejected design. The audit reports refer to them, and
+  also to the unlanded module `dml_ts/dml/_panel.py`, to `scripts/validate_falsification.py`
+  and to three of the held tests. The reports were written against the November working
+  copy: where they say that Chapters 6 and 8 report corrected panel designs, that is not true
+  of `main`. Two landed receipts of the 2026-11-21 reproduction,
+  `standalone-stdout.json.gz` and `execution-code-sha256.json.gz`, contain the printed output
+  and the digests of held scripts.
+  - Scripts of `audits/2026-11-19_time_series_dml/`: `method_checks.py`, `retail_check.py`, `classical/replay.py`, `external/questions/minimum_wage.py`, `external/turnout/replay.py`, `adversarial/failures.py`, `adversarial/empirical.py`.
+  - Artifacts: `panel-draws.csv`, `insurance-panel-draws.csv`, `insurance-panel-summary.csv`, `insurance-rolling.csv`, `stress-draws.csv.gz`, `stress-summary.csv`, `retail-results.csv`, `retail-folds.csv`, `retail-baselines.json`, `adversarial/failures.json`, `adversarial/empirical.json`, `classical/results.json`, `external/turnout/household_counts.csv`.
+  - Reports: `09-panel-retail-insurance.md`, `panel-inference.md`, `10-property-tests-and-falsification.md`, `adversarial/failures.md`, `adversarial/empirical.md`, `questions/minimum-wage.md`.
+  - Of `audits/2026-11-21_evaluation_methods/`: `reproduction/design_probes.py`, `reproduction/design-probes.json`.
+- **3 further files are held for their licence**: the rows of the Survey of Professional
+  Forecasters and two receipts that embed them; see
+  [`docs/audits/DATA_SOURCES.md`](audits/DATA_SOURCES.md). Four files whose sources state no
+  licence that grants redistribution were held with them and landed by the owner's decision
+  of 2026-11-26: three result files of the ACIC study, which carry the organizers' true
+  effect for each contest file, and six announced cricket fixtures.
+- **Not landed either:** the end-to-end review of 2026-11-22 and the second audit it reviews
+  (their folders and tests), nine test files that need a held file, among them the test that
+  checks the numbers printed in the chapters, two tests that replay the cricket forecast (see
+  the known limits), the Monte Carlo scripts of Chapters 6 and 8, and the nightly workflow's
+  November changes. The `Nightly Tests` workflow last ran on 2026-10-19;
+  tier 3 and tier 4 have not run in CI since then. It is run once by hand when this stage of
+  the landing ends.
+- **The insurance monitor reports a randomized binary treatment as "critical"** when it is
+  called through the pipeline (#64).
+
+### The input contract of the estimators
+
+The contract: inputs are read by value and paired by position; what a conversion would misread
+is refused by the argument's name, and two pandas inputs with different indexes are refused. It
+arrives with the two changes below, in the docstring of `as_validated_arrays`
+(`dml_ts/dml/_utils.py`). No estimator on `main` follows it yet.
+
+| Estimator | Follows the contract |
+|---|---|
+| `fwl_estimate`, `robinson_estimator`, `double_ml` | From #79 on (open on 2026-11-26) |
+| `fwl_residualize`, `fwl_vs_ols_comparison`, `TemporalPLRDML`, `RollingWindowDML`, `DynamicGEstimationDML` | From the pull request of branch `fix/one-input-boundary` on (open on 2026-11-26; refs #77) |
+| `PanelDML` | Not yet: it casts unit and period identifiers to integers and reads labelled inputs by position without comparing them (#77). Its inputs are settled with its redesign |
+
+Before those two changes, every estimator but `double_ml` returns a wrong slope with no error
+for a treatment that carries the outcome's labels in another order: `fwl_estimate` and
+`robinson_estimator` give 0.90 and 0.91 where the arrays give 2.03, `TemporalPLRDML` -0.18
+where they give 2.09, and `PanelDML` -0.18 where they give 2.16; `RollingWindowDML` and both
+modes of `DynamicGEstimationDML` are wrong in the same way. `double_ml` raises `KeyError`
+(#75, #77).
+
+### Known limits of what is on `main`
+
+- `PanelDML` under confounding that is nonlinear in the controls: see above (#84).
+- **The archived cricket forecast replays only on some machines.** Its cross-fitting assigns
+  series to folds with scikit-learn's `GroupKFold`, which orders groups of equal size with an
+  unstable sort; 1,069 of the 1,078 series share their size with another. The RMSE of the
+  DML forecast is 12.5298 on the machine that issued it, 12.4767 there with a stable sort,
+  and 12.5793 on the CI runner. The issued forecast stands as issued; the two tests that
+  replay it are held (#86). The other four forecasts of that study use no folds and agree.
+- The default interval of `TemporalPLRDML` is far too short when few scored rows carry the
+  treatment's variation (one treated scored row: 7.5% coverage in 400 draws, #81), and under
+  persistent scores (#54).
+- The default learners are biased under persistent covariates (#51). With the lasso learner
+  the estimate depends on the treatment's units (1.97, 1.11 and 1.97 for a slope of 2 when the
+  treatment is multiplied by 1, 0.01 and 100); the default forest does not. The validation
+  gates cannot detect these failures (#56).
+- Series-mode g-estimation returns direct effects, not blips, under feedback from treatment to
+  state (#50).
+- `FREDLoader.get_macro_controls` returns no rows for the default monthly call under pandas 3
+  (#62). The 401(k) default control list includes post-treatment wealth (#63).
+- Open findings on the manuscript: #49, #57, #59, #65, #85.
+
+### Verified on 2026-11-26
+
+The gate was run on this change as built on `main` at `8feb54c`, in the locked environment
+(`uv sync --locked --all-extras`, Python 3.13):
+
+| Gate | Result |
+| --- | --- |
+| `ruff check`, `ruff format --check` | pass (143 files) |
+| `mypy dml_ts/` | no issues in 45 source files |
+| Test collection | 1,520 collected |
+| Tier 1 | 586 passed, 2 skipped |
+| Tier 1 + Tier 2, coverage | 1,304 passed, 6 skipped; coverage 85.50% (gate 70%) |
+| Examples | 8 of 8 run |
+| Doctests | 54 passed, 12 skipped |
+| Sphinx `-W` | build succeeded |
+| Book (`make`) | 190 pages |
+| Web (`npm run validate`) | 10 chapters, no errors |
+| Drift guard | every ported chapter matches its `.tex` |
+
+Not run: tier 3 and tier 4; the 31 test cases that replay external archives
+(`DML_TS_EXTERNAL_REPLAY=1`); `npm run build`.
+
+## June 2026 status
 
 The repository is a book-grade companion repo for Double Machine Learning pedagogy.
 It is not a deployable production software project.
 
-Current verdict: **healthy book companion.** The 2026-05-02 remediation closed the
+The June verdict was **healthy book companion.** The 2026-05-02 remediation closed the
 major methodology overclaims (false dynamic-g-estimation / CausalForest /
 production-grade language, broken snippets, time-series leakage, source-of-truth
 sprawl). Build, test, and docs toolchains now agree and are CI-gated. Active work has
@@ -146,8 +276,10 @@ validation modules), and two new runnable examples (`rolling_window`, `panel`).
 
 ## Canonical References
 
-- Current audit: `docs/audits/2026-05-30_repo_quality_methodology_audit.md`
-- Superseded audit: `docs/audits/2026-05-02_repo_quality_methodology_audit.md`
+- Current audits: the November 2026 folders listed in `docs/audits/README.md`
+- Data sources, licences and held files: `docs/audits/DATA_SOURCES.md`
+- Superseded audits: `docs/audits/2026-05-30_repo_quality_methodology_audit.md`,
+  `docs/audits/2026-05-02_repo_quality_methodology_audit.md`
 - Audit index: `docs/audits/README.md`
 - Historical status/reports: `docs/archive/superseded_2026-05-02/`
 - Active plans: `docs/plans/active/`

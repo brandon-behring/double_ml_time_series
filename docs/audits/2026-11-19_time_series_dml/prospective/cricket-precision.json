@@ -1,0 +1,29 @@
+{
+  "dml_vs_half": {
+    "midpoint": 0.694970047425,
+    "separation": 0.07325062835000007,
+    "se_for_80pct": 0.01307306803955417
+  },
+  "historical_precision_2025": {
+    "matches": 946,
+    "estimate": 3.5940803382663846,
+    "series": {
+      "clusters": 158,
+      "se": 3.019818304747057,
+      "ci95": [
+        -2.3706320517303245,
+        9.558792728263093
+      ]
+    },
+    "calendar_28d": {
+      "clusters": 14,
+      "se": 2.6340167173985645,
+      "ci95": [
+        -2.096366818600484,
+        9.284527495133254
+      ]
+    }
+  },
+  "two_sided_80pct_mde_pp_using_2025_series_se": 8.460278323966323,
+  "independent_946_matches_upper_sd_mde_pp": 9.108739231322847
+}

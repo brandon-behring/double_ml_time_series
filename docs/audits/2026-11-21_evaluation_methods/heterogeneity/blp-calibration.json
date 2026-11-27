@@ -1,0 +1,41 @@
+{
+  "seed": 20261121,
+  "n_train": 300,
+  "n_eval": 300,
+  "repetitions": 2000,
+  "alpha": 0.05,
+  "single_randomized_null_seed_7": {
+    "original": {
+      "slope": 1.0,
+      "se": 3.2658932162859846e-18,
+      "p": 0.0
+    },
+    "corrected": {
+      "slope": 0.006948977542290298,
+      "se": 0.12157357660465193,
+      "p": 0.9544188428248189
+    }
+  },
+  "legacy_homogeneous": {
+    "count": 2000,
+    "fraction": 1.0,
+    "mcse": 0.0
+  },
+  "corrected": {
+    "homogeneous": {
+      "count": 127,
+      "fraction": 0.0635,
+      "mcse": 0.005452877680637995
+    },
+    "aligned_modifier": {
+      "count": 1785,
+      "fraction": 0.8925,
+      "mcse": 0.006926173185822025
+    },
+    "unrelated_modifier": {
+      "count": 125,
+      "fraction": 0.0625,
+      "mcse": 0.005412658773652742
+    }
+  }
+}

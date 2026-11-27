@@ -1,0 +1,59 @@
+{
+  "source_commit": "3a919dc",
+  "nominal_coverage": 0.95,
+  "first_holm_step": {
+    "threshold": 0.0033333333333333335,
+    "max_covered_for_rejection_at_50": 42,
+    "crossing_probability": {
+      "0.8": 0.8095901884178105,
+      "0.85": 0.4812478513562785,
+      "0.9": 0.12214508360127828,
+      "1.0": 0.0
+    }
+  },
+  "cases": {
+    "one_47_of_50_and_14_fit_errors": {
+      "historical_exit_code": 0,
+      "current_exit_code": 1,
+      "current_counts": {
+        "INCOMPLETE": 14,
+        "NO_REJECTION": 1
+      },
+      "first_bias_p": 0.72,
+      "first_coverage_p": 0.7388986296011808,
+      "first_coverage_holm_p": 1.0
+    },
+    "one_42_of_50_and_14_at_48": {
+      "historical_exit_code": 0,
+      "current_exit_code": 3,
+      "current_counts": {
+        "NO_REJECTION": 14,
+        "UNDERCOVERAGE": 1
+      },
+      "first_bias_p": 0.72,
+      "first_coverage_p": 0.003188343222297595,
+      "first_coverage_holm_p": 0.04782514833446393
+    },
+    "all_50_of_50": {
+      "historical_exit_code": 2,
+      "current_exit_code": 0,
+      "current_counts": {
+        "NO_REJECTION": 15
+      },
+      "first_bias_p": 0.72,
+      "first_coverage_p": 0.1805617854208571,
+      "first_coverage_holm_p": 1.0
+    },
+    "one_500_of_500_and_14_at_475": {
+      "historical_exit_code": 0,
+      "current_exit_code": 2,
+      "current_counts": {
+        "NO_REJECTION": 14,
+        "OVERCOVERAGE": 1
+      },
+      "first_bias_p": 0.72,
+      "first_coverage_p": 1.748155052550848e-11,
+      "first_coverage_holm_p": 2.622232578826272e-10
+    }
+  }
+}

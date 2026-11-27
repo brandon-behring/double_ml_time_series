@@ -1,0 +1,154 @@
+{
+  "issuance_sha256": "163640289ef6a76d3537e9240fd8389435df846fb500e11fbba30994ad5b831c",
+  "status": "pending",
+  "reason": "Awaiting the 2028 questionnaire, verified assignment design, and released responses.",
+  "rows": [
+    {
+      "origin": "2026-11-21",
+      "method": "zero",
+      "forecast": 0.0,
+      "estimate": null,
+      "signed_error": null,
+      "squared_error": null,
+      "reason": "Later estimate unavailable",
+      "gain_vs_zero": null,
+      "gain_vs_historical": null,
+      "gain_vs_half_history": null,
+      "comparisons": {
+        "zero": {
+          "midpoint": 0.0,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "identical"
+        },
+        "historical": {
+          "midpoint": 21.1436070065,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "pending"
+        },
+        "half_history": {
+          "midpoint": 10.57180350325,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "pending"
+        }
+      },
+      "direction_vs_historical": "toward_zero"
+    },
+    {
+      "origin": "2026-11-21",
+      "method": "historical",
+      "forecast": 42.287214013,
+      "estimate": null,
+      "signed_error": null,
+      "squared_error": null,
+      "reason": "Later estimate unavailable",
+      "gain_vs_zero": null,
+      "gain_vs_historical": null,
+      "gain_vs_half_history": null,
+      "comparisons": {
+        "zero": {
+          "midpoint": 21.1436070065,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "pending"
+        },
+        "historical": {
+          "midpoint": 42.287214013,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "identical"
+        },
+        "half_history": {
+          "midpoint": 31.71541050975,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "pending"
+        }
+      },
+      "direction_vs_historical": "unchanged"
+    },
+    {
+      "origin": "2026-11-21",
+      "method": "half_history",
+      "forecast": 21.1436070065,
+      "estimate": null,
+      "signed_error": null,
+      "squared_error": null,
+      "reason": "Later estimate unavailable",
+      "gain_vs_zero": null,
+      "gain_vs_historical": null,
+      "gain_vs_half_history": null,
+      "comparisons": {
+        "zero": {
+          "midpoint": 10.57180350325,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "pending"
+        },
+        "historical": {
+          "midpoint": 31.71541050975,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "pending"
+        },
+        "half_history": {
+          "midpoint": 21.1436070065,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "identical"
+        }
+      },
+      "direction_vs_historical": "toward_zero"
+    },
+    {
+      "origin": "2026-11-21",
+      "method": "dml",
+      "forecast": 42.441534778,
+      "estimate": null,
+      "signed_error": null,
+      "squared_error": null,
+      "reason": "Later estimate unavailable",
+      "gain_vs_zero": null,
+      "gain_vs_historical": null,
+      "gain_vs_half_history": null,
+      "comparisons": {
+        "zero": {
+          "midpoint": 21.220767389,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "pending"
+        },
+        "historical": {
+          "midpoint": 42.3643743955,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "pending"
+        },
+        "half_history": {
+          "midpoint": 31.792570892249998,
+          "gain": null,
+          "gain_ci95": null,
+          "status": "pending"
+        }
+      },
+      "direction_vs_historical": "away_from_zero"
+    }
+  ],
+  "dml_vs_half": {
+    "midpoint": 31.792570892249998,
+    "separation": 21.297927771499996,
+    "se_for_80pct": 3.8010494261968946
+  },
+  "historical_wave_ses_pp": [
+    1.5382627031058007,
+    1.712422129455585,
+    2.060301614869377,
+    2.1795889612585735,
+    1.847576692671754,
+    1.775450820395436,
+    2.2569689885665594,
+    2.1294592753839408
+  ]
+}

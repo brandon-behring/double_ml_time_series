@@ -1,0 +1,81 @@
+{
+  "by_journal": {
+    "AEJ Applied": {
+      "empirical": 46,
+      "front_matter": 4,
+      "issued_items": 50,
+      "issues": 4,
+      "targets": {
+        "external applicability": 1,
+        "follow-up of original exposure": 17,
+        "historical": 25,
+        "model counterfactual": 3
+      }
+    },
+    "AER": {
+      "empirical": 78,
+      "front_matter": 11,
+      "issued_items": 125,
+      "issues": 11,
+      "targets": {
+        "effect projection": 1,
+        "follow-up of original exposure": 18,
+        "historical": 38,
+        "model counterfactual": 19,
+        "outcome prediction": 2
+      }
+    },
+    "QJE": {
+      "empirical": 34,
+      "front_matter": 0,
+      "issued_items": 40,
+      "issues": 4,
+      "targets": {
+        "effect projection": 2,
+        "external applicability": 1,
+        "follow-up of original exposure": 6,
+        "historical": 21,
+        "model counterfactual": 1,
+        "outcome prediction": 3
+      }
+    }
+  },
+  "data_access": {
+    "acquisition route unverified": 3,
+    "analysis inputs sampled": 12,
+    "application documented": 1,
+    "archive bytes sampled": 17,
+    "code; microdata route unverified": 1,
+    "guestbook required": 4,
+    "public aggregates; household histories restricted": 1,
+    "public aggregates; linked microdata separate": 2,
+    "publisher-linked deposit": 117
+  },
+  "empirical": 158,
+  "issued_items": 215,
+  "non_front_matter": 200,
+  "screen": {
+    "comment or reply": 9,
+    "editorial or lecture": 3,
+    "estimated structural model": 30,
+    "front matter": 15,
+    "measurement": 6,
+    "methods": 3,
+    "mixed randomized and observational": 2,
+    "observational": 14,
+    "predictive": 3,
+    "quantitative calibration": 7,
+    "quasi-experimental": 75,
+    "randomized": 28,
+    "theory": 20
+  },
+  "temporal_target": {
+    "effect projection": 3,
+    "external applicability": 2,
+    "follow-up of original exposure": 41,
+    "historical": 84,
+    "model counterfactual": 23,
+    "outcome prediction": 5
+  },
+  "verified_print_metadata": true
+}

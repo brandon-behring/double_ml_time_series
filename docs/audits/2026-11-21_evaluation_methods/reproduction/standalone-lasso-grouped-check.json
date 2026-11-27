@@ -1,0 +1,65 @@
+{
+  "rows_per_fit": 9915,
+  "fixture_sha256": "d4d4a8a4a06f7ebf89b9b9b96139ef0c2ca31178be728770d6c747f8dc8f51c4",
+  "seed": 42,
+  "zero_based_draws": [
+    0,
+    1,
+    2
+  ],
+  "historical_position_folds": [
+    6905.037616258989,
+    6348.893277365103,
+    7145.703770761024
+  ],
+  "corrected_household_folds": [
+    6900.843568407618,
+    6380.6969597843945,
+    7095.525133577897
+  ],
+  "paired_differences": [
+    -4.194047851371579,
+    31.803682419291363,
+    -50.17863718312765
+  ],
+  "corrected_tuning_trace": {
+    "LogisticRegressionCV": [
+      {
+        "records": 9915,
+        "folds": 5,
+        "overlap": 0
+      },
+      {
+        "records": 9915,
+        "folds": 5,
+        "overlap": 0
+      },
+      {
+        "records": 9915,
+        "folds": 5,
+        "overlap": 0
+      }
+    ],
+    "LassoCV": [
+      {
+        "records": 9915,
+        "folds": 5,
+        "overlap": 0
+      },
+      {
+        "records": 9915,
+        "folds": 5,
+        "overlap": 0
+      },
+      {
+        "records": 9915,
+        "folds": 5,
+        "overlap": 0
+      }
+    ]
+  },
+  "corrected_warnings": {
+    "ConvergenceWarning": 168
+  },
+  "scope": "Three exact common resamples; no interval coverage target in the observational data"
+}

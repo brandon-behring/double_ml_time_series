@@ -1,0 +1,41 @@
+suite,command,applications_or_simulation
+replications,italy,Italian bank capital
+replications,water,Cobb County water
+replications,turnout,Michigan turnout
+replications,wolfers,Divorce reform
+replications,beer,State beer taxes
+replications,dahl,Movies and assaults
+replications,drink-less,Drink Less
+replications,mybp,myBPmyLife
+replications,sicily,Sicily smoking ban
+replications,ramey,US fiscal multipliers
+questions,retail-timing,Dominick’s orange juice
+questions,electricity-shifting,Trondheim iFlex
+questions,wage-employment,Minimum wage
+questions,daycare-fines,Israeli day-care fines
+questions,reminder-habituation,Drink Less
+forward,reminder-cohorts,myBPmyLife
+forward,gdp-vintages,US GDP releases
+forward,pennsylvania-bonus,Pennsylvania bonus
+forward,canvassing-elections,Canvassing
+forward,progresa-schooling,PROGRESA
+forward,fertilizer-timing,Kenya fertilizer
+forward,microcredit-sites,Microcredit
+forward,ban-the-box,Ban the Box
+forward,retail-recommendations,Retail recommendations
+forward,bracero-wages,Bracero exclusion
+forward,teacher-pay,Indonesia teacher pay
+forward,weatherization,Michigan weatherization
+rolling,rolling-reminders,myBPmyLife
+rolling,rolling-calibration,"Stable, declining and composition-changing treatment effects; correlated alarms across origins and repeated use of the same participants"
+rolling,rolling-bootstrap,"Stable, declining and composition-changing treatment effects; correlated alarms across origins and repeated use of the same participants"
+rolling,rolling-controls,Retail recommendations / Repeated effort experiment / Sierra Leone development / Nudge units
+rolling,jtpa-holdout,JTPA
+prospective,shrinkage-replay,myBPmyLife
+prospective,cricket-toss,International cricket
+prospective,gss-forms,US GSS
+method_validation,classical-econometrics,US fiscal multipliers / National Supported Work / Grunfeld investment
+method_validation,classical-impulse,Known exogenous impulse responses and matched splits on known effects
+method_validation,paired-time-splits,Known exogenous impulse responses and matched splits on known effects
+method_validation,bangalore-pricing,Bangalore commuting
+method_validation,london-tariffs,London electricity

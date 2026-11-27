@@ -1,0 +1,24 @@
+{
+  "wave": 2028,
+  "status": "pending",
+  "reason": "Awaiting the 2028 questionnaire, verified assignment design, and released responses.",
+  "reviewer": null,
+  "design_source": null,
+  "questionnaire_source": null,
+  "english_form_x": null,
+  "english_form_y": null,
+  "context_and_languages": null,
+  "checks": {
+    "random_half_xy": null,
+    "same_form_wordings": null,
+    "same_ballots_and_population": null,
+    "same_response_codes": null,
+    "compatible_survey_weights_and_variance_design": null
+  },
+  "fieldwork_start": null,
+  "fieldwork_end": null,
+  "released": null,
+  "data_source": null,
+  "sha256": null,
+  "stata_member": null
+}

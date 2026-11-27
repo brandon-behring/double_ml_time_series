@@ -1,0 +1,400 @@
+{
+  "effort": {
+    "years": [
+      2015,
+      2018
+    ],
+    "rank_correlation": 0.907142857142857,
+    "arm_means_in_table_order": [
+      [
+        1521,
+        1367
+      ],
+      [
+        2029,
+        1966
+      ],
+      [
+        2132,
+        2119
+      ],
+      [
+        2175,
+        2146
+      ],
+      [
+        1883,
+        1801
+      ],
+      [
+        1907,
+        1780
+      ],
+      [
+        1918,
+        1839
+      ],
+      [
+        1602,
+        1476
+      ],
+      [
+        2004,
+        1953
+      ],
+      [
+        1970,
+        1940
+      ],
+      [
+        1896,
+        1975
+      ],
+      [
+        1977,
+        1837
+      ],
+      [
+        1848,
+        1774
+      ],
+      [
+        1761,
+        1642
+      ],
+      [
+        1740,
+        1627
+      ]
+    ],
+    "table_2_observed_reference": 0.91,
+    "table_2_authors_bootstrap_stability_reference": 0.93
+  },
+  "sierra_leone": {
+    "communities": 236,
+    "deployments": 1,
+    "hardware_table_1": {
+      "wave_2009": {
+        "effect": 0.2982083590425605,
+        "se": 0.03123445651426429
+      },
+      "wave_2016": {
+        "effect": 0.20377367888062892,
+        "se": 0.04046439128981882
+      },
+      "paired_change": {
+        "effect": -0.09443468016193157,
+        "se": 0.035872133871364995
+      },
+      "components": [
+        39,
+        30
+      ]
+    },
+    "hardware_common_items": {
+      "wave_2009": {
+        "effect": 0.3516794652450957,
+        "se": 0.035220436321324766
+      },
+      "wave_2016": {
+        "effect": 0.2081422856308001,
+        "se": 0.04082236035713611
+      },
+      "paired_change": {
+        "effect": -0.1435371796142956,
+        "se": 0.037314684586648536
+      },
+      "components": [
+        29,
+        29
+      ]
+    },
+    "institutions_table_a1": {
+      "wave_2009": {
+        "effect": 0.08521835331863029,
+        "se": 0.029815301804001607
+      },
+      "wave_2016": {
+        "effect": 0.06476084282103291,
+        "se": 0.026303661849489447
+      },
+      "paired_change": {
+        "effect": -0.020457510497597392,
+        "se": 0.03258603115627513
+      },
+      "components": [
+        44,
+        57
+      ]
+    },
+    "institutions_common_items": {
+      "wave_2009": {
+        "effect": 0.0774765960918867,
+        "se": 0.025139536492694937
+      },
+      "wave_2016": {
+        "effect": 0.06476084282103291,
+        "se": 0.026303661849489447
+      },
+      "paired_change": {
+        "effect": -0.012715753270853761,
+        "se": 0.031212546597287782
+      },
+      "components": [
+        57,
+        57
+      ]
+    }
+  },
+  "nudge_units": {
+    "arms": 241,
+    "trials": 126,
+    "arm_mean_pp": 1.389965156786079,
+    "schedule": [
+      {
+        "origin_year": 2016,
+        "method": "zero",
+        "forecast_pp": 0.0,
+        "early_trials": 23,
+        "held_out_trials": 26,
+        "mean_benchmark_pp": 2.53241391974824,
+        "mean_signed_error_pp": -2.53241391974824,
+        "mean_abs_error_pp": 2.671260073594394,
+        "mse_pp2": 25.64165272449658,
+        "advantage_vs_zero_pp2": 0.0
+      },
+      {
+        "origin_year": 2016,
+        "method": "historical",
+        "forecast_pp": 3.069724584913797,
+        "early_trials": 23,
+        "held_out_trials": 26,
+        "mean_benchmark_pp": 2.53241391974824,
+        "mean_signed_error_pp": 0.537310665165557,
+        "mean_abs_error_pp": 2.9881858248140962,
+        "mse_pp2": 19.51723521446258,
+        "advantage_vs_zero_pp2": 6.124417510033993
+      },
+      {
+        "origin_year": 2017,
+        "method": "zero",
+        "forecast_pp": 0.0,
+        "early_trials": 49,
+        "held_out_trials": 61,
+        "mean_benchmark_pp": 1.0818347298360658,
+        "mean_signed_error_pp": -1.0818347298360658,
+        "mean_abs_error_pp": 1.5632095932240437,
+        "mse_pp2": 7.132438695191706,
+        "advantage_vs_zero_pp2": 0.0
+      },
+      {
+        "origin_year": 2017,
+        "method": "historical",
+        "forecast_pp": 2.7846209666626858,
+        "early_trials": 49,
+        "held_out_trials": 61,
+        "mean_benchmark_pp": 1.0818347298360658,
+        "mean_signed_error_pp": 1.70278623682662,
+        "mean_abs_error_pp": 2.4815717122377614,
+        "mse_pp2": 8.861553280838395,
+        "advantage_vs_zero_pp2": -1.7291145856466899
+      },
+      {
+        "origin_year": 2018,
+        "method": "zero",
+        "forecast_pp": 0.0,
+        "early_trials": 110,
+        "held_out_trials": 16,
+        "mean_benchmark_pp": -0.3552904166666666,
+        "mean_signed_error_pp": 0.3552904166666666,
+        "mean_abs_error_pp": 1.7547095833333333,
+        "mse_pp2": 16.136369028636107,
+        "advantage_vs_zero_pp2": 0.0
+      },
+      {
+        "origin_year": 2018,
+        "method": "historical",
+        "forecast_pp": 1.8403485989679231,
+        "early_trials": 110,
+        "held_out_trials": 16,
+        "mean_benchmark_pp": -0.3552904166666666,
+        "mean_signed_error_pp": 2.1956390156345895,
+        "mean_abs_error_pp": 2.6022185325592755,
+        "mse_pp2": 20.83096843543776,
+        "advantage_vs_zero_pp2": -4.694599406801655
+      }
+    ],
+    "held_out_trials": 103,
+    "pooled_historical_advantage_pp2": -0.2073274269164151
+  },
+  "retail": {
+    "repetition": {
+      "1": {
+        "policy_arm": {
+          "pairs": 1509646,
+          "repeats": 1237801,
+          "observed": 0.8199279831165717,
+          "permuted_expectation": 0.8200492502455169,
+          "tied_timestamp_pairs": 419,
+          "observed_excluding_ties": 0.8198879293837176
+        },
+        "uniform_item": {
+          "pairs": 150768,
+          "repeats": 58683,
+          "observed": 0.3892271569563833,
+          "permuted_expectation": 0.03642761833505048,
+          "tied_timestamp_pairs": 21,
+          "observed_excluding_ties": 0.38914870611023766
+        },
+        "thompson_item": {
+          "pairs": 1358710,
+          "repeats": 596219,
+          "observed": 0.4388125501394705,
+          "permuted_expectation": 0.18881426625648776,
+          "tied_timestamp_pairs": 383,
+          "observed_excluding_ties": 0.4386830269883467
+        }
+      },
+      "2": {
+        "policy_arm": {
+          "pairs": 1510323,
+          "repeats": 1238462,
+          "observed": 0.8199981063653271,
+          "permuted_expectation": 0.8200446288516582,
+          "tied_timestamp_pairs": 439,
+          "observed_excluding_ties": 0.8199523936938202
+        },
+        "uniform_item": {
+          "pairs": 150840,
+          "repeats": 58645,
+          "observed": 0.3887894457703527,
+          "permuted_expectation": 0.036204594341260596,
+          "tied_timestamp_pairs": 33,
+          "observed_excluding_ties": 0.3886556990060143
+        },
+        "thompson_item": {
+          "pairs": 1359315,
+          "repeats": 565381,
+          "observed": 0.4159308180958792,
+          "permuted_expectation": 0.16297899003652955,
+          "tied_timestamp_pairs": 396,
+          "observed_excluding_ties": 0.41578931488926124
+        }
+      },
+      "3": {
+        "policy_arm": {
+          "pairs": 1510203,
+          "repeats": 1238300,
+          "observed": 0.8199559926711839,
+          "permuted_expectation": 0.8200348415637784,
+          "tied_timestamp_pairs": 306,
+          "observed_excluding_ties": 0.8199248028176757
+        },
+        "uniform_item": {
+          "pairs": 150837,
+          "repeats": 58538,
+          "observed": 0.3880878033904148,
+          "permuted_expectation": 0.03624175956083223,
+          "tied_timestamp_pairs": 29,
+          "observed_excluding_ties": 0.38797676515834706
+        },
+        "thompson_item": {
+          "pairs": 1359198,
+          "repeats": 530455,
+          "observed": 0.3902705860367658,
+          "permuted_expectation": 0.12950525549357997,
+          "tied_timestamp_pairs": 269,
+          "observed_excluding_ties": 0.3901653434432557
+        }
+      }
+    },
+    "late_weight_over_1000_cells": [
+      {
+        "hour_utc": "2019-11-28T00:00:00+00:00",
+        "position": 2,
+        "item": 22,
+        "rows": 15,
+        "seconds": 14.528498,
+        "propensity_range": [
+          1e-06,
+          1e-06
+        ],
+        "clicks": 0
+      },
+      {
+        "hour_utc": "2019-11-28T15:00:00+00:00",
+        "position": 2,
+        "item": 20,
+        "rows": 19,
+        "seconds": 179.30839,
+        "propensity_range": [
+          2.5e-05,
+          2.5e-05
+        ],
+        "clicks": 0
+      },
+      {
+        "hour_utc": "2019-11-29T13:00:00+00:00",
+        "position": 1,
+        "item": 5,
+        "rows": 7,
+        "seconds": 7.855344,
+        "propensity_range": [
+          5e-06,
+          5e-06
+        ],
+        "clicks": 0
+      }
+    ],
+    "policy_effect": {
+      "last_train_hour_utc": "2019-11-26T23:00:00+00:00",
+      "early_pp": 0.16384797769427706,
+      "later_pp": 0.1400726058288797,
+      "signed_error": {
+        "pp": 0.023775371865397354,
+        "ci95_pp_by_span_hours": {
+          "1": [
+            -0.05504916476917604,
+            0.10259990849997075
+          ],
+          "6": [
+            -0.05271914717345502,
+            0.10026989090424973
+          ],
+          "12": [
+            -0.051682059235176436,
+            0.09923280296597115
+          ],
+          "24": [
+            -0.03364184014722644,
+            0.08119258387802114
+          ]
+        }
+      },
+      "absolute_error_pp": 0.023775371865397354,
+      "zero_absolute_error_pp": 0.1400726058288797
+    },
+    "uniform_ctr_pct": 0.5417354214016625,
+    "dr_ctr_pct": 0.3608531493824827,
+    "weights": {
+      "rows": 1723359,
+      "mean": 1.2732982587087425,
+      "max": 29411.764705882353,
+      "effective_rows": 362.3748826752399,
+      "weight_mass_above_10_pct": 48.779167563263854,
+      "rows_above_1000": 41,
+      "weight_mass_above_1000_pct": 23.000245137375448,
+      "observed_items_per_position": {
+        "1": 34,
+        "2": 34,
+        "3": 34
+      }
+    },
+    "largest_weight_block": {
+      "hour_utc": "2019-11-28T00:00:00+00:00",
+      "weight_mass_pct": 20.87862314747422,
+      "dr_excluding_hour_pct": 0.5228247894129895,
+      "uniform_excluding_hour_pct": 0.5405773848848061
+    }
+  }
+}

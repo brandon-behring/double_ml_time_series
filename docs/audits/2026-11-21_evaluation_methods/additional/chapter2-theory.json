@@ -1,0 +1,15 @@
+{
+  "econml": "0.16.0",
+  "sklearn": "1.6.1",
+  "matched_editions": [
+    "chapter_02.tex",
+    "chapter02-neyman-orthogonality-dml.mdx"
+  ],
+  "results": {
+    "profile_cate": "Heterogeneous Treatment Effects by Age:\n============================================================\nAge 30:\n  True CATE:     2.600\n  Estimated:     2.047\n  95% CI:        [1.904, 2.190]\n\nAge 45:\n  True CATE:     1.400\n  Estimated:     1.198\n  95% CI:        [1.099, 1.297]\n\nAge 60:\n  True CATE:     0.200\n  Estimated:     0.349\n  95% CI:        [0.254, 0.444]",
+    "confounder": "True one-unit effect: 2.000\nFit omitting U: 2.242\nFit including U: 1.951\nChange between fits: +0.290\nChange as percent of true effect: +14.5%",
+    "exercise_setup": "",
+    "exercise_split": "Cross-fitted: 3.174 (absolute error 0.174)\nSame sample: 3.177 (absolute error 0.177)",
+    "exercise_learners": "Ridge: 3.619 (absolute error 0.619)\nShallow tree: 2.940 (absolute error 0.060)\nDeep tree: 1.877 (absolute error 1.123)\nRandom forest: 3.180 (absolute error 0.180)"
+  }
+}

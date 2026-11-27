@@ -1,0 +1,44 @@
+{
+  "estimation_rows": 14039,
+  "estimation_1998_controls": 3923,
+  "added_1998_treatment_rows": 5461,
+  "differing_fields_in_common_rows": {
+    "agedad": 3872,
+    "flag98": 425
+  },
+  "groups": {
+    "girls": {
+      "attending_treated": 166,
+      "n_treated": 223,
+      "attending_control": 117,
+      "n_control": 176,
+      "villages": 192,
+      "effect_pp": 7.962189156135347,
+      "village_se_pp": 5.33050443564208,
+      "village_ci95_pp": [
+        -2.5520282294541756,
+        18.47640654172487
+      ]
+    },
+    "boys": {
+      "attending_treated": 200,
+      "n_treated": 262,
+      "attending_control": 132,
+      "n_control": 182,
+      "villages": 196,
+      "effect_pp": 3.8084053351228997,
+      "village_se_pp": 4.972190351904166,
+      "village_ci95_pp": [
+        -5.997768620580363,
+        13.614579290826162
+      ]
+    }
+  },
+  "fortran": {
+    "ascii_rows": 19500,
+    "original_grade_seven_subsidy_model_pesos": {
+      "girls": 1745.1524658203125,
+      "boys": 1662.0499267578125
+    }
+  }
+}

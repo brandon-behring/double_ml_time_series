@@ -1,0 +1,57 @@
+{
+  "forecasts": [
+    {
+      "method": "zero",
+      "origin": "2023-07-01",
+      "value": 0.0
+    },
+    {
+      "method": "historical",
+      "origin": "2023-07-01",
+      "value": 0.016956344837
+    },
+    {
+      "method": "aipw",
+      "origin": "2023-07-01",
+      "value": 0.01011437697
+    }
+  ],
+  "protocol": {
+    "assignment_probabilities": {
+      "activity": 0.125,
+      "none": 0.75
+    },
+    "evaluation": "new enrollments in the calendar quarter beginning on the origin",
+    "features": [
+      "(age-60)/10",
+      "(study_day-55)/30",
+      "log1p(base_step)",
+      "log1p(prior_30min_steps)"
+    ],
+    "horizon": "steps in the next hour on study days 14 through 97",
+    "input_sha256": {
+      "baseline": "508ec238476d357be5f3e16255feb14da68a69bd1f543f5db53c2249000fa0cf",
+      "cohort": "f3bbf0b22aa211aa15f16017f702123b5f52b101c75324338b2699489fe13ebc",
+      "demographics": "0aa809ee3022485cdfdb8fc611a66f7a4baf3ea356a74aede2e71d9480b0931e",
+      "trials": "172296f6ec08e75b9e3b1a86452ed4b0c09628aaa464eccab7802131810d2251"
+    },
+    "learner": "Ridge alpha=1, unpenalized intercept, 5 whole-person folds",
+    "maturity": "enrollment + 98 days strictly before origin",
+    "methods": [
+      "zero",
+      "historical",
+      "aipw"
+    ],
+    "origins": [
+      "2023-07-01"
+    ],
+    "target": "activity-prompt assignment minus no-prompt assignment per eligible decision",
+    "tolerances": [
+      0.025,
+      0.05,
+      0.1
+    ],
+    "unit": "log(steps + 0.5)"
+  },
+  "version": 1
+}

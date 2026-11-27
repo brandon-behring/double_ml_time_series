@@ -1,0 +1,375 @@
+{
+  "gss": {
+    "source_sha256": "d4fd4e5057d53d6023e55d5114685430321c3ab00ef2bc11099c2358efc65dfe",
+    "history": [
+      {
+        "year": 2000,
+        "direct": 42.052944407185045,
+        "se": 1.5382627031058007,
+        "ols": 42.076817093349206,
+        "aipw": 42.105514420223265
+      },
+      {
+        "year": 2004,
+        "direct": 46.304376610668555,
+        "se": 1.712422129455585,
+        "ols": 46.456788319649746,
+        "aipw": 46.51646718830065
+      },
+      {
+        "year": 2006,
+        "direct": 44.11590592318717,
+        "se": 2.060301614869377,
+        "ols": 43.990010423998676,
+        "aipw": 43.97027563113621
+      },
+      {
+        "year": 2008,
+        "direct": 44.28256891954299,
+        "se": 2.1795889612585735,
+        "ols": 44.33593519031632,
+        "aipw": 44.43335462122998
+      },
+      {
+        "year": 2014,
+        "direct": 42.77958821448903,
+        "se": 1.847576692671754,
+        "ols": 42.583814556698286,
+        "aipw": 42.507986065569995
+      },
+      {
+        "year": 2021,
+        "direct": 39.042355110698665,
+        "se": 1.775450820395436,
+        "ols": 39.287459670877965,
+        "aipw": 39.39082847333939
+      },
+      {
+        "year": 2022,
+        "direct": 42.90097066985003,
+        "se": 2.2569689885665594,
+        "ols": 43.257055527266594,
+        "aipw": 43.378659469124756
+      },
+      {
+        "year": 2024,
+        "direct": 36.819002244816204,
+        "se": 2.1294592753839408,
+        "ols": 37.128938410086946,
+        "aipw": 37.22919235408709
+      }
+    ],
+    "later_waves": [
+      {
+        "year": 2004,
+        "target": 46.304376610668555,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 42.052944407185045,
+          "half_history": 21.026472203592522,
+          "aipw": 42.105514420223265,
+          "standardized_ols": 42.076817093349206,
+          "latest_wave": 42.052944407185045,
+          "last_three": 42.052944407185045,
+          "inverse_variance": 42.05294440718505
+        }
+      },
+      {
+        "year": 2006,
+        "target": 44.11590592318717,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 44.1786605089268,
+          "half_history": 22.0893302544634,
+          "aipw": 44.31099080426196,
+          "standardized_ols": 44.266802706499476,
+          "latest_wave": 46.304376610668555,
+          "last_three": 44.1786605089268,
+          "inverse_variance": 43.95153675368228
+        }
+      },
+      {
+        "year": 2008,
+        "target": 44.28256891954299,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 44.15774231368025,
+          "half_history": 22.078871156840126,
+          "aipw": 44.197419079886714,
+          "standardized_ols": 44.17453861233255,
+          "latest_wave": 44.11590592318717,
+          "last_three": 44.15774231368025,
+          "inverse_variance": 43.99028953156632
+        }
+      },
+      {
+        "year": 2014,
+        "target": 42.77958821448903,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 44.18894896514594,
+          "half_history": 22.09447448257297,
+          "aipw": 44.256402965222534,
+          "standardized_ols": 44.21488775682849,
+          "latest_wave": 44.28256891954299,
+          "last_three": 44.90095048446624,
+          "inverse_variance": 44.041148629412056
+        }
+      },
+      {
+        "year": 2021,
+        "target": 39.042355110698665,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 43.907076815014555,
+          "half_history": 21.953538407507278,
+          "aipw": 43.906719585292024,
+          "standardized_ols": 43.88867311680245,
+          "latest_wave": 42.77958821448903,
+          "last_three": 43.726021019073066,
+          "inverse_variance": 43.79520089462591
+        }
+      },
+      {
+        "year": 2022,
+        "target": 42.90097066985003,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 43.096289864295244,
+          "half_history": 21.548144932147622,
+          "aipw": 43.15407106663326,
+          "standardized_ols": 43.121804209148365,
+          "latest_wave": 39.042355110698665,
+          "last_three": 42.03483741491023,
+          "inverse_variance": 42.96670533003383
+        }
+      },
+      {
+        "year": 2024,
+        "target": 36.819002244816204,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 43.06838712223164,
+          "half_history": 21.53419356111582,
+          "aipw": 43.18615512413204,
+          "standardized_ols": 43.141125826022396,
+          "latest_wave": 42.90097066985003,
+          "last_three": 41.57430466501258,
+          "inverse_variance": 42.96030491686073
+        }
+      }
+    ],
+    "rmse": {
+      "zero": 42.42941235570046,
+      "historical": 3.440078311403079,
+      "half_history": 20.793600702208938,
+      "aipw": 3.4666466186353277,
+      "standardized_ols": 3.453188937771153,
+      "latest_wave": 3.6054912982719003,
+      "last_three": 3.114348997439544,
+      "inverse_variance": 3.3824783290794076
+    }
+  },
+  "cricket": {
+    "source_sha256": "6ed9c19769f0a8430fbd3fd5d6762990e5ace58b66220809b4f811f6e20d876c",
+    "later_years": [
+      {
+        "year": 2015,
+        "matches": 63,
+        "target": 36.507936507936506,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 6.7391304348,
+          "half_history": 3.3695652174,
+          "dml": 8.6995877825,
+          "latest_year": 14.141414141414142
+        }
+      },
+      {
+        "year": 2016,
+        "matches": 118,
+        "target": 3.389830508474576,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 10.3250478011,
+          "half_history": 5.16252390055,
+          "dml": 10.6810665752,
+          "latest_year": 36.507936507936506
+        }
+      },
+      {
+        "year": 2017,
+        "matches": 63,
+        "target": -17.46031746031746,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 9.0483619345,
+          "half_history": 4.52418096725,
+          "dml": 9.8385260044,
+          "latest_year": 3.389830508474576
+        }
+      },
+      {
+        "year": 2018,
+        "matches": 187,
+        "target": -0.5347593582887701,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 6.6761363636,
+          "half_history": 3.3380681818,
+          "dml": 6.0884433495,
+          "latest_year": -17.46031746031746
+        }
+      },
+      {
+        "year": 2019,
+        "matches": 347,
+        "target": -1.1527377521613833,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 5.1627384961,
+          "half_history": 2.58136924805,
+          "dml": 4.4821464087,
+          "latest_year": -0.5347593582887701
+        }
+      },
+      {
+        "year": 2020,
+        "matches": 121,
+        "target": -0.8264462809917356,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 3.3925686591,
+          "half_history": 1.69628432955,
+          "dml": 3.333737132,
+          "latest_year": -1.1527377521613833
+        }
+      },
+      {
+        "year": 2021,
+        "matches": 390,
+        "target": 0.0,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 3.016924209,
+          "half_history": 1.5084621045,
+          "dml": 2.2367684865,
+          "latest_year": -0.8264462809917356
+        }
+      },
+      {
+        "year": 2022,
+        "matches": 654,
+        "target": -4.740061162079511,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 2.3441966838,
+          "half_history": 1.1720983419,
+          "dml": 2.3144067328,
+          "latest_year": 0.0
+        }
+      },
+      {
+        "year": 2023,
+        "matches": 603,
+        "target": 1.1608623548922057,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 0.4161464836,
+          "half_history": 0.2080732418,
+          "dml": 1.162151114,
+          "latest_year": -4.740061162079511
+        }
+      },
+      {
+        "year": 2024,
+        "matches": 959,
+        "target": 1.251303441084463,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 0.5655355955,
+          "half_history": 0.28276779775,
+          "dml": 0.6967036658,
+          "latest_year": 1.1608623548922057
+        }
+      },
+      {
+        "year": 2025,
+        "matches": 946,
+        "target": 3.5940803382663846,
+        "forecasts": {
+          "zero": 0.0,
+          "historical": 0.7313997478,
+          "half_history": 0.3656998739,
+          "dml": 0.8981111007,
+          "latest_year": 1.251303441084463
+        }
+      }
+    ],
+    "rmse": {
+      "zero": 12.39420614318539,
+      "historical": 12.845868957238443,
+      "half_history": 12.319298162828943,
+      "dml": 12.529831964394214,
+      "latest_year": 14.716196066602867
+    },
+    "estimation_2025": {
+      "training_matches": 3965,
+      "test_matches": 946,
+      "effects": {
+        "unadjusted": {
+          "estimate": 3.5940803382663846,
+          "clusters": 158,
+          "se": 3.019818304747057,
+          "ci95": [
+            -2.3706320517303245,
+            9.558792728263093
+          ],
+          "sharp_null_randomization_sd": 3.202802834575712
+        },
+        "pooled_ridge": {
+          "estimate": 2.8601140113756727,
+          "clusters": 158,
+          "se": 2.764676462957355,
+          "ci95": [
+            -2.600644977670615,
+            8.32087300042196
+          ],
+          "sharp_null_randomization_sd": 2.94070034484852
+        },
+        "arm_ridge": {
+          "estimate": 2.717120262344543,
+          "clusters": 158,
+          "se": 2.8597401416650925,
+          "ci95": [
+            -2.9314074746874637,
+            8.365647999376549
+          ],
+          "sharp_null_randomization_sd": 2.947375123928114
+        }
+      }
+    }
+  },
+  "jtpa": {
+    "source_sha256": "3607617e265ec3eac11436f3f19a25e43e3ecf53ba6de6b98a9dede53cc3a76b",
+    "history": {
+      "n": 3191,
+      "pooled": 131.33922051033858,
+      "se": 48.65143468507018,
+      "site_standardized": 137.9437010656308,
+      "site_standardized_se_fixed_mix": 48.28710166645115
+    },
+    "holdout": {
+      "n": 1832,
+      "pooled": -14.285142286502378,
+      "se": 61.77441121169787,
+      "site_standardized": -12.689145509372455,
+      "site_standardized_se_fixed_mix": 60.97382687525875
+    },
+    "historical_aipw": 138.4504005176387,
+    "later_observed_at_new_sites": {
+      "NE": 246,
+      "MN": 182
+    }
+  }
+}
