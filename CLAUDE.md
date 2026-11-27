@@ -75,13 +75,12 @@ Overfull/underfull boxes are currently reported but not yet blocking.
 
 ## Current Baseline
 
-Audit baseline from 2026-05-02:
+The current gate numbers (tests collected and passed by tier, coverage, book pages, docs and
+web checks) are kept in one place only: [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md),
+section "Baseline", with the commit they were measured on. Re-measure with the commands under
+"Required Commands" before quoting a number.
 
-- 796 tests collected before this remediation pass
-- Tier 1: 314 tests
-- Tier 1 + Tier 2: 615 tests
-- Book PDF: 205 pages
-- Sphinx requires docs dependencies
+- Sphinx requires the docs dependencies
 - Generated artifacts remain tracked until a separate cleanup decides whether to untrack
   or freeze them
 

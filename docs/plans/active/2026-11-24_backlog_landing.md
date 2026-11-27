@@ -271,19 +271,20 @@ Part I (a box is ticked when the pull request is merged and its issues are check
 - [x] PR-1 `fix/core-numerics-42` (#69, merged 2026-11-25 as `257022d`; #42 stays open)
 - [x] PR-1b `fix/silent-wrong-slopes-72` (#74, merged 2026-11-25 as `19a8911`; #72 closed, #42 stays open)
 - [x] PR-2 `fix/validation-inference` (#78, merged 2026-11-25 as `dc917cf`; #41, #61, #63 stay open)
-- [ ] PR-1c `fix/series-labels-and-constant-scored-rows` (#75, #76)
+- [x] PR-1c `fix/series-labels-and-constant-scored-rows` (#79, merged 2026-11-27 as `c84ce72`; #75, #76 closed)
 - [x] PR-3 `fix/applications-pipeline` (#80, merged 2026-11-26 as `8feb54c`; #60 closed, #44, #62, #64 stay open)
-- [ ] PR-1d `fix/one-input-boundary` (#77; the input rule in every estimator but `PanelDML`)
-- [ ] PR-4 `docs/november-audits` (#65, #70)
-- [ ] PR-5 `audit/public-data-extensions-2026-11-21`
-- [ ] Conservation check against the manifest
-- [ ] Part III residual patch saved
-- [ ] `Nightly Tests` re-enabled and observed once
+- [ ] PR-1d `fix/one-input-boundary` (#82, open, held for the owner's decision; #77; the input rule in every estimator but `PanelDML`)
+- [x] PR-4 `docs/november-audits` (#83, merged 2026-11-27 as `4e61710`; #65, #70, #86 stay open)
+- [x] PR-5 `audit/public-data-extensions` (#87, merged 2026-11-27 as `2415b95`)
+- [ ] PR-6 `fix/monitor-alerts-64` (#89, open; #64)
+- [x] Conservation check against the manifest (2026-11-27, against `c84ce72`: 234 paths, none unlisted)
+- [x] Part III residual patch saved (2026-11-27: 179 patches, local backup folder)
+- [ ] `Nightly Tests` re-enabled and observed once (dispatched once on 2026-11-27, tier 3 passed; the schedule does not fire, #88)
 
 Part II
 
-- [ ] Design gate (owner's choice)
-- [ ] Protocol frozen and hashed
+- [x] Design gate (owner's choice, 2026-11-27)
+- [x] Protocol frozen and hashed (2026-11-27; SHA-256 in Addendum 6)
 - [ ] Implementation
 - [ ] Validation
 - [ ] Decision gate (owner's choice)
@@ -1078,3 +1079,130 @@ had introduced, so #79 was repaired on its branch and waits for a new go-ahead.
 - **Lesson.** Whether a container can be cast is not whether it holds numbers. A reader that
   falls back on a cast must first look at what it is casting; the matrix of input kinds needs
   the kinds that libraries cast silently (timezone-aware dates, object arrays of scalars).
+
+## Addendum 5, 2026-11-26 (evening): decisions at the fourth stop
+
+The full text of the addendum (decisions, order, rules) is in the session's plan file, of which
+a copy is in the landing's local backup folder (`plans/`). Its decisions are recorded here with
+what was done. The record of the fourth stretch itself is on #82's branch (`88407d8`) and lands
+with it.
+
+### Decisions taken at the fourth stop (the owner's)
+
+| Decision | Choice |
+|---|---|
+| Merging | One more independent review of the final heads of #79 and #82; they merge if it finds no regression for a valid input and no wrong returned number. #83 and #87 merge once the decisions are applied and CI is green |
+| Licence holds | The three ACIC files and the six fixture rows land; `gdp-survey.csv` and the two receipts that embed it stay held |
+| Controls of `robinson_estimator` and `double_ml` | With one of the package's own learners, datetime, timedelta, complex and text controls are refused by name; numeric controls reach the learner unchanged; a learner the caller supplies gets the controls untouched |
+| Receipts with output of held `PanelDML` scripts | Kept as landed |
+| Defaults | #87's README loses the first paragraph of its handoff note; in `double_ml` the check applies whenever any built-in learner sees X; #64 is one small pull request that stops for a go-ahead; the exit record and the Part II design note go in one documents-only pull request |
+
+### Record of step 1: the controls decision (#82)
+
+- `b8dae4c` adds `refuse_non_numeric_controls` (`dml_ts/dml/_utils.py`) and calls it in
+  `robinson_estimator` and `double_ml` when a built-in learner receives X. It only checks: the
+  learner is handed the caller's object.
+- `88407d8` adds the test that a mutation showed missing (masked controls with a supplied
+  learner) and drops a default that cannot occur.
+- Before and after, against `85374d7`: no number changed in the 968 cells of
+  `before_after_matrix.py`. In the 731 cells of `before_after_learners.py`, 48 went from a
+  number to a refusal of exactly the decided kind, no other number changed, and none of the
+  215 cells with a supplied learner changed.
+- Gate on `88407d8`: 2,051 collected, tier 1 + 2 1,866 passed, coverage 83.59%; 63 of 63
+  mutations caught.
+
+### Record of step 3: #83 and #87
+
+- #83: the four files restored from the snapshot (`02f1379`), with `DATA_SOURCES.md`, the
+  dataset ledger, the status document and the changelog. `verify.py` matched 3,200 keys
+  (largest difference 6.93e-14); a fresh `run.py` reproduced `draws.csv` and `by-design.csv`
+  byte for byte. Gate and CI green; merged as `4e61710`.
+- #87: the README's handoff paragraph removed (`a3d5bc0`), #83's branch merged in (`8fb7ac6`).
+  Closed and reopened so that CI ran against `main`; merged as `2415b95`.
+
+### The interruption
+
+At 20:17 EST on 2026-11-26 the machine was powered off after a global out-of-memory event,
+while step 2 (the review of the final heads) and the PR-6 mutation run were in progress. 71
+Python processes of about 1.9 GiB each were running; another session's log attributes them,
+by inference, to this repository's review agents, and the review's own driver started 20
+workers per state for three or four states. The stop report of this addendum was never
+written; Addendum 6 completed its steps.
+
+## Addendum 6, 2026-11-27: review of the work, the guard, and the exit from Part I
+
+The full text is in the session's plan file (copy in the local backup folder, `plans/`).
+
+### Findings of the review
+
+1. The interruption left three things at risk: PR-6 on one disk, Addendum 5's record and the
+   design note outside the repository, and the merge rule of #79 and #82 unmet while half of
+   their review was unjudged.
+2. The workflow's parallelism can take the machine down: the design note's cost line assumed 64
+   workers, about the whole memory.
+3. The input-contract work has reached diminishing returns: each review round of #79 found a
+   regression in the previous repair. After #82 the contract is frozen; new edge cases become
+   comments on #77.
+4. The status document contradicted itself (a June half with its own baseline and roadmap
+   under the November section), and `CLAUDE.md`'s baseline was from 2026-05-02.
+5. Tier 3 and tier 4 had not run in CI for 39 days.
+6. Readers see known errors: Chapter 6 (#84), Chapter 8's numbers, #65.
+7. The design note's method is sound; its cost line needs a memory budget.
+8. Two older plans were stale (content expansion, the Track 3 handoff).
+9. #46 can be closed by a scaffold bump to `^4.26.x`.
+
+### Decisions taken on 2026-11-27 (the owner's)
+
+| Decision | Choice |
+|---|---|
+| Part II design gate | The note's bundle: B and C, with A; the nuisance treatment a required argument; `forward_date` out of the first release; `fit_frame` after the estimator passes; `panel_standard_error` early, in its own pull request; the protocol as drafted, with the cost recomputed under a memory cap |
+| Chapter 10's monitor listings | Updated in both editions inside PR-6 |
+| Manuscript | A parallel track during Part II; known-issue callouts in Chapters 6 and 8 now |
+| The working copy | Retired at the exit from Part I: verified, moved aside, never deleted; a fresh clone takes its path |
+
+### The guard (applies to every run)
+
+- A run that starts more than one Python process goes under
+  `systemd-run --user --scope -p MemoryMax=40G -p MemorySwapMax=0`.
+- At most 16 concurrent Python processes per job and one heavy job of this repository at a
+  time, started only with at least 60 GiB available.
+- Review agents: at most 4 workers per state and three states; mutation runs at most 8 jobs.
+- A new virtual environment needs at least 20 GiB free on the disk.
+
+### Record
+
+- **Secured.** PR-6 pushed to the private mirror as a backup branch; both session plans copied
+  to the local backup folder; the second-disk copy refreshed.
+- **Final-heads review of #79 and #82.** A fresh agent judged the unjudged differences and
+  finding scripts; each finding was re-run. One regression in #82: a one-field structured float
+  array as Y or T (`dtype=[("a", "f8")]`), which `main` and #79 read (2.109180), is refused by
+  `TemporalPLRDML`, `RollingWindowDML` and `DynamicGEstimationDML`. #82's changelog also omits
+  that object arrays with datetime or timedelta columns beside numeric ones returned a number on
+  `main`. No wrong number was found. #79 was closed and reopened for CI against `main`, merged
+  as `c84ce72`; `stored_checks.py` passes on `main`, and #75 and #76 are closed. #82 is held for
+  the owner: (a) a documentation commit that lists the refusal, then merge, or (b) a code repair
+  and a new review. Pre-existing on `main` and filed: the R² at extreme scales (#90).
+- **PR-6 (#89).** Chapter 10's listings rewritten in both editions and checked against the
+  package (0 mismatches in 1,721 cases). A fresh-agent review of `56b73cb` found eleven points;
+  each was re-run and answered (the pull request's description lists them). Gate on `41f5bc9`
+  green (1,559 passed in tier 1 + 2, coverage 86.03%), 48 of 48 mutations caught, CI green.
+  Waits for a go-ahead.
+- **Conservation check.** The 234 paths in which the snapshot differs from `main` (`c84ce72`)
+  were classified one by one (a fresh agent, then re-checked): none is unlisted. Held whole
+  files equal the pre-landing `main`; held new files are absent from `main`; the held parts of
+  split files equal the pre-landing `main` apart from recorded deviations.
+- **Part III residual.** 179 patches in the local backup folder (`part3-residual/`): 143 new
+  files, 12 whole files, the held hunks of 8 split files, and the two cricket tests held for
+  #86. Each passes `git apply --3way --check` against `c84ce72`; applied together they
+  reproduce the snapshot's files. One hunk differs from the snapshot's side: it keeps
+  `is_numerically_constant` for #79's refusal. The snapshot's `PanelDML` does not carry
+  `main`'s absorbed-treatment guard (#69): Part II must carry that case.
+- **Nightly.** Dispatched once (run 46024713734): tier 3 passed in 43 minutes; tier 4 runs only
+  on the Sunday schedule. The schedule has not fired since 2026-10-19: #88.
+- **The working copy.** Its tree equals the snapshot's (`c560e48`) and its status hash is
+  unchanged; its ignored folders are archived on the second disk, and the licence-held files
+  and local settings are copied aside. The move was not made: an editor had the folder open.
+  A fresh clone is staged and takes the path when the move is made.
+- **Protocol.** `docs/plans/active/2026-11-27_paneldml_protocol.md`, SHA-256
+  `b7cce6c29e00458eb2e9b7b2a60d644bcb1d2bf2e05c95b66b14c459340e1cd1`, frozen in this pull
+  request before any study run.
