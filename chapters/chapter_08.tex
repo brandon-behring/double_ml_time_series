@@ -12,6 +12,20 @@
 
 \section{Introduction}\label{sec:ch08_introduction}
 
+\begin{warnbox}[Known issue]
+The four printed outputs of this chapter do not reproduce with the current package. The
+\texttt{PanelDML} listing of Section~\ref{sec:panel_dml_pricing} prints $-0.8553$ with a standard
+error of $0.0330$; the package returns $-0.8531$ with $0.0175$, an interval of
+$[-0.8873, -0.8189]$ that excludes the true $-0.8$. The comparison without fixed effects prints
+$-0.523$ and $-0.785$, and the package returns $-1.581$ and $-0.853$. The rolling-window listing
+of Section~\ref{sec:ch08_rolling_window} prints $-0.812$, $-0.648$ and a shift of $-20.2\%$, and the
+package returns $-1.505$, $-1.092$ and $-27.4\%$. Exercise~\ref{ex:dgp_validation} prints a
+coverage of 93.0\%; in the same 100 draws the package reaches 21.0\%, with a mean standard error of
+0.0186 against an empirical one of 0.0227. The chapter uses the panel estimator of
+Chapter~\ref{ch:panel_dml}, which is being redesigned (see the note at the start of that
+chapter), and it will be recomputed with it.
+\end{warnbox}
+
 Chapters 5--7 developed the theoretical and computational infrastructure for time series causal inference: TemporalPLRDML, Panel DML, HAC inference, and FRED integration. This chapter synthesizes these tools into a \textbf{research application}: estimating how competitor pricing affects insurance/annuity sales in reproducible companion-code examples.
 
 \keyresult{

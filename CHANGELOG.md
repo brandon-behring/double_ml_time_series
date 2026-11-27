@@ -35,6 +35,12 @@ are the compatibility contract).
 
 ### Changed
 
+- Chapters 6 and 8, in both editions, open with a known-issue note. Chapter 6's says that its
+  `PanelDML` demeans the controls before the learners see them and is biased under confounding
+  nonlinear in controls that differ between units (#84), and that its listing and Monte Carlo
+  table reproduce. Chapter 8's gives, for each of its four printed outputs, what the chapter
+  prints and what the package returns; none reproduces. Both chapters are recomputed with the
+  redesigned panel estimator.
 - `RollingWindowDML` fits complete windows of exactly `window_size` consecutive rows. Starts
   advance by `step_size` from row 0, and the reported center is `start + window_size // 2`.
   Before, windows were cut around centers: an odd `window_size` gave windows of

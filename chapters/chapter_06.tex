@@ -10,6 +10,21 @@
 
 \section{Introduction}\label{sec:ch06_introduction}
 
+\begin{warnbox}[Known issue]
+The \texttt{PanelDML} estimator of this chapter removes the fixed effects from the controls, as
+well as from the outcome and the treatment, before any nuisance learner is fitted. A learner that
+sees only the demeaned controls cannot represent confounding that is nonlinear in the controls'
+levels when those levels differ between units, and the estimate is then biased. In 40 simulated
+panels of 40 units and 15 periods, with a true slope of 2, controls that carry each unit's effect
+and confounding through $x^2$, the default random forest gave a mean bias of $+1.07$, and
+none of the 40 nominal 95\% intervals contained the true slope; with confounding linear
+in $x$ the bias was $+0.01$ and 36 of the 40 intervals contained it. The listing and the Monte Carlo table of
+Section~\ref{sec:panel_dml} reproduce with the current package: in both, the controls are drawn
+independently of the unit effects. The estimator is being redesigned (issue~\#84 of the companion
+repository), and this chapter will be revised with it. Until then, do not rely on its panel
+estimates when the confounding may be nonlinear in controls that differ between units.
+\end{warnbox}
+
 Chapter 5 introduced TemporalPLRDML for single time series with autocorrelation. Many economic applications involve \textbf{panel data}---repeated observations on multiple units over time. This chapter develops DML methods for panel data, addressing both fixed effects and time-varying treatment effects.
 
 \keyresult{
