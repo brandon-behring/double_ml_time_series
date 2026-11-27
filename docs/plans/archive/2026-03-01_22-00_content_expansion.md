@@ -1,5 +1,9 @@
 # Content Expansion Roadmap
 
+> **Archived 2026-11-27.** Superseded by the roadmap in `docs/CURRENT_STATUS.md`. Its Chapter 4
+> work was done and later cut back; book content expansion stays a deferred item there, to be
+> planned again from a new baseline. Paths below are as they were when it was written.
+
 **Created**: 2026-03-01
 **Objective**: Expand book from 180 pages to ~285 pages (thin chapters + worked examples)
 **Status**: Deferred as of 2026-05-02

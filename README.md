@@ -25,14 +25,9 @@ Use [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md) as the only current project
 source. Older reports and roadmaps are archived under
 [docs/archive/superseded_2026-05-02](docs/archive/superseded_2026-05-02/ARCHIVE_INDEX.md).
 
-Audit baseline from 2026-05-02:
-
-- 796 tests collected before this remediation pass
-- Tier 1: 314 tests
-- Tier 1 + Tier 2: 615 tests
-- Book PDF: 205 pages
-- Sphinx docs require optional docs dependencies
-- Book build had no recorded fatal TeX errors, but overfull boxes remain known issues
+The current gate numbers (tests by tier, coverage, book pages, docs and web checks) are kept in
+one place: [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md), section "Baseline", with the
+commit they were measured on. Sphinx docs require the optional docs dependencies.
 
 ## Installation
 
