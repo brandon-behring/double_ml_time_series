@@ -355,7 +355,7 @@ def check_treatment_shift(
 
 \subsection{Nuisance Model Degradation}
 
-DML validity requires well-fitting nuisance models. We monitor nuisance $R^2$, not treatment effect accuracy (which is unknowable):
+DML validity requires well-fitting nuisance models. We monitor nuisance $R^2$, not treatment effect accuracy (which is unknowable). The two models are judged separately. An outcome $R^2$ below 0.30 is critical and one below 0.50 a warning, the thresholds of earlier versions; a low outcome $R^2$ can mean a poor outcome model or an outcome that is mostly noise, and the monitor cannot tell the two apart. A treatment $R^2$ below 0.50 is only a warning, never critical: a randomized treatment has an $R^2$ near zero by design, and the monitor cannot tell that case from a treatment model that misses confounders.
 
 % Nuisance degradation monitoring
 \begin{minted}[fontsize=\small]{python}
@@ -365,18 +365,19 @@ def check_nuisance_degradation(
     warning_threshold: float = 0.50,
     critical_threshold: float = 0.30,
 ) -> MonitoringResult:
-    """Check nuisance model fit quality."""
+    """Check nuisance model fit quality, one rule per model."""
 
-    min_r2 = min(r2_propensity, r2_outcome)
-
-    if min_r2 < critical_threshold:
+    # Outcome model: a poor fit can bias the effect estimate.
+    if r2_outcome < critical_threshold:
         level = AlertLevel.CRITICAL
-        message = f"Nuisance fit poor (R²={min_r2:.2f}). DML may be biased."
-    elif min_r2 < warning_threshold:
+    elif r2_outcome < warning_threshold:
         level = AlertLevel.WARNING
-        message = f"Nuisance fit degraded (R²={min_r2:.2f})"
     else:
         level = AlertLevel.OK
+
+    # Treatment model: a low R^2 is a warning, never critical.
+    if r2_propensity < warning_threshold and level == AlertLevel.OK:
+        level = AlertLevel.WARNING
 
     return MonitoringResult(...)
 \end{minted}
@@ -391,7 +392,7 @@ Poor nuisance fit indicates potential bias. But we cannot directly measure treat
 
 \subsection{Effect Stability}
 
-Large changes in estimated treatment effects over time warrant investigation:
+Large changes in estimated treatment effects over time warrant investigation. When both estimates carry a standard error, the change is measured in standard errors, $z = (\hat\theta_{\text{current}} - \hat\theta_{\text{baseline}}) / \sqrt{\text{se}_{\text{current}}^2 + \text{se}_{\text{baseline}}^2}$. When a standard error is missing, the monitor falls back to the relative change:
 
 % Effect stability monitoring
 \begin{minted}[fontsize=\small]{python}
@@ -400,21 +401,34 @@ def check_effect_stability(
     baseline_effect: float,
     current_se: Optional[float] = None,
     baseline_se: Optional[float] = None,
+    z_warning: float = 1.96,
+    z_critical: float = 3.0,
 ) -> MonitoringResult:
     """Monitor treatment effect stability over time."""
 
-    if abs(baseline_effect) < 1e-10:
-        relative_change = float("inf") if abs(current_effect) > 1e-10 else 0.0
+    if current_se is not None and baseline_se is not None:
+        # Both standard errors given: the change in standard errors.
+        combined_se = np.sqrt(current_se**2 + baseline_se**2)
+        z = (current_effect - baseline_effect) / combined_se
+        metric, warning, critical = abs(z), z_warning, z_critical
     else:
-        relative_change = abs(current_effect - baseline_effect) / abs(baseline_effect)
+        # A standard error missing: the relative change.
+        if abs(baseline_effect) < 1e-10:
+            metric = float("inf") if abs(current_effect) > 1e-10 else 0.0
+        else:
+            metric = abs(current_effect - baseline_effect) / abs(baseline_effect)
+        warning, critical = 0.20, 0.50
 
-    if relative_change >= 0.50:  # 50% change
+    if metric >= critical:
         level = AlertLevel.CRITICAL
-        message = f"Effect changed {relative_change:.0%}: investigate cause"
-    elif relative_change >= 0.20:  # 20% change
+    elif metric >= warning:
         level = AlertLevel.WARNING
+    else:
+        level = AlertLevel.OK
     # ...
 \end{minted}
+
+The two rules can disagree. A 60\% change of a noisy estimate (0.05 to 0.08, both standard errors 0.20) is $z = 0.11$, which is no alert, although the relative rule would call it critical. A 15\% change of a precise estimate (10.0 to 8.5, both standard errors 0.01) is $z = -106$, which is critical, although the relative rule would call it stable.
 
 Effect changes may indicate:
 \begin{itemize}

@@ -28,11 +28,25 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from decimal import ROUND_DOWN, Decimal
 from enum import Enum
 from typing import Any
 
 import numpy as np
 from scipy import stats
+
+
+def _format_z(z: float) -> str:
+    """Format a z-score for a message, rounded toward zero to two decimals.
+
+    Two decimals are the precision of the default thresholds (1.96 and 3.0). Rounding
+    toward zero means a z below such a threshold never prints as reaching it: 1.9552
+    prints as +1.95, not +1.96. From 1e4 on, three significant digits are printed.
+    """
+    if abs(z) >= 1e4:
+        return f"{z:+.3g}"
+    shown = Decimal(repr(float(z))).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    return f"{shown:+.2f}"
 
 
 class AlertLevel(Enum):
@@ -95,10 +109,17 @@ class CausalMonitorConfig:
         overlap_violation_rate_critical: Critical threshold for overlap violations
         treatment_shift_warning: Warning threshold for treatment distribution change
         treatment_shift_critical: Critical threshold for treatment distribution change
-        nuisance_r2_warning: Warning threshold for nuisance R² degradation
-        nuisance_r2_critical: Critical threshold for nuisance R² degradation
-        effect_change_warning: Warning threshold for effect magnitude change
-        effect_change_critical: Critical threshold for effect magnitude change
+        nuisance_r2_warning: Warning threshold for nuisance R². Below it, the outcome
+            model's R² is a warning, and so is the treatment model's.
+        nuisance_r2_critical: Critical threshold for the outcome model's R². A low
+            treatment R² is never critical: a randomized treatment has an R² near zero.
+        effect_change_warning: Warning threshold for the relative change of the effect,
+            used only when a standard error is missing
+        effect_change_critical: Critical threshold for the relative change of the effect,
+            used only when a standard error is missing
+        effect_z_warning: Warning threshold for the change of the effect in standard
+            errors, ``|current - baseline| / sqrt(current_se**2 + baseline_se**2)``
+        effect_z_critical: Critical threshold for the same ratio
     """
 
     propensity_clip_min: float = 0.01
@@ -111,6 +132,8 @@ class CausalMonitorConfig:
     nuisance_r2_critical: float = 0.30
     effect_change_warning: float = 0.20  # 20% relative change
     effect_change_critical: float = 0.50  # 50% relative change
+    effect_z_warning: float = 1.96  # two-sided 5%
+    effect_z_critical: float = 3.0
     covariate_shift_warning: float = 0.05  # KS statistic per feature
     covariate_shift_critical: float = 0.10
 
@@ -315,11 +338,17 @@ class CausalMonitor:
         """
         Check for nuisance model degradation.
 
-        Compares held-out R² with configurable predictive thresholds.
-        A known randomized assignment can have an optimal propensity R²
-        of zero. Choose thresholds appropriate to the assignment design.
+        Compares held-out R² with configurable predictive thresholds. An outcome
+        R² below ``nuisance_r2_critical`` is critical, and below
+        ``nuisance_r2_warning`` a warning. A treatment (propensity) R² below
+        ``nuisance_r2_warning`` is a warning and never critical: a randomized
+        treatment has an R² near zero, and so does a treatment model that misses
+        the confounders. The monitor cannot tell the two apart; the warning says so.
         Details report the decrease in R² points. A relative decrease
         uses the absolute baseline magnitude and is undefined at zero.
+
+        ``value`` is the smaller of the two R² values, as before, and ``details`` holds
+        both; the level is set per model, so ``value`` alone does not explain it.
 
         Args:
             r2_propensity: Current propensity model R² (or pseudo-R² for classification)
@@ -329,8 +358,21 @@ class CausalMonitor:
 
         Returns:
             MonitoringResult with degradation assessment
+
+        Raises:
+            ValueError: If an R² value, or a baseline that is given, is NaN or infinite.
         """
-        # Use minimum of the two as the overall quality metric
+        for name, r2 in (
+            ("r2_propensity", r2_propensity),
+            ("r2_outcome", r2_outcome),
+            ("r2_propensity_baseline", r2_propensity_baseline),
+            ("r2_outcome_baseline", r2_outcome_baseline),
+        ):
+            # A NaN fails every comparison below and would be reported as a good fit.
+            if r2 is not None and not np.isfinite(r2):
+                raise ValueError(f"{name} must be a finite number, got {r2!r}")
+
+        # The smaller of the two stays the reported value; the level is set per model.
         min_r2 = min(r2_propensity, r2_outcome)
 
         details: dict[str, Any] = {
@@ -338,26 +380,36 @@ class CausalMonitor:
             "r2_outcome": float(r2_outcome),
         }
 
-        # Check absolute thresholds
-        if min_r2 < self.config.nuisance_r2_critical:
+        notes = []
+        if r2_outcome < self.config.nuisance_r2_critical:
             level = AlertLevel.CRITICAL
-            message = (
-                f"CRITICAL: Nuisance model fit very poor "
-                f"(min R²={min_r2:.2f} < {self.config.nuisance_r2_critical}). "
+            notes.append(
+                f"CRITICAL: Outcome model fit very poor "
+                f"(R²={r2_outcome:.2f} < {self.config.nuisance_r2_critical}). "
                 "Check prediction loss against the design-specific baseline."
             )
-        elif min_r2 < self.config.nuisance_r2_warning:
+        elif r2_outcome < self.config.nuisance_r2_warning:
             level = AlertLevel.WARNING
-            message = (
-                f"WARNING: Nuisance model fit degraded "
-                f"(min R²={min_r2:.2f} < {self.config.nuisance_r2_warning}). "
+            notes.append(
+                f"WARNING: Outcome model fit degraded "
+                f"(R²={r2_outcome:.2f} < {self.config.nuisance_r2_warning}). "
                 "Consider retraining."
             )
         else:
             level = AlertLevel.OK
-            message = (
-                f"Nuisance fit OK (R² propensity={r2_propensity:.2f}, outcome={r2_outcome:.2f})"
+        if r2_propensity < self.config.nuisance_r2_warning:
+            if level == AlertLevel.OK:
+                level = AlertLevel.WARNING
+            notes.append(
+                f"WARNING: Treatment model R²={r2_propensity:.2f} < "
+                f"{self.config.nuisance_r2_warning}. Expected if the treatment is randomized; "
+                "otherwise the treatment model may miss confounders."
             )
+        message = (
+            " ".join(notes)
+            if notes
+            else f"Nuisance fit OK (R² propensity={r2_propensity:.2f}, outcome={r2_outcome:.2f})"
+        )
 
         # R² can be zero under random assignment and negative out of sample.
         for name, current, baseline in (
@@ -401,6 +453,14 @@ class CausalMonitor:
         - Model degradation or data issues (problematic)
         - Selection/survivor bias in new data (problematic)
 
+        With both standard errors the level follows the change in standard errors,
+        ``z = (current - baseline) / sqrt(current_se**2 + baseline_se**2)``, against
+        ``effect_z_warning`` and ``effect_z_critical``; the relative change is reported
+        beside it. Without both, the level follows the relative change, and the message
+        says which standard error is missing. ``value`` is the metric of the rule that set
+        the level (``details["rule"]``): ``abs(z)`` or the relative change. ``threshold`` is that
+        rule's warning threshold, also on a critical result, as in the other checks.
+
         Args:
             current_effect: Current period ATE estimate
             baseline_effect: Baseline period ATE estimate
@@ -409,7 +469,26 @@ class CausalMonitor:
 
         Returns:
             MonitoringResult with effect change assessment
+
+        Raises:
+            ValueError: If an effect is NaN or infinite; if a standard error that is given
+                is negative or not finite; or if both are zero.
+
+        Examples:
+            >>> monitor = CausalMonitor()
+            >>> monitor.check_effect_stability(0.08, 0.05, 0.20, 0.20).level.value
+            'ok'
+            >>> monitor.check_effect_stability(8.5, 10.0, 0.01, 0.01).level.value
+            'critical'
         """
+        for name, effect in (
+            ("current_effect", current_effect),
+            ("baseline_effect", baseline_effect),
+        ):
+            # A NaN fails every comparison below and would be reported as stable.
+            if not np.isfinite(effect):
+                raise ValueError(f"{name} must be a finite number, got {effect!r}")
+
         # Compute relative change (handle zero baseline)
         if abs(baseline_effect) < 1e-10:
             if abs(current_effect) < 1e-10:
@@ -419,51 +498,93 @@ class CausalMonitor:
         else:
             relative_change = abs(current_effect - baseline_effect) / abs(baseline_effect)
 
-        details = {
+        details: dict[str, Any] = {
             "current_effect": float(current_effect),
             "baseline_effect": float(baseline_effect),
             "absolute_change": float(current_effect - baseline_effect),
             "relative_change": float(relative_change),
         }
 
-        # If standard errors provided, compute significance of change
+        change = f"({baseline_effect:.3f} -> {current_effect:.3f})"
+        for name, se in (("current_se", current_se), ("baseline_se", baseline_se)):
+            # Checked whenever given, also when the other is missing.
+            if se is not None and (not np.isfinite(se) or se < 0):
+                raise ValueError(f"{name} must be a finite, non-negative number, got {se!r}")
         if current_se is not None and baseline_se is not None:
-            combined_se = np.sqrt(current_se**2 + baseline_se**2)
+            # The change in standard errors decides the level: a large relative
+            # change can be noise, and a small one can be many standard errors.
+            # hypot does not underflow or overflow where the squares would
+            # (standard errors of 1e-170, or Python floats of 1e200).
+            combined_se = float(np.hypot(current_se, baseline_se))
+            if combined_se == 0.0:
+                raise ValueError(
+                    "current_se and baseline_se are both zero, so the change cannot be "
+                    "measured in standard errors; pass None for both to judge it by the "
+                    "relative change."
+                )
             z_score = (current_effect - baseline_effect) / combined_se
             p_value = 2 * (1 - stats.norm.cdf(abs(z_score)))
             details["z_score"] = float(z_score)
             details["p_value"] = float(p_value)
             details["current_se"] = float(current_se)
             details["baseline_se"] = float(baseline_se)
-            details["statistically_significant"] = p_value < 0.05
-
-        # Determine severity
-        if relative_change >= self.config.effect_change_critical:
-            level = AlertLevel.CRITICAL
-            message = (
-                f"CRITICAL: Treatment effect changed {relative_change:.0%} "
-                f"({baseline_effect:.3f} -> {current_effect:.3f}). "
-                "Investigate cause before deployment."
+            details["statistically_significant"] = bool(p_value < 0.05)
+            details["rule"] = "standard_errors"
+            value = abs(float(z_score))
+            threshold = self.config.effect_z_warning
+            relative = (
+                f"{relative_change:.0%} relative"
+                if np.isfinite(relative_change)
+                else "relative change undefined at a zero baseline"
             )
-        elif relative_change >= self.config.effect_change_warning:
-            level = AlertLevel.WARNING
-            message = (
-                f"WARNING: Treatment effect changed {relative_change:.0%}. "
-                "May indicate effect heterogeneity or model issues."
-            )
+            moved = f"{_format_z(z_score)} standard errors, {relative}"
+            if value >= self.config.effect_z_critical:
+                level = AlertLevel.CRITICAL
+                message = (
+                    f"CRITICAL: Treatment effect moved {moved} {change}. "
+                    "Investigate cause before deployment."
+                )
+            elif value >= self.config.effect_z_warning:
+                level = AlertLevel.WARNING
+                message = (
+                    f"WARNING: Treatment effect moved {moved} {change}. "
+                    "May indicate effect heterogeneity or model issues."
+                )
+            else:
+                level = AlertLevel.OK
+                message = f"Effect stable: moved {moved} {change}"
         else:
-            level = AlertLevel.OK
-            message = (
-                f"Effect stable: {relative_change:.1%} change "
-                f"({baseline_effect:.3f} -> {current_effect:.3f})"
+            missing = " and ".join(
+                name
+                for name, se in (("current_se", current_se), ("baseline_se", baseline_se))
+                if se is None
             )
+            details["rule"] = "relative_change"
+            value = relative_change
+            threshold = self.config.effect_change_warning
+            basis = f" Judged by the relative change: {missing} not given."
+            if relative_change >= self.config.effect_change_critical:
+                level = AlertLevel.CRITICAL
+                message = (
+                    f"CRITICAL: Treatment effect changed {relative_change:.0%} {change}. "
+                    "Investigate cause before deployment." + basis
+                )
+            elif relative_change >= self.config.effect_change_warning:
+                level = AlertLevel.WARNING
+                message = (
+                    f"WARNING: Treatment effect changed {relative_change:.0%}. "
+                    "May indicate effect heterogeneity or model issues." + basis
+                )
+            else:
+                level = AlertLevel.OK
+                message = f"Effect stable: {relative_change:.1%} change {change}." + basis
 
         return MonitoringResult(
             check_name="effect_stability",
             level=level,
             message=message,
-            value=relative_change,
-            threshold=self.config.effect_change_warning,
+            value=value,
+            threshold=threshold,
             details=details,
         )
 

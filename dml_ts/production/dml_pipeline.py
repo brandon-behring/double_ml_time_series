@@ -266,6 +266,12 @@ class InsuranceDMLPipeline:
 
         Returns:
             PipelineResult with estimates and diagnostics
+
+        Raises:
+            ValueError: If the inputs are inconsistent (see the checks below), or, after
+                cross-fitting, if the monitor refuses its inputs: a ``baseline_ate`` that is
+                NaN or infinite, or a ``baseline_ate_se`` that is negative or not finite.
+                The pipeline is then left unfitted.
         """
         X = np.asarray(X, dtype=float)
         T = np.asarray(T, dtype=float).reshape(-1)
