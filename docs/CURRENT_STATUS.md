@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-11-26
+Last updated: 2026-11-27
 
 This file is the canonical project-status source. Historical reports and roadmaps
 were moved to `docs/archive/superseded_2026-05-02/` during the 2026-05-02 truth-first
@@ -25,7 +25,8 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
 | Validation inference (#68, #78) | The bias test of the seven validators tests mean error across independent simulations; the six baselines also give a coverage verdict; the 401(k) comparison uses the published fivefold benchmarks |
 | Applications (#80) | The insurance pipeline scores held-out rows in the treatment's units; the insurance generator returns its rows in one product-major order; the sensitivity module's docstrings call its curve a log-gamma bias curve (its printed summary is still headed "Rosenbaum Bounds"); the orange-juice loader checks a pinned digest; the registry and the result store write atomically |
 | Continuous integration (#73) | Installs from `uv.lock`; a weekly job with unpinned dependencies reports drift and blocks nothing |
-| Audits and Chapters 2 and 5 (this change) | The four November audit folders with 31 test files, the effect-forecast module with its test, and both editions of Chapters 2 and 5 |
+| Panel standard errors (this change) | `panel_standard_error` and `group_codes` in the private module `dml_ts/dml/_panel.py`, which `PanelDML` does not use yet; three audit scripts that need only them, with two test files |
+| Audits and Chapters 2 and 5 (#83) | The four November audit folders with 31 test files, the effect-forecast module with its test, and both editions of Chapters 2 and 5 |
 | Public-data experiments | `docs/audits/2026-11-21_public_data_extensions/`: four experiments on public data (bicycle demand, household electricity offers, ride counts, a repeated cooperation game) with their scripts and reference outputs. Its comparison of `TemporalPLRDML` on matched bike hours reproduces its stored output byte for byte on `main`'s code |
 
 ### Not on `main`, and what follows from it
@@ -45,19 +46,18 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
     standard error of 0.0330; on `main` the same call returns -0.8531 with 0.0175, and that
     interval excludes the true -0.8. Its exercise prints 93.0% coverage and reaches 21% in 100
     draws. The chapter is recomputed when the panel estimator is settled.
-  - Chapter 4 cites `retail_check.py`, which is one of the held files below.
-- **28 files of the audit folders are held with it**, because they call the redesigned
+- **21 files of the audit folders are held with it**, because they call the redesigned
   estimator or report numbers from the rejected design. The audit reports refer to them, and
-  also to the unlanded module `dml_ts/dml/_panel.py`, to `scripts/validate_falsification.py`
-  and to three of the held tests. The reports were written against the November working
+  also to the fold transformations of `dml_ts/dml/_panel.py` (of that module only the
+  standard errors are landed), to `scripts/validate_falsification.py`
+  and to two of the held tests. The reports were written against the November working
   copy: where they say that Chapters 6 and 8 report corrected panel designs, that is not true
   of `main`. Two landed receipts of the 2026-11-21 reproduction,
   `standalone-stdout.json.gz` and `execution-code-sha256.json.gz`, contain the printed output
   and the digests of held scripts.
-  - Scripts of `audits/2026-11-19_time_series_dml/`: `method_checks.py`, `retail_check.py`, `classical/replay.py`, `external/questions/minimum_wage.py`, `external/turnout/replay.py`, `adversarial/failures.py`, `adversarial/empirical.py`.
-  - Artifacts: `panel-draws.csv`, `insurance-panel-draws.csv`, `insurance-panel-summary.csv`, `insurance-rolling.csv`, `stress-draws.csv.gz`, `stress-summary.csv`, `retail-results.csv`, `retail-folds.csv`, `retail-baselines.json`, `adversarial/failures.json`, `adversarial/empirical.json`, `classical/results.json`, `external/turnout/household_counts.csv`.
+  - Scripts of `audits/2026-11-19_time_series_dml/`: `method_checks.py`, `classical/replay.py`, `external/turnout/replay.py`, `adversarial/failures.py`, `adversarial/empirical.py`.
+  - Artifacts: `panel-draws.csv`, `insurance-panel-draws.csv`, `insurance-panel-summary.csv`, `insurance-rolling.csv`, `stress-draws.csv.gz`, `stress-summary.csv`, `adversarial/failures.json`, `adversarial/empirical.json`, `classical/results.json`, `external/turnout/household_counts.csv`.
   - Reports: `09-panel-retail-insurance.md`, `panel-inference.md`, `10-property-tests-and-falsification.md`, `adversarial/failures.md`, `adversarial/empirical.md`, `questions/minimum-wage.md`.
-  - Of `audits/2026-11-21_evaluation_methods/`: `reproduction/design_probes.py`, `reproduction/design-probes.json`.
 - **3 further files are held for their licence**: the rows of the Survey of Professional
   Forecasters and two receipts that embed them; see
   [`docs/audits/DATA_SOURCES.md`](audits/DATA_SOURCES.md). Four files whose sources state no
@@ -65,8 +65,9 @@ what is on `main`, what is not, and what a reader must not rely on meanwhile.
   of 2026-11-26: three result files of the ACIC study, which carry the organizers' true
   effect for each contest file, and six announced cricket fixtures.
 - **Not landed either:** the end-to-end review of 2026-11-22 and the second audit it reviews
-  (their folders and tests), nine test files that need a held file, among them the test that
-  checks the numbers printed in the chapters, two tests that replay the cricket forecast (see
+  (their folders and tests), seven test files that need a held file, among them the test that
+  checks the numbers printed in the chapters, one test of the minimum-wage case that expects a
+  zero date-HAC standard error to be returned rather than refused, two tests that replay the cricket forecast (see
   the known limits), the Monte Carlo scripts of Chapters 6 and 8, and the nightly workflow's
   November changes. The `Nightly Tests` workflow last ran on 2026-10-19;
   tier 3 and tier 4 have not run in CI since then. It is run once by hand when this stage of

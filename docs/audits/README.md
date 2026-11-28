@@ -21,7 +21,7 @@ priority and software readiness.
 The [public-data comparison](2026-11-19_time_series_dml/README.md#four-further-tests-with-public-research-data) adds results on retail recommendations, bracero exclusion, teacher pay and weatherization.
 
 Not every file these folders refer to is in the repository, and the reports describe the
-November working copy, not `main`. Twenty-eight files of these folders that depend on the
+November working copy, not `main`. Twenty-one files of these folders that depend on the
 pending redesign of `PanelDML` are held and are listed in
 [`docs/CURRENT_STATUS.md`](../CURRENT_STATUS.md), which also says what the reports claim about
 Chapters 6 and 8 that `main` does not yet hold. Three files that reproduce a provider's rows
