@@ -9,7 +9,7 @@ description: "Synthesizing the toolkit on insurance/annuity competitor pricing: 
 # unknown keys at `astro build`; Astro strips these top-level extras instead. They are
 # enforced by scripts/check_tex_mdx_drift.py (pre-commit + CI).
 source_file: chapters/chapter_08.tex
-source_sha256: 60ec9a74a3c268b63bedd9fc685046286be6b40bd2fee33b85ff3725809897da
+source_sha256: 0783194bf0ecc7bf90e3177cd5cb63720e44d39f4b6a0226598f3b8976cd3f95
 provenance:
   ai_tools:
     - Claude Code
@@ -21,10 +21,17 @@ provenance:
 import Theorem from '@brandon_m_behring/book-scaffold-astro/components/Theorem.astro';
 import ResultBox from '@brandon_m_behring/book-scaffold-astro/components/ResultBox.astro';
 import InsightBox from '@brandon_m_behring/book-scaffold-astro/components/InsightBox.astro';
+import WarnBox from '@brandon_m_behring/book-scaffold-astro/components/WarnBox.astro';
 
 # Competitor Pricing: An Insurance Application
 
 ## Introduction
+
+<WarnBox title="Known issue">
+
+The four printed outputs of this chapter do not reproduce with the current package. The `PanelDML` listing of Section 8.3 prints $-0.8553$ with a standard error of $0.0330$; the package returns $-0.8531$ with $0.0175$, an interval of $[-0.8873, -0.8189]$ that excludes the true $-0.8$. The comparison without fixed effects prints $-0.523$ and $-0.785$, and the package returns $-1.581$ and $-0.853$. The rolling-window listing of Section 8.5 prints $-0.812$, $-0.648$ and a shift of $-20.2$%, and the package returns $-1.505$, $-1.092$ and $-27.4$%. Exercise 8.1 prints a coverage of 93.0%; in the same 100 draws the package reaches 21.0%, with a mean standard error of 0.0186 against an empirical one of 0.0227. The chapter uses the panel estimator of Chapter 6, which is being redesigned (see the note at the start of that chapter), and it will be recomputed with it.
+
+</WarnBox>
 
 Chapters 5–7 developed the theoretical and computational infrastructure for time series causal inference: TemporalPLRDML, Panel DML, HAC inference, and FRED integration. This chapter synthesizes these tools into a **research application**: estimating how competitor pricing affects insurance/annuity sales in reproducible companion-code examples.
 
